@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryCampaigns, logSearchQuery } from '@/lib/db';
 import { crawlKeywordOnDemandParallel } from '@/lib/crawler-parallel';
+import axios from 'axios';
 
 // [중요] Next.js 캐싱 차단: 항상 실시간으로 DB를 직접 조회 및 온디맨드 크롤링 하도록 설정
 export const dynamic = 'force-dynamic';
@@ -48,8 +49,25 @@ export async function GET(request: NextRequest) {
         } else {
           // 🔑 로컬 맥북 환경: 기존과 동일하게 넌블로킹 백그라운드로 실행해 고속 응답력 보장
           console.log(`[API-Hybrid] [Local-Async] Triggering background parallel crawlers for "${search}"...`);
-          crawlKeywordOnDemandParallel(search).then(() => {
+          crawlKeywordOnDemandParallel(search).then(async () => {
             console.log(`[API-Hybrid] Background parallel crawl success for "${search}"`);
+            
+            // 🔑 [하이브리드 동기화 브리지] 로컬 수집 후 Vercel 서버로 최신 데이터 동기화 Push 격발!
+            try {
+              const freshData = await queryCampaigns({ search });
+              if (freshData.length > 0) {
+                console.log(`[API-Sync-Bridge] Pushing ${freshData.length} fresh campaigns for "${search}" to Vercel...`);
+                axios.post('https://viral-re.vercel.app/api/sync', { campaigns: freshData }, { timeout: 6000 })
+                  .then(syncRes => {
+                    console.log(`[API-Sync-Bridge] Vercel sync complete:`, syncRes.data);
+                  })
+                  .catch(syncErr => {
+                    console.error(`[API-Sync-Bridge] Vercel sync failed:`, syncErr.message);
+                  });
+              }
+            } catch (err: any) {
+              console.error(`[API-Sync-Bridge] Failed to fetch fresh data for sync:`, err.message);
+            }
           }).catch((err) => {
             console.error(`[API-Hybrid] Background parallel crawl failed for "${search}":`, err.message);
           });
