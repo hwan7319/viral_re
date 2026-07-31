@@ -33,17 +33,30 @@ export async function GET(request: NextRequest) {
 
       // 🔑 최적화: 검색결과가 아예 없는 최초 1회이거나, 3분 쿨타임이 경과한 경우에만 외부 크롤러 기동
       if (existingCampaigns.length === 0 || (now - lastCrawl > CRAWL_COOLTIME_MS)) {
-        console.log(`[API-Hybrid] [Non-Blocking] Triggering real-time crawlers for "${search}"...`);
+        const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
         
-        // 🔑 백그라운드로 스크래퍼 동작 위임 (await 제거)
-        crawlKeywordOnDemand(search).then(() => {
-          console.log(`[API-Hybrid] Background crawl success for "${search}"`);
-        }).catch((err) => {
-          console.error(`[API-Hybrid] Background crawl failed for "${search}":`, err.message);
-        });
+        if (isServerless) {
+          // 🔑 Vercel/서버리스 환경: NextResponse 리턴 즉시 컨테이너가 소멸/Freeze 되므로
+          // 반드시 await로 크롤링 완료를 보장하여 인메모리에 데이터를 채운 뒤 아래 query를 실행합니다.
+          console.log(`[API-Hybrid] [Serverless-Sync] Executing real-time crawl for "${search}"...`);
+          try {
+            await crawlKeywordOnDemand(search);
+            console.log(`[API-Hybrid] Serverless crawl success for "${search}"`);
+          } catch (err: any) {
+            console.error(`[API-Hybrid] Serverless crawl failed for "${search}":`, err.message);
+          }
+        } else {
+          // 🔑 로컬 맥북 환경: 기존과 동일하게 넌블로킹 백그라운드로 실행해 고속 응답력 보장
+          console.log(`[API-Hybrid] [Local-Async] Triggering background crawlers for "${search}"...`);
+          crawlKeywordOnDemand(search).then(() => {
+            console.log(`[API-Hybrid] Background crawl success for "${search}"`);
+          }).catch((err) => {
+            console.error(`[API-Hybrid] Background crawl failed for "${search}":`, err.message);
+          });
+        }
 
         lastCrawlTimeMap.set(search, now);
-        isCrawlingTriggered = true; // 백그라운드 수집 실행 여부 플래그
+        isCrawlingTriggered = true;
       }
     }
 
