@@ -588,8 +588,8 @@ export default function Home() {
 
   // 지역 목록 목록 데이터 (심플 구현)
   const LOCATIONS = ['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '강원', '제주'];
-  // 출처 사이트 목록 (실제 온디맨드 크롤링 수집 및 테스트가 완료된 핵심 4대 매체)
-  const TARGET_SITES = ['레뷰 (REVU)', '디너의여왕', '리뷰노트', '포블로그'];
+  // 출처 사이트 목록 (실제 온디맨드 크롤링 수집 및 테스트가 완료된 핵심 5대 매체)
+  const TARGET_SITES = ['레뷰 (REVU)', '디너의여왕', '리뷰노트', '포블로그', '강남맛집'];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
