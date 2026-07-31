@@ -1201,6 +1201,7 @@ export default function Home() {
                       src={c.imageUrl} 
                       alt={c.title}
                       loading="lazy"
+                      referrerPolicy="no-referrer"
                       style={{
                         width: '100%', height: '100%', objectFit: 'cover',
                         transition: 'transform 0.4s ease'
@@ -1364,6 +1365,7 @@ export default function Home() {
               <img 
                 src={selectedCampaign.imageUrl} 
                 alt={selectedCampaign.title}
+                referrerPolicy="no-referrer"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
               <div style={{

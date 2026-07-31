@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryCampaigns, logSearchQuery } from '@/lib/db';
-import { crawlKeywordOnDemand } from '@/lib/crawler-core';
+import { crawlKeywordOnDemandParallel } from '@/lib/crawler-parallel';
 
 // [중요] Next.js 캐싱 차단: 항상 실시간으로 DB를 직접 조회 및 온디맨드 크롤링 하도록 설정
 export const dynamic = 'force-dynamic';
@@ -40,18 +40,18 @@ export async function GET(request: NextRequest) {
           // 반드시 await로 크롤링 완료를 보장하여 인메모리에 데이터를 채운 뒤 아래 query를 실행합니다.
           console.log(`[API-Hybrid] [Serverless-Sync] Executing real-time crawl for "${search}"...`);
           try {
-            await crawlKeywordOnDemand(search);
-            console.log(`[API-Hybrid] Serverless crawl success for "${search}"`);
+            await crawlKeywordOnDemandParallel(search);
+            console.log(`[API-Hybrid] Serverless parallel crawl success for "${search}"`);
           } catch (err: any) {
-            console.error(`[API-Hybrid] Serverless crawl failed for "${search}":`, err.message);
+            console.error(`[API-Hybrid] Serverless parallel crawl failed for "${search}":`, err.message);
           }
         } else {
           // 🔑 로컬 맥북 환경: 기존과 동일하게 넌블로킹 백그라운드로 실행해 고속 응답력 보장
-          console.log(`[API-Hybrid] [Local-Async] Triggering background crawlers for "${search}"...`);
-          crawlKeywordOnDemand(search).then(() => {
-            console.log(`[API-Hybrid] Background crawl success for "${search}"`);
+          console.log(`[API-Hybrid] [Local-Async] Triggering background parallel crawlers for "${search}"...`);
+          crawlKeywordOnDemandParallel(search).then(() => {
+            console.log(`[API-Hybrid] Background parallel crawl success for "${search}"`);
           }).catch((err) => {
-            console.error(`[API-Hybrid] Background crawl failed for "${search}":`, err.message);
+            console.error(`[API-Hybrid] Background parallel crawl failed for "${search}":`, err.message);
           });
         }
 
