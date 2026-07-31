@@ -2,6 +2,15 @@ import { open, Database } from 'sqlite';
 import path from 'path';
 import fs from 'fs';
 
+// 🔑 Vercel/서버리스 환경 대응용 글로벌 인메모리 캐시 DB 드라이버 바인딩
+const globalRef = global as any;
+if (!globalRef.memoryCampaigns) {
+  globalRef.memoryCampaigns = [];
+}
+if (!globalRef.memoryLogs) {
+  globalRef.memoryLogs = [];
+}
+
 export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
   title: string;       // 캠페인 제목
@@ -169,6 +178,61 @@ export async function queryCampaigns(filters: {
   targetSite?: string;
   sortBy?: string;
 }): Promise<Campaign[]> {
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+
+  // 🔑 Vercel/서버리스 환경인 경우: DB를 통하지 않고 인메모리 버퍼에서 직접 JS 쿼리 필터링 및 정렬 반환
+  if (isServerless) {
+    let result = [...globalRef.memoryCampaigns];
+    
+    // 1. 검색어 필터
+    if (filters.search) {
+      const s = filters.search.toLowerCase();
+      result = result.filter(c => 
+        c.title.toLowerCase().includes(s) || 
+        c.description.toLowerCase().includes(s) || 
+        (c.location && c.location.toLowerCase().includes(s)) ||
+        (c.searchKeywords && c.searchKeywords.toLowerCase().includes(s))
+      );
+    }
+    // 2. 플랫폼 필터
+    if (filters.platform && filters.platform !== 'all') {
+      result = result.filter(c => c.platform === filters.platform);
+    }
+    // 3. 카테고리 필터
+    if (filters.category && filters.category !== 'all') {
+      result = result.filter(c => c.category === filters.category);
+    }
+    // 4. 지역 필터
+    if (filters.location && filters.location !== 'all') {
+      const loc = filters.location.toLowerCase();
+      result = result.filter(c => c.location && c.location.toLowerCase().includes(loc));
+    }
+    // 5. 출처 사이트 필터
+    if (filters.targetSite && filters.targetSite !== 'all') {
+      result = result.filter(c => c.targetSite === filters.targetSite);
+    }
+    // 6. 정렬
+    const nowStr = new Date().toISOString().split('T')[0];
+    if (filters.sortBy === 'endDate') {
+      result.sort((a, b) => {
+        const aActive = a.endDate >= nowStr ? 0 : 1;
+        const bActive = b.endDate >= nowStr ? 0 : 1;
+        if (aActive !== bActive) return aActive - bActive;
+        return a.endDate.localeCompare(b.endDate);
+      });
+    } else if (filters.sortBy === 'popular') {
+      result.sort((a, b) => {
+        const rateA = a.limitCount === 0 ? 0 : a.applyCount / a.limitCount;
+        const rateB = b.limitCount === 0 ? 0 : b.applyCount / b.limitCount;
+        return rateB - rateA;
+      });
+    } else {
+      result.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    }
+    
+    return result;
+  }
+
   const db = await getDB();
   let query = 'SELECT * FROM campaigns WHERE 1=1';
   const params: any[] = [];
@@ -223,6 +287,43 @@ export async function queryCampaigns(filters: {
 
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
 export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+
+  // 🔑 Vercel/서버리스 환경인 경우: DB 쓰기가 금지되므로 글로벌 메모리 변수에 데이터를 업서트하여 실시간 수집 보장
+  if (isServerless) {
+    let inserted = 0;
+    let updated = 0;
+    
+    for (const c of campaigns) {
+      const idx = globalRef.memoryCampaigns.findIndex((x: Campaign) => x.id === c.id);
+      if (idx > -1) {
+        let finalKeywords = globalRef.memoryCampaigns[idx].searchKeywords || '';
+        if (c.searchKeywords) {
+          const newKeywords = c.searchKeywords.split(',').filter(Boolean);
+          const currentKeywordsSet = new Set(finalKeywords.split(',').filter(Boolean));
+          newKeywords.forEach(k => currentKeywordsSet.add(k));
+          finalKeywords = currentKeywordsSet.size > 0 ? `,${Array.from(currentKeywordsSet).join(',')},` : '';
+        }
+        
+        globalRef.memoryCampaigns[idx] = {
+          ...globalRef.memoryCampaigns[idx],
+          ...c,
+          searchKeywords: finalKeywords,
+          updatedAt: new Date().toISOString()
+        };
+        updated++;
+      } else {
+        globalRef.memoryCampaigns.push({
+          ...c,
+          createdAt: c.createdAt || new Date().toISOString(),
+          updatedAt: c.updatedAt || new Date().toISOString()
+        });
+        inserted++;
+      }
+    }
+    return { inserted, updated };
+  }
+
   const db = await getDB();
   
   let inserted = 0;
@@ -366,6 +467,16 @@ export async function toggleUserBookmark(userId: string, campaignId: string): Pr
 export async function logSearchQuery(keyword: string): Promise<void> {
   const trimmed = keyword.trim();
   if (!trimmed) return;
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+
+  if (isServerless) {
+    globalRef.memoryLogs.push({
+      keyword: trimmed,
+      searchedAt: new Date().toISOString()
+    });
+    return;
+  }
+
   try {
     const db = await getDB();
     await db.run(
@@ -379,6 +490,25 @@ export async function logSearchQuery(keyword: string): Promise<void> {
 
 // 🔑 실시간 인기 검색어 랭킹 조회 (최근 24시간 내 가장 많이 검색된 상위 10개 키워드)
 export async function getTrendingKeywords(): Promise<{ word: string; count: number }[]> {
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+
+  if (isServerless) {
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const activeLogs = globalRef.memoryLogs.filter((l: any) => Date.parse(l.searchedAt) >= oneDayAgo);
+    
+    const countsMap = new Map<string, number>();
+    activeLogs.forEach((l: any) => {
+      countsMap.set(l.keyword, (countsMap.get(l.keyword) || 0) + 1);
+    });
+    
+    const sorted = Array.from(countsMap.entries())
+      .map(([word, count]) => ({ word, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+      
+    return sorted;
+  }
+
   try {
     const db = await getDB();
     // 최근 24시간 내 통계 (SQLite의 datetime 비교)
