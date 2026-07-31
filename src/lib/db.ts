@@ -1,0 +1,369 @@
+import sqlite3 from 'sqlite3';
+import { open, Database } from 'sqlite';
+import path from 'path';
+import fs from 'fs';
+
+export interface Campaign {
+  id: string;          // 고유 ID (예: revu_12345)
+  title: string;       // 캠페인 제목
+  description: string; // 제공 내역 (예: 5만원 식사권)
+  platform: 'blog' | 'instagram' | 'youtube' | 'etc'; // 플랫폼 구분
+  category: 'food' | 'beauty' | 'fashion' | 'travel' | 'life' | 'etc'; // 카테고리
+  location?: string;   // 지역 (예: 서울 강남구, 경기 수원시 등)
+  campaignUrl: string; // 원본 상세 페이지 URL
+  imageUrl: string;    // 이미지 URL
+  targetSite: string;  // 출처 사이트 (예: 레뷰, 디너의여왕)
+  limitCount: number;  // 모집 인원
+  applyCount: number;  // 지원 인원
+  startDate?: string;  // 모집 시작일 (YYYY-MM-DD)
+  endDate: string;     // 모집 종료일 (YYYY-MM-DD)
+  createdAt: string;   // 수집일 (ISO 8601)
+  updatedAt: string;   // 최근 갱신일 (ISO 8601)
+  searchKeywords?: string; // 수집 당시의 검색 키워드 매핑 태그 (예: ",치킨,삼겹살,")
+}
+
+// 🔑 실제 회원 정보 데이터 인터페이스
+export interface User {
+  id: string;        // 고유 ID (소셜 제공 ID 또는 이메일 해시)
+  name: string;      // 사용자 닉네임 / 이름
+  email: string;     // 이메일
+  avatar: string;    // 아바타 이미지 URL
+  provider: string;  // 인증 제공처 (Google, Naver, Kakao, Instagram 등)
+  createdAt: string; // 가입일 (ISO 8601)
+  updatedAt: string; // 정보 수정일 (ISO 8601)
+}
+
+const DB_DIR = path.join(process.cwd(), 'data');
+const DB_FILE = path.join(DB_DIR, 'review-moa.db');
+
+let dbInstance: Database | null = null;
+
+// SQLite DB 초기화 및 연결
+export async function getDB(): Promise<Database> {
+  if (dbInstance) return dbInstance;
+
+  if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+  }
+
+  dbInstance = await open({
+    filename: DB_FILE,
+    driver: sqlite3.Database,
+  });
+
+  // 스키마 초기 설정
+  await dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS campaigns (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      platform TEXT NOT NULL,
+      category TEXT NOT NULL,
+      location TEXT,
+      campaignUrl TEXT NOT NULL,
+      imageUrl TEXT NOT NULL,
+      targetSite TEXT NOT NULL,
+      limitCount INTEGER DEFAULT 0,
+      applyCount INTEGER DEFAULT 0,
+      startDate TEXT,
+      endDate TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL,
+      searchKeywords TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS crawling_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      targetSite TEXT NOT NULL,
+      status TEXT NOT NULL,
+      collectedCount INTEGER DEFAULT 0,
+      errorMessage TEXT,
+      executedAt TEXT DEFAULT (datetime('now', 'localtime'))
+    );
+
+    -- 🔑 실제 회원 관리를 위한 users 테이블 추가
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      avatar TEXT,
+      provider TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    -- 🔑 사용자별 관심(찜하기) 캠페인을 연동할 user_bookmarks 테이블 추가
+    CREATE TABLE IF NOT EXISTS user_bookmarks (
+      userId TEXT NOT NULL,
+      campaignId TEXT NOT NULL,
+      createdAt TEXT DEFAULT (datetime('now', 'localtime')),
+      PRIMARY KEY (userId, campaignId),
+      FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE,
+      FOREIGN KEY (campaignId) REFERENCES campaigns (id) ON DELETE CASCADE
+    );
+
+    -- 🔑 실시간 인기 검색어 랭킹 산출을 위한 search_logs 테이블 추가
+    CREATE TABLE IF NOT EXISTS search_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      keyword TEXT NOT NULL,
+      searchedAt TEXT DEFAULT (datetime('now', 'localtime'))
+    );
+
+    -- 속도 향상을 위한 인덱스 생성
+    CREATE INDEX IF NOT EXISTS idx_campaigns_search ON campaigns (title, description);
+    CREATE INDEX IF NOT EXISTS idx_campaigns_filters ON campaigns (platform, category, targetSite);
+    CREATE INDEX IF NOT EXISTS idx_campaigns_end_date ON campaigns (endDate);
+    CREATE INDEX IF NOT EXISTS idx_user_bookmarks_user ON user_bookmarks (userId);
+    CREATE INDEX IF NOT EXISTS idx_search_logs_keyword ON search_logs (keyword);
+  `);
+
+  // [하이브리드 대응] 기존 테이블에 searchKeywords 컬럼이 없는 구버전 DB 대비 컬럼 안전 추가
+  try {
+    await dbInstance.exec('ALTER TABLE campaigns ADD COLUMN searchKeywords TEXT');
+    console.log('[DB] Successfully added searchKeywords column to campaigns table.');
+  } catch (e) {
+    // 이미 컬럼이 존재할 경우 무시 (SQLITE 에러 발생하므로 무시 처리)
+  }
+
+  return dbInstance;
+}
+
+// 캠페인 데이터 조건 검색 조회 (검색 키워드 태그 조건 추가)
+export async function queryCampaigns(filters: {
+  search?: string;
+  platform?: string;
+  category?: string;
+  location?: string;
+  targetSite?: string;
+  sortBy?: string;
+}): Promise<Campaign[]> {
+  const db = await getDB();
+  let query = 'SELECT * FROM campaigns WHERE 1=1';
+  const params: any[] = [];
+
+  // 1. 검색어 필터 (제목, 본문, 지역, 검색 키워드 태그 매칭)
+  if (filters.search) {
+    query += ' AND (title LIKE ? OR description LIKE ? OR location LIKE ? OR searchKeywords LIKE ?)';
+    const searchParam = `%${filters.search}%`;
+    const keywordParam = `%,${filters.search},%`;
+    params.push(searchParam, searchParam, searchParam, keywordParam);
+  }
+
+  // 2. 플랫폼 필터
+  if (filters.platform && filters.platform !== 'all') {
+    query += ' AND platform = ?';
+    params.push(filters.platform);
+  }
+
+  // 3. 카테고리 필터
+  if (filters.category && filters.category !== 'all') {
+    query += ' AND category = ?';
+    params.push(filters.category);
+  }
+
+  // 4. 지역 필터
+  if (filters.location && filters.location !== 'all') {
+    query += ' AND location LIKE ?';
+    params.push(`%${filters.location}%`);
+  }
+
+  // 5. 출처 사이트 필터
+  if (filters.targetSite && filters.targetSite !== 'all') {
+    query += ' AND targetSite = ?';
+    params.push(filters.targetSite);
+  }
+
+  // 6. 정렬
+  const nowStr = new Date().toISOString().split('T')[0];
+  if (filters.sortBy === 'endDate') {
+    query += ` ORDER BY 
+      CASE WHEN endDate >= '${nowStr}' THEN 0 ELSE 1 END,
+      endDate ASC, 
+      updatedAt DESC`;
+  } else if (filters.sortBy === 'popular') {
+    query += ' ORDER BY CAST(applyCount AS REAL) / CASE WHEN limitCount = 0 THEN 1 ELSE limitCount END DESC';
+  } else {
+    query += ' ORDER BY createdAt DESC';
+  }
+
+  return db.all<Campaign[]>(query, params);
+}
+
+// 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
+export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
+  const db = await getDB();
+  
+  let inserted = 0;
+  let updated = 0;
+
+  await db.run('BEGIN TRANSACTION');
+
+  try {
+    for (const c of campaigns) {
+      const existing = await db.get('SELECT id, searchKeywords FROM campaigns WHERE id = ?', [c.id]);
+
+      if (existing) {
+        // 기존 검색 키워드가 존재한다면, 새로운 키워드 태그를 누적 결합하여 보존
+        let finalKeywords = existing.searchKeywords || '';
+        if (c.searchKeywords) {
+          const newKeywords = c.searchKeywords.split(',').filter(Boolean);
+          const currentKeywordsSet = new Set(finalKeywords.split(',').filter(Boolean));
+          newKeywords.forEach(k => currentKeywordsSet.add(k));
+          finalKeywords = currentKeywordsSet.size > 0 ? `,${Array.from(currentKeywordsSet).join(',')},` : '';
+        }
+
+        await db.run(
+          `UPDATE campaigns SET 
+            title = ?, description = ?, platform = ?, category = ?, 
+            location = ?, campaignUrl = ?, imageUrl = ?, targetSite = ?, 
+            limitCount = ?, applyCount = ?, startDate = ?, endDate = ?, 
+            updatedAt = ?, searchKeywords = ?
+          WHERE id = ?`,
+          [
+            c.title, c.description, c.platform, c.category,
+            c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
+            c.limitCount, c.applyCount, c.startDate || null, c.endDate,
+            new Date().toISOString(), finalKeywords, c.id
+          ]
+        );
+        updated++;
+      } else {
+        await db.run(
+          `INSERT INTO campaigns (
+            id, title, description, platform, category, location, 
+            campaignUrl, imageUrl, targetSite, limitCount, applyCount, 
+            startDate, endDate, createdAt, updatedAt, searchKeywords
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            c.id, c.title, c.description, c.platform, c.category,
+            c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
+            c.limitCount, c.applyCount, c.startDate || null, c.endDate,
+            c.createdAt, c.updatedAt, c.searchKeywords || null
+          ]
+        );
+        inserted++;
+      }
+    }
+    await db.run('COMMIT');
+  } catch (error) {
+    await db.run('ROLLBACK');
+    console.error('Failed to upsert campaigns transaction:', error);
+    throw error;
+  }
+
+  return { inserted, updated };
+}
+
+// 크롤링 로그 기록 저장
+export async function logCrawling(targetSite: string, status: 'SUCCESS' | 'FAILED', collectedCount: number, errorMessage?: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.run(
+      `INSERT INTO crawling_logs (targetSite, status, collectedCount, errorMessage, executedAt) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [targetSite, status, collectedCount, errorMessage || null, new Date().toISOString()]
+    );
+  } catch (error) {
+    console.error('Failed to log crawling history:', error);
+  }
+}
+
+// 🔑 회원 정보 Upsert
+export async function upsertUser(user: Omit<User, 'createdAt' | 'updatedAt'>): Promise<User> {
+  const db = await getDB();
+  const now = new Date().toISOString();
+  const existing = await db.get('SELECT id, createdAt FROM users WHERE id = ?', [user.id]);
+
+  if (existing) {
+    await db.run(
+      `UPDATE users SET name = ?, email = ?, avatar = ?, provider = ?, updatedAt = ? WHERE id = ?`,
+      [user.name, user.email, user.avatar, user.provider, now, user.id]
+    );
+    return {
+      ...user,
+      createdAt: existing.createdAt,
+      updatedAt: now
+    };
+  } else {
+    await db.run(
+      `INSERT INTO users (id, name, email, avatar, provider, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [user.id, user.name, user.email, user.avatar, user.provider, now, now]
+    );
+    return {
+      ...user,
+      createdAt: now,
+      updatedAt: now
+    };
+  }
+}
+
+// 🔑 회원 북마크 목록 조회
+export async function getUserBookmarks(userId: string): Promise<string[]> {
+  const db = await getDB();
+  const rows = await db.all<{ campaignId: string }[]>(
+    'SELECT campaignId FROM user_bookmarks WHERE userId = ?',
+    [userId]
+  );
+  return rows.map(r => r.campaignId);
+}
+
+// 🔑 회원 북마크 토글 (추가/삭제)
+export async function toggleUserBookmark(userId: string, campaignId: string): Promise<{ active: boolean }> {
+  const db = await getDB();
+  const existing = await db.get(
+    'SELECT 1 FROM user_bookmarks WHERE userId = ? AND campaignId = ?',
+    [userId, campaignId]
+  );
+
+  if (existing) {
+    await db.run(
+      'DELETE FROM user_bookmarks WHERE userId = ? AND campaignId = ?',
+      [userId, campaignId]
+    );
+    return { active: false };
+  } else {
+    await db.run(
+      'INSERT INTO user_bookmarks (userId, campaignId) VALUES (?, ?)',
+      [userId, campaignId]
+    );
+    return { active: true };
+  }
+}
+
+// 🔑 검색 로그 기록 저장
+export async function logSearchQuery(keyword: string): Promise<void> {
+  const trimmed = keyword.trim();
+  if (!trimmed) return;
+  try {
+    const db = await getDB();
+    await db.run(
+      'INSERT INTO search_logs (keyword, searchedAt) VALUES (?, ?)',
+      [trimmed, new Date().toISOString()]
+    );
+  } catch (error) {
+    console.error('Failed to log search query:', error);
+  }
+}
+
+// 🔑 실시간 인기 검색어 랭킹 조회 (최근 24시간 내 가장 많이 검색된 상위 10개 키워드)
+export async function getTrendingKeywords(): Promise<{ word: string; count: number }[]> {
+  try {
+    const db = await getDB();
+    // 최근 24시간 내 통계 (SQLite의 datetime 비교)
+    const rows = await db.all<{ keyword: string; cnt: number }[]>(
+      `SELECT keyword, COUNT(*) as cnt 
+       FROM search_logs 
+       WHERE searchedAt >= datetime('now', '-1 day')
+       GROUP BY keyword 
+       ORDER BY cnt DESC 
+       LIMIT 10`
+    );
+    return rows.map(r => ({
+      word: r.keyword,
+      count: r.cnt
+    }));
+  } catch (error) {
+    console.error('Failed to get trending keywords:', error);
+    return [];
+  }
+}

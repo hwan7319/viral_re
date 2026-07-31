@@ -1,0 +1,1702 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Campaign } from '@/lib/db';
+
+// SVG 아이콘 컴포넌트 모음 (외부 패키지 없이 완벽히 구동되도록 인라인 구현)
+const Icons = {
+  Search: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1.25rem', height: '1.25rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
+    </svg>
+  ),
+  Refresh: ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className} style={{ width: '1.25rem', height: '1.25rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+    </svg>
+  ),
+  Heart: ({ filled, className }: { filled?: boolean; className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className} style={{ width: '1.25rem', height: '1.25rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+    </svg>
+  ),
+  MapPin: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1rem', height: '1rem', display: 'inline-block', verticalAlign: 'text-bottom' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+    </svg>
+  ),
+  ExternalLink: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1rem', height: '1rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+    </svg>
+  ),
+  Sun: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1.25rem', height: '1.25rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m0 13.5V21M5.25 12h2.25m9 0h2.25m-11.25 6.75 1.5-1.5m9.75-9.75 1.5-1.5m-12.75 0 1.5 1.5m9.75 9.75 1.5 1.5M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z" />
+    </svg>
+  ),
+  Moon: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1.25rem', height: '1.25rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+    </svg>
+  ),
+  Close: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1.5rem', height: '1.5rem' }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  ),
+};
+
+export default function Home() {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [crawling, setCrawling] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  
+  // 검색 & 필터 상태
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // 사용자가 타이핑 중인 입력창 상태
+  const [trendingKeywords, setTrendingKeywords] = useState<{ rank: number; word: string }[]>([]); // 🔑 실시간 인기 검색어 상태
+  const [activePlatform, setActivePlatform] = useState('all');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeLocation, setActiveLocation] = useState('all');
+  const [activeSite, setActiveSite] = useState('all');
+  const [sortBy, setSortBy] = useState('latest');
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  
+  // 즐겨찾기 상태 (localStorage 연동)
+  const [favorites, setFavorites] = useState<string[]>([]);
+  
+  // 상세 모달 상태
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  
+  // 다크모드 상태
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // 소셜 로그인 및 사용자 세션 상태
+  const [user, setUser] = useState<{ name: string; email: string; avatar: string; provider: string } | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+  // 프론트엔드 성능 최적화: 초기 노출 카드 제한 및 더보기 페이징
+  const [visibleCount, setVisibleCount] = useState(24);
+
+  // 검색 히스토리 상태
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
+  // 컴포넌트 마운트 시 초기 설정
+  useEffect(() => {
+    // 테마 설정 가져오기
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const initialTheme = savedTheme || 'light';
+    setTheme(initialTheme);
+    document.documentElement.setAttribute('data-theme', initialTheme);
+
+    // 최근 검색어 가져오기
+    const savedHistory = localStorage.getItem('searchHistory');
+    if (savedHistory) {
+      try {
+        setSearchHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 즐겨찾기 가져오기
+    const savedFavs = localStorage.getItem('favorites');
+    if (savedFavs) {
+      try {
+        setFavorites(JSON.parse(savedFavs));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    fetchTrendingKeywords();
+    fetchCampaigns();
+
+    // 🔑 소셜 로그인 가상 세션 메신저 리스너 등록 + 백엔드 DB 세션 연동
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data && event.data.type === 'MOCK_LOGIN_SUCCESS') {
+        const loggedUser = event.data.user;
+        
+        try {
+          // 1. 소셜 ID 임의 고유 생성 (이메일 기반)
+          const mockId = `${loggedUser.provider.toLowerCase()}_${loggedUser.email.replace(/[^a-zA-Z0-9]/g, '')}`;
+          
+          // 2. 백엔드 DB에 세션 등록/가입 호출
+          const res = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: mockId,
+              name: loggedUser.name,
+              email: loggedUser.email,
+              avatar: loggedUser.avatar,
+              provider: loggedUser.provider
+            })
+          });
+          
+          const result = await res.json();
+          if (result.success) {
+            setUser(result.user);
+            // 3. 해당 유저가 DB에 쌓아둔 북마크(찜) 동기화 복구
+            setFavorites(result.bookmarks);
+            localStorage.setItem('favorites', JSON.stringify(result.bookmarks));
+            setIsLoginModalOpen(false);
+            showToast(`${result.user.name}님, 성공적으로 로그인되었습니다 (회원 DB 연동 완료)`, 'success');
+          } else {
+            showToast('회원 세션 등록에 실패했습니다.', 'error');
+          }
+        } catch (error) {
+          console.error(error);
+          showToast('회원 연동 중 오류가 발생했습니다.', 'error');
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  // 🔑 소셜 로그인 팝업 창 트리거 및 가상 흐름 연출
+  const handleSocialLogin = (provider: string) => {
+    const mockProfiles: Record<string, { name: string; email: string; avatar: string }> = {
+      google: {
+        name: '홍길동 (Google)',
+        email: 'gildong.hong@gmail.com',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'
+      },
+      naver: {
+        name: '네이버 사용자',
+        email: 'naver_user@naver.com',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80'
+      },
+      kakao: {
+        name: '라이언 (Kakao)',
+        email: 'ryan.kakao@kakao.com',
+        avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&h=150&q=80'
+      },
+      instagram: {
+        name: '인플루언서 (Insta)',
+        email: 'influencer@instagram.com',
+        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150&q=80'
+      }
+    };
+
+    // 🔑 4대 소셜 로그인 실 API 공식 OAuth2 연동 대응 (각 소셜의 인가 코드 요청 주소로 진짜 팝업창 열기)
+    if (provider === 'kakao' || provider === 'naver' || provider === 'google' || provider === 'instagram') {
+      let authUrl = '';
+      let windowName = '';
+      
+      if (provider === 'kakao') {
+        const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'your_kakao_client_id';
+        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/kakao');
+        authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+        windowName = 'KakaoSocialLogin';
+      } else if (provider === 'naver') {
+        const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID || 'your_naver_client_id';
+        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/naver');
+        authUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=naver_state`;
+        windowName = 'NaverSocialLogin';
+      } else if (provider === 'google') {
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'your_google_client_id';
+        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/google');
+        authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20profile%20email`;
+        windowName = 'GoogleSocialLogin';
+      } else if (provider === 'instagram') {
+        const clientId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || 'your_instagram_client_id';
+        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/instagram');
+        authUrl = `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user_profile,user_media&response_type=code`;
+        windowName = 'InstagramSocialLogin';
+      }
+
+      const popup = window.open(
+        authUrl,
+        windowName,
+        'width=460,height=580,top=150,left=150,resizable=no,scrollbars=no,status=no'
+      );
+      if (!popup) {
+        showToast('팝업 차단이 감지되었습니다. 팝업 허용 후 다시 시도해주세요.', 'error');
+      }
+      return;
+    }
+
+    const selected = mockProfiles[provider];
+    const popup = window.open(
+      '',
+      'MockSocialLogin',
+      'width=460,height=580,top=150,left=150,resizable=no,scrollbars=no,status=no'
+    );
+
+    if (!popup) {
+      showToast('팝업 차단이 감지되었습니다. 팝업 허용 후 다시 시도해주세요.', 'error');
+      return;
+    }
+
+    const providerNames: Record<string, string> = {
+      google: 'Google',
+      naver: 'Naver',
+      kakao: 'KakaoTalk',
+      instagram: 'Instagram'
+    };
+    const providerColors: Record<string, string> = {
+      google: '#ffffff',
+      naver: '#03c75a',
+      kakao: '#fee500',
+      instagram: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #bc1888)'
+    };
+    const textColors: Record<string, string> = {
+      google: '#3c4043',
+      naver: '#ffffff',
+      kakao: '#191919',
+      instagram: '#ffffff'
+    };
+
+    const popupHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${providerNames[provider]} 소셜 로그인</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+          }
+          .container {
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 360px;
+            width: 80%;
+          }
+          .logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: ${providerColors[provider]};
+            color: ${textColors[provider]};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 auto 24px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+          }
+          .spinner {
+            width: 36px;
+            height: 36px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          h2 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+          }
+          p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin: 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="logo">${providerNames[provider][0]}</div>
+          
+          <!-- 1. 로딩 스테이지 -->
+          <div id="loadingStage">
+            <h2>${providerNames[provider]} 연동 중</h2>
+            <p>보안 세션을 생성하고 있습니다...</p>
+            <div class="spinner"></div>
+          </div>
+
+          <!-- 2. 실제 데이터 입력 폼 스테이지 (기본 숨김) -->
+          <div id="formStage" style="display: none; animation: fadeIn 0.3s ease-out;">
+            <h2>${providerNames[provider]} 연동 성공</h2>
+            <p style="margin-bottom: 20px; font-size: 0.8rem; color: #94a3b8;">사용하실 정보를 직접 기입해 주세요.</p>
+            
+            <div style="text-align: left;">
+              <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 6px; font-weight: 700;">사용자 이름 / 닉네임</label>
+              <input type="text" id="userName" value="${selected.name}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: #1e293b; color: #fff; box-sizing: border-box; margin-bottom: 12px; outline: none; font-size: 0.9rem;" />
+              
+              <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 6px; font-weight: 700;">이메일 주소</label>
+              <input type="email" id="userEmail" value="${selected.email}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: #1e293b; color: #fff; box-sizing: border-box; margin-bottom: 20px; outline: none; font-size: 0.9rem;" />
+            </div>
+
+            <button id="btnSubmit" style="width: 100%; padding: 12px; border-radius: 8px; background: #6366f1; color: #fff; font-weight: 700; border: none; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
+              간편 로그인 완료하기
+            </button>
+          </div>
+
+        </div>
+        <script>
+          // 1.2초 후 폼 스테이지로 스위칭
+          setTimeout(() => {
+            document.getElementById('loadingStage').style.display = 'none';
+            document.getElementById('formStage').style.display = 'block';
+          }, 1200);
+
+          // 완료 제출 이벤트 바인딩
+          const btn = document.getElementById('btnSubmit');
+          btn.addEventListener('click', () => {
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            
+            if (!name || !email) {
+              alert('이름과 이메일을 모두 입력해 주세요.');
+              return;
+            }
+
+            window.opener.postMessage({
+              type: 'MOCK_LOGIN_SUCCESS',
+              user: {
+                name: name,
+                email: email,
+                avatar: '${selected.avatar}',
+                provider: '${providerNames[provider]}'
+              }
+            }, '*');
+            window.close();
+          });
+        </script>
+      </body>
+      </html>
+    `;
+
+    popup.document.write(popupHtml);
+    popup.document.close();
+  };
+
+  // 테마 변경 토글
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+  };
+
+  // 🔑 실시간 인기 검색어 패칭
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false); // 마운팅 체크용 빈 상태
+
+  const fetchTrendingKeywords = async () => {
+    try {
+      const res = await fetch('/api/trending');
+      const result = await res.json();
+      if (result.success) {
+        setTrendingKeywords(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch trending keywords:', error);
+    }
+  };
+
+  // 캠페인 데이터 패칭
+  const fetchCampaigns = async () => {
+    setLoading(true);
+    fetchTrendingKeywords(); // 검색 조회 시 실시간 인기 검색어 통계도 자동 갱신
+    try {
+      const params = new URLSearchParams({
+        search: searchTerm,
+        platform: activePlatform,
+        category: activeCategory,
+        location: activeLocation,
+        targetSite: activeSite,
+        sortBy: sortBy,
+      });
+
+      const res = await fetch(`/api/campaigns?${params.toString()}`);
+      const result = await res.json();
+      
+      if (result.success) {
+        setCampaigns(result.data);
+        setVisibleCount(24); // 필터 변경 시 1페이지부터 노출되도록 초기화
+
+        // 🔑 백그라운드 수집이 유발된 경우 2.2초 뒤 무소음 화면 갱신 실행 (Non-blocking UX)
+        if (result.isCrawlingTriggered) {
+          showToast('신규 체험단을 실시간 매칭하는 중입니다... 잠시만 기다려주세요.', 'info');
+          setTimeout(async () => {
+            try {
+              const resSilent = await fetch(`/api/campaigns?${params.toString()}`);
+              const resultSilent = await resSilent.json();
+              if (resultSilent.success) {
+                setCampaigns(resultSilent.data);
+                showToast('실시간 신규 체험단 매칭이 완료되었습니다!', 'success');
+              }
+            } catch (err) {
+              console.error('Silent refetch failed:', err);
+            }
+          }, 2200);
+        }
+      } else {
+        showToast('데이터를 가져오는데 실패했습니다.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('네트워크 오류가 발생했습니다.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 검색 및 필터 파라미터가 변경될 때마다 자동 페칭
+  useEffect(() => {
+    fetchCampaigns();
+  }, [searchTerm, activePlatform, activeCategory, activeLocation, activeSite, sortBy]);
+
+  // 즐겨찾기 토글 함수
+  const toggleFavorite = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // 카드 클릭 상세 보기 방지
+    let updated: string[];
+    const isAdding = !favorites.includes(id);
+
+    if (favorites.includes(id)) {
+      updated = favorites.filter(favId => favId !== id);
+      showToast('관심 체험단에서 해제되었습니다.', 'info');
+    } else {
+      updated = [...favorites, id];
+      showToast('관심 체험단에 등록되었습니다.', 'success');
+    }
+
+    setFavorites(updated);
+    localStorage.setItem('favorites', JSON.stringify(updated));
+
+    // 🔑 로그인 회원의 경우 백엔드 SQLite DB user_bookmarks 에도 실시간 동기화
+    if (user) {
+      try {
+        const mockId = `${user.provider.toLowerCase()}_${user.email.replace(/[^a-zA-Z0-9]/g, '')}`;
+        const res = await fetch('/api/user/bookmark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: mockId,
+            campaignId: id
+          })
+        });
+        const result = await res.json();
+        if (result.success) {
+          // DB 최신 북마크 세션으로 2차 정밀 동기화
+          setFavorites(result.bookmarks);
+          localStorage.setItem('favorites', JSON.stringify(result.bookmarks));
+        }
+      } catch (error) {
+        console.error('Failed to sync bookmark to DB:', error);
+      }
+    }
+  };
+
+  // 🕒 검색어 히스토리에 추가 (최대 5개 FIFO 제한)
+  const addSearchHistory = (keyword: string) => {
+    const trimmed = keyword.trim();
+    if (!trimmed) return;
+    
+    // 중복 제거 및 리스트의 맨 앞에 배치 (최대 5개)
+    const nextHistory = [trimmed, ...searchHistory.filter(kw => kw !== trimmed)].slice(0, 5);
+    setSearchHistory(nextHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(nextHistory));
+  };
+
+  // 🕒 검색어 히스토리에서 단일 삭제
+  const removeHistoryItem = (keyword: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // 칩 클릭 검색 방지
+    const nextHistory = searchHistory.filter(kw => kw !== keyword);
+    setSearchHistory(nextHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(nextHistory));
+  };
+
+  // 🕒 검색어 히스토리 전체 삭제
+  const clearAllHistory = () => {
+    setSearchHistory([]);
+    localStorage.removeItem('searchHistory');
+    showToast('최근 검색어가 모두 삭제되었습니다.', 'info');
+  };
+
+  // 실시간 크롤링 요청 트리거
+  const triggerCrawling = async () => {
+    if (crawling) return;
+    setCrawling(true);
+    showToast('각 플랫폼의 신규 데이터를 크롤링 중입니다...', 'info');
+    
+    try {
+      const res = await fetch('/api/crawl', { method: 'POST' });
+      const result = await res.json();
+      
+      if (result.success) {
+        showToast(`수집 완료! 신규: ${result.inserted}개, 갱신: ${result.updated}개`, 'success');
+        fetchCampaigns();
+      } else {
+        showToast('크롤링 중 서버 오류가 발생했습니다.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('크롤링 서버 연결 실패', 'error');
+    } finally {
+      setCrawling(false);
+    }
+  };
+
+  // 토스트 팝업 제어
+  const showToast = (message: string, type: 'success' | 'info' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  };
+
+  // 남은 마감일 계산 함수 (D-Day)
+  const calculateDday = (endDateStr: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDateStr);
+    end.setHours(0, 0, 0, 0);
+    
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return '오늘마감';
+    if (diffDays < 0) return '마감됨';
+    return `D-${diffDays}`;
+  };
+
+  // 필터링 적용된 최종 리스트 (즐겨찾기 전용 처리)
+  const displayedCampaigns = onlyFavorites 
+    ? campaigns.filter(c => favorites.includes(c.id)) 
+    : campaigns;
+
+  // 지역 목록 목록 데이터 (심플 구현)
+  const LOCATIONS = ['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '강원', '제주'];
+  // 출처 사이트 목록 (실제 온디맨드 크롤링 수집 및 테스트가 완료된 핵심 4대 매체)
+  const TARGET_SITES = ['레뷰 (REVU)', '디너의여왕', '리뷰노트', '포블로그'];
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      
+      {/* 1. Header (글래스모피즘 헤더) */}
+      <header className="glass-panel" style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img 
+            src="/logo.png" 
+            alt="viral_re logo" 
+            style={{ 
+              height: '38px', 
+              width: 'auto', 
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              cursor: 'pointer'
+            }}
+            onClick={() => window.location.reload()}
+          />
+          <span className="integrator-badge" style={{
+            fontSize: '0.7rem',
+            padding: '2px 6px',
+            backgroundColor: 'var(--accent-light)',
+            color: 'var(--accent)',
+            borderRadius: 'var(--radius-sm)',
+            fontWeight: 700,
+            whiteSpace: 'nowrap'
+          }}>
+            INTEGRATOR v1.0
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+          <button 
+            onClick={triggerCrawling} 
+            disabled={crawling}
+            className="premium-button-secondary"
+            style={{ 
+              padding: '8px 12px', 
+              fontSize: '0.8rem', 
+              borderRadius: 'var(--radius-md)', 
+              borderColor: crawling ? 'var(--text-tertiary)' : 'var(--border-color)',
+              opacity: crawling ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Icons.Refresh className={crawling ? 'animate-spin' : ''} />
+            <span className="header-btn-text">{crawling ? '수집 중...' : '실시간 수집'}</span>
+          </button>
+
+          {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
+          {user ? (
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                className="user-avatar-btn"
+                title={`${user.name} network`}
+              >
+                <img 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              </button>
+              
+              {isUserDropdownOpen && (
+                <div className="user-dropdown-menu">
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)', marginBottom: '4px' }}>
+                    <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>{user.name}님</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', wordBreak: 'break-all' }}>{user.email}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setUser(null);
+                      setFavorites([]);
+                      localStorage.removeItem('favorites');
+                      setIsUserDropdownOpen(false);
+                      showToast('성공적으로 로그아웃되었습니다.', 'info');
+                    }}
+                    className="user-dropdown-item danger"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsLoginModalOpen(true)}
+              className="premium-button-primary header-login-btn"
+              style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-md)', whiteSpace: 'nowrap' }}
+            >
+              <span className="login-btn-text-desktop">로그인 / 회원가입</span>
+              <span className="login-btn-text-mobile" style={{ display: 'none' }}>로그인</span>
+            </button>
+          )}
+
+          <button 
+            onClick={toggleTheme}
+            style={{
+              width: '40px', height: '40px',
+              borderRadius: '50%',
+              border: '1px solid var(--border-color)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              backgroundColor: 'var(--bg-secondary)',
+              transition: 'var(--transition-smooth)'
+            }}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? <Icons.Moon /> : <Icons.Sun />}
+          </button>
+        </div>
+      </header>
+
+      {/* 2. Hero Section */}
+      <section style={{
+        padding: '60px 24px 40px 24px',
+        textAlign: 'center',
+        background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
+        borderBottom: '1px solid var(--border-color)'
+      }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2 }}>
+            대한민국 모든 블로그 & SNS 체험단을 <br/>
+            <span className="text-gradient">한곳에서 실시간 통합 비교</span>
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '1.1rem' }}>
+            여러 사이트를 일일이 방문하지 마세요. 레뷰, 디너의여왕, 강남맛집 등 주요 플랫폼의 모집 정보를 스마트하게 검색하고 즉시 신청하세요.
+          </p>
+
+          {/* 통합 검색창 */}
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSearchTerm(searchInput);
+              addSearchHistory(searchInput);
+            }}
+            className="glass-panel" 
+            style={{
+              display: 'flex', alignItems: 'center',
+              padding: '6px 8px 6px 16px',
+              borderRadius: 'var(--radius-full)',
+              boxShadow: 'var(--shadow-lg)',
+              border: '1px solid var(--border-focus)',
+              maxWidth: '650px', margin: '0 auto',
+              transition: 'var(--transition-smooth)',
+              flexWrap: 'nowrap',
+              width: '100%'
+            }}
+          >
+            <Icons.Search />
+            <input 
+              type="text" 
+              placeholder="식당명, 제품명, 지역명 등을 검색해보세요..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{
+                flex: 1, border: 'none', background: 'transparent',
+                padding: '8px 12px', fontSize: '0.95rem',
+                color: 'var(--text-primary)',
+                minWidth: 0,
+                outline: 'none'
+              }}
+            />
+            {searchInput && (
+              <button 
+                type="button"
+                onClick={() => {
+                  setSearchInput('');
+                  setSearchTerm('');
+                }}
+                style={{ color: 'var(--text-tertiary)', marginRight: '8px', flexShrink: 0 }}
+                title="검색어 초기화"
+              >
+                <Icons.Close />
+              </button>
+            )}
+            <button
+              type="submit"
+              className="premium-button-primary"
+              style={{
+                padding: '8px 18px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                flexShrink: 0,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              검색
+            </button>
+          </form>
+
+          {/* 🔑 최근 검색어 & 실시간 인기 검색어 융합 영역 (가로 1열 다이어트 컴팩트 버전) */}
+          <div style={{
+            maxWidth: '650px',
+            margin: '16px auto 0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            textAlign: 'left'
+          }}>
+            {/* 최근 검색어 */}
+            {searchHistory.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px' }}>🕒 최근 검색</span>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
+                  {searchHistory.map((hist, idx) => (
+                    <span 
+                      key={idx}
+                      onClick={() => {
+                        setSearchInput(hist);
+                        setSearchTerm(hist);
+                        addSearchHistory(hist);
+                      }}
+                      className="glass-panel"
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: '0.72rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer',
+                        backgroundColor: 'rgba(255,255,255,0.03)',
+                        border: '1px solid var(--border-color)',
+                        transition: 'var(--transition-smooth)'
+                      }}
+                    >
+                      <span style={{ color: 'var(--text-secondary)' }}>{hist}</span>
+                      <button 
+                        type="button"
+                        onClick={(e) => removeHistoryItem(hist, e)}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'var(--text-tertiary)',
+                          fontSize: '0.65rem',
+                          cursor: 'pointer',
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                        title="삭제"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                  <button 
+                    type="button"
+                    onClick={clearAllHistory}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--accent)',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      padding: '2px 6px'
+                    }}
+                  >
+                    비우기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 실시간 인기 검색어 (가로 스크롤 칩 구조) */}
+            <div style={{
+              borderTop: searchHistory.length > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+              paddingTop: searchHistory.length > 0 ? '10px' : '0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              width: '100%'
+            }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px' }}>🔥 실시간 인기</span>
+              
+              <div 
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  overflowX: 'auto',
+                  flex: 1,
+                  padding: '2px 0',
+                  scrollbarWidth: 'none'
+                }}
+                className="no-scrollbar"
+              >
+                {trendingKeywords.map((item) => {
+                  let badgeBg = 'var(--bg-tertiary)';
+                  let badgeColor = 'var(--text-secondary)';
+                  if (item.rank === 1) {
+                    badgeBg = 'linear-gradient(135deg, #ffd700, #ffa500)';
+                    badgeColor = '#000000';
+                  } else if (item.rank === 2) {
+                    badgeBg = 'linear-gradient(135deg, #c0c0c0, #a9a9a9)';
+                    badgeColor = '#000000';
+                  } else if (item.rank === 3) {
+                    badgeBg = 'linear-gradient(135deg, #cd7f32, #b87333)';
+                    badgeColor = '#ffffff';
+                  }
+
+                  return (
+                    <div 
+                      key={item.word}
+                      onClick={() => {
+                        setSearchInput(item.word);
+                        setSearchTerm(item.word);
+                        addSearchHistory(item.word);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-full)',
+                        backgroundColor: 'rgba(255,255,255,0.02)',
+                        border: '1px solid var(--border-color)',
+                        transition: 'var(--transition-smooth)',
+                        flexShrink: 0
+                      }}
+                      className="card-image-hover"
+                    >
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '15px',
+                        height: '15px',
+                        borderRadius: '3px',
+                        fontSize: '0.65rem',
+                        fontWeight: 900,
+                        background: badgeBg,
+                        color: badgeColor
+                      }}>
+                        {item.rank}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 700 : 500 }}>
+                        {item.word}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Main Dashboard Body */}
+      <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
+        
+        {/* 필터 세션 */}
+        <div className="glass-panel animate-fade-in" style={{
+          padding: '24px', borderRadius: 'var(--radius-lg)', marginBottom: '32px',
+          display: 'flex', flexDirection: 'column', gap: '20px'
+        }}>
+          
+          {/* 카테고리 필터 (칩 스타일) */}
+          <div>
+            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>카테고리</span>
+            <div className="filter-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {[
+                { key: 'all', label: '전체보기' },
+                { key: 'food', label: '맛집/카페' },
+                { key: 'beauty', label: '뷰티/코스메틱' },
+                { key: 'fashion', label: '패션/뷰티템' },
+                { key: 'travel', label: '숙박/여행' },
+                { key: 'life', label: '도서/생활용품' },
+                { key: 'etc', label: '기타 서비스' }
+              ].map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setActiveCategory(cat.key)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    backgroundColor: activeCategory === cat.key ? 'var(--accent)' : 'var(--bg-secondary)',
+                    color: activeCategory === cat.key ? '#ffffff' : 'var(--text-primary)',
+                    border: '1px solid var(--border-color)',
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 플랫폼 필터 */}
+          <div>
+            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>미디어 플랫폼</span>
+            <div className="filter-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                { key: 'all', label: '전체' },
+                { key: 'blog', label: '네이버 블로그' },
+                { key: 'instagram', label: '인스타그램' },
+                { key: 'youtube', label: '유튜브' },
+                { key: 'etc', label: '기타' }
+              ].map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => setActivePlatform(p.key)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    backgroundColor: activePlatform === p.key ? 'var(--accent-light)' : 'transparent',
+                    color: activePlatform === p.key ? 'var(--accent)' : 'var(--text-primary)',
+                    border: `1px solid ${activePlatform === p.key ? 'var(--accent)' : 'var(--border-color)'}`,
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 하위 복합 필터 (지역, 출처 사이트, 찜 전용) */}
+          <div className="filter-dropdown-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            borderTop: '1px solid var(--border-color)',
+            paddingTop: '20px'
+          }}>
+            
+            {/* 지역 필터 드롭다운 */}
+            <div>
+              <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>방문형 지역 필터</label>
+              <select
+                value={activeLocation}
+                onChange={(e) => setActiveLocation(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 16px', borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'
+                }}
+              >
+                <option value="all">전국 (배송형 포함)</option>
+                {LOCATIONS.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 출처 사이트 필터 드롭다운 */}
+            <div>
+              <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>수집처 별 보기</label>
+              <select
+                value={activeSite}
+                onChange={(e) => setActiveSite(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 16px', borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'
+                }}
+              >
+                <option value="all">전체 수집 사이트</option>
+                {TARGET_SITES.map(site => (
+                  <option key={site} value={site}>{site}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 찜 스위치 및 정렬 선택 */}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                onClick={() => setOnlyFavorites(!onlyFavorites)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  padding: '10px 16px', borderRadius: 'var(--radius-md)',
+                  backgroundColor: onlyFavorites ? 'rgba(239, 68, 68, 0.1)' : 'var(--bg-secondary)',
+                  color: onlyFavorites ? '#ef4444' : 'var(--text-primary)',
+                  border: `1px solid ${onlyFavorites ? '#ef4444' : 'var(--border-color)'}`,
+                  fontWeight: 600, transition: 'var(--transition-smooth)'
+                }}
+              >
+                <Icons.Heart filled={onlyFavorites} className={onlyFavorites ? 'text-red-500' : ''} />
+                찜한 체험단만 보기 ({favorites.length})
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* 4. Results List Section */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+              검색 결과 <span style={{ color: 'var(--accent)' }}>{displayedCampaigns.length}</span>건
+            </span>
+          </div>
+
+          {/* 정렬 셀렉터 */}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {[
+              { key: 'latest', label: '최신등록순' },
+              { key: 'endDate', label: '마감임박순' },
+              { key: 'popular', label: '경쟁률순' }
+            ].map(item => (
+              <button
+                key={item.key}
+                onClick={() => setSortBy(item.key)}
+                style={{
+                  fontSize: '0.85rem', padding: '6px 12px', borderRadius: 'var(--radius-sm)',
+                  fontWeight: sortBy === item.key ? 700 : 500,
+                  color: sortBy === item.key ? 'var(--accent)' : 'var(--text-secondary)',
+                  backgroundColor: sortBy === item.key ? 'var(--accent-light)' : 'transparent',
+                  transition: 'var(--transition-smooth)'
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 로딩 스켈레톤 상태 */}
+        {loading ? (
+          <div className="campaign-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '24px'
+          }}>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="glass-panel" style={{
+                borderRadius: 'var(--radius-md)', height: '360px', overflow: 'hidden',
+                animation: 'pulse 1.5s infinite ease-in-out'
+              }}>
+                <div style={{ height: '180px', backgroundColor: 'var(--border-color)' }} />
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ height: '18px', backgroundColor: 'var(--border-color)', width: '40%', borderRadius: '4px' }} />
+                  <div style={{ height: '24px', backgroundColor: 'var(--border-color)', width: '90%', borderRadius: '4px' }} />
+                  <div style={{ height: '16px', backgroundColor: 'var(--border-color)', width: '60%', borderRadius: '4px' }} />
+                  <div style={{ height: '32px', backgroundColor: 'var(--border-color)', marginTop: '20px', borderRadius: 'var(--radius-sm)' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : displayedCampaigns.length === 0 ? (
+          /* 빈 화면 상태 */
+          <div className="glass-panel" style={{
+            padding: '80px 24px', textAlign: 'center', borderRadius: 'var(--radius-lg)'
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '4rem', height: '4rem', margin: '0 auto 16px auto', color: 'var(--text-tertiary)' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+            </svg>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>조건에 맞는 체험단이 없습니다</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+              필터를 조정하거나 다른 검색어를 입력해 보세요.
+            </p>
+            <button 
+              onClick={() => {
+                setSearchTerm('');
+                setActiveCategory('all');
+                setActivePlatform('all');
+                setActiveLocation('all');
+                setActiveSite('all');
+                setOnlyFavorites(false);
+              }}
+              className="premium-button-primary"
+              style={{ margin: '0 auto' }}
+            >
+              필터 초기화하기
+            </button>
+          </div>
+        ) : (
+          /* 실제 리스트 카드 렌더링 */
+          <>
+            <div className="campaign-grid">
+              {displayedCampaigns.slice(0, visibleCount).map(c => {
+              const dday = calculateDday(c.endDate);
+              const isFav = favorites.includes(c.id);
+              const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
+              const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
+
+              // D-Day 상태별 클래스 컬러 매칭
+              let ddayColor = 'var(--success)';
+              if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
+              else if (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5) ddayColor = 'var(--warning)';
+              else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
+
+              return (
+                <article 
+                  key={c.id} 
+                  className="premium-card animate-fade-in"
+                  onClick={() => setSelectedCampaign(c)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  
+                  {/* 카드 썸네일 영역 */}
+                  <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
+                    <img 
+                      src={c.imageUrl} 
+                      alt={c.title}
+                      loading="lazy"
+                      style={{
+                        width: '100%', height: '100%', objectFit: 'cover',
+                        transition: 'transform 0.4s ease'
+                      }}
+                      className="card-image-hover"
+                    />
+                    
+                    {/* 상단 뱃지 오버레이 */}
+                    <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                      <span className={`badge badge-${c.platform}`}>
+                        {c.platform === 'blog' ? 'Blog' : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
+                      </span>
+                    </div>
+
+                    <div style={{
+                      position: 'absolute', top: '12px', right: '12px',
+                      backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
+                      fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
+                    }}>
+                      {c.targetSite}
+                    </div>
+
+                    {/* D-day 오버레이 */}
+                    <div style={{
+                      position: 'absolute', bottom: '12px', left: '12px',
+                      backgroundColor: ddayColor, color: '#ffffff',
+                      fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
+                    }}>
+                      {dday}
+                    </div>
+
+                    {/* 하트 아이콘 오버레이 */}
+                    <button 
+                      onClick={(e) => toggleFavorite(c.id, e)}
+                      style={{
+                        position: 'absolute', bottom: '12px', right: '12px',
+                        width: '32px', height: '32px', borderRadius: '50%',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        color: isFav ? '#ef4444' : '#ffffff',
+                        display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        transition: 'var(--transition-smooth)',
+                        border: 'none'
+                      }}
+                    >
+                      <Icons.Heart filled={isFav} />
+                    </button>
+                  </div>
+
+                  {/* 카드 내용 영역 */}
+                  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                    <div>
+                      {c.location && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
+                          <Icons.MapPin /> {c.location}
+                        </div>
+                      )}
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {c.title}
+                      </h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {c.description}
+                      </p>
+                    </div>
+
+                    {/* 하단 지원 현황 및 정원 정보 */}
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
+                        <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
+                          경쟁률 {competitionRate}:1
+                        </span>
+                      </div>
+                      
+                      {/* 경쟁률 게이지 바 */}
+                      <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${ratePercent}%`, height: '100%',
+                          backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
+                          borderRadius: 'var(--radius-full)',
+                          transition: 'width 0.4s ease'
+                        }} />
+                      </div>
+                    </div>
+
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {/* 🔑 더보기 (Load More) 버튼 영역 */}
+          {displayedCampaigns.length > visibleCount && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '36px', marginBottom: '12px' }}>
+              <button 
+                onClick={() => setVisibleCount(visibleCount + 24)}
+                className="premium-button-secondary"
+                style={{
+                  padding: '12px 32px',
+                  borderRadius: 'var(--radius-md)',
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: 'var(--shadow-md)',
+                  borderColor: 'var(--accent)'
+                }}
+              >
+                <span>더 많은 체험단 보기</span>
+                <span style={{ 
+                  fontSize: '0.8rem', 
+                  backgroundColor: 'var(--accent-light)', 
+                  color: 'var(--accent)', 
+                  padding: '2px 8px', 
+                  borderRadius: 'var(--radius-sm)',
+                  fontWeight: 800
+                }}>
+                  +{displayedCampaigns.length - visibleCount}개 남음
+                </span>
+              </button>
+            </div>
+          )}
+          </>
+        )}
+      </main>
+
+      {/* 5. Campaign Detail Modal (캠페인 상세 모달) */}
+      {selectedCampaign && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          padding: '16px'
+        }} onClick={() => setSelectedCampaign(null)}>
+          <div 
+            className="glass-panel animate-fade-in" 
+            style={{
+              maxWidth: '650px', width: '100%', borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden', boxShadow: 'var(--shadow-premium)',
+              backgroundColor: 'var(--bg-secondary)',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            
+            {/* 닫기 버튼 */}
+            <button 
+              onClick={() => setSelectedCampaign(null)}
+              style={{
+                position: 'absolute', top: '16px', right: '16px', zIndex: 10,
+                width: '36px', height: '36px', borderRadius: '50%',
+                backgroundColor: 'rgba(0,0,0,0.5)', color: '#ffffff',
+                display: 'flex', justifyContent: 'center', alignItems: 'center'
+              }}
+            >
+              <Icons.Close />
+            </button>
+
+            {/* 모달 이미지 */}
+            <div style={{ height: '260px', width: '100%', position: 'relative' }}>
+              <img 
+                src={selectedCampaign.imageUrl} 
+                alt={selectedCampaign.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                padding: '24px 20px', color: '#ffffff'
+              }}>
+                <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px' }}>
+                  {selectedCampaign.platform}
+                </span>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                  {selectedCampaign.title}
+                </h3>
+              </div>
+            </div>
+
+            {/* 모달 본문 */}
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* 제공 혜택 */}
+              <div>
+                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>제공 내역</h4>
+                <p style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--accent)' }}>
+                  {selectedCampaign.description}
+                </p>
+              </div>
+
+              {/* 기본 정보 테이블 */}
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
+                padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)'
+              }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 정원</span>
+                  <span style={{ fontWeight: 600 }}>{selectedCampaign.limitCount}명 (현재 {selectedCampaign.applyCount}명 신청)</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>수집 플랫폼</span>
+                  <span style={{ fontWeight: 600 }}>{selectedCampaign.targetSite}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 마감일</span>
+                  <span style={{ fontWeight: 600 }}>{selectedCampaign.endDate}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>체험 방식</span>
+                  <span style={{ fontWeight: 600 }}>
+                    {selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 가이드 라인 안내 */}
+              <div>
+                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>리뷰어 미션 안내</h4>
+                <ul style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <li>제품 수령 후 7일 이내 정해진 포맷에 따라 리뷰 등록</li>
+                  <li>사진 최소 5장 이상, 본문 800자 이상 및 지정 키워드 필수 삽입</li>
+                  <li>스폰서 배너 및 공정위 문구 필수 기재</li>
+                </ul>
+              </div>
+
+              {/* 신청 버튼 */}
+              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                <button 
+                  onClick={(e) => {
+                    toggleFavorite(selectedCampaign.id, e);
+                  }}
+                  className="premium-button-secondary" 
+                  style={{ flex: 1 }}
+                >
+                  <Icons.Heart filled={favorites.includes(selectedCampaign.id)} />
+                  {favorites.includes(selectedCampaign.id) ? '관심 해제' : '관심 등록'}
+                </button>
+
+                <a 
+                  href={selectedCampaign.campaignUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="premium-button-primary"
+                  style={{ flex: 2 }}
+                >
+                  캠페인 신청하러 가기
+                  <Icons.ExternalLink />
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 6. Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '24px', right: '24px', zIndex: 110,
+          padding: '12px 20px', borderRadius: 'var(--radius-md)',
+          color: '#ffffff', fontWeight: 600, fontSize: '0.9rem',
+          boxShadow: 'var(--shadow-lg)',
+          backgroundColor: toast.type === 'success' ? 'var(--success)' : toast.type === 'error' ? 'var(--danger)' : 'var(--accent)',
+          animation: 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'flex', alignItems: 'center', gap: '8px'
+        }}>
+          {toast.type === 'success' && '✓'}
+          {toast.type === 'error' && '✕'}
+          {toast.type === 'info' && 'ℹ'}
+          {toast.message}
+        </div>
+      )}
+
+      {/* 7. Footer */}
+      <footer style={{
+        marginTop: 'auto', padding: '32px 24px',
+        borderTop: '1px solid var(--border-color)',
+        backgroundColor: 'var(--bg-secondary)',
+        textAlign: 'center', color: 'var(--text-tertiary)',
+        fontSize: '0.85rem'
+      }}>
+        <p style={{ marginBottom: '8px' }}>
+          &copy; {new Date().getFullYear()} viral_re. All rights reserved.
+        </p>
+        <p>
+          본 사이트는 각 블로그 체험단 사이트의 공개 데이터를 기술적 프로토타입 목적으로 연동/시연하는 애그리게이터 데모 웹 사이트입니다.
+        </p>
+      </footer>
+
+      {/* 🔑 소셜 로그인 모달 */}
+      {isLoginModalOpen && (
+        <div className="social-modal-overlay" onClick={() => setIsLoginModalOpen(false)}>
+          <div className="social-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="social-modal-close" onClick={() => setIsLoginModalOpen(false)}>
+              ✕
+            </button>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)' }}>
+                소셜 로그인 / 회원가입
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                체험단 목록을 연동하고 나만의 북마크를 관리해 보세요!
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* 카카오톡 */}
+              <button onClick={() => handleSocialLogin('kakao')} className="social-login-btn btn-kakao">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style={{ marginRight: '8px' }}>
+                  <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.553 1.7 4.792 4.248 5.992-.17.618-.613 2.227-.702 2.573-.11.438.163.432.342.31 1.758-1.196 2.45-1.7 2.766-1.927.42.062.853.097 1.346.097 4.97 0 9-3.186 9-7.115C21 6.185 16.97 3 12 3z"/>
+                </svg>
+                카카오로 시작하기
+              </button>
+
+              {/* 네이버 */}
+              <button onClick={() => handleSocialLogin('naver')} className="social-login-btn btn-naver">
+                <span style={{ fontWeight: 900, fontSize: '1.2rem', marginRight: '14px', marginLeft: '4px' }}>N</span>
+                네이버로 시작하기
+              </button>
+
+              {/* 구글 */}
+              <button onClick={() => handleSocialLogin('google')} className="social-login-btn btn-google">
+                <svg viewBox="0 0 24 24" width="20" height="20" style={{ marginRight: '8px' }}>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.23-.66-.35-1.36-.35-2.09z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                Google 계정으로 시작하기
+              </button>
+
+              {/* 인스타그램 */}
+              <button onClick={() => handleSocialLogin('instagram')} className="social-login-btn btn-instagram">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style={{ marginRight: '8px' }}>
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                </svg>
+                Instagram으로 시작하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSS Pulse 애니메이션용 style 정의 */}
+      <style jsx global>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .5; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        .card-image-hover:hover {
+          transform: scale(1.05);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* 📱 모바일 디바이스 반응형 최적화 (768px 이하) */
+        @media (max-width: 768px) {
+          /* 헤더 영역 모바일 맞춤 축소 */
+          header {
+            padding: 10px 12px !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+          }
+          header h1 {
+            font-size: 1.15rem !important;
+          }
+          header img {
+            height: 34px !important;
+          }
+          .integrator-badge {
+            display: none !important;
+          }
+          .header-btn-text {
+            display: none !important;
+          }
+          .header-login-btn {
+            padding: 6px 10px !important;
+          }
+          .login-btn-text-desktop {
+            display: none !important;
+          }
+          .login-btn-text-mobile {
+            display: inline !important;
+            font-size: 0.75rem !important;
+            font-weight: 700 !important;
+          }
+          header button {
+            padding: 6px 10px !important;
+            font-size: 0.75rem !important;
+          }
+
+          /* 히어로 배너 영역 패딩 및 폰트 줄이기 */
+          section {
+            padding: 36px 16px 24px 16px !important;
+          }
+          section h2 {
+            font-size: 1.6rem !important;
+            line-height: 1.25 !important;
+          }
+          section p {
+            font-size: 0.85rem !important;
+            margin-bottom: 20px !important;
+          }
+
+          /* 최근/인기 검색어 가로 라인 간격 다이어트 */
+          #searchWrapper {
+            margin-top: 12px !important;
+          }
+
+          /* 대시보드 메인 영역 */
+          main {
+            padding: 16px 12px !important;
+          }
+
+          /* 필터 판넬 레이아웃 최적화 */
+          .glass-panel.animate-fade-in {
+            padding: 16px 12px !important;
+            gap: 12px !important;
+          }
+
+          /* 플랫폼 및 카테고리 가로 스크롤화로 찌그러짐 원천 차단 */
+          .filter-row {
+            display: flex !important;
+            overflow-x: auto !important;
+            gap: 6px !important;
+            padding-bottom: 4px !important;
+            scrollbar-width: none !important;
+          }
+          .filter-row::-webkit-scrollbar {
+            display: none !important;
+          }
+          .filter-row button {
+            flex-shrink: 0 !important;
+            padding: 6px 12px !important;
+            font-size: 0.8rem !important;
+          }
+
+          /* 복합 필터 드롭다운 그리드: 모바일은 1열 스택 */
+          .filter-dropdown-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            padding-top: 16px !important;
+          }
+
+          /* 카드 그리드: 가로 컴팩트 2열 나열로 쇼핑몰급 UX 획득 */
+          .campaign-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+          }
+
+          /* 카드 내부 컴포넌트 텍스트 및 간격 2열 맞춤화 */
+          .campaign-grid > div {
+            height: auto !important;
+            min-height: 290px !important;
+          }
+          .campaign-grid div[style*="height: '180px'"] {
+            height: 120px !important;
+          }
+          /* 리액트 style props에 주입된 높이 무시 및 모바일 최적화 */
+          .campaign-card-image {
+            height: 110px !important;
+          }
+          .campaign-card-content {
+            padding: 10px !important;
+          }
+          .campaign-card-content h4 {
+            font-size: 0.82rem !important;
+            line-height: 1.25 !important;
+            height: 34px !important; /* 모바일 카드 높이 균형 */
+          }
+          .campaign-card-content .reward {
+            font-size: 0.72rem !important;
+          }
+          .campaign-card-content .meta-info {
+            font-size: 0.65rem !important;
+          }
+
+          /* 모바일 로그인 모달 팝업 가로폭 꽉 채우기 */
+          div[style*="width: '450px'"] {
+            width: 90% !important;
+            max-width: 380px !important;
+            padding: 24px 16px !important;
+          }
+        }
+      `}</style>
+
+    </div>
+  );
+}

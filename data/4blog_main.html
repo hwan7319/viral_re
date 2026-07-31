@@ -1,0 +1,2786 @@
+<!DOCTYPE html>
+
+
+
+<html lang="ko">
+<!DOCTYPE html>
+
+
+
+
+
+
+
+	
+	
+	
+		
+		
+	
+
+
+<html lang="ko">
+<head><script>window.Forblog={isApp:false,platform:'web',isIOS:false,isAndroid:false,loggedIn:false,version:null};(function(){var c=document.documentElement.classList;if(window.Forblog.isApp){c.add('forblog-app');c.add(window.Forblog.isIOS?'forblog-ios':'forblog-android');}})();if(window.Forblog.isApp){(function(){try{if(sessionStorage.getItem('forblogLaunchIntroSeen')==='Y'){return;}sessionStorage.setItem('forblogLaunchIntroSeen','Y');document.documentElement.classList.add('forblog-launch-intro-pending');var css='html.forblog-launch-intro-pending,html.forblog-launch-intro-pending body{background:#fff!important;overflow:hidden!important}html.forblog-launch-intro-pending body>*:not(#forblogLaunchIntro){visibility:hidden!important}@keyframes fblIntroPulse{0%,100%{opacity:.35;transform:translateY(8px)}45%{opacity:1;transform:translateY(0)}}@keyframes fblIntroFade{0%,72%{opacity:1}100%{opacity:0;visibility:hidden}}#forblogLaunchIntro{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#fff;pointer-events:none;visibility:visible!important;animation:fblIntroFade 1.6s ease forwards}#forblogLaunchIntro span{color:#222;font-size:18px;font-weight:800;letter-spacing:0;animation:fblIntroPulse 1.05s ease-in-out infinite}';var st=document.createElement('style');st.id='forblogLaunchIntroStyle';st.appendChild(document.createTextNode(css));document.head.appendChild(st);var overlay=document.createElement('div');overlay.id='forblogLaunchIntro';overlay.setAttribute('aria-hidden','true');overlay.innerHTML='<span>포블로그를 불러오는 중...</span>';var mount=function(){if(!document.getElementById('forblogLaunchIntro')){document.body.appendChild(overlay)}setTimeout(function(){document.documentElement.classList.remove('forblog-launch-intro-pending');if(overlay&&overlay.parentNode){overlay.parentNode.removeChild(overlay)}},1700);};if(document.body){mount();}else{document.addEventListener('DOMContentLoaded',mount,{once:true});}}catch(e){document.documentElement.classList.remove('forblog-launch-intro-pending');}})();}if(window.Forblog.isApp){document.addEventListener('DOMContentLoaded',function(){var m=document.querySelector('meta[name=viewport]');if(m&&m.content.indexOf('viewport-fit')<0){m.content+=', viewport-fit=cover';}});}window.Forblog.openInApp=function(u,f){if(window.Forblog.isApp){location.href=u;}else{window.open(u,'_blank',f||'');}};window.Forblog.openExternal=function(u){if(window.Forblog.isApp&&window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){window.Capacitor.Plugins.Browser.open({url:u});}else{window.open(u,'_blank','noopener');}};window.Forblog.share=function(d){if(navigator.share){return navigator.share(d);}return Promise.reject('unsupported');};window.Forblog.copy=function(t){if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t);}var e=document.createElement('textarea');e.value=t;document.body.appendChild(e);e.select();try{document.execCommand('copy');}finally{document.body.removeChild(e);}return Promise.resolve();};</script><script defer src="/resources/js/forblog-app-shell.js?v=12"></script>
+	<script type="text/javascript" src="/resources/js/app-detect.js"></script>
+	<link href="/resources/css/app-detect.css" rel="stylesheet">
+	<meta name="google-site-verification" content="mBkjKmXAMrY_KH6lpvniEAUSBGwDiTY_3_cJe2g6Q-s" />
+	<script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
+	
+	<script src="/resources/js/login-click-guard.js?ver=260713"></script>
+	<script type="text/javascript" src="/resources/js/jquery-1.11.1.min.js"></script>
+	
+	<script defer src="/resources/js/clientBeacon.js?v=20260709"></script>
+<link href="/resources/css/liquidGlass.css" rel="stylesheet">
+<script type="text/javascript" src="/resources/js/glassSocialAlert.js"></script>
+<link rel="shortcut icon" href="/resources/img/4bico.ico">
+<link rel="canonical" href="https://4blog.net">
+<link href="/resources/css/bootstrap.min.css?ver=220224" rel="stylesheet">
+<link rel="stylesheet" href="/resources/css/pretendard.css?ver=260709" />
+<link href="/resources/css/main.css?ver=260709" rel="stylesheet">
+<link href="/resources/css/focus-glow.css?ver=260715b" rel="stylesheet">
+<script src="/resources/js/drag-scroll.js?ver=260717a" defer></script>
+<link rel="shortcut icon" href="/resources/img/4bico.ico">
+<link href="/resources/css/bootstrap-toggle.min.css?ver=210830" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="/resources/js/respond.min.js"></script>
+	<script src="/resources/js/html5shiv.min.js"></script>
+	<!-- Skeleton Style -->
+	<script type="text/javascript" src="/resources/js/skeleton.js"></script> 
+	<![endif]-->
+	<!--  로고이미지 마우스 호버 이펙 -->
+<style type="text/css">
+.profile-menu-wrap {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+	margin-left: 10px;
+}
+.profile-menu-img {
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	object-fit: cover;
+	vertical-align: middle;
+	box-shadow: 0 0 0 3px #fff, 0 0 0 4px #ff97c6;
+	filter: none;
+	transition: box-shadow 0.2s;
+}
+.profile-menu-wrap:hover .profile-menu-img {
+	box-shadow: 0 0 0 3px #fff, 0 0 0 4px #ff5a5f;
+}
+.profile-dropdown {
+	display: none;
+	position: absolute;
+	right: -10px;
+	top: 100%;
+	padding-top: 8px;
+	z-index: 9999;
+}
+.profile-dropdown-inner {
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+	min-width: 150px;
+	overflow: hidden;
+}
+.profile-menu-wrap:hover .profile-dropdown {
+	display: block;
+}
+.profile-dropdown a {
+	display: block;
+	padding: 10px 16px;
+	color: #333;
+	font-size: 13px;
+	text-decoration: none;
+	transition: background 0.15s;
+}
+.profile-dropdown a:hover {
+	background: none;
+	color: #9a7fe5;
+}
+#alertCnt{
+    margin: -30%;
+    color: #ff67c6;
+    left: 46px;
+    top: 36px;
+    font-size: 10px;
+    position: absolute;}
+
+.smallSearchDiv {
+	display: none;
+}
+
+#smallSearchField {
+	display: none;
+}
+
+.header-4b{
+	z-index: 100;
+	position: relative;
+	/* 모요 스타일 플랫 헤더 — main.css 의 그림자를 걷어내고 헤어라인으로 구분 */
+	box-shadow: none;
+	background-color: #fff;
+	border-bottom: 1px solid #F1F3F5;
+}
+/* ── 리스트 상단 필터(main.jsp/main0.jsp 공용) — 모요 톤 리디자인 ──
+   구조: 1줄 = 지역 컨텍스트(흰 칩+보더), 2줄 = SNS 채널 필터(회색 칩).
+   활성 = 인디고 틴트(#F3F6FF/#516AEC — 하단 탭바·마이페이지 탭과 동일 팔레트).
+   주의: main.jsp 는 header 뒤에서 main.css 를 다시 로드하므로 모든 규칙이
+   main.css 보다 특이도가 높아야 한다(.snsfilter 접두 + div.snsfilter). */
+div.snsfilter {
+	display: block;
+	width: 100%;
+	margin-bottom: 14px;
+}
+.snsfilter .snsmother {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+.snsfilter .nav-menu {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.snsfilter .nav-menu > li {
+	float: none;
+	flex: 0 0 auto;
+	margin: 0 8px 8px 0;
+}
+/* 칩 기본형: 흰 배경 + 연회색 보더 (블지수 랭킹 카테고리 칩 패턴) */
+.snsfilter .smenulink {
+	display: inline-flex;
+	align-items: center;
+	margin: 0 !important;
+	border: 1px solid #e8e8e8 !important;
+	background: #fff !important;
+	color: #666 !important;
+	border-radius: 999px !important;
+	padding: 9px 16px !important;
+	font-size: 14px;
+	font-weight: 600 !important;
+	letter-spacing: -0.2px;
+	line-height: 1.2;
+	white-space: nowrap;
+	font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.snsfilter .smenulink:hover,
+.snsfilter .smenulink:focus {
+	background: #fff5f8 !important;
+	color: #ff579f !important;
+	border-color: #ffcce0 !important;
+	text-decoration: none;
+}
+/* 활성 = 핑크 채움 + 흰 글자 (블지수 랭킹 카테고리와 동일 팔레트 — 2026-07-15 사용자 요청) */
+.snsfilter .nav-menu > li.active > .smenulink,
+.snsfilter .nav-menu > li.active > .smenulink:hover,
+.snsfilter .nav-menu > li.active > .smenulink:focus {
+	background: #ff579f !important;
+	color: #fff !important;
+	border-color: #ff579f !important;
+	font-weight: 700 !important;
+}
+/* 활성 칩 안의 SNS 아이콘은 흰색으로 (기본 grayscale 아이콘을 반전) */
+.snsfilter .nav-menu > li.active > .smenulink img {
+	filter: brightness(0) invert(1) !important;
+}
+/* ── 칩 줄 가로 스크롤 보조 (JS가 클래스 토글 — 블지수 랭킹 패턴 이식) ── */
+.snsfilter .nav-menu.fchip-scrollable {
+	cursor: grab;
+}
+.snsfilter .nav-menu.fchip-dragging {
+	cursor: grabbing;
+	user-select: none;
+	-webkit-user-select: none;
+}
+.snsfilter .nav-menu.fchip-dragging .smenulink {
+	pointer-events: none;
+}
+/* 스크롤 여지가 있는 쪽 가장자리를 살짝 페이드 (마스크라 래퍼 불필요) */
+.snsfilter .nav-menu.fchip-fade-r {
+	-webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+	mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+.snsfilter .nav-menu.fchip-fade-l {
+	-webkit-mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 100%);
+	mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 100%);
+}
+.snsfilter .nav-menu.fchip-fade-l.fchip-fade-r {
+	-webkit-mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+	mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+}
+/* 스크롤 여지 표시용 좌우 화살표 버튼 — 블지수 랭킹 category-arrow 이식 (JS가 주입/토글) */
+.snsfilter .fchip-nav {
+	position: relative;
+	/* flex 컨테이너여야 자식 ul 의 구 float 규칙이 무시되고 폭이 래퍼에 맞춰진다
+	   (블록 래퍼면 float 이 살아나 ul 이 내용 폭으로 늘어나 스크롤이 죽음) */
+	display: flex;
+	flex-direction: column;
+}
+.snsfilter .fchip-nav > .nav-menu {
+	min-width: 0;
+	max-width: 100%;
+}
+.snsfilter .fchip-arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 50%;
+	cursor: pointer;
+	z-index: 2;
+	transition: opacity 0.15s, border-color 0.15s, box-shadow 0.15s;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+	padding: 0;
+	font-size: 0;
+}
+.snsfilter .fchip-arrow-l { left: -2px; }
+.snsfilter .fchip-arrow-r { right: -2px; }
+.snsfilter .fchip-arrow.fchip-arrow-hidden { opacity: 0; pointer-events: none; }
+.snsfilter .fchip-arrow svg {
+	width: 9px;
+	height: 9px;
+	stroke: #666;
+	stroke-width: 2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.snsfilter .fchip-arrow:hover {
+	border-color: #ff579f;
+	box-shadow: 0 2px 10px rgba(255,87,159,0.15);
+}
+.snsfilter .fchip-arrow:hover svg { stroke: #ff579f; }
+/* 지역(컨텍스트) 칩 — 흰 배경 + 보더로 채널 필터와 구분 */
+.snsfilter .location-filter-link,
+.snsfilter .mobile-region-chip {
+	background: #fff !important;
+	border: 1px solid #E5E8EB !important;
+	color: #191F28 !important;
+	font-weight: 700 !important;
+}
+.snsfilter .location-filter-link:hover,
+.snsfilter .location-filter-link:focus,
+.snsfilter .mobile-region-chip:hover,
+.snsfilter .mobile-region-chip:focus {
+	background: #F8F9FA !important;
+	color: #191F28 !important;
+}
+.snsfilter .location-subscription-item {
+	min-height: 0 !important;
+	padding: 0 2px !important;
+}
+.snsfilter .heart {
+	float: none;
+	padding: 2px 4px;
+}
+/* 현재 지역 칩 — 모바일 전용, PC에서는 숨김
+   (bootstrap .nav>li 의 display:block 보다 특이도가 높아야 함) */
+.snsfilter .mobile-region-item {
+	display: none;
+}
+/* 홈(main0)처럼 지역 줄에 모바일 칩만 있는 경우 PC에서는 줄 자체를 숨김 */
+.snsfilter .filter-region-row--mobile-only {
+	display: none !important;
+}
+
+/* 모바일(≤768px): 상단 헤더는 로고 + (비로그인) 로그인 버튼만 남긴다.
+   검색/알림/프로필/카테고리 내비는 forblog-app-shell.js(하단 탭바·시트)가 단일 소유. */
+@media (max-width: 768px) {
+
+	/* 헤더 아래 공통 숨통 — 콘텐츠가 헤더에 붙어 보이지 않게 (모요 톤) */
+	.header-4b {
+		margin-bottom: 12px;
+	}
+
+	#mainSearhFormLi,
+	#mainSearhBtnLi,
+	#smallSearchForm,
+	#alertBell,
+	#alertCnt,
+	.profile-menu-wrap,
+	.catUl,
+	.catDropDownContent,
+	.smallSearchDiv,
+	ul.smallSearchMenu:not(.menu-right) {
+		display: none !important;
+	}
+
+	/* 우측 영역에는 로그인 배지만 남는다 — 고정폭 잔재 제거 */
+	.menu-right {
+		width: auto !important;
+		min-width: 0 !important;
+		max-width: none !important;
+	}
+
+	a.badge {
+		margin-top: 13px !important;
+	}
+
+	/* ── 리스트 상단 필터(모바일 델타): 줄마다 한 줄 가로 스크롤 + 컴팩트 칩 ── */
+	div.snsfilter {
+		margin-bottom: 6px;
+	}
+	.snsfilter .nav-menu {
+		flex-wrap: nowrap !important;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		padding: 2px 2px 4px;
+	}
+	.snsfilter .nav-menu::-webkit-scrollbar {
+		display: none;
+	}
+	.snsfilter .nav-menu > li {
+		margin: 0 6px 4px 0;
+	}
+	.snsfilter .smenulink {
+		padding: 8px 14px !important;
+		font-size: 13px;
+	}
+	/* 지역 드롭다운(PC 전용) 숨김 — 모바일 지역 선택은 하단 카테고리 시트로 일원화 */
+	.snsfilter .location-filter-item {
+		display: none !important;
+	}
+	.snsfilter .mobile-region-item {
+		display: block;
+	}
+	.snsfilter .filter-region-row--mobile-only {
+		display: flex !important;
+	}
+	.snsfilter .mobile-region-chip .bi {
+		font-size: inherit;
+		line-height: 1;
+	}
+}
+
+
+
+</style>
+
+<meta name="naver-site-verification" content="6cb9d36aefe286f553f43e871a3ed5b7269b58f2" /> 
+	<meta name="naver-site-verification" content="6cb9d36aefe286f553f43e871a3ed5b7269b58f2" /> 
+	<meta name="naver-site-verification" content="e17056af2bf82a9a410ee7a2060c632caeb833ca" />
+
+	<meta name="facebook-domain-verification" content="kemtn4eord5rz31g9wqrdmt5aszjc8" />
+
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="포블로그">
+
+	
+	
+		<meta property="og:title" content="포블로그 - 블로그 체험단 마케팅 서비스">
+		<meta property="og:description" content="블로거 체험단을 통해 최적화된 리뷰 제공. 방문형, 배송형, 인스타, 유튜브 체험단 모집 중!">
+		<meta property="og:image" content="https://4blog.net/resources/img/4blog_og.png">
+		<meta property="og:url" content="https://4blog.net/">
+	
+
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="keywords" content="블로그체험단,포블로그,체험단,무료체험단,체험단사이트,인스타체험단,유튜브체험단,틱톡체험단,블로그마케팅,인스타그램체험단,숏폼체험단,릴스체험단,맛집체험단,뷰티체험단,제품체험단,방문체험단,배송체험단,리뷰체험단,체험단모집,SNS마케팅,인플루언서마케팅,블로거체험단,네이버블로그체험단,소상공인마케팅,체험단플랫폼,체험단추천,무료체험단사이트">
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "포블로그-블로그체험단",
+			"alternateName": "포블로그",
+			"url": "https://4blog.net",
+			"description": "블로그 체험단 마케팅 서비스 - 블로거, 인스타, 유튜브 체험단 플랫폼",
+			"publisher": {
+				"@type": "Organization",
+				"name": "포블로그-블로그체험단",
+				"url": "https://4blog.net"
+			}
+		}
+	</script>
+	
+
+
+<!-- PWA Manifest (모바일/태블릿에서만 로드) -->
+<script>
+(function() {
+    if (/Android|iPhone|iPad|iPod|tablet/i.test(navigator.userAgent)) {
+        var head = document.head;
+        // manifest
+        var manifest = document.createElement('link');
+        manifest.rel = 'manifest';
+        manifest.href = '/manifest.json';
+        head.appendChild(manifest);
+        // theme-color
+        var theme = document.createElement('meta');
+        theme.name = 'theme-color';
+        theme.content = '#FFF0F3';
+        head.appendChild(theme);
+        // mobile-web-app-capable
+        var mwac = document.createElement('meta');
+        mwac.name = 'mobile-web-app-capable';
+        mwac.content = 'yes';
+        head.appendChild(mwac);
+        // apple meta tags
+        var awac = document.createElement('meta');
+        awac.name = 'apple-mobile-web-app-capable';
+        awac.content = 'yes';
+        head.appendChild(awac);
+        var asbs = document.createElement('meta');
+        asbs.name = 'apple-mobile-web-app-status-bar-style';
+        asbs.content = 'default';
+        head.appendChild(asbs);
+        var amat = document.createElement('meta');
+        amat.name = 'apple-mobile-web-app-title';
+        amat.content = '포블로그';
+        head.appendChild(amat);
+        // apple-touch-icon
+        var ati = document.createElement('link');
+        ati.rel = 'apple-touch-icon';
+        ati.href = '/resources/img/4blog2.png';
+        head.appendChild(ati);
+    }
+})();
+</script>
+
+<!-- Firebase SDK 및 PWA (로그인 사용자만 로드) -->
+
+
+</head>
+
+<body>
+
+
+	<div class=bodybg>
+		<form id="logoutForm" action="/logout" method="POST">
+			<input type="hidden" name="_csrf" value="59e9dbbb-1470-4268-a3fa-b0064c323387" />
+		</form>
+		<nav class="navbar navbar-menu header-4b">
+			<div class="container container-fluid" style="padding-left: 0.5rem;">
+				<!-- <h1 style="font-family: Sans-Serif;"></h1> -->
+				<a id="headerBrand" class="navbar-brand" href="/">
+					<img alt="4BLOG" class="header-img-brand" src="/resources/img/4blog2.png">
+				</a>
+
+				<ul class="nav nav-menu menu-right smallSearchMenu" style="display: flex;">
+
+					<li id="mainSearhFormLi">
+						<form action="/" class="navbar-left searchForm skeleton" role="search">
+							<div class="form-group searchwrap" style="margin-top: 10px">
+								<input class="form-control col-xs-4 search" type="text" value="" name="search" placeholder="캠페인 검색">
+								<i class="glyphicon glyphicon-search searchicon"></i>
+							</div>
+						</form>
+					</li>
+					<li class="skeleton loginLi" style="
+					    display: flex;
+					    align-items: center;
+					">
+
+						  
+						<div id="naverIdLogin">
+							<a id="naverIdLogin_loginButton" href="#" class="badge">
+								로그인
+							</a>
+						</div>
+					</li>
+
+					<script>
+						$(document).ready(function() {
+							// 현재 페이지 경로를 항상 저장 (세션 만료 시 복귀용)
+							// 로그인/콜백 페이지에서는 스킵 (backPage 쿠키 유지를 위해)
+							var path = window.location.pathname;
+							if (path !== '/login' && path.indexOf('/login/naverCallback') !== 0) {
+								document.cookie = "currentPath=" + encodeURIComponent(path + window.location.search) + ";path=/;max-age=3600";
+							}
+						});
+
+						$("#naverIdLogin").click(function() {
+							saveCurrentPathToCookie();
+						});
+
+						function saveCurrentPathToCookie() {
+							var currentPath = window.location.pathname + window.location.search;
+							document.cookie = "currentPath=" + encodeURIComponent(currentPath) + ";path=/;max-age=3600"; // 1시간 동안 유효
+						}
+
+						var naverLogin = new naver.LoginWithNaverId(
+								{
+									clientId: 'gUeOUfF7z125CYsUqsDo',
+									callbackUrl: 'https://4blog.net/login/naverCallback/',
+									isPopup: false,
+
+									callbackHandle: true
+									/* callback 페이지가 분리되었을 경우에 callback 페이지에서는 callback처리를 해줄수 있도록 설정합니다. */
+								}
+						);
+
+						naverLogin.init();
+
+						// 네이버 SDK 자동 로그인 조건:
+						// 1. 네이버에 로그인됨 (status=true)
+						// 2. 서버에 미로그인 상태 (ROLE_USER 아님)
+						// 3. 서버 세션에 복귀 경로가 있음 (콜백에서 세션에 저장한 경우)
+						// → 일반 페이지에서는 세션에 복귀 경로가 없으므로 자동 로그인 안 됨
+						var isServerLoggedIn = false;
+						
+
+						// 콜백 플래그 쿠키 확인 (서버 콜백에서 세팅됨)
+						var hasCallbackFlag = document.cookie.indexOf('naverCallbackDone=Y') !== -1;
+
+						// 콜백 후 로그인 처리 중이면 메인 콘텐츠 숨기고 로딩 표시
+						if (hasCallbackFlag && !isServerLoggedIn) {
+							document.body.style.visibility = 'hidden';
+							var loadingDiv = document.createElement('div');
+							loadingDiv.id = 'loginLoadingOverlay';
+							loadingDiv.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:99999;display:flex;justify-content:center;align-items:center;"><div style="text-align:center;"><div style="width:40px;height:40px;margin:0 auto 15px;border:3px solid #e0e0e0;border-top:3px solid #5b9bd5;border-radius:50%;animation:lspin 0.8s linear infinite;"></div><p style="color:#888;font-size:14px;">로그인 중...</p></div></div><style>@keyframes lspin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}</style>';
+							document.body.appendChild(loadingDiv);
+						}
+
+						window.addEventListener('load', function () {
+							naverLogin.getLoginStatus(function (status) {
+								// 콜백을 거쳐온 경우에만 자동 로그인 AJAX 실행
+								if (status && !isServerLoggedIn && hasCallbackFlag) {
+									// 플래그 쿠키 삭제 (1회성)
+									document.cookie = "naverCallbackDone=; path=/; max-age=0";
+									var email = naverLogin.user.getEmail();
+
+								// 디버그용 추가
+									var mobile = naverLogin.user.getMobile();
+									var gender = naverLogin.user.getGender();
+									var birth = naverLogin.user.getBirthyear();
+									var id = naverLogin.user.getId();
+									var name = naverLogin.user.getName();
+									var nickname = naverLogin.user.getNickName();
+									var profileImage = naverLogin.user.getProfileImage();
+
+								// 개인정보 로그 제거됨
+
+									if (email == undefined || email == null) {
+										alert('이메일은 필수정보입니다. 정보제공을 동의해주세요.');
+										naverLogin.reprompt();
+										return;
+									}
+
+									$.ajax({
+										url: "/login/naverLogin",
+										type: "get",
+										data: {
+											"accessToken": naverLogin.accessToken.accessToken,
+											"email": naverLogin.user.getEmail(),
+											"mobile": naverLogin.user.getMobile(),
+											"gender": naverLogin.user.getGender(),
+											"birth": naverLogin.user.getBirthyear(),
+											"id": naverLogin.user.getId(),
+											"name": naverLogin.user.getName(),
+											"nickname": naverLogin.user.getNickName(),
+											"profile_image": naverLogin.user.getProfileImage(),
+										},
+										success: function(response) {
+											var targetUrl = (typeof response === 'string') ? response.trim() : response;
+
+											// 서버가 / 반환 = 명시 복귀 경로 없음. 현재 페이지를 갱신해 로그인 세션을 반영한다.
+											if (!targetUrl || targetUrl === '/' || targetUrl === 'null') {
+												location.reload();
+												return;
+											}
+
+											// URL 형식인지 검증 (HTML이 반환되는 경우 방어)
+											if (targetUrl && typeof targetUrl === 'string' && targetUrl.startsWith('/')) {
+												window.location.href = targetUrl;
+											} else {
+												// 에러 시 현재 페이지 유지 (새로고침)
+												location.reload();
+											}
+										},
+										error: function(error) {
+											//console.log(error);
+											$.ajax({
+												url: "/sendErrorInfo",
+												type: "post",
+												beforeSend : function(
+														xhr) {
+													xhr
+															.setRequestHeader(
+																	"X-CSRF-TOKEN",
+																	"59e9dbbb-1470-4268-a3fa-b0064c323387")
+												},
+												data: {
+													errorMessage: error.statusText,
+													errorDetails: error.responseText
+												},
+												success: function(response) {
+													console.log("Error information sent successfully");
+												},
+												error: function(xhr, status, error) {
+													console.log("Failed to send error information");
+												}
+											});
+										}
+									});
+
+								} else {
+									console.log('헤더 login callback 처리에 실패하였습니다.');
+								}
+							});
+						});
+
+
+
+					</script>
+
+
+
+					
+					<li id="mainSearhBtnLi">
+						<button type="button" id="searchBtn" class="btn btn-default searchBtn">
+							<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+						</button>
+					</li>
+				</ul>
+
+
+
+				<ul class="nav nav-menu menu-left catUl skeleton">
+					<li id="allCat" style="width: inherit; height: 100%;">
+						<div class="catDropDown" style="min-width: fit-content;">
+							<i class="bi-list" style="margin: 10px; font-size: 16px;"></i>전체 카테고리
+						</div>
+					</li>
+					<li style="width: inherit; height: 100%;">
+						<div style="margin: 0px 10px; color: #dddddd;">|</div>
+					</li>
+					<li style="width: inherit; height: 100%;">
+						<div style="min-width: fit-content;">
+							<a href="/list/today">오늘오픈</a>
+						</div>
+					</li>
+
+					<li style="width: inherit; height: 100%;">
+						<div style="margin: 0px 10px; color: #dddddd;">|</div>
+					</li>
+					<li style="width: inherit; height: 100%;">
+						<div style="min-width: fit-content;">
+							<a href="/free/dashboard" target="_blank">무료등록</a>
+						</div>
+					</li>
+					<li style="width: inherit; height: 100%;">
+						<div style="margin: 0px 10px; color: #dddddd;">|</div>
+					</li>
+					<li style="width: inherit; height: 100%;">
+						<div style="min-width: fit-content;">
+							<a href="/adInquiry">광고문의</a>
+						</div>
+					</li>
+
+
+
+
+
+
+
+
+
+
+
+					
+				</ul>
+				<div class="catDropDownContent" style="display: none;">
+					<div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+						<h4 class="catD1">
+							<a href="/list/all">전체</a>
+						</h4>
+						<h4 class="catD1">
+							<a href="/list/all/local">방문</a>
+						</h4>
+						<h4 class="catD1">
+							<a href="/list/all/deliv">배송</a>
+						</h4>
+						<h4 class="catD1">
+							<a href="/list/all/reporter">포스팅</a>
+						</h4>
+						<span id="catHide"left: 90%;"><i class="bi-x"></i></span>
+					</div>
+					<!-- 지역 세부 카테고리: AJAX로 동적 로드 -->
+					<div id="catLocationArea" style="padding: 3%;"></div>
+				</div>
+
+
+                    <ul class="nav nav-menu smallSearchMenu" style="
+																margin-left: 70px;
+																display: flex;
+																width: 77%;">
+
+						<div class="smallSearchDiv">
+							<form action="/" id="smallSearchForm" class="navbar-left searchForm" role="search">
+								<div class="form-group smallSearchForm">
+									<input size="5" type="text" value="" id="smallSearchField" name="search" placeholder="검색">
+								</div>
+							</form>
+						</div>
+
+                        
+				</ul>
+			</div>
+			
+		</nav>
+		<!-- <div style="text-align: right;min-width: 40%;width: 100%;">
+					<ul class="nav nav-menu menu-right" style="
+					width: 20rem;
+					margin-top: 1rem;">
+						<li><a href="/clCenter" target="blank">#광고주센터</a></li>
+						<li><a href="javascript:void(0);" data-toggle="modal" data-target="#widget" id="4bwidget">#위젯</a></li>
+					</ul>
+				</div> -->
+	</div>
+	
+	<!-- /.navbar -->
+
+
+		<!-- Modal -->
+		<div class="modal fade" id="widget" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+							<span aria-hidden="true">×</span><span class="sr-only">Close</span>
+						</button>
+						<img style="max-width: 673px; width: 100%;" src="https://s3-ap-northeast-1.amazonaws.com/4blogimage/widget/Widget_03.png">
+						<p align=center style="margin: 20px 0;">
+							<img style="max-width: 231px; width: 100%;" src="https://4blog.net/resources/img/4blog-widget.png">
+						</p>
+					</div>
+					<div class="modal-body">
+						<div style="width: 100%; margin: 5px 0 12px 0;"></div>
+						<textarea name="widget-code" id="widget-code" onclick="this.select()" class="form-control" style="width: 100%; margin: 5px 0 12px 0;"><a target="_blank" href="https://4blog.net"><img src="https://4blog.net/resources/img/4blog-widget.png" style="width: 170px;" /></a></textarea>
+						<div style="padding: 10px 0px; margin-top: 10px; border-top: 1px solid #eee;">
+							<img style="max-width: 197px; width: 100%;" src="https://s3-ap-northeast-1.amazonaws.com/4blogimage/widget/Widget_07.png">
+							<ul style="list-style: none; margin: 0; padding: 0;">
+								<li>1. 소스코드를 복사해서,</li>
+								<li>2. 블로그 스킨 > 위젯에 코드를 넣고, 등록해주세요</li>
+								<!-- <li>3. 그래도 어려우면 포블로그 위젯설치 가이드 참조</li> -->
+							</ul>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="/resources/js/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="/resources/js/jquery.lazyload.min.js"></script>
+	<script type="text/javascript" src="/resources/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/resources/js/bootstrap-toggle.min.js"></script>
+	<script type="text/javascript">
+			function logout() {
+				$("#logoutForm").submit();
+				removeStorage();
+			}
+
+			function removeStorage() {
+				localStorage.removeItem('com.naver.nid.oauth.state_token');
+				localStorage.removeItem('com.naver.nid.access_token');
+			}
+
+
+
+			$(document)
+				.ready(
+					function() {
+						var link2Arr = [ 'blog', 'instar21', 'ncafe',
+										'youtube21', 'etc' ];
+							$(".menulink")
+								.click(
+									function(elem) {
+										var link = $(
+												elem.currentTarget)
+												.data("id");
+										//  /list/link/local/
+										var pathname = document.location.pathname;
+										var pathArr = pathname
+												.split("/");
+										pathArr[1] = "list";
+										if (pathArr.length < 2) {
+											pathArr.push(link);
+										} else {
+											if (pathArr[2] == link) {
+												if (pathArr.length < 3) {
+													pathArr.pop();
+												} else {
+													pathArr[2] = 'all';
+													if (pathArr[3] == 'req'
+															|| pathArr[3] == 'noReview'
+															|| pathArr[3] == 'review') {
+														pathArr
+																.pop();
+													}
+												}
+											} else {
+												if (pathArr.length > 3) {
+													if (pathArr[3] == 'req'
+															|| pathArr[3] == 'noReview'
+															|| pathArr[3] == 'review') {
+														pathArr
+																.pop();
+														pathArr
+																.pop();
+													}
+												}
+												pathArr[2] = link;
+											}
+										}
+										var newPath = pathArr
+												.join("/");
+										document.location.href = "https://"
+												+ document.location.host
+												+ newPath;
+									});
+
+								$(".menulink2")
+										.click(
+												function(elem) {
+													var link = $(
+															elem.currentTarget)
+															.data("id");
+													//  /list/link/local/
+													var pathname = document.location.pathname;
+													var pathArr = pathname
+															.split("/");
+													pathArr[1] = "list";
+													debugger;
+													if (pathArr.length < 3) {
+														pathArr.push("all");
+														pathArr.push(link);
+													} else if (pathArr.length < 4) {
+														if (link2Arr
+																.indexOf(pathArr[2]) < 0) {
+															pathArr[2] = "all";
+														}
+														pathArr.push(link);
+													} else {
+														if (link2Arr
+																.indexOf(pathArr[2]) < 0) {
+															pathArr[2] = "all";
+														}
+														if (pathArr[3] != link) {
+															pathArr[3] = link;
+														} else {
+															pathArr = pathArr
+																	.slice(0, 3);
+														}
+
+													}
+
+													if (link != 'local'
+															&& pathArr.length > 3) {
+														pathArr = pathArr
+																.slice(0, 4);
+													}
+
+													var newPath = pathArr
+															.join("/");
+													document.location.href = "https://"
+															+ document.location.host
+															+ newPath;
+												});
+
+								$(".heart")
+										.click(
+												function(elem) {
+													var elemId = $(elem.target)
+															.prop("id");
+													var subscriptAjaxCall = function(
+															url, elemId, data) {
+														$
+																.ajax({
+																	type : "POST",
+																	beforeSend : function(
+																			xhr) {
+																		xhr
+																				.setRequestHeader(
+																						"X-CSRF-TOKEN",
+																						"59e9dbbb-1470-4268-a3fa-b0064c323387")
+																		//xhr.setRequestHeader(header, token);
+																	},
+																	url : url,
+																	contentType : "application/json",
+																	dataType : 'json',
+																	data : data,
+																	success : function(
+																			data) {
+																		console
+																				.log("#"
+																						+ elemId);
+																		console
+																				.log(
+																						"a",
+																						$("#"
+																								+ elemId));
+																		$(
+																				"#"
+																						+ elemId)
+																				.toggleClass(
+																						"fa-heart fa-heart-o");
+																	},
+																	error : function(
+																			data) {
+																		if (data['status'] == 403) {
+																			location.href = "/login"
+																		}
+																	}
+																});
+													}
+													var header = $(
+															"meta[name='_csrf_header']")
+															.attr("content");
+													var token = $(
+															"meta[name='_csrf']")
+															.attr("content");
+													if (elemId == "productSubscription") {
+														var toValue = $(
+																"#" + elemId)
+																.hasClass(
+																		'fa-heart-o');
+														subscriptAjaxCall(
+																"/userajax/subscription/product",
+																elemId,
+																JSON
+																		.stringify({
+																			"toValue" : toValue,
+																			"prid" : ""
+																		}));
+
+													} else if (elemId == "localSubscription") {
+
+														var toValue = $("#" + elemId).hasClass('fa-heart-o');
+														$.ajax({
+															url: "/userajax/subscription/location",
+															type: 'post',
+															contentType: 'application/json',
+															data: JSON.stringify({
+																"toValue": toValue,
+																"CODE": "",
+																"parentCode": ""
+															}),
+															success: function(response) {
+																// AJAX 호출이 성공하면 아이콘 클래스를 토글
+																$("#" + elemId).toggleClass('fa-heart-o fa-heart');
+															},
+															error: function(xhr, status, error) {
+																// 에러 처리
+																console.error("An error occurred: " + error);
+															}
+														});
+
+													} else if (elemId == "categorySubscription") {
+														var toValue = $(
+																"#" + elemId)
+																.hasClass(
+																		'fa-heart-o');
+														subscriptAjaxCall(
+																"/userajax/subscription/category",
+																elemId,
+																JSON
+																		.stringify({
+																			"toValue" : toValue,
+																			"CODE" : "",
+																		}));
+													} else if (elemId == "memberscProductCategory") {
+														var toValue = $(
+																"#" + elemId)
+																.hasClass(
+																		'fa-heart-o');
+														subscriptAjaxCall(
+																"/userajax/subscription/category",
+																elemId,
+																JSON
+																		.stringify({
+																			"toValue" : toValue,
+																			"CODE" : "deliv",
+																		}));
+													} else if (elemId == "memberscReporterCategory") {
+														var toValue = $(
+																"#" + elemId)
+																.hasClass(
+																		'fa-heart-o');
+														subscriptAjaxCall(
+																"/userajax/subscription/category",
+																elemId,
+																JSON
+																		.stringify({
+																			"toValue" : toValue,
+																			"CODE" : "reporter",
+																		}));
+													} else if (elemId == "memberscServiceCategory") {
+														var toValue = $(
+																"#" + elemId)
+																.hasClass(
+																		'fa-heart-o');
+														subscriptAjaxCall(
+																"/userajax/subscription/category",
+																elemId,
+																JSON
+																		.stringify({
+																			"toValue" : toValue,
+																			"CODE" : "service",
+																		}));
+													} else if (elemId
+															.indexOf("memberscLocalCategory") > -1) {
+														var toValue = $(
+																"#" + elemId)
+																.hasClass(
+																		'fa-heart-o');
+														subscriptAjaxCall(
+																"/userajax/subscription/location",
+																elemId,
+																JSON
+																		.stringify({
+																			"toValue" : toValue,
+																			"CODE" : $(
+																					"#"
+																							+ elemId)
+																					.data(
+																							"code"),
+																			"parentCode" : $(
+																					"#"
+																							+ elemId)
+																					.data(
+																							"parent")
+																		}));
+													}
+
+												});
+							});
+
+			let allCat = document.querySelector("#allCat");
+			let dropCon = document.querySelector(".catDropDownContent")
+			let catHide = document.querySelector("#catHide");
+
+			allCat.addEventListener("mouseover", ()=>{
+				dropCon.style.display = "block";
+			});
+
+			dropCon.addEventListener("mouseleave",()=>{
+				dropCon.style.display = "none";
+			});
+
+			catHide.addEventListener("click", ()=>{
+				dropCon.style.display = "none";
+			});
+
+			// ── 리스트 상단 필터 칩 줄: 마우스 드래그 스크롤 + 가장자리 페이드 ──
+			// (블지수 랭킹 카테고리 내비 패턴 이식 — 좁은 화면에서 칩이 잘릴 때
+			//  터치는 물론 마우스로도 밀 수 있게 하고, 스크롤 여지를 페이드로 표시)
+			(function () {
+				// 블지수 랭킹 category-arrow 이식 — 스크롤 여지가 있는 쪽에 원형 화살표 버튼 표시
+				function makeArrow(dir) {
+					var b = document.createElement('button');
+					b.type = 'button';
+					b.className = 'fchip-arrow fchip-arrow-' + dir + ' fchip-arrow-hidden';
+					b.setAttribute('aria-label', dir === 'l' ? '이전' : '다음');
+					b.innerHTML = dir === 'l'
+						? '<svg viewBox="0 0 8 12"><path d="M6 1L1 6l5 5"/></svg>'
+						: '<svg viewBox="0 0 8 12"><path d="M2 1l5 5-5 5"/></svg>';
+					return b;
+				}
+
+				function enhanceChipRow(el) {
+					var isDown = false;
+					var dragging = false;
+					var startX = 0;
+					var startScroll = 0;
+					// 카드 레일(관심/Premium): 드래그·관성은 drag-scroll.js 소유 —
+					// 여기서는 화살표 버튼 + 가장자리 페이드만 배선한다
+					var isRail = el.classList.contains('secSectionList');
+
+					// 칩 줄을 relative 래퍼로 감싸 화살표 버튼의 기준 좌표로 사용
+					var wrap = document.createElement('div');
+					wrap.className = 'fchip-nav';
+					el.parentNode.insertBefore(wrap, el);
+					wrap.appendChild(el);
+					var arrowL = makeArrow('l');
+					var arrowR = makeArrow('r');
+					wrap.appendChild(arrowL);
+					wrap.appendChild(arrowR);
+
+					function scrollStep(dir) {
+						var step = Math.max(120, Math.round(el.clientWidth * 0.7)) * dir;
+						if (el.scrollBy) {
+							el.scrollBy({ left: step, behavior: 'smooth' });
+						} else {
+							el.scrollLeft += step;
+						}
+						setTimeout(updateFade, 350);
+					}
+					arrowL.addEventListener('click', function () { scrollStep(-1); });
+					arrowR.addEventListener('click', function () { scrollStep(1); });
+
+					function updateFade() {
+						var max = el.scrollWidth - el.clientWidth;
+						if (max <= 5) {
+							el.classList.remove('fchip-fade-l', 'fchip-fade-r', 'fchip-scrollable');
+							arrowL.classList.add('fchip-arrow-hidden');
+							arrowR.classList.add('fchip-arrow-hidden');
+							return;
+						}
+						el.classList.add('fchip-scrollable');
+						var canL = el.scrollLeft > 5;
+						var canR = el.scrollLeft < max - 5;
+						el.classList[canL ? 'add' : 'remove']('fchip-fade-l');
+						el.classList[canR ? 'add' : 'remove']('fchip-fade-r');
+						arrowL.classList[canL ? 'remove' : 'add']('fchip-arrow-hidden');
+						arrowR.classList[canR ? 'remove' : 'add']('fchip-arrow-hidden');
+					}
+
+					if (!isRail) {
+						el.addEventListener('mousedown', function (e) {
+							if (el.scrollWidth <= el.clientWidth) { return; }
+							isDown = true;
+							dragging = false;
+							startX = e.pageX;
+							startScroll = el.scrollLeft;
+						});
+						document.addEventListener('mousemove', function (e) {
+							if (!isDown) { return; }
+							if (!dragging && Math.abs(e.pageX - startX) > 5) {
+								dragging = true;
+								el.classList.add('fchip-dragging');
+							}
+							if (!dragging) { return; }
+							e.preventDefault();
+							el.scrollLeft = startScroll - (e.pageX - startX);
+						});
+						document.addEventListener('mouseup', function () {
+							if (!isDown) { return; }
+							isDown = false;
+							if (dragging) {
+								// click 이벤트가 지나간 뒤 해제해 드래그 끝 오클릭(필터 토글)을 막는다
+								setTimeout(function () { el.classList.remove('fchip-dragging'); }, 0);
+							}
+							dragging = false;
+						});
+					}
+					el.addEventListener('scroll', updateFade);
+					window.addEventListener('resize', updateFade);
+					// AJAX로 뒤늦게 채워지는 레일(관심/Premium 카드) 대응 —
+					// 내용이 바뀔 때마다 페이드/화살표 상태 재계산
+					if (window.MutationObserver) {
+						new MutationObserver(function () { updateFade(); })
+							.observe(el, { childList: true });
+					}
+					updateFade();
+					// 폰트 로드 후 폭이 변할 수 있어 한 번 더
+					setTimeout(updateFade, 600);
+				}
+
+				function initChipRows() {
+					if (!document.querySelectorAll || !document.body.classList) { return; }
+					var rows = document.querySelectorAll('.snsfilter .nav-menu, .home-v2 .hv2-rail .secSectionList');
+					for (var i = 0; i < rows.length; i++) {
+						enhanceChipRow(rows[i]);
+					}
+				}
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', initChipRows);
+				} else {
+					initChipRows();
+				}
+			})();
+
+			// 지역 세부 카테고리 AJAX 로드 (페이지 로드 시 1회만 호출)
+			$.get("/api/categoryLocationCodes", function(data) {
+				var localCode = data.localCode;
+				var detailCode = data.detailCode;
+				var html = '<dl style="margin: 0; width: 100%;">';
+				for (var i = 0; i < localCode.length; i++) {
+					var lc = localCode[i];
+					html += '<hr />';
+					html += '<dt class="catDt"><a href="/list/all/local/' + lc.CODE + '">' + lc.DESCRIPTION + '</a></dt>';
+					html += '<dd class="catDd">';
+					for (var j = 0; j < detailCode.length; j++) {
+						var dc = detailCode[j];
+						if (dc.GROUP_ID === lc.CODE) {
+							html += '<span class="catSpan"> <a href="/list/all/local/' + lc.CODE + '/' + dc.CODE + '">' + dc.DESCRIPTION + '</a></span>';
+						}
+					}
+					html += '</dd>';
+				}
+				html += '</dl><span style="clear: both;"></span>';
+				$('#catLocationArea').html(html);
+			});
+
+		</script>
+	</div>
+</body>
+</html>
+
+
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html;">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="_csrf_parameter" content="_csrf" /><meta name="_csrf_header" content="X-CSRF-TOKEN" /><meta name="_csrf" content="59e9dbbb-1470-4268-a3fa-b0064c323387" />
+	<meta name="ncloud_server">
+	<meta name="google-site-verification" content="mBkjKmXAMrY_KH6lpvniEAUSBGwDiTY_3_cJe2g6Q-s" />
+	<meta name="description" content="블로그 체험단 포블로그 - 무료 블로그 체험단 사이트, 유튜브, 숏츠, 릴스, 인스타, 틱톡 체험단 등 19만 블로그 회원 무료체험단, 블로그체험단, 인스타그램체험단, 숏폼체험단, 릴스체험단, 맛집체험단, 뷰티체험단, 제품체험단, 방문체험단, 리뷰체험단, 릴스체험단리뷰, 플레이스체험단, 체험단사이트, 인플루언서마케팅, SNS마케팅, 무료 서포터즈, 크리에이터, 소상공인, 자영업">
+	<meta name="keywords" content="블로그,체험단,마케팅,파워블로거,광고,강남 맛집 체험단,무료체험단,체험단무료,블로그체험단,체험단,체험단사이트,레뷰,미블,놀러와체험단,디너의여왕,티블,리뷰노트,리뷰쉐어,다나와체험단,체험단,블로그,인스타,틱톡,숏츠,유튜브체험단,숏폼체험단">
+	<meta name="author" content="블로그 체험단">
+	<meta property="og:title" content="블로그체험단 - 포블로그">
+	<meta property="og:site_name" content="블로그체험단">
+	<link rel="canonical" href="https://4blog.net">
+	<script type="application/ld+json">
+	{"@context":"https://schema.org","@type":"WebSite","name":"블로그체험단","alternateName":"포블로그","url":"https://4blog.net"}
+	</script>
+	<link rel="shortcut icon" href="/resources/img/4bico.ico">
+	<!--아이콘 넣읍시다. <link rel="icon" href="http://bootstrapk.com/favicon.ico"> -->
+	<link href="/resources/css/main.css?ver=260709" rel="stylesheet">
+	<!-- 이벤트 -->
+	<link href="/resources/css/mainevent.css?ver=260709" rel="stylesheet">
+	<!-- ✨ Sparkle Card 모듈 (걷어내려면 이 link 1줄과 하단 script 1줄, css/js 2파일 삭제) -->
+	<link href="/resources/css/sparkle-card.css?ver=260424" rel="stylesheet">
+	<link href="/resources/css/app-intro.css?ver=260707b" rel="stylesheet">
+	<link href="/resources/css/main-home.css?ver=260716a" rel="stylesheet">
+	<title>포블로그 체험단 - 블로그 체험단 무료등록사이트</title>
+	<meta name="google-site-verification" content="TM2DzWISrY5IK3gkoXuqZNQb4yKo4etnLjrn4sMn0ZQ" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+	
+
+
+
+ 
+ </head>
+
+<body>
+
+
+<script type="text/javascript">
+
+// ===== 전역 변수 선언 (document.ready 밖) =====
+var isFetching = false;
+var offset = 0;
+var limit = 30;
+var maxItems = 300; // 무한스크롤 최대 로딩 개수 제한
+var hasMoreData = true;
+var category = '' || '';
+var category1 = '' || '';
+var location_param = '' || '';
+var location1 = '' || '';
+var search = '' || '';
+var search2 = '' || '';
+var bidParam = '' || '';  // header.jsp의 bid와 충돌 방지
+
+// 다중 SNS 필터 선택 배열 - URL에서 전달된 category로 초기화
+var selectedSnsFilters = [];
+
+// [2026-07-09] 정렬 드롭다운 상태 (recommend/popular/latest/price/easy)
+var selectedSort = 'recommend' || 'recommend';
+function setSortFilter(key, label) {
+    if (selectedSort === key) { return; }
+    selectedSort = key;
+    var lbl = document.getElementById('sortDropdownLabel');
+    if (lbl) { lbl.textContent = label; }
+    reloadCampaignData();
+}
+
+// URL에서 전달된 category 값으로 초기화 (쉼표로 구분된 다중 선택 지원)
+(function initSnsFilters() {
+    if (category && category !== '' && category !== 'all' && category !== 'today') {
+        // URL에 SNS 필터가 있으면 사용
+        if (category.indexOf(',') > -1) {
+            selectedSnsFilters = category.split(',');
+        } else {
+            selectedSnsFilters = [category];
+        }
+    } else {
+        // URL에 필터가 없으면 localStorage에서 복원 시도
+        try {
+            var saved = localStorage.getItem('snsFilters');
+            if (saved) {
+                var data = JSON.parse(saved);
+                // 5분 이내의 데이터만 사용 (지역 변경 직후)
+                if (data.timestamp && (Date.now() - data.timestamp) < 5 * 60 * 1000) {
+                    if (data.filters && data.filters.length > 0) {
+                        selectedSnsFilters = data.filters;
+                    }
+                }
+            }
+        } catch(e) {}
+    }
+})();
+
+/**
+ * SNS 필터 토글 함수 (전역)
+ * @param {string} filterId - 필터 ID (blog, instar21, youtube21 등)
+ */
+function toggleSnsFilter(filterId) {
+    var index = selectedSnsFilters.indexOf(filterId);
+    if (index > -1) {
+        // 이미 선택된 경우 제거
+        selectedSnsFilters.splice(index, 1);
+    } else {
+        // 선택되지 않은 경우 추가
+        selectedSnsFilters.push(filterId);
+    }
+
+    // UI 업데이트
+    applySnsFilterUI();
+
+    // localStorage에 저장
+    saveSnsFilterToStorage();
+
+    // 데이터 리로드
+    reloadCampaignData();
+}
+
+/**
+ * 전체 SNS 필터 선택/해제 함수
+ */
+function selectAllSnsFilter() {
+    var allFilters = ['blog', 'instar21', 'reels', 'youtube21', 'shorts', 'tiktok', 'threads', 'etc'];
+
+    // 이미 전체 선택되어 있으면 전체 해제
+    if (selectedSnsFilters.length === allFilters.length) {
+        selectedSnsFilters = [];
+    } else {
+        // 전체 선택
+        selectedSnsFilters = allFilters.slice();
+    }
+
+    applySnsFilterUI();
+    saveSnsFilterToStorage();
+    reloadCampaignData();
+}
+
+/**
+ * SNS 필터 UI 적용 함수
+ */
+function applySnsFilterUI() {
+    var allFilters = ['blog', 'instar21', 'reels', 'youtube21', 'shorts', 'tiktok', 'threads', 'etc'];
+
+    // 모든 필터 버튼에서 active 제거
+    $('.smenulink').parent('li').removeClass('active');
+
+    // 선택된 필터들에 active 추가
+    selectedSnsFilters.forEach(function(filterId) {
+        $('.smenulink[data-id="' + filterId + '"]').parent('li').addClass('active');
+    });
+
+    // 전체 선택 상태면 '전체' 버튼도 active
+    if (selectedSnsFilters.length === allFilters.length) {
+        $('.smenulink[data-id="all"]').parent('li').addClass('active');
+    }
+}
+
+/**
+ * localStorage에 필터 저장 + 로그인 시 DB 저장
+ */
+function saveSnsFilterToStorage() {
+    try {
+        var data = {
+            filters: selectedSnsFilters,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('snsFilters', JSON.stringify(data));
+    } catch(e) {}
+
+    // 로그인된 사용자면 DB에도 저장
+    if (bidParam && bidParam !== '') {
+        saveSnsFilterToDB();
+    }
+}
+
+/**
+ * DB에 SNS 필터 저장 (로그인 사용자용)
+ * 칩 연타 시 클릭마다 POST가 나가지 않도록 1초 트레일링 디바운스로 묶는다.
+ */
+var snsFilterSaveTimer = null;
+
+function saveSnsFilterToDB() {
+    if (snsFilterSaveTimer) {
+        clearTimeout(snsFilterSaveTimer);
+    }
+    snsFilterSaveTimer = setTimeout(flushSnsFilterToDB, 1000);
+}
+
+function flushSnsFilterToDB() {
+    if (snsFilterSaveTimer) {
+        clearTimeout(snsFilterSaveTimer);
+        snsFilterSaveTimer = null;
+    }
+    var snsFilterStr = selectedSnsFilters.join(',');
+    var csrfToken = $("meta[name='_csrf']").attr("content");
+    var csrfHeader = $("meta[name='_csrf_header']").attr("content");
+
+    $.ajax({
+        url: '/api/sns-filter',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ snsFilter: snsFilterStr }),
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(csrfHeader, csrfToken);
+        },
+        success: function() {
+        },
+        error: function() {
+        }
+    });
+}
+
+// 디바운스 대기 중 페이지를 떠나면 마지막 필터 상태를 놓치지 않도록 keepalive로 즉시 전송
+window.addEventListener('pagehide', function() {
+    if (!snsFilterSaveTimer) return;
+    clearTimeout(snsFilterSaveTimer);
+    snsFilterSaveTimer = null;
+    try {
+        var headers = { 'Content-Type': 'application/json' };
+        headers[$("meta[name='_csrf_header']").attr("content")] = $("meta[name='_csrf']").attr("content");
+        fetch('/api/sns-filter', {
+            method: 'POST',
+            keepalive: true,
+            headers: headers,
+            body: JSON.stringify({ snsFilter: selectedSnsFilters.join(',') })
+        });
+    } catch(e) {}
+});
+
+/**
+ * localStorage에서 필터 로드
+ */
+function loadSnsFilterFromStorage() {
+    try {
+        var saved = localStorage.getItem('snsFilters');
+        if (saved) {
+            var data = JSON.parse(saved);
+            // 24시간 이내의 데이터만 사용
+            if (data.timestamp && (Date.now() - data.timestamp) < 24 * 60 * 60 * 1000) {
+                selectedSnsFilters = data.filters || [];
+                return true;
+            }
+        }
+    } catch(e) {}
+    return false;
+}
+
+/**
+ * DB에서 SNS 필터 로드 (로그인 사용자용)
+ */
+function loadSnsFilterFromDB(callback) {
+    $.ajax({
+        url: '/api/sns-filter',
+        type: 'GET',
+        success: function(response) {
+            if (response && response !== '' && response !== 'null') {
+                selectedSnsFilters = response.split(',').filter(function(f) { return f !== ''; });
+                applySnsFilterUI();
+                // localStorage에도 동기화
+                try {
+                    localStorage.setItem('snsFilters', JSON.stringify({
+                        filters: selectedSnsFilters,
+                        timestamp: Date.now()
+                    }));
+                } catch(e) {}
+            }
+            if (callback) callback();
+        },
+        error: function() {
+            if (callback) callback();
+        }
+    });
+}
+
+/**
+ * 캠페인 데이터 리로드 (오버레이 교체 방식)
+ * - 기존 콘텐츠를 유지한 채 로딩 오버레이 표시
+ * - 새 데이터 로드 완료 후 한 번에 교체
+ */
+var activeCampaignRequest = null;
+
+function reloadCampaignData() {
+    // 필터를 연속 변경하면 이전 요청을 취소하고 최신 조건으로 다시 요청한다.
+    // (기존 isReloading 플래그 가드는 리로드 중 들어온 필터 변경을 통째로 무시하는 버그가 있었음)
+    if (activeCampaignRequest) {
+        activeCampaignRequest.abort();
+        activeCampaignRequest = null;
+    }
+
+    // URL 업데이트
+    updateUrlWithFilter();
+
+    var $container = $('#rCampaignContainer');
+
+    // 1. 기존 콘텐츠 위에 로딩 오버레이 추가 (컨테이너 크기 유지)
+    $container.css('position', 'relative');
+    var $overlay = $(`
+        <div class="reload-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:flex-start; padding-top:80px; z-index:10; animation:reload-fade-in 0.2s ease;">
+            <div style="text-align:center; padding:30px 50px; background:white; border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+                <div style="width:40px; height:40px; margin:0 auto 15px; border:3px solid #f0f0f0; border-top:3px solid #ff579f; border-radius:50%; animation:reload-spin 0.8s linear infinite;"></div>
+                <p style="margin:0; font-size:14px; font-weight:600; color:#333;">불러오는 중...</p>
+            </div>
+        </div>
+    `);
+    $container.append($overlay);
+
+    // 2. offset 초기화
+    offset = 0;
+    hasMoreData = true;
+    isFetching = false;
+
+    // 3. 새 데이터 로드 (오버레이 모드)
+    loadMoreDataWithOverlay();
+
+    // 4. Premium 섹션도 같은 필터 조건으로 재조회 (크로스 필터링)
+    if (window.loadPremiumSection) {
+        window.loadPremiumSection();
+    }
+}
+
+/**
+ * 오버레이 모드 데이터 로딩 (기존 콘텐츠 교체용)
+ */
+function loadMoreDataWithOverlay() {
+    // 선택된 필터가 없으면 전체 리스트를 표시 (빈 문자열로 처리)
+    var categoryParam = selectedSnsFilters.length > 0 ? selectedSnsFilters.join(',') : '';
+
+    // 마지막 로드 시 limit 조절
+    var currentLimit = Math.min(limit, maxItems - offset);
+
+    var ajaxUrl = search2 ? "/loadMoreDataCategorySearch2" : "/loadMoreDataCategoryV2"; // [정렬V2] 실패 시 /loadMoreDataCategory 로 복구
+    var ajaxData = {
+            offset: offset,
+            limit: currentLimit,
+            category: categoryParam,
+            sort: selectedSort,
+            category1: category1,
+            location: location_param,
+            location1: location1,
+            search: search,
+            search2: search2,
+            bid: bidParam
+        };
+
+    activeCampaignRequest = $.ajax({
+        url: ajaxUrl,
+        data: ajaxData,
+        success: function (response) {
+            activeCampaignRequest = null;
+            var $container = $('#rCampaignContainer');
+
+            // 오버레이와 기존 콘텐츠 제거
+            $container.find('.reload-overlay').remove();
+            $container.children('a').remove();
+
+            // 새 데이터가 없으면
+            if(response.length === 0) {
+                hasMoreData = false;
+            }
+
+            // 새 데이터 추가
+            appendDataToContainer(response);
+            offset += currentLimit;
+            isFetching = false;
+
+            // 스켈레톤 효과 처리
+            setTimeout(skeletonLoaded, 100);
+        },
+        error: function() {
+            activeCampaignRequest = null;
+            // 오버레이 제거
+            $('#rCampaignContainer').find('.reload-overlay').remove();
+            isFetching = false;
+        }
+    });
+}
+
+/**
+ * URL 업데이트 함수
+ */
+function updateUrlWithFilter() {
+    var categoryStr = selectedSnsFilters.length > 0 ? selectedSnsFilters.join(',') : 'all';
+
+    var newUrl = '/list/' + categoryStr;
+
+    if (category1) {
+        newUrl += '/' + category1;
+    }
+    if (location_param) {
+        newUrl += '/' + location_param;
+        if (location1) {
+            newUrl += '/' + location1;
+        }
+    }
+
+    // URL 변경 (새로고침 없이)
+    if (history.pushState) {
+        history.pushState(null, null, newUrl);
+    }
+}
+
+/**
+ * 무한 스크롤 데이터 로딩 (전역 함수)
+ */
+function loadMoreData() {
+    $(".loding").show();
+
+    setTimeout(function() {
+        $(".loding").hide();
+    }, 1000);
+
+    if (isFetching || !hasMoreData) {
+        return;
+    }
+
+    // 최대 로딩 개수 제한
+    if (offset >= maxItems) {
+        hasMoreData = false;
+        $(".loding").hide();
+        return;
+    }
+    isFetching = true;
+
+    // 마지막 로드 시 limit 조절 (정확히 maxItems개에서 멈추기)
+    var currentLimit = Math.min(limit, maxItems - offset);
+
+    // 선택된 필터가 없으면 전체 리스트를 표시 (빈 문자열로 처리)
+    var categoryParam = selectedSnsFilters.length > 0 ? selectedSnsFilters.join(',') : '';
+
+    var ajaxUrl = search2 ? "/loadMoreDataCategorySearch2" : "/loadMoreDataCategoryV2"; // [정렬V2] 실패 시 /loadMoreDataCategory 로 복구
+    var ajaxData = {
+            offset: offset,
+            limit: currentLimit,
+            category: categoryParam,
+            sort: selectedSort,
+            category1: category1,
+            location: location_param,
+            location1: location1,
+            search: search,
+            search2: search2,
+            bid: bidParam
+        };
+
+    activeCampaignRequest = $.ajax({
+        url: ajaxUrl,
+        data: ajaxData,
+        success: function (response) {
+            activeCampaignRequest = null;
+            if(response.length === 0) {
+                hasMoreData = false;
+                $(".loding").hide();
+            }
+            appendDataToContainer(response);
+            offset += currentLimit;
+            isFetching = false;
+
+            setTimeout(skeletonLoaded, 100);
+        },
+        error: function() {
+            activeCampaignRequest = null;
+            isFetching = false;
+            $(".loding").hide();
+        }
+    });
+
+}
+
+/**
+ * 데이터를 컨테이너에 추가하는 함수 (전역)
+ */
+function appendDataToContainer(data) {
+    var container = document.getElementById('rCampaignContainer');
+    if (!container) return;
+
+    data.forEach(function (item) {
+        if (item.TYPECODE === 'COUPON') {
+            appendCouponMockups(container, item);
+            return;
+        }
+        var categoryClass = getCategoryClass(item);
+        var categoryLabel = getCategory(item);
+        var PointAndDateHtml = getPointAndDateHtml(item);
+        var typecodeClass = getTypecodeClass(item);
+
+        if (/\[.*?\]/.test(item.CAMPAIGN_NM) && /\[.*?\]/.test(item.LOCATION_NM)) {
+            item.LOCATION_NM = item.LOCATION_NM.replace(/\[.*?\]/g, "");
+        }
+
+        var html = '<a class="nounderline" href="/campaign/' + item.CID + '/" target="_blank">' +
+            '<div class="mainbox skeleton">' +
+            '<div class="main-img-div" style="position: relative;">' +
+            '<img src="https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/' + item.PRID + '/thumbnail/' + item.IMGKEY + '" class="img-rounded main-img-inbox" loading="lazy" onerror="this.src=\'../../resources/img/empty.gif\'" />' +
+            '</div>' +
+            '<div class="camp-description">';
+
+        if (item.FAVORITE === 1) {
+            html += '<i class="heart fa fa-sm fa-heart"></i>';
+        }
+
+        html += '<div class="remainInfo">' +
+            '<span class="' + categoryClass + '" style="float:left">' + categoryLabel + '</span>';
+
+        if (item.TYPECODE === 'FREE') {
+            html += '<span class="' + typecodeClass + '" style="float:left">🌱 셀프등록</span>';
+        }
+
+        html += '</div>' +
+            '<span class="camp-name">' + (item.LOCATION_NM || '') + ' ' + item.CAMPAIGN_NM + '</span>' +
+            '<div class="emphasize">' + item.REVIEWER_BENEFIT + '</div>' +
+            '<div class="border"></div>' +
+            '<div class="2nd_info">';
+
+        if (item.TYPECODE === 'FREE' && item.PROFILE_100X100) {
+            html += '<img src="' + item.PROFILE_100X100 + '" style="width: 25px; height: 25px; border-radius: 50%; float: left; margin-right: 5px;" onerror="this.style.display=\'none\'"/>';
+        }
+        if (item.TYPECODE === 'FREE' && item.NICK_NM) {
+            html += '<span style="float: left; line-height: 25px; margin-right: 8px; font-size: 12px; color: #666;">' + item.NICK_NM + '</span>';
+        }
+
+        html += '<div class="point">' + PointAndDateHtml + '</div>' +
+            '</div></div></div></a>';
+
+        if(item.IMGKEY != null && item.IMGKEY != ''){
+            // 주의: 여기서 var container 재선언 금지 — 호이스팅으로 콜백 전체에서 바깥 container를
+            // 가려 쿠폰 분기(appendCouponMockups)에 undefined가 넘어가는 버그가 있었음
+            container.insertAdjacentHTML('beforeend', html);
+        }
+    });
+}
+
+function formatCouponNumber(value) {
+    var number = Number(value || 0);
+    return isNaN(number) ? '0' : number.toLocaleString('ko-KR');
+}
+
+function escapeCouponHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function couponCardShell(item, variant, body) {
+    var imageUrl = 'https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/' + item.PRID + '/thumbnail/' + item.IMGKEY;
+    return '<a class="nounderline coupon-proposal-link" href="/campaign/' + item.CID + '/" target="_blank">'
+        + '<article class="mainbox skeleton coupon-list-card coupon-list-card--' + variant + '">'
+        + '<div class="main-img-div coupon-list-card__media"><img src="' + imageUrl + '" class="img-rounded main-img-inbox lazy" alt="' + escapeCouponHtml(item.CAMPAIGN_NM || '쿠폰 캠페인') + '">'
+        + '</div>'
+        + '<div class="camp-description coupon-list-card__body">' + body + '</div></article></a>';
+}
+
+function appendCouponMockups(container, item) {
+    var title = escapeCouponHtml((item.LOCATION_NM || '') + ' ' + (item.CAMPAIGN_NM || ''));
+    // 리스트 카드 할인율 = 최저 등급 루키 20% 기준 (BlogConstants.COUPON_DISCOUNT_RATE 와 동기화)
+    var baseDiscountRate = 20;
+    var discountedPrice = formatCouponNumber(Math.round(Number(item.PR_PRICE || 0) * (100 - baseDiscountRate) / 100));
+    var originalPrice = formatCouponNumber(Number(item.PR_PRICE || 0));
+    var couponCategoryClass = getCategoryClass(item);
+    var couponCategoryLabel = item.CATEGORY === 'blog' ? '블로그' : getCategory(item);
+    var body = '<div class="remainInfo"><span class="' + couponCategoryClass + '" style="float:left">' + couponCategoryLabel + '</span>'
+        + '<span class="coupon-list-card__live" style="float:left"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> 실시간 쿠폰</span></div><h3 class="camp-name">' + title + '</h3>'
+        + '<div class="coupon-list-card__price coupon-list-card__price--sale"><strong>' + baseDiscountRate + '%</strong><span>' + discountedPrice + '원</span><del class="coupon-list-card__origin">' + originalPrice + '원</del></div>'
+        + '<div class="coupon-list-card__meta coupon-list-card__experience"><span><i class="bi bi-ticket-perforated" aria-hidden="true"></i> 지금 바로 방문 가능</span></div>';
+    container.insertAdjacentHTML('beforeend', couponCardShell(item, 'a', body));
+}
+
+/**
+ * 포인트와 날짜 정보 HTML 생성 (전역)
+ */
+function getPointAndDateHtml(item) {
+    var html = '';
+
+    html += '<span class="remainDate">';
+    if (item.REMAINDATE != null) {
+        var remaindate = Math.abs(item.REMAINDATE);
+        var displayDate = item.REMAINDATE >= 0 ? 'D-' + remaindate : 'D+' + remaindate;
+
+        if (item.REMAINDATE === 0) {
+            html += '<span class="label label-bb campaign-deadline-badge">오늘마감</span>';
+        } else {
+            html += '<span class="fontcolor">' + displayDate + '</span>';
+        }
+    }
+    html += '</span>';
+
+    var fCPoint = (item.CPOINT != null && item.CPOINT !== '' && item.CPOINT !== '0') ? item.CPOINT : '';
+    var fPayback = (item.PAYBACK != null && item.PAYBACK !== '' && item.PAYBACK !== '0') ? item.PAYBACK : '';
+
+    if (fCPoint != 0 && !isNaN(Number(fCPoint))) {
+        fCPoint = Number(fCPoint).toLocaleString();
+    }
+    if (fPayback != 0 && !isNaN(Number(fPayback))) {
+        fPayback = Number(fPayback).toLocaleString();
+    }
+    if (fCPoint && fPayback) {
+        html += '<span class="label label-bb campaign-reward-badge">' + fPayback + 'P</span>';
+        html += '<span class="label label-bb campaign-reward-badge">' + fCPoint + 'P</span>';
+    } else if (fCPoint) {
+        html += '<span class="label label-bb campaign-reward-badge">' + fCPoint + 'P</span>';
+    } else if (fPayback) {
+        html += '<span class="label label-bb campaign-reward-badge">' + fPayback + 'P</span>';
+    }
+
+    return html;
+}
+
+/**
+ * 캠페인 카테고리 표시 문자열 반환 (전역)
+ */
+function getCategory(item) {
+    if (item.CATEGORY1 === 'reporter') {
+        return '포스팅';
+    } else if (item.CATEGORY === 'blog') {
+        return 'blog';
+    } else if (item.CATEGORY === 'instar21') {
+        return '<i class="bi-instagram"></i>';
+    } else if (item.CATEGORY === 'reels') {
+        return '<img src="/resources/svg/reels.svg" class="sIcon reelsIcon">';
+    } else if (item.CATEGORY === 'ncafe') {
+        return 'N카페';
+    } else if (item.CATEGORY === 'youtube21') {
+        return '<img src="/resources/svg/youtube.svg" class="syouIcon">';
+    } else if (item.CATEGORY === 'shorts') {
+        return '<img src="/resources/svg/shorts.svg" class="sIcon">';
+    } else if (item.CATEGORY === 'tiktok') {
+        return '<img src="/resources/svg/tiktok.svg" class="sIcon">';
+    } else if (item.CATEGORY === 'threads') {
+        return '<img src="/resources/svg/threads.svg" class="sIcon">';
+    } else if (item.CATEGORY === 'etc') {
+        return '기타';
+    } else {
+        return '';
+    }
+}
+
+/**
+ * 캠페인 카테고리 CSS 클래스 반환 (전역)
+ */
+function getCategoryClass(item) {
+    if (item.CATEGORY1 === 'reporter') {
+        return 'label label-bb campaign-type-badge';
+    } else if (item.CATEGORY === 'blog') {
+        return 'label label-success';
+    } else if (item.CATEGORY === 'instar21') {
+        return 'label label-default label-insta';
+    } else if (item.CATEGORY === 'reels') {
+        return 'label label-reels';
+    } else if (item.CATEGORY === 'ncafe') {
+        return 'label label-success';
+    } else if (item.CATEGORY === 'youtube21') {
+        return 'label shortsIcon';
+    } else if (item.CATEGORY === 'shorts') {
+        return 'label shortsIcon';
+    } else if (item.CATEGORY === 'tiktok') {
+        return 'label shortsIcon';
+    } else if (item.CATEGORY === 'threads') {
+        return 'label shortsIcon';
+    } else if (item.CATEGORY === 'etc') {
+        return 'label label-default';
+    } else {
+        return '';
+    }
+}
+
+/**
+ * 캠페인 타입에 따른 CSS 클래스 반환 (전역)
+ */
+function getTypecodeClass(item) {
+    if (item.TYPECODE === 'FREE') {
+        return 'label label-default lbtp';
+    } else {
+        return 'dpn';
+    }
+}
+
+/**
+ * 스켈레톤 로딩 효과 완료 처리 (전역)
+ */
+function skeletonLoaded() {
+    var skeletonElements = document.querySelectorAll('.skeleton');
+
+    Array.prototype.forEach.call(skeletonElements, function(element, index) {
+        setTimeout(function() {
+            element.style.opacity = '1';
+            element.classList.remove('skeleton');
+
+            var childElements = element.children;
+            for (var i = 0; i < childElements.length; i++) {
+                childElements[i].style.visibility = 'visible';
+            }
+
+            if (element.tagName.toLowerCase() === 'img' || element.tagName.toLowerCase() === 'p' || element.tagName.toLowerCase() === 'span') {
+                element.style.visibility = 'visible';
+            }
+        }, index * 5);
+    });
+}
+
+ $(document).ready(function(){
+
+	 // 필터가 있으면 UI 적용 및 URL 업데이트
+	 if (selectedSnsFilters.length > 0) {
+		 applySnsFilterUI();
+		 // localStorage에서 복원된 경우 URL도 업데이트
+		 if (category === '' || category === 'all' || category === 'today') {
+			 updateUrlWithFilter();
+		 }
+	 }
+
+	 /* ── 메인 배너: 자체 3D 원형 캐러셀 (c3d) ──────────────────────
+	    천장에서 내려다본 원 궤도 회전. 위치 슬롯(클래스)은 main-home.css 소유:
+	    정면(c3d-center) → 좌후방(c3d-left) → 중앙후방(c3d-back-left, 소멸)
+	    ← 우후방(c3d-right) ← 중앙후방(c3d-back-right, 등장 대기)
+	    - 자동재생 5초, 호버/터치 중 일시정지 (구 slick 설정 계승)
+	    - 도트로 여러 장 점프 시 중간 배너들이 전부 궤도를 타고 순차 통과
+	    - 사이드 배너 클릭 = 그 배너까지 회전, 모바일 스와이프 지원 */
+	 (function(){
+		var stage = document.querySelector('.slider-div');
+		if (!stage) return;
+		var slides = Array.prototype.filter.call(stage.children, function(el){
+			return el.classList && el.classList.contains('main-event');
+		});
+		var n = slides.length;
+		if (!n) return;
+		/* 배너는 서버렌더 완료 상태 — 스켈레톤 대기 불필요 */
+		stage.classList.remove('skeleton');
+		stage.style.opacity = '1';
+		stage.classList.add('c3d-on', 'c3d-noanim');
+		if (n === 1) { slides[0].classList.add('c3d-center'); stage.classList.remove('c3d-noanim'); return; }
+
+		var cur = 0, animating = false, timer = null, swallowClick = false;
+		var STEP_MS = 610, STEP_FAST_MS = 330, AUTO_MS = 5000;
+
+		function slotFor(rel){
+			if (rel === 0) return 'c3d-center';
+			if (rel === 1) return 'c3d-right';
+			if (rel === n - 1) return 'c3d-left';
+			if (n > 3 && rel === 2) return 'c3d-back-right';
+			if (n > 3 && rel === n - 2) return 'c3d-back-left';
+			return 'c3d-far';
+		}
+		function render(){
+			slides.forEach(function(s, i){
+				var rel = ((i - cur) % n + n) % n;
+				s.classList.remove('c3d-center','c3d-left','c3d-right','c3d-back-left','c3d-back-right','c3d-far');
+				s.classList.add(slotFor(rel));
+			});
+			dots.forEach(function(li, i){ li.classList.toggle('slick-active', i === cur); });
+		}
+		/* dir(+1/-1)로 steps번 — 마지막 스텝만 기본 속도로 감속해 자연스럽게 정지 */
+		function rotate(steps, dir){
+			if (animating || !steps) return;
+			animating = true;
+			(function run(){
+				var last = (steps === 1);
+				stage.classList.toggle('c3d-fast', !last);
+				cur = (cur + dir + n) % n;
+				render();
+				steps--;
+				setTimeout(function(){
+					if (steps > 0) run();
+					else { stage.classList.remove('c3d-fast'); animating = false; }
+				}, last ? STEP_MS : STEP_FAST_MS);
+			})();
+		}
+		function goTo(target){
+			var fwd = ((target - cur) % n + n) % n;
+			if (!fwd) return;
+			if (fwd <= n - fwd) rotate(fwd, 1);
+			else rotate(n - fwd, -1);
+		}
+
+		/* 도트 (마크업/클래스는 구 slick과 동일 — 스타일 재사용) */
+		var dotWrap = document.createElement('ul');
+		dotWrap.className = 'slick-dots';
+		var dots = slides.map(function(_, i){
+			var li = document.createElement('li');
+			var b = document.createElement('button');
+			b.type = 'button';
+			b.setAttribute('aria-label', (i + 1) + '번째 배너');
+			b.addEventListener('click', function(){ goTo(i); restartAuto(); });
+			li.appendChild(b);
+			dotWrap.appendChild(li);
+			return li;
+		});
+		stage.appendChild(dotWrap);
+
+		/* 사이드 배너 클릭 → 그 배너로 회전 */
+		slides.forEach(function(s, i){
+			s.addEventListener('click', function(e){
+				if (swallowClick) { e.preventDefault(); e.stopPropagation(); swallowClick = false; return; }
+				if (i === cur) return;
+				e.preventDefault();
+				goTo(i);
+				restartAuto();
+			});
+		});
+
+		/* 자동재생 + 호버/터치 일시정지 */
+		function startAuto(){ stopAuto(); timer = setInterval(function(){ rotate(1, 1); }, AUTO_MS); }
+		function stopAuto(){ if (timer) { clearInterval(timer); timer = null; } }
+		function restartAuto(){ startAuto(); }
+		stage.addEventListener('mouseenter', stopAuto);
+		stage.addEventListener('mouseleave', startAuto);
+
+		/* 모바일 스와이프 */
+		var tx = 0, ty = 0, moved = false;
+		stage.addEventListener('touchstart', function(e){
+			tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; stopAuto();
+		}, {passive: true});
+		stage.addEventListener('touchmove', function(e){
+			if (Math.abs(e.touches[0].clientX - tx) > 10) moved = true;
+		}, {passive: true});
+		stage.addEventListener('touchend', function(e){
+			var dx = e.changedTouches[0].clientX - tx;
+			var dy = e.changedTouches[0].clientY - ty;
+			if (moved && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+				swallowClick = true;
+				rotate(1, dx < 0 ? 1 : -1);
+			}
+			startAuto();
+		}, {passive: true});
+
+		render();
+		requestAnimationFrame(function(){ requestAnimationFrame(function(){
+			stage.classList.remove('c3d-noanim');
+		}); });
+		startAuto();
+	 })();
+
+
+	 setTimeout(function() {
+		 $(".loding").hide();
+	 }, 1000); // 2000 밀리초 = 2초
+
+	 // 관심 캠페인 로드 (로그인 사용자만)
+	 if (bidParam && bidParam !== '') {
+		 $.ajax({
+			 url: '/api/sectionCampaigns',
+			 data: { type: 'favorite' },
+			 dataType: 'json',
+			 success: function(data) {
+				 if (!data || data.length === 0) return;
+				 var $list = $('#secFavoriteList');
+				 data.forEach(function(item) {
+					 if (!item.IMGKEY) return;
+
+					 var categoryClass = getCategoryClass(item);
+					 var categoryLabel = getCategory(item);
+					 var PointAndDateHtml = getPointAndDateHtml(item);
+					 var typecodeClass = getTypecodeClass(item);
+
+					 if (/\[.*?\]/.test(item.CAMPAIGN_NM) && /\[.*?\]/.test(item.LOCATION_NM)) {
+						 item.LOCATION_NM = item.LOCATION_NM.replace(/\[.*?\]/g, '');
+					 }
+
+					 // appendDataToContainer()와 동일한 카드 HTML
+					 var html = '<a class="nounderline" href="/campaign/' + item.CID + '/" target="_blank">' +
+						 '<div class="mainbox">' +
+						 '<div class="main-img-div" style="position:relative;">' +
+						 '<img src="https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/' + item.PRID + '/thumbnail/' + item.IMGKEY + '" class="img-rounded main-img-inbox" loading="lazy" onerror="this.src=\'../../resources/img/empty.gif\'" />' +
+						 '</div>' +
+						 '<div class="camp-description">';
+
+					 // 관심 캠페인 섹션이므로 항상 하트 표시
+					 html += '<i class="heart fa fa-sm fa-heart"></i>';
+
+					 html += '<div class="remainInfo">' +
+						 '<span class="' + categoryClass + '" style="float:left">' + categoryLabel + '</span>';
+
+					 if (item.TYPECODE === 'FREE') {
+						 html += '<span class="' + typecodeClass + '" style="float:left">🌱 셀프등록</span>';
+					 }
+
+					 html += '</div>' +
+						 '<span class="camp-name">' + (item.LOCATION_NM || '') + ' ' + item.CAMPAIGN_NM + '</span>' +
+						 '<div class="emphasize">' + item.REVIEWER_BENEFIT + '</div>' +
+						 '<div class="border"></div>';
+
+					 if (item.TYPECODE === 'FREE' && item.PROFILE_100X100) {
+						 html += '<img src="' + item.PROFILE_100X100 + '" style="width:25px; height:25px; border-radius:50%; float:left; margin-right:5px;" onerror="this.style.display=\'none\'"/>';
+					 }
+					 if (item.TYPECODE === 'FREE' && item.NICK_NM) {
+						 html += '<span style="float:left; line-height:25px; margin-right:8px; font-size:12px; color:#666;">' + item.NICK_NM + '</span>';
+					 }
+
+					 html += '<div class="point">' + PointAndDateHtml + '</div>' +
+						 '</div></div></a>';
+
+					 $list.append(html);
+				 });
+				 $('#secFavorite').show();
+			 }
+		 });
+	 }
+
+	 // Premium 캠페인 로드 — 현재 SNS필터/지역/검색 조건 크로스 적용,
+	 // BMP_PRODUCT.VIEW_ORDER(노출 우선순위) 높은 순 (서버 정렬)
+	 window.loadPremiumSection = function() {
+	 if (search2) { $('#secPremium').hide(); return; } // search2 검색은 별도 쿼리라 제외
+	 var categoryParam = selectedSnsFilters.length > 0 ? selectedSnsFilters.join(',') : '';
+	 $.ajax({
+		 url: '/api/sectionCampaigns',
+		 data: {
+			 type: 'premium',
+			 category: categoryParam,
+			 sort: selectedSort,
+			 category1: category1,
+			 location: location_param,
+			 location1: location1,
+			 search: search
+		 },
+		 dataType: 'json',
+		 success: function(data) {
+			 var $list = $('#secPremiumList');
+			 $list.empty(); // 필터 재조회 시 기존 카드 교체
+			 if (!data || data.length === 0) { $('#secPremium').hide(); return; }
+			 data.forEach(function(item) {
+				 if (!item.IMGKEY) return;
+				 if (item.TYPECODE === 'COUPON') {
+					 appendCouponMockups($list[0], item);
+					 return;
+				 }
+
+				 var categoryClass = getCategoryClass(item);
+				 var categoryLabel = getCategory(item);
+				 var PointAndDateHtml = getPointAndDateHtml(item);
+				 var typecodeClass = getTypecodeClass(item);
+
+				 if (/\[.*?\]/.test(item.CAMPAIGN_NM) && /\[.*?\]/.test(item.LOCATION_NM)) {
+					 item.LOCATION_NM = item.LOCATION_NM.replace(/\[.*?\]/g, '');
+				 }
+
+				 // appendDataToContainer()와 동일한 카드 HTML
+				 var html = '<a class="nounderline" href="/campaign/' + item.CID + '/" target="_blank">' +
+					 '<div class="mainbox">' +
+					 '<div class="main-img-div" style="position:relative;">' +
+					 '<img src="https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/' + item.PRID + '/thumbnail/' + item.IMGKEY + '" class="img-rounded main-img-inbox" loading="lazy" onerror="this.src=\'../../resources/img/empty.gif\'" />' +
+					 '<span style="position:absolute; top:8px; left:8px; background:#ff6b9d; color:#fff; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px;">프리미엄</span>' +
+					 '</div>' +
+					 '<div class="camp-description">';
+
+				 if (item.FAVORITE === 1) {
+					 html += '<i class="heart fa fa-sm fa-heart"></i>';
+				 }
+
+				 html += '<div class="remainInfo">' +
+					 '<span class="' + categoryClass + '" style="float:left">' + categoryLabel + '</span>' +
+					 '</div>' +
+					 '<span class="camp-name">' + (item.LOCATION_NM || '') + ' ' + item.CAMPAIGN_NM + '</span>' +
+					 '<div class="emphasize">' + item.REVIEWER_BENEFIT + '</div>' +
+					 '<div class="border"></div>' +
+					 '<div class="point">' + PointAndDateHtml + '</div>' +
+					 '</div></div></a>';
+
+				 $list.append(html);
+			 });
+			 $('#secPremium').show();
+		 }
+	 });
+	 };
+	 loadPremiumSection();
+
+	 // 초기 데이터 로드
+	 loadMoreData();
+
+	 window.addEventListener("scroll", function () {
+		 if (!hasMoreData) return; // 데이터가 더 이상 없으면 요청하지 않음
+
+		 const SCROLLED_HEIGHT = window.scrollY;
+		 const WINDOW_HEIGHT = window.innerHeight;
+		 const DOC_TOTAL_HEIGHT = document.body.offsetHeight;
+
+		 const IS_BOTTOM = WINDOW_HEIGHT + SCROLLED_HEIGHT === DOC_TOTAL_HEIGHT;
+		 const IS_END = WINDOW_HEIGHT + SCROLLED_HEIGHT > DOC_TOTAL_HEIGHT - 6000;
+
+		 if ((IS_END && !isFetching) || IS_BOTTOM) {
+			 loadMoreData();
+		 }
+	 });
+
+
+	 // 함수들은 전역으로 정의됨 (document.ready 밖)
+	 // 페이지 1차 로딩 후 스켈레톤 제거
+	 document.addEventListener('DOMContentLoaded', function () {
+		 setTimeout(skeletonLoaded, 500);
+	 });
+
+
+
+
+
+	 // bidParam은 이미 상단에서 선언됨 (header.jsp의 bid와 충돌 방지)
+
+	 // bidParam을 사용하여 블로거의 블로그 주소를 가져옴
+	 if(bidParam != null && bidParam != ""){
+		 $.ajax({
+			 url: "/getBloggerURL",
+			 type: "GET",
+			 data: {"bid": bidParam},
+			 dataType: "json",
+			 success: function (data) {
+				 var blogId = data.blogId;
+				 if (data.status === "success") {
+					 $('#blogChk').text("내 블로그 주소 http://blog.naver.com/" + blogId + " 는 정상입니다 ~ ^^");
+					 $('#notice').css('display', 'none');
+				 } else if(data.status === "redirect") {
+					 $('#blogChk').html('<span class=\'badge\'>주의</span>  - 내 블로그 주소 blog.naver.com/' + blogId + "는 삭제되었거나 다른 페이지로 변경되었습니다. </br> 업데이트 필요합니다 주소를 수정해주세요");
+				 } else if(data.status === "needUpdate") {
+					 $('#blogChk').html('<span class=\'badge\'>주의</span>  - 내 블로그 주소 blog.naver.com/' + blogId + "는 잘못되었습니다. </br> 업데이트 필요합니다 주소를 수정해주세요");
+				 } else {
+					 $('#blogChk').html('<span class=\'badge\'>주의</span>  - 내 블로그 주소 blog.naver.com/' + blogId + "는 잘못되었습니다. </br> 주소를 수정해주세요");
+				 }
+			 },
+			 error: function () {
+				 $('#blogChk').text("내 블로그 주소 체크를 실패했습니다 운영팀에 문의하세요");
+			 }
+		 });
+	 }
+
+
+
+
+
+}); <!-- document ready end !-->
+
+
+ </script>
+
+
+
+
+<div class="home-v2">
+
+<section class="hv2-banner">
+<div class="main-banner-container slider-div skeleton">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+<style>
+/* ── 공용 스켈레톤 (evs = event slide) ─────────────────────── */
+.evs__box{position:relative;width:100%;padding-bottom:57.14%;border-radius:var(--hv2-radius-lg,16px);overflow:hidden}
+.evs__inner{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;gap:2.6%;padding:0 6% 0 7%;z-index:2}
+.evs__eyebrow{display:inline-flex;align-items:center;gap:6px;border-radius:99px;
+  padding:.7% 2.2%;font-size:clamp(9px,1.7vw,12px);font-weight:800;letter-spacing:1.5px}
+.evs__sub{font-size:clamp(11px,2.3vw,16px);font-weight:600;letter-spacing:-.2px}
+.evs__title{font-size:clamp(23px,5.6vw,40px);font-weight:900;letter-spacing:-1.2px;line-height:1.14}
+.evs__cta{display:inline-flex;align-items:center;gap:7px;margin-top:2.4%;border-radius:99px;
+  padding:1.9% 4.2%;font-size:clamp(11px,2.1vw,14px);font-weight:800}
+.evs__cta i{font-style:normal;transition:transform .2s}
+.evs a:hover .evs__cta i{transform:translateX(3px)}
+.evs__deco{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}
+.evs__spark{position:absolute;animation:evsSpark 2.2s ease-in-out infinite;font-size:clamp(8px,1.7vw,14px)}
+@keyframes evsSpark{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes evsFloatA{0%,100%{margin-top:0;margin-left:0}30%{margin-top:-7px;margin-left:4px}65%{margin-top:3px;margin-left:-3px}}
+@keyframes evsFloatB{0%,100%{margin-top:0;margin-left:0}40%{margin-top:6px;margin-left:-5px}75%{margin-top:-4px;margin-left:3px}}
+@keyframes evsFloatC{0%,100%{margin-top:0;margin-left:0}35%{margin-top:-5px;margin-left:-4px}70%{margin-top:4px;margin-left:5px}}
+
+/* ── ① 무료 체험단 플랫폼 — 크림 파스텔 (원본 003) ─────────── */
+.evs--free .evs__box{background:
+  radial-gradient(ellipse 50% 60% at 82% 30%, rgba(242,139,116,.25), transparent 62%),
+  radial-gradient(ellipse 40% 50% at 8% 95%, rgba(185,207,154,.3), transparent 60%),
+  linear-gradient(135deg,#faf3ea 0%,#f5e9da 55%,#f0e0cc 100%)}
+.evs--free .evs__eyebrow{background:rgba(122,158,90,.12);border:1px solid rgba(122,158,90,.45);color:#5f8a3e}
+.evs--free .evs__sub{color:#8a7663}
+.evs--free .evs__title{background:linear-gradient(120deg,#2f3350,#565d92 55%,#2f3350);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.evs--free .evs__cta{background:linear-gradient(90deg,#f28b74,#f5a98f);color:#fff;
+  box-shadow:0 6px 18px rgba(242,139,116,.45)}
+/* 파스텔 행성들 (구 형태 = 라디얼 하이라이트) */
+.evs-ball{position:absolute;border-radius:50%;transform:translate(-50%,-50%)}
+.evs--free .evs-ball--coral{left:79%;top:36%;width:21%;padding-bottom:21%;z-index:2;
+  background:radial-gradient(circle at 34% 28%, #f8b3a0, #f28b74 55%, #dd6f57);
+  box-shadow:0 10px 26px rgba(221,111,87,.35);animation:evsFloatA 7s ease-in-out infinite}
+.evs--free .evs-ball--peach{left:65%;top:62%;width:11%;padding-bottom:11%;z-index:3;
+  background:radial-gradient(circle at 34% 28%, #fbdcbd, #f7c59f 58%, #e8a878);
+  box-shadow:0 8px 18px rgba(232,168,120,.4);animation:evsFloatC 6.5s ease-in-out infinite}
+.evs--free .evs-ball--sage{left:91%;top:14%;width:7.5%;padding-bottom:7.5%;z-index:1;opacity:.9;
+  background:radial-gradient(circle at 34% 28%, #d3e4b8, #b9cf9a 58%, #9cb47c);
+  animation:evsFloatB 8.5s ease-in-out infinite}
+.evs--free .evs-orbit{position:absolute;left:79%;top:36%;width:40%;height:24%;
+  transform:translate(-50%,-50%) rotate(-16deg);border:1px dashed rgba(138,118,99,.35);border-radius:50%}
+.evs--free .evs__spark{color:#e8926f}
+.evs--free .evs__spark--1{left:68%;top:16%;animation-delay:.3s}
+.evs--free .evs__spark--2{left:94%;top:56%;animation-delay:1.2s}
+
+/* ── ② 패널티 V3 — 옐로 경고 (원본 004) ────────────────────── */
+.evs--penalty .evs__box{background:
+  radial-gradient(ellipse 55% 65% at 76% 40%, rgba(255,255,255,.22), transparent 58%),
+  linear-gradient(135deg,#ffdd55 0%,#ffd12e 55%,#f8c400 100%)}
+/* 원본의 방사형 집중선 */
+.evs--penalty .evs__box::after{content:'';position:absolute;top:-25%;left:-25%;right:-25%;bottom:-25%;
+  background:repeating-conic-gradient(from 0deg at 74% 40%, rgba(255,255,255,.16) 0 4deg, transparent 4deg 10deg);
+  pointer-events:none}
+.evs--penalty .evs__eyebrow{background:rgba(20,18,10,.85);border:1px solid #14120a;color:#ffd12e}
+.evs--penalty .evs__sub{color:#6e5a00;font-weight:800}
+.evs--penalty .evs__title{color:#171204;text-shadow:0 2px 0 rgba(255,255,255,.35)}
+.evs--penalty .evs__cta{background:#171204;color:#ffd766;box-shadow:0 6px 18px rgba(90,70,0,.35)}
+/* CSS 수갑: 링 2개 + 연결 고리 */
+.evs-cuff{position:absolute;border-radius:50%;transform:translate(-50%,-50%);z-index:2;
+  border:solid #fff;border-width:clamp(6px,1.6vw,13px);background:transparent;
+  box-shadow:0 8px 20px rgba(120,90,0,.35), inset 0 0 0 2px rgba(0,0,0,.06)}
+.evs-cuff--1{left:73%;top:36%;width:13%;padding-bottom:13%;animation:evsFloatA 6s ease-in-out infinite}
+.evs-cuff--2{left:85%;top:52%;width:13%;padding-bottom:13%;animation:evsFloatB 6s ease-in-out .4s infinite}
+.evs-cuff-link{position:absolute;left:79%;top:44%;width:5%;height:2.4%;transform:translate(-50%,-50%) rotate(38deg);
+  border:3px solid #fff;border-radius:99px;z-index:1;animation:evsFloatC 6s ease-in-out .2s infinite}
+/* 철컹 말풍선 */
+.evs-clank{position:absolute;background:#171204;color:#ffd766;border-radius:99px;font-weight:800;
+  padding:.6% 1.8%;font-size:clamp(8px,1.6vw,12px);transform:rotate(-8deg);z-index:3}
+.evs-clank--1{left:64%;top:20%;animation:evsFloatC 5s ease-in-out infinite}
+.evs-clank--2{left:90%;top:72%;transform:rotate(6deg);animation:evsFloatA 5.5s ease-in-out .6s infinite}
+.evs--penalty .evs__spark{color:#171204}
+.evs--penalty .evs__spark--1{left:69%;top:64%;animation-delay:.5s}
+.evs--penalty .evs__spark--2{left:93%;top:22%;animation-delay:1.4s}
+
+/* ── ③ 유튜버 구함 — 스카이 블루 (원본 005) ────────────────── */
+.evs--tuber .evs__box{background:
+  radial-gradient(ellipse 55% 70% at 78% 34%, rgba(255,255,255,.4), transparent 60%),
+  radial-gradient(ellipse 45% 55% at 6% 100%, rgba(255,255,255,.25), transparent 55%),
+  linear-gradient(135deg,#9edcfb 0%,#5bbdf4 55%,#38a3ec 100%)}
+.evs--tuber .evs__eyebrow{background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.75);color:#1c5d94}
+.evs--tuber .evs__sub{color:#1c5d94}
+.evs--tuber .evs__title{background:linear-gradient(110deg,#584bd2 30%,#8a7ff0 50%,#584bd2 70%);
+  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;animation:evsShine 4s linear infinite}
+@keyframes evsShine{to{background-position:-220% 0}}
+.evs--tuber .evs__cta{background:linear-gradient(90deg,#584bd2,#8a7ff0);color:#fff;
+  box-shadow:0 6px 18px rgba(88,75,210,.4)}
+/* 4 로고 행성 + 구독/좋아요 말풍선 + 물방울 */
+.evs-logo4{position:absolute;left:79%;top:38%;width:19%;padding-bottom:19%;border-radius:50%;
+  transform:translate(-50%,-50%);background:radial-gradient(circle at 32% 26%, #ffffff, #f2f8ff 60%, #d8ecfb);
+  box-shadow:0 12px 28px rgba(28,93,148,.3);z-index:2;animation:evsFloatA 7s ease-in-out infinite}
+.evs-logo4 span{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(26px,6.4vw,54px);font-weight:900;
+  background:linear-gradient(135deg,#584bd2,#b08df5);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent}
+.evs-bubble{position:absolute;left:90%;top:16%;background:#ffe14d;color:#171204;border-radius:12px;
+  padding:1.2% 2.2%;font-size:clamp(9px,1.9vw,13px);font-weight:800;line-height:1.3;text-align:center;
+  transform:translate(-50%,-50%) rotate(6deg);box-shadow:0 6px 14px rgba(28,93,148,.25);z-index:3;
+  animation:evsFloatC 5.5s ease-in-out infinite}
+.evs-bubble::after{content:'';position:absolute;left:24%;bottom:-7px;border:7px solid transparent;
+  border-top-color:#ffe14d;border-left-width:4px;border-right-width:4px}
+.evs-drop{position:absolute;border-radius:50%;background:rgba(255,255,255,.75);z-index:1}
+.evs-drop--1{left:63%;top:60%;width:4.5%;padding-bottom:4.5%;animation:evsFloatB 6s ease-in-out infinite}
+.evs-drop--2{left:93%;top:64%;width:3%;padding-bottom:3%;opacity:.8;animation:evsFloatA 7.5s ease-in-out .5s infinite}
+.evs-drop--3{left:70%;top:12%;width:2.4%;padding-bottom:2.4%;opacity:.7;animation:evsFloatC 8s ease-in-out 1s infinite}
+.evs--tuber .evs__spark{color:#ffffff}
+.evs--tuber .evs__spark--1{left:66%;top:26%;animation-delay:.4s}
+.evs--tuber .evs__spark--2{left:95%;top:44%;animation-delay:1.3s}
+
+@media (max-width:520px){
+  .evs__inner{padding-left:6%}
+  .evs__cta{padding:2.4% 5%}
+  .evs--free .evs-orbit{display:none}
+}
+</style>
+
+
+<div class="main-event evs evs--free">
+	<a href="https://4blog.net/free/dashboard" target="_blank">
+		<div class="evs__box">
+			<div class="evs__deco">
+				<span class="evs-orbit"></span>
+				<span class="evs-ball evs-ball--sage"></span>
+				<span class="evs-ball evs-ball--coral"></span>
+				<span class="evs-ball evs-ball--peach"></span>
+				<span class="evs__spark evs__spark--1">✦</span>
+				<span class="evs__spark evs__spark--2">✦</span>
+			</div>
+			<div class="evs__inner">
+				<span class="evs__eyebrow">🌱 BETA SERVICE</span>
+				<span class="evs__sub">무료로 체험단을 직접 등록할 수 있어요</span>
+				<span class="evs__title">무료 체험단 플랫폼<br>포블로그</span>
+				<span class="evs__cta">무료로 시작하기 <i>→</i></span>
+			</div>
+		</div>
+	</a>
+</div>
+
+
+<div class="main-event evs evs--penalty">
+	<a href="https://blog.naver.com/4-blog/223270804791" target="_blank">
+		<div class="evs__box">
+			<div class="evs__deco">
+				<span class="evs-cuff-link"></span>
+				<span class="evs-cuff evs-cuff--1"></span>
+				<span class="evs-cuff evs-cuff--2"></span>
+				<span class="evs-clank evs-clank--1">철컹</span>
+				<span class="evs-clank evs-clank--2">철컹</span>
+				<span class="evs__spark evs__spark--1">✦</span>
+				<span class="evs__spark evs__spark--2">✦</span>
+			</div>
+			<div class="evs__inner">
+				<span class="evs__eyebrow">PENALTY V3</span>
+				<span class="evs__sub">먹튀하면 철컹철컹</span>
+				<span class="evs__title">먹튀 멈춰~<br>패널티 V3</span>
+				<span class="evs__cta">자세히 보기 <i>→</i></span>
+			</div>
+		</div>
+	</a>
+</div>
+
+
+<div class="main-event evs evs--tuber">
+	<a href="https://www.jobkorea.co.kr/Recruit/GI_Read/43756904?Oem_Code=C1" target="_blank">
+		<div class="evs__box">
+			<div class="evs__deco">
+				<span class="evs-drop evs-drop--1"></span>
+				<span class="evs-drop evs-drop--2"></span>
+				<span class="evs-drop evs-drop--3"></span>
+				<span class="evs-logo4"><span>4</span></span>
+				<span class="evs-bubble">구독!<br>좋아요!</span>
+				<span class="evs__spark evs__spark--1">✦</span>
+				<span class="evs__spark evs__spark--2">✦</span>
+			</div>
+			<div class="evs__inner">
+				<span class="evs__eyebrow">📹 WE'RE HIRING</span>
+				<span class="evs__sub">포블로그와 함께할 크리에이터를 찾아요</span>
+				<span class="evs__title">포블로그<br>유튜버 구함~</span>
+				<span class="evs__cta">지원하러 가기 <i>→</i></span>
+			</div>
+		</div>
+	</a>
+</div>
+
+
+</div>
+</section>
+
+<main class="hv2-body">
+	
+	
+
+
+
+
+
+
+
+
+<section class="hv2-quick">
+<div class="submenu-con skeleton">
+
+	<a href="/">
+	<div>
+		<div class="main-inc-menu ">
+			<div class="im-img">
+				<i class="bi bi-search-heart"></i>
+			</div>
+			<div class="im-title">전체
+			</div>
+		</div>
+	</div>
+	</a>
+	<a href="/list/all/local">
+	<div>
+		<div class="main-inc-menu ">
+			<div class="im-img">
+				<i class="bi bi-shop-window"></i>
+			</div>
+			<div class="im-title">방문
+			</div>
+		</div>
+	</div>
+	</a>
+	<a href="/list/all/deliv">
+		<div>
+		<div class="main-inc-menu ">
+			<div class="im-img"><i class="bi bi-basket3"></i>
+			</div>
+			<div class="im-title">배송
+			</div>
+		</div>
+	</div>
+	</a>
+	<a href="/list/instar21,reels" target="_blank">
+ 	<div>
+		<div class="main-inc-menu ">
+			<div class="im-img"><i class="bi bi-instagram"></i>
+			</div>
+			<div class="im-title">인스타
+			</div>
+		</div>
+	</div>
+	</a>
+	<a href="/list/all/reporter">
+	<div>
+		<div class="main-inc-menu ">
+			<div class="im-img"><i class="bi bi-card-heading"></i>
+			</div>
+			<div class="im-title">포스팅
+			</div>
+		</div>
+	</div>
+	</a>
+	<a href="javascript:void(0);" data-toggle="modal" data-target="#widget" id="4bwidget">
+	<div>
+		<div class="main-inc-menu ">
+			<div class="im-img"><i class="bi bi-ui-checks-grid"></i>
+			</div>
+			<div class="im-title">위젯
+			</div>
+		</div>
+	</div>
+	</a>
+
+	<a href="https://www.youtube.com/channel/UCyF0zrIyXM6Qhp0DdAuqubg" target="_blank">
+	<div>
+		<div class="main-inc-menu ">
+			<div class="im-img">
+				<i class="bi bi-youtube"></i>
+			</div>
+			<div class="im-title">포블로그</br>유튜브
+			</div>
+		</div>
+	</div>
+	</a>
+
+
+
+	<a href="/free/dashboard" target="_blank">
+		<div>
+			<div class="main-inc-menu ">
+				<div class="im-img">
+					<i class="bi bi-badge-ad"></i>
+				</div>
+					
+				<div class="im-title">무료등록
+				</div>
+			</div>
+		</div>
+	</a>
+
+	<a href="/adInquiry">
+		<div>
+			<div class="main-inc-menu ">
+				<div class="im-img" style="display:flex;align-items:center;justify-content:center;font-size:30px;filter:grayscale(1);">✨</div>
+				<div class="im-title">광고문의
+				</div>
+			</div>
+		</div>
+	</a>
+
+
+
+
+
+</div>
+</section>
+
+
+<div>
+
+</div>
+<!-- 관심 캠페인 섹션 (로그인 사용자만) -->
+
+<section class="hv2-filter">
+<div class="snsfilter">
+	<div class="snsmother skeleton">
+			
+			<ul class="nav nav-menu menu-left filter-region-row filter-region-row--always" style="margin-left: 2px;">
+				<li class="mobile-region-item">
+					<a class="smenulink mobile-region-chip" href="/list/all/local/"
+					   onclick="if (window.Forblog && window.Forblog.openCategorySheet && window.Forblog.openCategorySheet()) { return false; }">
+						<i class="bi bi-geo-alt" style="margin-right: 3px;"></i>지역
+					</a>
+				</li>
+				
+				<li class="dropdown sort-filter-item">
+					<a class="smenulink dropdown-toggle sort-filter-link" href="#" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="bi bi-arrow-down-up" style="margin-right: 4px;"></i><span id="sortDropdownLabel">추천순</span>
+						<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu sort-filter-menu" aria-labelledby="sortDropdown">
+						<li><a href="javascript:void(0);" onclick="setSortFilter('recommend','추천순'); return false;">추천순</a></li>
+						<li><a href="javascript:void(0);" onclick="setSortFilter('popular','인기순'); return false;">인기순</a></li>
+						<li><a href="javascript:void(0);" onclick="setSortFilter('latest','최신순'); return false;">최신순</a></li>
+						<li><a href="javascript:void(0);" onclick="setSortFilter('price','비싼순'); return false;">비싼순</a></li>
+						<li><a href="javascript:void(0);" onclick="setSortFilter('easy','선정잘되는순'); return false;">선정잘되는순</a></li>
+					</ul>
+				</li>
+			</ul>
+			
+			<ul class="nav nav-menu menu-left filter-sns-row" style="margin-left: 2px;">
+				<li>
+					<a data-id="all" class="smenulink" href="javascript:void(0);" onclick="selectAllSnsFilter(); return false;">전체</a></li>
+				<li>
+					<a data-id="blog" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('blog'); return false;">블로그</a></li>
+				<li>
+					<a data-id="instar21" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('instar21'); return false;"><img src="/resources/svg/insta.svg" class="sIcon">인스타</a></li>
+				<li>
+					<a data-id="reels" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('reels'); return false;"><img src="/resources/svg/reels.svg" class="sIcon">릴스</a></li>
+				<li>
+					<a data-id="youtube21" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('youtube21'); return false;"><img src="/resources/svg/youtube.svg" class="sIcon">유튜브</a></li>
+				<li>
+					<a data-id="shorts" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('shorts'); return false;"><img src="/resources/svg/shorts.svg" class="sIcon">
+					숏츠</a></li>
+				<li>
+					<a data-id="tiktok" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('tiktok'); return false;"><img src="/resources/svg/tiktok.svg" class="sIcon">
+					틱톡</a></li>
+				<li>
+					<a data-id="threads" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('threads'); return false;"><img src="/resources/svg/threads.svg" class="sIcon">
+					스레드</a></li>
+				<li>
+					<a data-id="etc" class="smenulink" href="javascript:void(0);" onclick="toggleSnsFilter('etc'); return false;">기타</a></li>
+				<!--<li ><a data-id="ncafe" class="menulink" href="#">#N카페</a></li>-->
+			</ul>
+	</div>
+</div>
+</section>
+
+<!-- Premium 캠페인 섹션 — 필터 바로 아래 (필터/검색 결과 크로스 적용) -->
+<section id="secPremium" class="hv2-rail" style="display:none">
+	<div class="hv2-rail-head"><h2 class="hv2-title">Premium 캠페인</h2></div>
+	<div id="secPremiumList" class="secSectionList">
+	</div>
+</section>
+
+			
+				<!-- 로그인 한 사람한테 보이는 곳 끝 -->
+
+
+
+
+
+
+
+
+
+
+				<!-- 로그인 안한사람한테 보이는 페이지 -->
+		
+			<div id="rCampaignContainer">
+
+
+
+
+				
+			</div>
+				
+
+				<div class="loding">
+					<img src="/resources/img/loading1.gif" alt="로딩 중">
+				</div>
+
+			<div style="display:none">
+				<input type="hidden" name="category" id="category" value=""/>
+				<input type="hidden" name="category1" id="category1" value=""/>
+				<input type="hidden" name="location" id="location" value=""/>
+				<input type="hidden" name="location1" id="location1" value=""/>
+				<input type="hidden" name="search" id="search" value=""/>
+				<input type="hidden" name="search2" id="search2" value=""/>
+			</div>
+			<a href="#">
+				<div class="toTop">
+					<span class="fa fa-chevron-up"></span>
+				</div>
+			</a>
+			<a href="https://pf.kakao.com/_qJxhLl/chat" target="_blank">
+			<div class="btn-kakao">
+				<i class="bi bi-chat-fill" style="
+				    font-size: 3rem;
+				    margin: 5px 9px 1px -20px;
+				    padding: 0px;
+				    "></i>	<!-- chat-fill 카카오톡 채팅 아이콘 -->
+			</div>
+			</a>
+
+</main>
+</div>
+
+
+<footer class="footer mm-footer">
+<style type="text/css">
+/* 은은한 소형 푸터 — 시선을 끌지 않는 톤 (self-contained, 전 페이지 공통) */
+.footer.mm-footer{
+	clear: both;
+	margin-top: 48px;
+	padding: 22px 20px 34px;
+	border-top: 1px solid #F0F2F5;
+	font-size: 11px;
+	line-height: 1.7;
+	color: #B0B8C1;
+	letter-spacing: -0.2px;
+	text-align: left;
+}
+.mm-footer__inner{ max-width: 960px; margin: 0 auto; }
+.mm-footer__links{ margin-bottom: 10px; }
+.mm-footer__links a{
+	color: #8B95A1;
+	text-decoration: none;
+	font-size: 11px;
+}
+.mm-footer__links a:hover{ color: #4E5968; text-decoration: underline; }
+.mm-footer__sep{ margin: 0 7px; color: #E5E8EB; }
+.mm-footer__biz{ margin: 0 0 6px; font-size: 11px; color: #B0B8C1; }
+.mm-footer__copy{ margin: 0; font-size: 11px; color: #C4CBD4; }
+</style>
+
+	<div class="mm-footer__inner">
+		<div class="mm-footer__links">
+			<a href="/clCenter" target="_blank">광고주센터</a><span class="mm-footer__sep">·</span><a href="/freeCenter?manager=j" target="_blank">무료등록</a><span class="mm-footer__sep">·</span><a href="/privacyPolicy">개인정보 처리방침</a><span class="mm-footer__sep">·</span><a href="/termsofService">이용약관</a>
+		</div>
+		<p class="mm-footer__biz">
+			쥬드벤처스(유) · 대표 김준형 · 사업자등록번호 665-88-01162 · 통신판매업신고 2023-부산진구-1096<br>
+			부산시 부산진구 범천로 44-1 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fe918e9b8cbeca9c929199d0909b8a">[email&#160;protected]</a>
+		</p>
+		<p class="mm-footer__copy">© 2014 JudeVentures Ltd.</p>
+	</div>
+</footer>
+<!-- Google tag (gtag.js) -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script async src="https://www.googletagmanager.com/gtag/js?id=G-GB9GWJ0RDN"></script>
+<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'G-GB9GWJ0RDN');
+</script>
+
+
+<!-- 네이버 키워드 전환 공통 (모든페이지 들어가야됌) -->
+<script type="text/javascript" src="//wcs.naver.net/wcslog.js"> </script>
+<script type="text/javascript">
+if (!wcs_add) var wcs_add={};
+wcs_add["wa"] = "starcomo";
+if (!_nasa) var _nasa={};
+wcs.inflow();
+wcs_do(_nasa);
+</script>
+
+
+<!-- ✨ Sparkle Card 모듈 -->
+<script src="/resources/js/sparkle-card.js?ver=260423c"></script>
+<script src="/resources/js/app-intro.js?ver=260707b"></script>
+</body>
+</html>
