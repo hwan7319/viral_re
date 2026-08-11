@@ -446,3 +446,87 @@ input, select {
 .user-dropdown-item.danger:hover {
   background-color: rgba(239, 68, 68, 0.08);
 }
+
+/* ==========================================================================
+   📱 모바일 디바이스 최적화 (Mobile Responsive Typography & Layout)
+   ========================================================================== */
+@media (max-width: 640px) {
+  /* 1. 바디 및 공통 레이아웃 */
+  main {
+    padding: 20px 12px !important; /* 모바일 좌우 여백 축소 */
+  }
+
+  /* 2. 대문 히어로 타이틀 */
+  section h2 {
+    font-size: 1.6rem !important; /* 타이틀 글자 크기 축소 */
+    line-height: 1.35 !important;
+  }
+  
+  section p {
+    font-size: 0.85rem !important; /* 히어로 본문 텍스트 축소 */
+    margin-bottom: 16px !important;
+  }
+
+  /* 3. 필터 패널 슬림화 */
+  .glass-panel {
+    padding: 16px !important; /* 패딩 축소 */
+    margin-bottom: 20px !important;
+    gap: 12px !important;
+  }
+
+  .filter-dropdown-grid {
+    padding-top: 12px !important;
+    gap: 12px !important;
+  }
+
+  /* 4. 캠페인 카드 그리드 최적화 */
+  .campaign-grid {
+    gap: 14px !important; /* 카드 간 간격 축소 */
+  }
+
+  /* 5. 프리미엄 카드 내부 레이아웃 축소 */
+  .premium-card {
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .premium-card img {
+    height: 140px !important; /* 이미지 영역 슬림화 */
+  }
+
+  .premium-card h3 {
+    font-size: 0.925rem !important; /* 제목 크기 최적화 */
+    margin-bottom: 4px !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .premium-card p {
+    font-size: 0.8rem !important; /* 본문 폰트 축소 */
+    margin-bottom: 10px !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* 카드 텍스트 패딩 축소 */
+  .premium-card > div:last-child {
+    padding: 12px !important;
+  }
+
+  /* 6. 모달 팝업 반응형 패딩 */
+  .social-modal-container {
+    max-width: 90% !important;
+    padding: 24px 16px !important;
+  }
+
+  /* 7. 검색 결과 헤더 모바일 레이아웃 정렬 */
+  .results-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .sort-buttons-wrapper {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+  }
+}

@@ -1283,7 +1283,7 @@ export default function Home() {
         </div>
 
         {/* 4. Results List Section */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
             <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
               검색 결과 <span style={{ color: 'var(--accent)' }}>{displayedCampaigns.length}</span>건
@@ -1291,7 +1291,7 @@ export default function Home() {
           </div>
 
           {/* 정렬 셀렉터 */}
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div className="sort-buttons-wrapper" style={{ display: 'flex', gap: '6px' }}>
             {[
               { key: 'latest', label: '최신등록순' },
               { key: 'endDate', label: '마감임박순' },
