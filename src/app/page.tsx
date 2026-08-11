@@ -88,6 +88,21 @@ export default function Home() {
 
   // 검색 히스토리 상태
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [placeholderText, setPlaceholderText] = useState('식당명, 제품명, 지역명 등을 검색해보세요...');
+
+  // 모바일 화면 크기에 따라 검색창 플레이스홀더 문구 반응형 최적화
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setPlaceholderText('식당, 제품, 지역명 검색...');
+      } else {
+        setPlaceholderText('식당명, 제품명, 지역명 등을 검색해보세요...');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // 광역시도/시군구 선택이 바뀔 때 activeLocation 상태 동기화 처리
   useEffect(() => {
@@ -784,7 +799,7 @@ export default function Home() {
             <Icons.Search />
             <input 
               type="text" 
-              placeholder="식당명, 제품명, 지역명 등을 검색해보세요..."
+              placeholder={placeholderText}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               style={{
@@ -999,7 +1014,7 @@ export default function Home() {
           {/* 모집 유형 필터 (방문 vs 배송 탭) */}
           <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
             <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>모집 유형</span>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
               {[
                 { key: 'all', label: '전체보기' },
                 { key: 'visit', label: '방문형 체험단 📍' },
@@ -1017,7 +1032,9 @@ export default function Home() {
                     color: activeType === typeItem.key ? '#ffffff' : 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
                     transition: 'var(--transition-smooth)',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   {typeItem.label}
@@ -1092,75 +1109,75 @@ export default function Home() {
                 </div>
 
                 {/* 1. 맛집/카페 */}
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>🍽️ 맛집 / 음식</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>🍽️ 맛집 / 음식</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'food-restaurant', label: '식당/맛집' },
                       { key: 'food-cafe', label: '카페/디저트' },
                       { key: 'food-pub', label: '술집/주점' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 2. 뷰티/케어 */}
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>💄 뷰티 / 에스테틱</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>💄 뷰티 / 에스테틱</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'beauty-cosmetic', label: '화장품/뷰티템' },
                       { key: 'beauty-hair', label: '헤어숍' },
                       { key: 'beauty-skin', label: '피부/네일/왁싱' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 3. 숙박/여행 */}
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>✈️ 숙박 / 레저</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>✈️ 숙박 / 레저</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'travel-stay', label: '숙소 (호텔/펜션)' },
                       { key: 'travel-leisure', label: '레저 / 입장권 🎫' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 4. 패션/의류 */}
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>👕 패션 / 잡화</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>👕 패션 / 잡화</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'fashion-clothing', label: '의류/코디' },
                       { key: 'fashion-accessory', label: '패션잡화/악세사리' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 5. 생활용품 vs 가전디지털 분리 */}
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>🏠 생활 / 가전</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>🏠 생활 / 가전</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'life-goods', label: '생활용품 🧼' },
                       { key: 'life-appliances', label: '가전/디지털기기 💻' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 6. 신규 분리 카테고리 (도서, 건강식품, 유아동) */}
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>📦 기타 전문 카테고리</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>📦 기타 전문 카테고리</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'book', label: '도서 / 교육 📚' },
@@ -1169,7 +1186,7 @@ export default function Home() {
                       { key: 'baby', label: '유아동 / 육아 👶' },
                       { key: 'etc', label: '기타 서비스' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1180,7 +1197,7 @@ export default function Home() {
           {/* 플랫폼 필터 */}
           <div>
             <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>미디어 플랫폼</span>
-            <div className="filter-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div className="filter-row" style={{ display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
               {[
                 { key: 'all', label: '전체' },
                 { key: 'blog', label: '네이버 블로그' },
@@ -1199,7 +1216,9 @@ export default function Home() {
                     backgroundColor: activePlatform === p.key ? 'var(--accent-light)' : 'transparent',
                     color: activePlatform === p.key ? 'var(--accent)' : 'var(--text-primary)',
                     border: `1px solid ${activePlatform === p.key ? 'var(--accent)' : 'var(--border-color)'}`,
-                    transition: 'var(--transition-smooth)'
+                    transition: 'var(--transition-smooth)',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   {p.label}
