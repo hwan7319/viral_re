@@ -88,15 +88,15 @@ export default function Home() {
 
   // 검색 히스토리 상태
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  const [placeholderText, setPlaceholderText] = useState('식당명, 제품명, 지역명 등을 검색해보세요...');
+  const [placeholderText, setPlaceholderText] = useState('식당명, 제품명, 지역명 등을 검색해보세요');
 
   // 모바일 화면 크기에 따라 검색창 플레이스홀더 문구 반응형 최적화
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setPlaceholderText('식당, 제품, 지역명 검색...');
+        setPlaceholderText('식당, 제품, 지역명 검색');
       } else {
-        setPlaceholderText('식당명, 제품명, 지역명 등을 검색해보세요...');
+        setPlaceholderText('식당명, 제품명, 지역명 등을 검색해보세요');
       }
     };
     handleResize();
@@ -1014,27 +1014,28 @@ export default function Home() {
           {/* 모집 유형 필터 (방문 vs 배송 탭) */}
           <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
             <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>모집 유형</span>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', width: '100%' }}>
               {[
-                { key: 'all', label: '전체보기' },
-                { key: 'visit', label: '방문형 체험단 📍' },
-                { key: 'delivery', label: '배송형 체험단 📦' }
+                { key: 'all', label: '전체' },
+                { key: 'visit', label: '방문형 📍' },
+                { key: 'delivery', label: '배송형 📦' }
               ].map(typeItem => (
                 <button
                   key={typeItem.key}
                   onClick={() => setActiveType(typeItem.key)}
                   style={{
-                    padding: '8px 20px',
+                    flex: '1 1 0px',
+                    padding: '8px 6px',
                     borderRadius: 'var(--radius-md)',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
                     backgroundColor: activeType === typeItem.key ? 'var(--accent)' : 'var(--bg-secondary)',
                     color: activeType === typeItem.key ? '#ffffff' : 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
                     transition: 'var(--transition-smooth)',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    textAlign: 'center'
                   }}
                 >
                   {typeItem.label}
