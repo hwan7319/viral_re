@@ -38,15 +38,19 @@ export async function GET(request: NextRequest) {
         const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
         
         if (isServerless) {
-          // 🔑 Vercel/서버리스 환경: NextResponse 리턴 즉시 컨테이너가 소멸/Freeze 되므로
-          // 반드시 await로 크롤링 완료를 보장하여 인메모리에 데이터를 채운 뒤 아래 query를 실행합니다.
-          console.log(`[API-Hybrid] [Serverless-Sync] Executing real-time crawl for "${search}"...`);
-          try {
-            await crawlKeywordOnDemandParallel(search);
-            console.log(`[API-Hybrid] Serverless parallel crawl success for "${search}"`);
-          } catch (err: any) {
-            console.error(`[API-Hybrid] Serverless parallel crawl failed for "${search}":`, err.message);
-          }
+          // 🔑 Vercel/서버리스 환경 Non-blocking UX 최적화:
+          // 클라이언트에게 바로 응답을 쏜 후 백그라운드에서 크롤링이 이루어지도록 넌블로킹 비동기로 실행
+          console.log(`[API-Hybrid] [Serverless-Async] Triggering background parallel crawl for "${search}"...`);
+          
+          // 백그라운드 마이크로태스크로 분리하여 컨테이너 Freeze 방지 및 빠른 API 응답 보장
+          Promise.resolve().then(async () => {
+            try {
+              await crawlKeywordOnDemandParallel(search);
+              console.log(`[API-Hybrid] Serverless parallel crawl background success for "${search}"`);
+            } catch (err: any) {
+              console.error(`[API-Hybrid] Serverless parallel crawl background failed for "${search}":`, err.message);
+            }
+          });
         } else {
           // 🔑 로컬 맥북 환경: 기존과 동일하게 넌블로킹 백그라운드로 실행해 고속 응답력 보장
           console.log(`[API-Hybrid] [Local-Async] Triggering background parallel crawlers for "${search}"...`);
@@ -63,7 +67,7 @@ export async function GET(request: NextRequest) {
                     console.log(`[API-Sync-Bridge] Vercel sync complete:`, syncRes.data);
                   })
                   .catch(syncErr => {
-                    console.error(`[API-Sync-Bridge] Vercel sync failed:`, syncErr.message);
+                    console.error(`[API-Sync-Bridge] Pushing data failed:`, syncErr.message);
                   });
               }
             } catch (err: any) {
