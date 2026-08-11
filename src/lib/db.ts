@@ -183,6 +183,20 @@ export async function queryCampaigns(filters: {
 
   // 🔑 Vercel/서버리스 환경인 경우: DB를 통하지 않고 인메모리 버퍼에서 직접 JS 쿼리 필터링 및 정렬 반환
   if (isServerless) {
+    // 💡 [서버리스 메모리 하이브리드 복구] 메모리가 초기화되어 빈 상태인 경우, 배포된 campaigns.json 스냅샷 파일에서 메모리를 즉시 Rehydrate 복구합니다.
+    if (globalRef.memoryCampaigns.length === 0) {
+      try {
+        const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+        if (fs.existsSync(jsonPath)) {
+          const fileData = fs.readFileSync(jsonPath, 'utf-8');
+          globalRef.memoryCampaigns = JSON.parse(fileData);
+          console.log(`[Vercel-Rehydration] Successfully loaded ${globalRef.memoryCampaigns.length} legacy campaigns from snapshot.`);
+        }
+      } catch (err: any) {
+        console.error('[Vercel-Rehydration] Failed to rehydrate memoryCampaigns:', err.message);
+      }
+    }
+
     let result = [...globalRef.memoryCampaigns];
     
     // 1. 검색어 필터
@@ -451,6 +465,22 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
     await db.run('ROLLBACK');
     console.error('Failed to upsert campaigns transaction:', error);
     throw error;
+  }
+
+  // 🔑 로컬 맥북 환경일 때만: SQLite 데이터를 JSON 스냅샷 파일로도 즉시 동시성 백업 쓰기!
+  // 이렇게 하면 Git 커밋/푸시 시 항상 전체 데이터베이스의 최신 스냅샷이 Vercel 서버로 함께 배포됩니다.
+  if (!isServerless) {
+    try {
+      const allCampaigns = await db.all('SELECT * FROM campaigns');
+      fs.writeFileSync(
+        path.join(process.cwd(), 'data', 'campaigns.json'),
+        JSON.stringify(allCampaigns, null, 2),
+        'utf-8'
+      );
+      console.log(`[DB-Backup] Successfully wrote ${allCampaigns.length} campaigns snapshot to campaigns.json`);
+    } catch (err: any) {
+      console.error('[DB-Backup] Snapshot write failed:', err.message);
+    }
   }
 
   return { inserted, updated };
