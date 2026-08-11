@@ -62,6 +62,8 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeLocation, setActiveLocation] = useState('all');
   const [activeSite, setActiveSite] = useState('all');
+  const [activeType, setActiveType] = useState('all'); // 'all' | 'visit' | 'delivery'
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
   const [sortBy, setSortBy] = useState('latest');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   
@@ -424,8 +426,9 @@ export default function Home() {
         platform: activePlatform,
         category: activeCategory,
         location: activeLocation,
-        targetSite: activeSite,
+        targetSite: 'all', // 수집처별 제외 요구사항에 의거하여 항상 'all'로 고정 전달
         sortBy: sortBy,
+        type: activeType,
       });
 
       const res = await fetch(`/api/campaigns?${params.toString()}`);
@@ -465,7 +468,7 @@ export default function Home() {
   // 검색 및 필터 파라미터가 변경될 때마다 자동 페칭
   useEffect(() => {
     fetchCampaigns();
-  }, [searchTerm, activePlatform, activeCategory, activeLocation, activeSite, sortBy]);
+  }, [searchTerm, activePlatform, activeCategory, activeLocation, activeType, sortBy]);
 
   // 즐겨찾기 토글 함수
   const toggleFavorite = async (id: string, e: React.MouseEvent) => {
@@ -717,12 +720,11 @@ export default function Home() {
         borderBottom: '1px solid var(--border-color)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2 }}>
-            대한민국 모든 블로그 & SNS 체험단을 <br/>
-            <span className="text-gradient">한곳에서 실시간 통합 비교</span>
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '12px', lineHeight: 1.2 }}>
+            블로그 & SNS 체험단 <span className="text-gradient">실시간 모아보기</span>
           </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '1.1rem' }}>
-            여러 사이트를 일일이 방문하지 마세요. 레뷰, 디너의여왕, 강남맛집 등 주요 플랫폼의 모집 정보를 스마트하게 검색하고 즉시 신청하세요.
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.975rem' }}>
+            원하는 지역과 키워드로 나에게 딱 맞는 체험단을 빠르게 찾아보세요.
           </p>
 
           {/* 통합 검색창 */}
@@ -959,37 +961,88 @@ export default function Home() {
           display: 'flex', flexDirection: 'column', gap: '20px'
         }}>
           
-          {/* 카테고리 필터 (칩 스타일) */}
-          <div>
-            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>카테고리</span>
-            <div className="filter-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {/* 모집 유형 필터 (방문 vs 배송 탭) */}
+          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>모집 유형</span>
+            <div style={{ display: 'flex', gap: '8px' }}>
               {[
                 { key: 'all', label: '전체보기' },
-                { key: 'food', label: '맛집/카페' },
-                { key: 'beauty', label: '뷰티/코스메틱' },
-                { key: 'fashion', label: '패션/뷰티템' },
-                { key: 'travel', label: '숙박/여행' },
-                { key: 'life', label: '도서/생활용품' },
-                { key: 'etc', label: '기타 서비스' }
-              ].map(cat => (
+                { key: 'visit', label: '방문형 체험단 📍' },
+                { key: 'delivery', label: '배송형 체험단 📦' }
+              ].map(typeItem => (
                 <button
-                  key={cat.key}
-                  onClick={() => setActiveCategory(cat.key)}
+                  key={typeItem.key}
+                  onClick={() => setActiveType(typeItem.key)}
                   style={{
-                    padding: '8px 16px',
-                    borderRadius: 'var(--radius-full)',
+                    padding: '8px 20px',
+                    borderRadius: 'var(--radius-md)',
                     fontSize: '0.875rem',
                     fontWeight: 600,
-                    backgroundColor: activeCategory === cat.key ? 'var(--accent)' : 'var(--bg-secondary)',
-                    color: activeCategory === cat.key ? '#ffffff' : 'var(--text-primary)',
+                    backgroundColor: activeType === typeItem.key ? 'var(--accent)' : 'var(--bg-secondary)',
+                    color: activeType === typeItem.key ? '#ffffff' : 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
-                    transition: 'var(--transition-smooth)'
+                    transition: 'var(--transition-smooth)',
+                    cursor: 'pointer'
                   }}
                 >
-                  {cat.label}
+                  {typeItem.label}
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* 카테고리 필터 (상세검색 아코디언 스타일) */}
+          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+            <button
+              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                width: '100%', padding: '4px 0', border: 'none', background: 'none',
+                color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.875rem',
+                cursor: 'pointer'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                📂 카테고리 상세검색 
+                {activeCategory !== 'all' && (
+                  <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 600 }}>
+                    ({activeCategory === 'food' ? '맛집/카페' : activeCategory === 'beauty' ? '뷰티/코스메틱' : activeCategory === 'fashion' ? '패션/뷰티템' : activeCategory === 'travel' ? '숙박/여행' : activeCategory === 'life' ? '도서/생활용품' : '기타 서비스'})
+                  </span>
+                )}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            </button>
+            
+            {isCategoryOpen && (
+              <div className="filter-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                {[
+                  { key: 'all', label: '전체보기' },
+                  { key: 'food', label: '맛집/카페' },
+                  { key: 'beauty', label: '뷰티/코스메틱' },
+                  { key: 'fashion', label: '패션/뷰티템' },
+                  { key: 'travel', label: '숙박/여행' },
+                  { key: 'life', label: '도서/생활용품' },
+                  { key: 'etc', label: '기타 서비스' }
+                ].map(cat => (
+                  <button
+                    key={cat.key}
+                    onClick={() => setActiveCategory(cat.key)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: '0.825rem',
+                      fontWeight: 600,
+                      backgroundColor: activeCategory === cat.key ? 'var(--accent)' : 'var(--bg-secondary)',
+                      color: activeCategory === cat.key ? '#ffffff' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      transition: 'var(--transition-smooth)'
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 플랫폼 필터 */}
@@ -1050,23 +1103,7 @@ export default function Home() {
               </select>
             </div>
 
-            {/* 출처 사이트 필터 드롭다운 */}
-            <div>
-              <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>수집처 별 보기</label>
-              <select
-                value={activeSite}
-                onChange={(e) => setActiveSite(e.target.value)}
-                style={{
-                  width: '100%', padding: '10px 16px', borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'
-                }}
-              >
-                <option value="all">전체 수집 사이트</option>
-                {TARGET_SITES.map(site => (
-                  <option key={site} value={site}>{site}</option>
-                ))}
-              </select>
-            </div>
+
 
             {/* 찜 스위치 및 정렬 선택 */}
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '8px' }}>

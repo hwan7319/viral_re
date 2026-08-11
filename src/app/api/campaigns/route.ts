@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     const location = searchParams.get('location') || 'all';
     const targetSite = searchParams.get('targetSite') || 'all';
     const sortBy = searchParams.get('sortBy') || 'latest'; // latest, endDate, popular
+    const type = searchParams.get('type') || 'all'; // all, visit, delivery
 
     // 1. [하이브리드 수집] 검색어 캐시 및 쿨타임 최적화 (불필요한 무한 외부 네트워크 요청 방지)
     let isCrawlingTriggered = false;
@@ -85,7 +86,8 @@ export async function GET(request: NextRequest) {
       category,
       location,
       targetSite,
-      sortBy
+      sortBy,
+      type
     });
 
     return NextResponse.json({

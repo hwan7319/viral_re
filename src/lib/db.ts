@@ -169,7 +169,7 @@ export async function getDB(): Promise<Database> {
   return dbInstance;
 }
 
-// 캠페인 데이터 조건 검색 조회 (검색 키워드 태그 조건 추가)
+// 캠페인 데이터 조건 검색 조회 (검색 키워드 태그 조건 및 방문/배송 필터 추가)
 export async function queryCampaigns(filters: {
   search?: string;
   platform?: string;
@@ -177,6 +177,7 @@ export async function queryCampaigns(filters: {
   location?: string;
   targetSite?: string;
   sortBy?: string;
+  type?: string; // 'all' | 'visit' | 'delivery'
 }): Promise<Campaign[]> {
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
 
@@ -207,10 +208,26 @@ export async function queryCampaigns(filters: {
       const loc = filters.location.toLowerCase();
       result = result.filter(c => c.location && c.location.toLowerCase().includes(loc));
     }
-    // 5. 출처 사이트 필터
+    // 5. 출처 사이트 필터 (수집처별 제외 요구사항으로 인해 all이 디폴트이나 코드 호환성 보존)
     if (filters.targetSite && filters.targetSite !== 'all') {
       result = result.filter(c => c.targetSite === filters.targetSite);
     }
+    // 5-1. 방문/배송 구분 필터
+    if (filters.type && filters.type !== 'all') {
+      result = result.filter(c => {
+        const hasLoc = c.location && c.location.trim().length > 0;
+        const isDeliveryText = c.location && (
+          c.location.includes('배송') || 
+          c.location.includes('전국') || 
+          c.location.includes('재택') || 
+          c.location.includes('택배') || 
+          c.location.includes('온라인')
+        );
+        const isVisit = hasLoc && !isDeliveryText;
+        return filters.type === 'visit' ? isVisit : !isVisit;
+      });
+    }
+
     // 6. 정렬
     const nowStr = new Date().toISOString().split('T')[0];
     if (filters.sortBy === 'endDate') {
@@ -267,6 +284,15 @@ export async function queryCampaigns(filters: {
   if (filters.targetSite && filters.targetSite !== 'all') {
     query += ' AND targetSite = ?';
     params.push(filters.targetSite);
+  }
+
+  // 5-1. 방문/배송 구분 필터
+  if (filters.type && filters.type !== 'all') {
+    if (filters.type === 'visit') {
+      query += " AND location IS NOT NULL AND location != '' AND location NOT LIKE '%배송%' AND location NOT LIKE '%전국%' AND location NOT LIKE '%재택%' AND location NOT LIKE '%택배%' AND location NOT LIKE '%온라인%'";
+    } else if (filters.type === 'delivery') {
+      query += " AND (location IS NULL OR location = '' OR location LIKE '%배송%' OR location LIKE '%전국%' OR location LIKE '%재택%' OR location LIKE '%택배%' OR location LIKE '%온라인%')";
+    }
   }
 
   // 6. 정렬
