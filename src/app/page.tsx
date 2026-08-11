@@ -753,8 +753,9 @@ export default function Home() {
         borderBottom: '1px solid var(--border-color)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '12px', lineHeight: 1.2 }}>
-            블로그 & SNS 체험단 <span className="text-gradient">실시간 모아보기</span>
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '12px', lineHeight: 1.35, wordBreak: 'keep-all' }}>
+            <span style={{ display: 'inline-block', marginRight: '6px' }}>블로그 & SNS 체험단</span>{' '}
+            <span style={{ display: 'inline-block' }} className="text-gradient">실시간 모아보기</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.975rem' }}>
             원하는 지역과 키워드로 나에게 딱 맞는 체험단을 빠르게 찾아보세요.
