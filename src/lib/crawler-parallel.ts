@@ -40,23 +40,73 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
   return { applyCount: 0, limitCount: 5 };
 };
 
-const detectCategory = (title: string, desc: string): "etc" | "food" | "beauty" | "fashion" | "travel" | "life" => {
+const detectCategory = (title: string, desc: string): string => {
   const t = (title + ' ' + desc).toLowerCase();
-  if (t.includes('맛집') || t.includes('식사') || t.includes('고기') || t.includes('카페') || t.includes('디저트') || t.includes('이자카야') || t.includes('요리')) {
-    return 'food';
+  
+  // 1. 맛집/카페 하위 세분화
+  if (t.includes('카페') || t.includes('디저트') || t.includes('베이커리') || t.includes('빵집') || t.includes('도넛') || t.includes('마카롱')) {
+    return 'food-cafe';
   }
-  if (t.includes('뷰티') || t.includes('화장품') || t.includes('피부') || t.includes('헤어') || t.includes('미용실') || t.includes('네일') || t.includes('왁싱')) {
-    return 'beauty';
+  if (t.includes('이자카야') || t.includes('주점') || t.includes('술집') || t.includes('포차') || t.includes('맥주') || t.includes('와인') || t.includes('칵테일') || t.includes('주류')) {
+    return 'food-pub';
   }
-  if (t.includes('의류') || t.includes('패션') || t.includes('코디') || t.includes('가방') || t.includes('신발')) {
-    return 'fashion';
+  if (t.includes('맛집') || t.includes('식사') || t.includes('고기') || t.includes('삼겹살') || t.includes('한우') || t.includes('식당') || t.includes('뷔페') || t.includes('레스토랑') || t.includes('스시') || t.includes('초밥') || t.includes('파스타') || t.includes('피자') || t.includes('돈까스') || t.includes('치킨') || t.includes('통닭') || t.includes('곱창') || t.includes('마라탕')) {
+    return 'food-restaurant';
   }
-  if (t.includes('숙소') || t.includes('호텔') || t.includes('펜션') || t.includes('여행') || t.includes('글램핑') || t.includes('풀빌라')) {
-    return 'travel';
+  
+  // 2. 뷰티 하위 세분화
+  if (t.includes('헤어') || t.includes('미용실') || t.includes('염색') || t.includes('파마') || t.includes('펌') || t.includes('클리닉') || t.includes('두피케어')) {
+    return 'beauty-hair';
   }
-  if (t.includes('밀키트') || t.includes('도서') || t.includes('영양제') || t.includes('생활용품')) {
-    return 'life';
+  if (t.includes('네일') || t.includes('왁싱') || t.includes('피부') || t.includes('에스테틱') || t.includes('속눈썹') || t.includes('마사지') || t.includes('체형교정')) {
+    return 'beauty-skin';
   }
+  if (t.includes('화장품') || t.includes('크림') || t.includes('앰플') || t.includes('세럼') || t.includes('에센스') || t.includes('립스틱') || t.includes('선크림') || t.includes('선블록') || t.includes('뷰티템') || t.includes('메이크업') || t.includes('아이라이너')) {
+    return 'beauty-cosmetic';
+  }
+
+  // 3. 여행/숙박 하위 세분화
+  if (t.includes('호텔') || t.includes('펜션') || t.includes('풀빌라') || t.includes('리조트') || t.includes('글램핑') || t.includes('캠핑') || t.includes('게스트하우스') || t.includes('민박') || t.includes('숙소') || t.includes('숙박')) {
+    return 'travel-stay';
+  }
+  if (t.includes('입장권') || t.includes('티켓') || t.includes('패스') || t.includes('액티비티') || t.includes('레저') || t.includes('체험권') || t.includes('서핑') || t.includes('요트') || t.includes('아쿠아리움') || t.includes('키즈카페') || t.includes('놀이공원') || t.includes('박물관') || t.includes('전시')) {
+    return 'travel-leisure';
+  }
+
+  // 4. 패션 하위 세분화
+  if (t.includes('의류') || t.includes('패션') || t.includes('자켓') || t.includes('코트') || t.includes('셔츠') || t.includes('티셔츠') || t.includes('원피스') || t.includes('니트') || t.includes('바지') || t.includes('치마') || t.includes('아우터')) {
+    return 'fashion-clothing';
+  }
+  if (t.includes('가방') || t.includes('백팩') || t.includes('숄더백') || t.includes('신발') || t.includes('구두') || t.includes('운동화') || t.includes('스니커즈') || t.includes('모자') || t.includes('액세서리') || t.includes('악세사리') || t.includes('귀걸이') || t.includes('목걸이') || t.includes('시계')) {
+    return 'fashion-accessory';
+  }
+
+  // 5. 도서/교육 단독 카테고리 분리
+  if (t.includes('도서') || t.includes('책 ') || t.includes('베스트셀러') || t.includes('소설') || t.includes('에세이') || t.includes('인터넷강의') || t.includes('인강') || t.includes('교육') || t.includes('학습지') || t.includes('학습') || t.includes('학원')) {
+    return 'book';
+  }
+
+  // 6. 건강/식품 세분화
+  if (t.includes('밀키트') || t.includes('신선식품') || t.includes('반찬') || t.includes('간식') || t.includes('과일') || t.includes('음료') || t.includes('탄산수') || t.includes('커피원두') || t.includes('조미료') || t.includes('가공식품') || t.includes('푸드')) {
+    return 'health-fresh';
+  }
+  if (t.includes('영양제') || t.includes('유산균') || t.includes('비타민') || t.includes('다이어트') || t.includes('단백질') || t.includes('콜라겐') || t.includes('홍삼') || t.includes('헬스케어') || t.includes('즙 ') || t.includes('건강식품')) {
+    return 'health-food';
+  }
+
+  // 7. 유아동/육아
+  if (t.includes('유아') || t.includes('아동') || t.includes('아기') || t.includes('육아') || t.includes('기저귀') || t.includes('분유') || t.includes('젖병') || t.includes('장난감') || t.includes('키즈') || t.includes('카시트') || t.includes('유모차') || t.includes('아동복')) {
+    return 'baby';
+  }
+
+  // 8. 생활/가전 세분화
+  if (t.includes('가전') || t.includes('청소기') || t.includes('모니터') || t.includes('키보드') || t.includes('마우스') || t.includes('가습기') || t.includes('이어폰') || t.includes('헤드폰') || t.includes('스마트폰') || t.includes('충전기') || t.includes('디지털기기')) {
+    return 'life-appliances';
+  }
+  if (t.includes('세제') || t.includes('섬유유연제') || t.includes('샴푸') || t.includes('린스') || t.includes('치약') || t.includes('칫솔') || t.includes('화장지') || t.includes('물티슈') || t.includes('침구') || t.includes('베개') || t.includes('가구') || t.includes('인테리어') || t.includes('식기') || t.includes('생활용품') || t.includes('도구')) {
+    return 'life-goods';
+  }
+
   return 'etc';
 };
 
