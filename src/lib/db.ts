@@ -280,7 +280,8 @@ export async function queryCampaigns(filters: {
       result.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }
     
-    return result;
+    // 성능 최적화: 대량 전송 부하를 방지하기 위해 상위 300개만 반환
+    return result.slice(0, 300);
   }
 
   const db = await getDB();
@@ -365,6 +366,8 @@ export async function queryCampaigns(filters: {
     query += ' ORDER BY createdAt DESC';
   }
 
+  // 7. 성능 최적화: 대용량 데이터 로드 시 페이로드 전송 부하 방지를 위한 최대 300개 제한
+  query += ' LIMIT 300';
   return db.all<Campaign[]>(query, params);
 }
 
