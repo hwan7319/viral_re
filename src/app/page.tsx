@@ -1065,6 +1065,30 @@ export default function Home() {
             
             {isCategoryOpen && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                {/* 📂 최상단 카테고리 초기화 버튼 영역 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>🏷️ 카테고리 세부 필터</span>
+                  <button
+                    onClick={() => setActiveCategory('all')}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      backgroundColor: activeCategory === 'all' ? 'var(--accent)' : 'var(--bg-primary)',
+                      color: activeCategory === 'all' ? '#ffffff' : 'var(--text-secondary)',
+                      border: '1px solid var(--border-color)',
+                      cursor: 'pointer',
+                      transition: 'var(--transition-smooth)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    🔄 전체 카테고리 보기 (초기화)
+                  </button>
+                </div>
+
                 {/* 1. 맛집/카페 */}
                 <div>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>🍽️ 맛집 / 음식</span>
@@ -1074,7 +1098,7 @@ export default function Home() {
                       { key: 'food-cafe', label: '카페/디저트' },
                       { key: 'food-pub', label: '술집/주점' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1088,7 +1112,7 @@ export default function Home() {
                       { key: 'beauty-hair', label: '헤어숍' },
                       { key: 'beauty-skin', label: '피부/네일/왁싱' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1101,7 +1125,7 @@ export default function Home() {
                       { key: 'travel-stay', label: '숙소 (호텔/펜션)' },
                       { key: 'travel-leisure', label: '레저 / 입장권 🎫' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1114,7 +1138,7 @@ export default function Home() {
                       { key: 'fashion-clothing', label: '의류/코디' },
                       { key: 'fashion-accessory', label: '패션잡화/악세사리' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1127,7 +1151,7 @@ export default function Home() {
                       { key: 'life-goods', label: '생활용품 🧼' },
                       { key: 'life-appliances', label: '가전/디지털기기 💻' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1137,14 +1161,13 @@ export default function Home() {
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>📦 기타 전문 카테고리</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
-                      { key: 'all', label: '전체보기 (초기화)' },
                       { key: 'book', label: '도서 / 교육 📚' },
                       { key: 'health-fresh', label: '신선식품/밀키트 🍎' },
                       { key: 'health-food', label: '건강식품/영양제 💊' },
                       { key: 'baby', label: '유아동 / 육아 👶' },
                       { key: 'etc', label: '기타 서비스' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)' }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
