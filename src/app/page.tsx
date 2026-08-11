@@ -1638,9 +1638,9 @@ export default function Home() {
           animation: 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
           display: 'flex', alignItems: 'center', gap: '8px'
         }}>
-          {toast.type === 'success' && '✓'}
-          {toast.type === 'error' && '✕'}
-          {toast.type === 'info' && 'ℹ'}
+          {toast.type === 'success' && '✅ '}
+          {toast.type === 'error' && '🚨 '}
+          {toast.type === 'info' && '💡 '}
           {toast.message}
         </div>
       )}

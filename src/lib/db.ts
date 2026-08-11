@@ -199,9 +199,28 @@ export async function queryCampaigns(filters: {
     if (filters.platform && filters.platform !== 'all') {
       result = result.filter(c => c.platform === filters.platform);
     }
-    // 3. 카테고리 필터
+    // 3. 카테고리 필터 (기존의 대분류 데이터와 신규 상세분류 데이터의 호환을 모두 지원하도록 맵핑 보증)
     if (filters.category && filters.category !== 'all') {
-      result = result.filter(c => c.category === filters.category);
+      const parentMap: Record<string, string> = {
+        'food-restaurant': 'food',
+        'food-cafe': 'food',
+        'food-pub': 'food',
+        'beauty-cosmetic': 'beauty',
+        'beauty-hair': 'beauty',
+        'beauty-skin': 'beauty',
+        'travel-stay': 'travel',
+        'travel-leisure': 'travel',
+        'fashion-clothing': 'fashion',
+        'fashion-accessory': 'fashion',
+        'life-goods': 'life',
+        'life-appliances': 'life',
+        'health-fresh': 'life',
+        'health-food': 'life',
+        'baby': 'life',
+        'book': 'life'
+      };
+      const parent = parentMap[filters.category];
+      result = result.filter(c => c.category === filters.category || (parent && c.category === parent));
     }
     // 4. 지역 필터
     if (filters.location && filters.location !== 'all') {
@@ -268,10 +287,34 @@ export async function queryCampaigns(filters: {
     params.push(filters.platform);
   }
 
-  // 3. 카테고리 필터
+  // 3. 카테고리 필터 (기존 대분류 데이터와 신규 상세 카테고리 데이터의 크로스 매칭 완벽 보증)
   if (filters.category && filters.category !== 'all') {
-    query += ' AND category = ?';
-    params.push(filters.category);
+    const parentMap: Record<string, string> = {
+      'food-restaurant': 'food',
+      'food-cafe': 'food',
+      'food-pub': 'food',
+      'beauty-cosmetic': 'beauty',
+      'beauty-hair': 'beauty',
+      'beauty-skin': 'beauty',
+      'travel-stay': 'travel',
+      'travel-leisure': 'travel',
+      'fashion-clothing': 'fashion',
+      'fashion-accessory': 'fashion',
+      'life-goods': 'life',
+      'life-appliances': 'life',
+      'health-fresh': 'life',
+      'health-food': 'life',
+      'baby': 'life',
+      'book': 'life'
+    };
+    const parent = parentMap[filters.category];
+    if (parent) {
+      query += ' AND category IN (?, ?)';
+      params.push(filters.category, parent);
+    } else {
+      query += ' AND category = ?';
+      params.push(filters.category);
+    }
   }
 
   // 4. 지역 필터
