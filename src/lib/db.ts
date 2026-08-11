@@ -197,7 +197,9 @@ export async function queryCampaigns(filters: {
       }
     }
 
-    let result = [...globalRef.memoryCampaigns];
+    const todayStr = new Date().toISOString().split('T')[0];
+    // 당일 기준 마감된 건 검색 목록에서 제외 필터링 기본 탑재
+    let result: Campaign[] = (globalRef.memoryCampaigns as Campaign[]).filter((c: Campaign) => c.endDate >= todayStr);
     
     // 1. 검색어 필터
     if (filters.search) {
@@ -285,8 +287,10 @@ export async function queryCampaigns(filters: {
   }
 
   const db = await getDB();
-  let query = 'SELECT * FROM campaigns WHERE 1=1';
-  const params: any[] = [];
+  const todayStr = new Date().toISOString().split('T')[0];
+  // 당일 기준 마감된 건 검색 목록에서 제외 조건 기본 탑재 (endDate >= 오늘)
+  let query = 'SELECT * FROM campaigns WHERE endDate >= ?';
+  const params: any[] = [todayStr];
 
   // 1. 검색어 필터 (제목, 본문, 지역, 검색 키워드 태그 매칭)
   if (filters.search) {
