@@ -838,7 +838,7 @@ export default function Home() {
             {/* 최근 검색어 */}
             {searchHistory.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px' }}>🕒 최근 검색</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px', whiteSpace: 'nowrap' }}>🕒 최근 검색</span>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
                   {searchHistory.map((hist, idx) => (
                     <span 
@@ -848,21 +848,21 @@ export default function Home() {
                         setSearchTerm(hist);
                         addSearchHistory(hist);
                       }}
-                      className="glass-panel"
                       style={{
-                        padding: '3px 8px',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: '0.72rem',
+                        padding: '4px 10px',
+                        borderRadius: '100px',
+                        fontSize: '0.75rem',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
+                        gap: '6px',
                         cursor: 'pointer',
-                        backgroundColor: 'rgba(255,255,255,0.03)',
+                        backgroundColor: 'var(--bg-tertiary)',
                         border: '1px solid var(--border-color)',
-                        transition: 'var(--transition-smooth)'
+                        transition: 'var(--transition-smooth)',
+                        fontWeight: 500
                       }}
                     >
-                      <span style={{ color: 'var(--text-secondary)' }}>{hist}</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{hist}</span>
                       <button 
                         type="button"
                         onClick={(e) => removeHistoryItem(hist, e)}
@@ -870,11 +870,12 @@ export default function Home() {
                           border: 'none',
                           background: 'transparent',
                           color: 'var(--text-tertiary)',
-                          fontSize: '0.65rem',
+                          fontSize: '0.7rem',
                           cursor: 'pointer',
-                          padding: 0,
+                          padding: '0 2px',
                           display: 'flex',
-                          alignItems: 'center'
+                          alignItems: 'center',
+                          marginLeft: '2px'
                         }}
                         title="삭제"
                       >
@@ -1067,8 +1068,8 @@ export default function Home() {
             {isCategoryOpen && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
                 {/* 📂 최상단 카테고리 초기화 버튼 영역 */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>🏷️ 카테고리 세부 필터</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>🏷️ 카테고리 세부 필터</span>
                   <button
                     onClick={() => setActiveCategory('all')}
                     style={{
