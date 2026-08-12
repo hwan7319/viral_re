@@ -839,7 +839,7 @@ export default function Home() {
         padding: '48px 24px 28px',
         textAlign: 'center',
         background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
-        borderBottom: 'none'
+        borderBottom: '1px solid var(--border-color)'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
           <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all' }}>
