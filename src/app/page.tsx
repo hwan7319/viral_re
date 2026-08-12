@@ -67,11 +67,7 @@ export default function Home() {
   const [activeType, setActiveType] = useState('all'); // 'all' | 'visit' | 'delivery'
   const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
   const [sortBy, setSortBy] = useState('latest');
-  const [onlyFavorites, setOnlyFavorites] = useState(false);
-  
-  // 즐겨찾기 상태 (localStorage 연동)
-  const [favorites, setFavorites] = useState<string[]>([]);
-  
+
   // 상세 모달 상태
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   
@@ -135,15 +131,7 @@ export default function Home() {
       }
     }
 
-    // 즐겨찾기 가져오기
-    const savedFavs = localStorage.getItem('favorites');
-    if (savedFavs) {
-      try {
-        setFavorites(JSON.parse(savedFavs));
-      } catch (e) {
-        console.error(e);
-      }
-    }
+
 
     fetchTrendingKeywords();
     fetchCampaigns();
@@ -173,9 +161,6 @@ export default function Home() {
           const result = await res.json();
           if (result.success) {
             setUser(result.user);
-            // 3. 해당 유저가 DB에 쌓아둔 북마크(찜) 동기화 복구
-            setFavorites(result.bookmarks);
-            localStorage.setItem('favorites', JSON.stringify(result.bookmarks));
             setIsLoginModalOpen(false);
             showToast(`${result.user.name}님, 성공적으로 로그인되었습니다 (회원 DB 연동 완료)`, 'success');
           } else {
@@ -500,46 +485,7 @@ export default function Home() {
     fetchCampaigns();
   }, [searchTerm, activePlatform, activeCategory, activeLocation, activeType, sortBy]);
 
-  // 즐겨찾기 토글 함수
-  const toggleFavorite = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // 카드 클릭 상세 보기 방지
-    let updated: string[];
-    const isAdding = !favorites.includes(id);
 
-    if (favorites.includes(id)) {
-      updated = favorites.filter(favId => favId !== id);
-      showToast('관심 체험단에서 해제되었습니다.', 'info');
-    } else {
-      updated = [...favorites, id];
-      showToast('관심 체험단에 등록되었습니다.', 'success');
-    }
-
-    setFavorites(updated);
-    localStorage.setItem('favorites', JSON.stringify(updated));
-
-    // 🔑 로그인 회원의 경우 백엔드 SQLite DB user_bookmarks 에도 실시간 동기화
-    if (user) {
-      try {
-        const mockId = `${user.provider.toLowerCase()}_${user.email.replace(/[^a-zA-Z0-9]/g, '')}`;
-        const res = await fetch('/api/user/bookmark', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: mockId,
-            campaignId: id
-          })
-        });
-        const result = await res.json();
-        if (result.success) {
-          // DB 최신 북마크 세션으로 2차 정밀 동기화
-          setFavorites(result.bookmarks);
-          localStorage.setItem('favorites', JSON.stringify(result.bookmarks));
-        }
-      } catch (error) {
-        console.error('Failed to sync bookmark to DB:', error);
-      }
-    }
-  };
 
   // 🕒 검색어 히스토리에 추가 (최대 5개 FIFO 제한)
   const addSearchHistory = (keyword: string) => {
@@ -615,9 +561,7 @@ export default function Home() {
   };
 
   // 필터링 적용된 최종 리스트 (즐겨찾기 전용 처리)
-  const displayedCampaigns = onlyFavorites 
-    ? campaigns.filter(c => favorites.includes(c.id)) 
-    : campaigns;
+  const displayedCampaigns = campaigns;
 
   // 지역 목록 목록 데이터 (광역시도 및 시군구 상세 세분화)
   const LOCATIONS_MAP: Record<string, string[]> = {
@@ -720,8 +664,6 @@ export default function Home() {
                   <button 
                     onClick={() => {
                       setUser(null);
-                      setFavorites([]);
-                      localStorage.removeItem('favorites');
                       setIsUserDropdownOpen(false);
                       showToast('성공적으로 로그아웃되었습니다.', 'info');
                     }}
@@ -1085,29 +1027,6 @@ export default function Home() {
             
             {isCategoryOpen && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                {/* 📂 최상단 카테고리 초기화 버튼 영역 */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>🏷️ 카테고리 세부 필터</span>
-                  <button
-                    onClick={() => setActiveCategory('all')}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      backgroundColor: activeCategory === 'all' ? 'var(--accent)' : 'var(--bg-primary)',
-                      color: activeCategory === 'all' ? '#ffffff' : 'var(--text-secondary)',
-                      border: '1px solid var(--border-color)',
-                      cursor: 'pointer',
-                      transition: 'var(--transition-smooth)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    🔄 전체 카테고리 보기 (초기화)
-                  </button>
-                </div>
 
                 {/* 1. 맛집/카페 */}
                 <div style={{ minWidth: 0 }}>
@@ -1228,11 +1147,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 하위 복합 필터 (지역, 출처 사이트, 찜 전용) */}
+          {/* 하위 복합 필터 (지역) */}
           <div className="filter-dropdown-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
             borderTop: '1px solid var(--border-color)',
             paddingTop: '20px'
           }}>
@@ -1281,23 +1197,7 @@ export default function Home() {
 
 
 
-            {/* 찜 스위치 및 정렬 선택 */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '8px' }}>
-              <button
-                onClick={() => setOnlyFavorites(!onlyFavorites)}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  padding: '10px 16px', borderRadius: 'var(--radius-md)',
-                  backgroundColor: onlyFavorites ? 'rgba(239, 68, 68, 0.1)' : 'var(--bg-secondary)',
-                  color: onlyFavorites ? '#ef4444' : 'var(--text-primary)',
-                  border: `1px solid ${onlyFavorites ? '#ef4444' : 'var(--border-color)'}`,
-                  fontWeight: 600, transition: 'var(--transition-smooth)'
-                }}
-              >
-                <Icons.Heart filled={onlyFavorites} className={onlyFavorites ? 'text-red-500' : ''} />
-                찜한 체험단만 보기 ({favorites.length})
-              </button>
-            </div>
+
 
           </div>
 
@@ -1376,7 +1276,6 @@ export default function Home() {
                 setActivePlatform('all');
                 setActiveLocation('all');
                 setActiveSite('all');
-                setOnlyFavorites(false);
               }}
               className="premium-button-primary"
               style={{ margin: '0 auto' }}
@@ -1390,7 +1289,6 @@ export default function Home() {
             <div className="campaign-grid">
               {displayedCampaigns.slice(0, visibleCount).map(c => {
               const dday = calculateDday(c.endDate);
-              const isFav = favorites.includes(c.id);
               const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
               const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
 
@@ -1446,21 +1344,6 @@ export default function Home() {
                       {dday}
                     </div>
 
-                    {/* 하트 아이콘 오버레이 */}
-                    <button 
-                      onClick={(e) => toggleFavorite(c.id, e)}
-                      style={{
-                        position: 'absolute', bottom: '12px', right: '12px',
-                        width: '32px', height: '32px', borderRadius: '50%',
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        color: isFav ? '#ef4444' : '#ffffff',
-                        display: 'flex', justifyContent: 'center', alignItems: 'center',
-                        transition: 'var(--transition-smooth)',
-                        border: 'none'
-                      }}
-                    >
-                      <Icons.Heart filled={isFav} />
-                    </button>
                   </div>
 
                   {/* 카드 내용 영역 */}
@@ -1555,117 +1438,129 @@ export default function Home() {
               maxWidth: '650px', width: '100%', borderRadius: 'var(--radius-lg)',
               overflow: 'hidden', boxShadow: 'var(--shadow-premium)',
               backgroundColor: 'var(--bg-secondary)',
-              position: 'relative'
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              maxHeight: '85vh'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             
-            {/* 닫기 버튼 */}
+            {/* 닫기 X 아이콘 (데스크톱 탑승용) */}
             <button 
               onClick={() => setSelectedCampaign(null)}
               style={{
                 position: 'absolute', top: '16px', right: '16px', zIndex: 10,
                 width: '36px', height: '36px', borderRadius: '50%',
                 backgroundColor: 'rgba(0,0,0,0.5)', color: '#ffffff',
-                display: 'flex', justifyContent: 'center', alignItems: 'center'
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                border: 'none', cursor: 'pointer'
               }}
             >
               <Icons.Close />
             </button>
 
-            {/* 모달 이미지 */}
-            <div style={{ height: '260px', width: '100%', position: 'relative' }}>
-              <img 
-                src={selectedCampaign.imageUrl} 
-                alt={selectedCampaign.title}
-                referrerPolicy="no-referrer"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
-                padding: '24px 20px', color: '#ffffff'
-              }}>
-                <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px' }}>
-                  {selectedCampaign.platform}
-                </span>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-                  {selectedCampaign.title}
-                </h3>
+            {/* 스크롤러 내부 상단 영역 */}
+            <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '76px' }}>
+              {/* 모달 이미지 */}
+              <div style={{ height: '220px', width: '100%', position: 'relative' }}>
+                <img 
+                  src={selectedCampaign.imageUrl} 
+                  alt={selectedCampaign.title}
+                  referrerPolicy="no-referrer"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
+                  padding: '20px 20px 12px 20px', color: '#ffffff'
+                }}>
+                  <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px' }}>
+                    {selectedCampaign.platform}
+                  </span>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
+                    {selectedCampaign.title}
+                  </h3>
+                </div>
+              </div>
+
+              {/* 모달 본문 내용 */}
+              <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* 제공 혜택 */}
+                <div>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>제공 내역</h4>
+                  <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent)' }}>
+                    {selectedCampaign.description}
+                  </p>
+                </div>
+
+                {/* 기본 정보 테이블 */}
+                <div style={{
+                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
+                  padding: '12px 16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)'
+                }}>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 정원</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{selectedCampaign.limitCount}명 (현재 {selectedCampaign.applyCount}명 신청)</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>수집 플랫폼</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{selectedCampaign.targetSite}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 마감일</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{selectedCampaign.endDate}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>체험 방식</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                      {selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 가이드 라인 안내 */}
+                <div>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>리뷰어 미션 안내</h4>
+                  <ul style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <li>제품 수령 후 7일 이내 정해진 포맷에 따라 리뷰 등록</li>
+                    <li>사진 최소 5장 이상, 본문 800자 이상 및 지정 키워드 필수 삽입</li>
+                    <li>스폰서 배너 및 공정위 문구 필수 기재</li>
+                  </ul>
+                </div>
+
               </div>
             </div>
 
-            {/* 모달 본문 */}
-            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
-              {/* 제공 혜택 */}
-              <div>
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>제공 내역</h4>
-                <p style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--accent)' }}>
-                  {selectedCampaign.description}
-                </p>
-              </div>
+            {/* 풋터 플로팅 고정 영역 (닫기 + 신청하러 가기) */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              backgroundColor: 'var(--bg-secondary)',
+              borderTop: '1px solid var(--border-color)',
+              padding: '12px 20px',
+              display: 'flex', gap: '10px',
+              boxShadow: '0 -4px 16px rgba(0,0,0,0.06)',
+              zIndex: 5
+            }}>
+              <button 
+                onClick={() => setSelectedCampaign(null)}
+                className="premium-button-secondary" 
+                style={{ flex: 1, padding: '12px', fontSize: '0.9rem', fontWeight: 700 }}
+              >
+                닫기
+              </button>
 
-              {/* 기본 정보 테이블 */}
-              <div style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
-                padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)'
-              }}>
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 정원</span>
-                  <span style={{ fontWeight: 600 }}>{selectedCampaign.limitCount}명 (현재 {selectedCampaign.applyCount}명 신청)</span>
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>수집 플랫폼</span>
-                  <span style={{ fontWeight: 600 }}>{selectedCampaign.targetSite}</span>
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 마감일</span>
-                  <span style={{ fontWeight: 600 }}>{selectedCampaign.endDate}</span>
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', display: 'block' }}>체험 방식</span>
-                  <span style={{ fontWeight: 600 }}>
-                    {selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
-                  </span>
-                </div>
-              </div>
-
-              {/* 가이드 라인 안내 */}
-              <div>
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>리뷰어 미션 안내</h4>
-                <ul style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <li>제품 수령 후 7일 이내 정해진 포맷에 따라 리뷰 등록</li>
-                  <li>사진 최소 5장 이상, 본문 800자 이상 및 지정 키워드 필수 삽입</li>
-                  <li>스폰서 배너 및 공정위 문구 필수 기재</li>
-                </ul>
-              </div>
-
-              {/* 신청 버튼 */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                <button 
-                  onClick={(e) => {
-                    toggleFavorite(selectedCampaign.id, e);
-                  }}
-                  className="premium-button-secondary" 
-                  style={{ flex: 1 }}
-                >
-                  <Icons.Heart filled={favorites.includes(selectedCampaign.id)} />
-                  {favorites.includes(selectedCampaign.id) ? '관심 해제' : '관심 등록'}
-                </button>
-
-                <a 
-                  href={selectedCampaign.campaignUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="premium-button-primary"
-                  style={{ flex: 2 }}
-                >
-                  캠페인 신청하러 가기
-                  <Icons.ExternalLink />
-                </a>
-              </div>
-
+              <a 
+                href={selectedCampaign.campaignUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="premium-button-primary"
+                style={{ flex: 2, padding: '12px', fontSize: '0.9rem', fontWeight: 700 }}
+              >
+                캠페인 신청하러 가기
+                <Icons.ExternalLink />
+              </a>
             </div>
 
           </div>
