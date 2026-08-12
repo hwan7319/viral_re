@@ -116,6 +116,12 @@ export default function Home() {
   // 검색 & 필터 상태
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState(''); // 사용자가 타이핑 중인 입력창 상태
+  const [isSearchFocused, setIsSearchFocused] = useState(false); // 검색창 포커스 여부
+  const [currentTrendIndex, setCurrentTrendIndex] = useState(0); // 롤링 중인 검색어 인덱스
+  const [isTrendDropdownOpen, setIsTrendDropdownOpen] = useState(false); // 실시간 검색어 팝업 여부
+  const [isHistoryEnabled, setIsHistoryEnabled] = useState(true); // 최근 검색 기록 허용 여부
+  const [isTypeOpen, setIsTypeOpen] = useState(false); // 모집유형 상세검색 아코디언 토글
+  const [isPlatformOpen, setIsPlatformOpen] = useState(false); // 플랫폼 상세검색 아코디언 토글
   const [trendingKeywords, setTrendingKeywords] = useState<{ rank: number; word: string }[]>([]); // 🔑 실시간 인기 검색어 상태
   const [activePlatform, setActivePlatform] = useState('all');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -134,6 +140,26 @@ export default function Home() {
   
   // 모바일 하단 플로팅 앵커 광고 노출 상태
   const [showStickyAd, setShowStickyAd] = useState(true);
+
+  // 우측 하단 탑 버튼(Scroll to Top) 노출 상태
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // 스크롤 감지 및 탑 버튼 제어
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // 상단 광고 캐러셀 인덱스 상태
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
@@ -214,6 +240,12 @@ export default function Home() {
       } catch (e) {
         console.error(e);
       }
+    }
+
+    // 최근 검색 저장 여부 가져오기
+    const savedHistoryEnabled = localStorage.getItem('isHistoryEnabled');
+    if (savedHistoryEnabled !== null) {
+      setIsHistoryEnabled(savedHistoryEnabled === 'true');
     }
 
 
@@ -572,10 +604,25 @@ export default function Home() {
 
 
 
+  // 실시간 검색어 롤링 타이머 (3초 간격)
+  useEffect(() => {
+    if (trendingKeywords.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentTrendIndex((prev) => (prev + 1) % Math.min(10, trendingKeywords.length));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [trendingKeywords]);
+
+  // 최근 검색 기록 ON/OFF 변경 시 로컬 스토리지 동기화
+  useEffect(() => {
+    localStorage.setItem('isHistoryEnabled', String(isHistoryEnabled));
+  }, [isHistoryEnabled]);
+
   // 🕒 검색어 히스토리에 추가 (최대 5개 FIFO 제한)
   const addSearchHistory = (keyword: string) => {
     const trimmed = keyword.trim();
     if (!trimmed) return;
+    if (!isHistoryEnabled) return; // 저장 기능이 꺼져있으면 기록 안함
     
     // 중복 제거 및 리스트의 맨 앞에 배치 (최대 5개)
     const nextHistory = [trimmed, ...searchHistory.filter(kw => kw !== trimmed)].slice(0, 5);
@@ -787,245 +834,342 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Hero Section */}
+      {/* 2. Hero Section - compact & modern */}
       <section style={{
-        padding: '60px 24px 40px 24px',
+        padding: '48px 24px 28px',
         textAlign: 'center',
         background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
-        borderBottom: '1px solid var(--border-color)'
+        borderBottom: 'none'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '12px', lineHeight: 1.35, wordBreak: 'keep-all' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+          <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all' }}>
             블로그 & SNS 체험단 <span className="text-gradient">실시간 모아보기</span>
           </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.975rem' }}>
-            레뷰, 디너의여왕, 강남맛집 등 17개 플랫폼의 활성 체험단을 한 곳에 모았습니다. 원하는 지역과 키워드로 찾아보세요.
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '1rem' }}>
+            여러 플랫폼의 활성 체험단을 한 곳에서 찾아보세요.
           </p>
 
-          {/* 통합 검색창 */}
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSearchTerm(searchInput);
-              addSearchHistory(searchInput);
-            }}
-            className="glass-panel" 
-            style={{
-              display: 'flex', alignItems: 'center',
-              padding: '6px 8px 6px 16px',
-              borderRadius: 'var(--radius-full)',
-              boxShadow: 'var(--shadow-lg)',
-              border: '1px solid var(--border-focus)',
-              maxWidth: '650px', margin: '0 auto',
-              transition: 'var(--transition-smooth)',
-              flexWrap: 'nowrap',
-              width: '100%'
-            }}
-          >
-            <Icons.Search />
-            <input 
-              type="text" 
-              placeholder={placeholderText}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              style={{
-                flex: 1, border: 'none', background: 'transparent',
-                padding: '8px 12px', fontSize: '0.95rem',
-                color: 'var(--text-primary)',
-                minWidth: 0,
-                outline: 'none'
-              }}
-            />
-            {searchInput && (
-              <button 
-                type="button"
-                onClick={() => {
-                  setSearchInput('');
-                  setSearchTerm('');
+          {/* 검색 & 실시간 검색어 가로 정렬 영역 - 반응형 클래스 사용 */}
+          <div className="hero-search-wrapper">
+            {/* 좌측/가운데: 통합 검색창 (최근검색어 레이어 팝업 포함) */}
+            <div className="hero-search-box" style={{ position: 'relative' }}>
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setSearchTerm(searchInput);
+                  addSearchHistory(searchInput);
+                  setIsSearchFocused(false);
+                  if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                  }
                 }}
-                style={{ color: 'var(--text-tertiary)', marginRight: '8px', flexShrink: 0 }}
-                title="검색어 초기화"
+                className="glass-panel" 
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '6px 8px 6px 16px',
+                  borderRadius: 'var(--radius-full)',
+                  boxShadow: 'var(--shadow-lg)',
+                  border: isSearchFocused ? '1px solid var(--accent)' : '1px solid var(--border-focus)',
+                  transition: 'var(--transition-smooth)',
+                  flexWrap: 'nowrap',
+                  width: '100%',
+                  backgroundColor: 'var(--bg-secondary)'
+                }}
               >
-                <Icons.Close />
-              </button>
-            )}
-            <button
-              type="submit"
-              className="premium-button-primary"
-              style={{
-                padding: '8px 18px',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                flexShrink: 0,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              검색
-            </button>
-          </form>
-
-          {/* 🔑 최근 검색어 & 실시간 인기 검색어 융합 영역 (가로 1열 다이어트 컴팩트 버전) */}
-          <div style={{
-            maxWidth: '650px',
-            margin: '16px auto 0 auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-            textAlign: 'left'
-          }}>
-            {/* 최근 검색어 */}
-            {searchHistory.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px', whiteSpace: 'nowrap' }}>🕒 최근 검색</span>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
-                  {searchHistory.map((hist, idx) => (
-                    <span 
-                      key={idx}
-                      onClick={() => {
-                        setSearchInput(hist);
-                        setSearchTerm(hist);
-                        addSearchHistory(hist);
-                      }}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '100px',
-                        fontSize: '0.75rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        backgroundColor: 'var(--bg-tertiary)',
-                        border: '1px solid var(--border-color)',
-                        transition: 'var(--transition-smooth)',
-                        fontWeight: 500
-                      }}
-                    >
-                      <span style={{ color: 'var(--text-primary)' }}>{hist}</span>
-                      <button 
-                        type="button"
-                        onClick={(e) => removeHistoryItem(hist, e)}
-                        style={{
-                          border: 'none',
-                          background: 'transparent',
-                          color: 'var(--text-tertiary)',
-                          fontSize: '0.7rem',
-                          cursor: 'pointer',
-                          padding: '0 2px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          marginLeft: '2px'
-                        }}
-                        title="삭제"
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
+                <Icons.Search />
+                <input 
+                  type="text" 
+                  placeholder={placeholderText}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
+                  style={{
+                    flex: 1, border: 'none', background: 'transparent',
+                    padding: '8px 12px', fontSize: '0.95rem',
+                    color: 'var(--text-primary)',
+                    minWidth: 0,
+                    outline: 'none'
+                  }}
+                />
+                {searchInput && (
                   <button 
                     type="button"
-                    onClick={clearAllHistory}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'var(--accent)',
-                      fontSize: '0.68rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      padding: '2px 6px'
+                    onClick={() => {
+                      setSearchInput('');
+                      setSearchTerm('');
                     }}
+                    style={{ color: 'var(--text-tertiary)', marginRight: '8px', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer' }}
+                    title="검색어 초기화"
                   >
-                    비우기
+                    <Icons.Close />
                   </button>
-                </div>
-              </div>
-            )}
+                )}
+                <button
+                  type="submit"
+                  className="premium-button-primary"
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  검색
+                </button>
+              </form>
 
-            {/* 실시간 인기 검색어 (가로 스크롤 칩 구조) */}
-            <div style={{
-              borderTop: searchHistory.length > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-              paddingTop: searchHistory.length > 0 ? '10px' : '0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              width: '100%'
-            }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px' }}>실시간 인기</span>
-              
-              <div 
-                style={{
-                  display: 'flex',
-                  gap: '6px',
-                  overflowX: 'auto',
-                  flex: 1,
-                  padding: '2px 0',
-                  scrollbarWidth: 'none'
-                }}
-                className="no-scrollbar"
-              >
-                {trendingKeywords.map((item) => {
-                  let badgeBg = 'var(--bg-tertiary)';
-                  let badgeColor = 'var(--text-secondary)';
-                  if (item.rank === 1) {
-                    badgeBg = 'linear-gradient(135deg, #ffd700, #ffa500)';
-                    badgeColor = '#000000';
-                  } else if (item.rank === 2) {
-                    badgeBg = 'linear-gradient(135deg, #c0c0c0, #a9a9a9)';
-                    badgeColor = '#000000';
-                  } else if (item.rank === 3) {
-                    badgeBg = 'linear-gradient(135deg, #cd7f32, #b87333)';
-                    badgeColor = '#ffffff';
-                  }
-
-                  return (
-                    <div 
-                      key={item.word}
-                      onClick={() => {
-                        setSearchInput(item.word);
-                        setSearchTerm(item.word);
-                        addSearchHistory(item.word);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        padding: '4px 10px',
-                        borderRadius: 'var(--radius-full)',
-                        backgroundColor: 'rgba(255,255,255,0.02)',
-                        border: '1px solid var(--border-color)',
-                        transition: 'var(--transition-smooth)',
-                        flexShrink: 0
-                      }}
-                      className="card-image-hover"
-                    >
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '15px',
-                        height: '15px',
-                        borderRadius: '3px',
-                        fontSize: '0.65rem',
-                        fontWeight: 900,
-                        background: badgeBg,
-                        color: badgeColor
-                      }}>
-                        {item.rank}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 700 : 500 }}>
-                        {item.word}
-                      </span>
+              {/* 최근검색어 팝업 (네이버 스타일: 포커스 시 노출) */}
+              {isSearchFocused && (
+                <div 
+                  className="glass-panel" 
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '16px',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                    zIndex: 200,
+                    textAlign: 'left',
+                    overflow: 'hidden'
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {!isHistoryEnabled ? (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      최근 검색어 저장 기능이 꺼져 있습니다.
                     </div>
-                  );
-                })}
-              </div>
+                  ) : searchHistory.length === 0 ? (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      최근 검색 기록이 없습니다.
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ padding: '12px 16px 6px 16px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>
+                        최근 검색어
+                      </div>
+                      <ul style={{ listStyle: 'none', margin: 0, padding: '6px 0', maxHeight: '220px', overflowY: 'auto' }}>
+                        {searchHistory.map((hist, idx) => (
+                          <li 
+                            key={idx}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 16px',
+                              cursor: 'pointer',
+                              transition: 'background 0.15s'
+                            }}
+                            className="dropdown-item-hover"
+                            onClick={() => {
+                              setSearchInput(hist);
+                              setSearchTerm(hist);
+                              addSearchHistory(hist);
+                              setIsSearchFocused(false);
+                            }}
+                          >
+                            <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: 500 }}>
+                              {hist}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeHistoryItem(hist, e);
+                              }}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--text-tertiary)',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 16px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    borderTop: '1px solid var(--border-color)',
+                    fontSize: '0.78rem'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsHistoryEnabled(!isHistoryEnabled)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, padding: '2px 0' }}
+                    >
+                      {isHistoryEnabled ? '최근검색어 끄기' : '최근검색어 켜기'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllHistory}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, padding: '2px 0' }}
+                    >
+                      전체 삭제
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-          </div>
+            {/* 우측 끝: 실시간 인기 검색어 롤링 위젯 */}
+            <div 
+              className="hero-trend-widget"
+              style={{ width: '180px', height: '46px', right: '-16px' }}
+              onMouseEnter={() => setIsTrendDropdownOpen(true)}
+              onMouseLeave={() => setIsTrendDropdownOpen(false)}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0',
+                  height: '46px',
+                  background: 'transparent',
+                  border: 'none',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                  width: '100%',
+                  justifyContent: 'flex-end',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', height: '46px', flex: 1, position: 'relative', justifyContent: 'flex-end' }}>
+                  {trendingKeywords.length > 0 ? (
+                    <div 
+                      key={currentTrendIndex}
+                      className="animate-trend-slide-up"
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        width: '100%',
+                        height: '46px',
+                        margin: 0,
+                        padding: 0,
+                        boxSizing: 'border-box',
+                        justifyContent: 'flex-end'
+                      }}
+                      onClick={() => {
+                        const item = trendingKeywords[currentTrendIndex];
+                        if (item) {
+                          setSearchInput(item.word);
+                          setSearchTerm(item.word);
+                          addSearchHistory(item.word);
+                        }
+                      }}
+                    >
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '4px',
+                        fontSize: '0.7rem',
+                        fontWeight: 900,
+                        background: (currentTrendIndex + 1) === 1 ? 'linear-gradient(135deg,#ffd700,#ffa500)' : (currentTrendIndex + 1) === 2 ? 'linear-gradient(135deg,#c0c0c0,#a9a9a9)' : (currentTrendIndex + 1) === 3 ? 'linear-gradient(135deg,#cd7f32,#b87333)' : 'var(--bg-tertiary)',
+                        color: (currentTrendIndex + 1) === 3 ? '#fff' : '#000',
+                        flexShrink: 0
+                      }}>
+                        {currentTrendIndex + 1}
+                      </span>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right', flex: '0 1 auto' }}>
+                        {trendingKeywords[currentTrendIndex]?.word}
+                      </span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>인기 검색어 로딩 중...</span>
+                  )}
+                </div>
+              </div>
 
+              {/* 실시간 전체 순위 팝업 레이어 */}
+              {isTrendDropdownOpen && trendingKeywords.length > 0 && (
+                <div 
+                  className="glass-panel animate-fade-in"
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    right: 0,
+                    width: '240px',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '16px',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                    zIndex: 999,
+                    padding: '12px 0',
+                    textAlign: 'left'
+                  }}
+                >
+                  <div style={{ padding: '0 16px 8px 16px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🔥</span> 실시간 인기 검색어
+                  </div>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {trendingKeywords.slice(0, 10).map((item, idx) => (
+                      <li 
+                        key={item.word}
+                        className="dropdown-item-hover"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '8px 16px',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          transition: 'background 0.15s'
+                        }}
+                        onClick={() => {
+                          setSearchInput(item.word);
+                          setSearchTerm(item.word);
+                          addSearchHistory(item.word);
+                          setIsTrendDropdownOpen(false);
+                        }}
+                      >
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 900,
+                          background: item.rank === 1 ? 'linear-gradient(135deg,#ffd700,#ffa500)' : item.rank === 2 ? 'linear-gradient(135deg,#c0c0c0,#a9a9a9)' : item.rank === 3 ? 'linear-gradient(135deg,#cd7f32,#b87333)' : 'var(--bg-tertiary)',
+                          color: item.rank === 3 ? '#fff' : '#000',
+                          flexShrink: 0
+                        }}>
+                          {item.rank}
+                        </span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 700 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.word}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1039,7 +1183,7 @@ export default function Home() {
           style={{
             margin: '0 auto 32px auto',
             width: '100%',
-            minHeight: '120px',
+            minHeight: '240px',
             borderRadius: 'var(--radius-md)',
             position: 'relative',
             overflow: 'hidden',
@@ -1069,14 +1213,15 @@ export default function Home() {
           <div style={{ 
             position: 'relative', zIndex: 2,
             display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
-            padding: '24px 32px', width: '100%', gap: '16px', flexWrap: 'wrap'
+            padding: '36px 48px', width: '100%', gap: '16px', flexWrap: 'wrap',
+            minHeight: '240px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
               <div style={{ textAlign: 'left' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                <h4 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                   {AD_SLIDES[currentAdIndex].title}
                 </h4>
-                <p style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                <p style={{ fontSize: '0.95rem', color: '#e2e8f0', lineHeight: 1.5, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                   {AD_SLIDES[currentAdIndex].desc}
                 </p>
               </div>
@@ -1125,485 +1270,654 @@ export default function Home() {
           </div>
         </div>
         
-        {/* 필터 세션 */}
-        <div className="glass-panel animate-fade-in" style={{
-          padding: '24px', borderRadius: 'var(--radius-lg)', marginBottom: '32px',
-          display: 'flex', flexDirection: 'column', gap: '20px'
-        }}>
-          
-          {/* 모집 유형 필터 (방문 vs 배송 탭) */}
-          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>모집 유형</span>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', width: '100%' }}>
-              {[
-                { key: 'all', label: '전체', img: null },
-                { key: 'visit', label: '방문형', img: '/images/emojis/pin.jpg' },
-                { key: 'delivery', label: '배송형', img: '/images/emojis/box.jpg' }
-              ].map(typeItem => (
+        {/* ─── 필터 탭바 + 상세 패널 (sticky, 2025 modern style, 마우스 호버 및 왼쪽 정렬 버전) ─── */}
+        <div 
+          onMouseLeave={() => {
+            setIsTypeOpen(false);
+            setIsCategoryOpen(false);
+            setIsPlatformOpen(false);
+            setIsLocationOpen(false);
+          }}
+          style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: '24px' }}
+        >
+          {/* 탭바 영역 */}
+          <div className="filter-bar-wrap" style={{ marginTop: '0' }}>
+            <div className="filter-bar-scroll" style={{ justifyContent: 'flex-start' }}>
+              
+              {/* 1. 모집 유형 탭 */}
+              <button
+                type="button"
+                className={`filter-tab ${isTypeOpen || activeType !== 'all' ? 'active' : ''}`}
+                onMouseEnter={() => {
+                  setIsTypeOpen(true);
+                  setIsCategoryOpen(false);
+                  setIsPlatformOpen(false);
+                  setIsLocationOpen(false);
+                }}
+                onClick={() => setIsTypeOpen(prev => !prev)}
+              >
+                {activeType !== 'all' && <span className="tab-badge">✓</span>}
+                <span className="filter-tab-img">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-type)' }}>
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M7 8h10M7 12h10M7 16h6" />
+                    <defs>
+                      <linearGradient id="grad-type" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#6366f1" />
+                        <stop offset="100%" stopColor="#ec4899" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                  {activeType === 'all' ? '모집 유형' :
+                    activeType === 'visit' ? '방문형' : '배송형'}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isTypeOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </span>
+              </button>
+
+              {/* 2. 카테고리 탭 */}
+              <button
+                type="button"
+                className={`filter-tab ${isCategoryOpen || activeCategory !== 'all' ? 'active' : ''}`}
+                onMouseEnter={() => {
+                  setIsCategoryOpen(true);
+                  setIsTypeOpen(false);
+                  setIsPlatformOpen(false);
+                  setIsLocationOpen(false);
+                }}
+                onClick={() => setIsCategoryOpen(prev => !prev)}
+              >
+                {activeCategory !== 'all' && <span className="tab-badge">✓</span>}
+                <span className="filter-tab-img">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cat)' }}>
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <defs>
+                      <linearGradient id="grad-cat" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#3b82f6" />
+                        <stop offset="100%" stopColor="#8b5cf6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                  {activeCategory === 'all' ? '카테고리' :
+                    activeCategory === 'food-restaurant' ? '식당/맛집' :
+                    activeCategory === 'food-cafe' ? '카페/디저트' :
+                    activeCategory === 'food-pub' ? '술집/주점' :
+                    activeCategory === 'beauty-cosmetics' ? '화장품' :
+                    activeCategory === 'beauty-salon' ? '뷰티샵' :
+                    activeCategory === 'accommodation' ? '숙박' :
+                    activeCategory === 'travel' ? '여행' :
+                    activeCategory === 'fashion' ? '패션' :
+                    activeCategory === 'baby' ? '유아/육아' :
+                    activeCategory === 'life-goods' ? '생활용품' :
+                    activeCategory === 'life-appliances' ? '가전/디지털' : '기타'}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </span>
+              </button>
+
+              {/* 3. 미디어 플랫폼 탭 */}
+              <button
+                type="button"
+                className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
+                onMouseEnter={() => {
+                  setIsPlatformOpen(true);
+                  setIsTypeOpen(false);
+                  setIsCategoryOpen(false);
+                  setIsLocationOpen(false);
+                }}
+                onClick={() => setIsPlatformOpen(prev => !prev)}
+              >
+                {activePlatform !== 'all' && <span className="tab-badge">✓</span>}
+                <span className="filter-tab-img">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat)' }}>
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    <defs>
+                      <linearGradient id="grad-plat" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                  {activePlatform === 'all' ? '플랫폼' :
+                    activePlatform === 'blog' ? '블로그' :
+                    activePlatform === 'instagram' ? '인스타' :
+                    activePlatform === 'youtube' ? '유튜브' :
+                    activePlatform === 'naver' ? '네이버' : '기타'}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </span>
+              </button>
+
+              {/* 4. 지역 탭 */}
+              <button
+                type="button"
+                className={`filter-tab ${isLocationOpen || activeLocation !== 'all' ? 'active' : ''}`}
+                onMouseEnter={() => {
+                  setIsLocationOpen(true);
+                  setIsTypeOpen(false);
+                  setIsCategoryOpen(false);
+                  setIsPlatformOpen(false);
+                }}
+                onClick={() => setIsLocationOpen(prev => !prev)}
+              >
+                {activeLocation !== 'all' && <span className="tab-badge">✓</span>}
+                <span className="filter-tab-img">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-loc)' }}>
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                    <defs>
+                      <linearGradient id="grad-loc" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#ef4444" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                  {activeLocation === 'all' ? '지역 검색' :
+                    selectedSigungu !== 'all' ? `${selectedSido} ${selectedSigungu}` : selectedSido}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isLocationOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </span>
+              </button>
+
+              {/* 전체 초기화 단추 */}
+              {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all') && (
                 <button
-                  key={typeItem.key}
-                  onClick={() => setActiveType(typeItem.key)}
-                  style={{
-                    flex: '1 1 0px',
-                    padding: '10px 8px',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: '0.925rem',
-                    fontWeight: 700,
-                    backgroundColor: activeType === typeItem.key ? 'var(--accent)' : 'var(--bg-secondary)',
-                    color: activeType === typeItem.key ? '#ffffff' : 'var(--text-primary)',
-                    border: '1px solid var(--border-color)',
-                    transition: 'var(--transition-smooth)',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    textAlign: 'center'
+                  type="button"
+                  className="filter-tab"
+                  onClick={() => {
+                    setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
+                    setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
+                    setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false);
                   }}
+                  style={{ color: 'var(--danger)' }}
                 >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    {typeItem.img && (
-                      <img 
-                        src={typeItem.img} 
-                        alt="" 
-                        style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
-                      />
-                    )}
-                    {typeItem.label}
+                  <span className="filter-tab-img">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: '#ef4444' }}>
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                    </svg>
                   </span>
+                  <span style={{ marginTop: '2px' }}>초기화</span>
                 </button>
-              ))}
+              )}
             </div>
           </div>
 
-          {/* 카테고리 필터 (상세검색 아코디언 스타일 - 고도화 및 세분화) */}
-          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-            <button
-              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-              style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                width: '100%', padding: '4px 0', border: 'none', background: 'none',
-                color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.875rem',
-                cursor: 'pointer'
-              }}
-            >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <img 
-                  src="/images/emojis/box.jpg" 
-                  alt="" 
-                  style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
-                />
-                카테고리 상세검색 
-                {activeCategory !== 'all' && (
-                  <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 600 }}>
-                    ({
-                      activeCategory === 'food-restaurant' ? '맛집/식당' :
-                      activeCategory === 'food-cafe' ? '카페/디저트' :
-                      activeCategory === 'food-pub' ? '술집/주점' :
-                      activeCategory === 'beauty-cosmetic' ? '화장품/뷰티템' :
-                      activeCategory === 'beauty-hair' ? '헤어숍' :
-                      activeCategory === 'beauty-skin' ? '피부/네일/왁싱' :
-                      activeCategory === 'fashion-clothing' ? '의류' :
-                      activeCategory === 'fashion-accessory' ? '잡화/악세사리' :
-                      activeCategory === 'travel-stay' ? '숙소(호텔/펜션)' :
-                      activeCategory === 'travel-leisure' ? '레저/입장권' :
-                      activeCategory === 'book' ? '도서/교육' :
-                      activeCategory === 'health-fresh' ? '신선식품/밀키트' :
-                      activeCategory === 'health-food' ? '건강식품/영양제' :
-                      activeCategory === 'baby' ? '유아동/육아' :
-                      activeCategory === 'life-goods' ? '생활용품' :
-                      activeCategory === 'life-appliances' ? '가전/디지털' : '기타'
-                    })
-                  </span>
-                )}
-              </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
-            </button>
-            
-            {isCategoryOpen && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-
-                {/* 1. 맛집/카페 */}
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/food.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
-                    맛집 / 음식
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { key: 'food-restaurant', label: '식당/맛집' },
-                      { key: 'food-cafe', label: '카페/디저트' },
-                      { key: 'food-pub', label: '술집/주점' }
-                    ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. 뷰티/케어 */}
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
-                    뷰티 / 에스테틱
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { key: 'beauty-cosmetic', label: '화장품/뷰티템' },
-                      { key: 'beauty-hair', label: '헤어숍' },
-                      { key: 'beauty-skin', label: '피부/네일/왁싱' }
-                    ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3. 숙박/여행 */}
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/travel.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
-                    숙박 / 레저
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { key: 'travel-stay', label: '숙소 (호텔/펜션)' },
-                      { key: 'travel-leisure', label: '레저 / 입장권' }
-                    ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 4. 패션/의류 */}
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/fashion.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
-                    패션 / 잡화
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { key: 'fashion-clothing', label: '의류/코디' },
-                      { key: 'fashion-accessory', label: '패션잡화/악세사리' }
-                    ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 5. 생활용품 vs 가전디지털 분리 */}
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/life.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
-                    생활 / 가전
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { key: 'life-goods', label: '생활용품' },
-                      { key: 'life-appliances', label: '가전/디지털기기' }
-                    ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 6. 신규 분리 카테고리 (도서, 건강식품, 유아동) */}
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/box.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
-                    기타 전문 카테고리
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { key: 'book', label: '도서 / 교육' },
-                      { key: 'health-fresh', label: '신선식품/밀키트' },
-                      { key: 'health-food', label: '건강식품/영양제' },
-                      { key: 'baby', label: '유아동 / 육아' },
-                      { key: 'etc', label: '기타 서비스' }
-                    ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
-                    ))}
-                  </div>
-                </div>
+          {/* 모집 유형 상세 패널 (왼쪽 정렬) */}
+          {isTypeOpen && (
+            <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              {/* 맥 OS 스타일 신호등 장식 버튼 */}
+              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
               </div>
-            )}
-          </div>
-
-          {/* 플랫폼 필터 */}
-          <div>
-            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>미디어 플랫폼</span>
-            <div className="filter-row" style={{ display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
-              {[
-                { 
-                  key: 'all', 
-                  label: '전체',
-                  icon: (
-                    <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>ALL</span>
-                  )
-                },
-                { 
-                  key: 'blog', 
-                  label: '네이버 블로그', 
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
-                      <rect width="24" height="24" rx="5" fill="#03C75A"/>
-                      <path d="M9.13 16.5H7.5V7.5H9.6L14.7 13.92V7.5H16.3V16.5H14.2L9.13 10.08V16.5Z" fill="white"/>
-                    </svg>
-                  )
-                },
-                { 
-                  key: 'instagram', 
-                  label: '인스타그램', 
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
-                      <rect width="24" height="24" rx="5" fill="url(#instaGrad)"/>
-                      <path d="M12 7.5C9.515 7.5 7.5 9.515 7.5 12C7.5 14.485 9.515 16.5 12 16.5C14.485 16.5 16.5 14.485 16.5 12C16.5 9.515 14.485 7.5 12 7.5ZM12 15C10.342 15 9 13.658 9 12C9 10.342 10.342 9 12 9C13.658 9 15 10.342 15 12C15 13.658 13.658 15 12 15Z" fill="white"/>
-                      <circle cx="17.5" cy="6.5" r="1.1" fill="white"/>
-                      <rect x="5.5" y="5.5" width="13" height="13" rx="3.5" stroke="white" strokeWidth="1.5"/>
-                      <defs>
-                        <linearGradient id="instaGrad" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
-                          <stop stopColor="#F9ED32"/>
-                          <stop offset="0.25" stopColor="#EE2A7B"/>
-                          <stop offset="0.75" stopColor="#D2149F"/>
-                          <stop offset="1" stopColor="#6C24AA"/>
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  )
-                },
-                { 
-                  key: 'youtube', 
-                  label: '유튜브', 
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
-                      <rect width="24" height="24" rx="5" fill="#FF0000"/>
-                      <path d="M9.8 15.6V8.4L16 12L9.8 15.6Z" fill="white"/>
-                    </svg>
-                  )
-                },
-                { 
-                  key: 'etc', 
-                  label: '기타', 
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="2" y1="12" x2="22" y2="12" />
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                    </svg>
-                  )
-                }
-              ].map(p => (
-                <button
-                  key={p.key}
-                  onClick={() => setActivePlatform(p.key)}
-                  title={p.label}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: activePlatform === p.key ? 'var(--accent-light)' : 'var(--bg-secondary)',
-                    color: activePlatform === p.key ? 'var(--accent)' : 'var(--text-primary)',
-                    border: `1px solid ${activePlatform === p.key ? 'var(--accent)' : 'var(--border-color)'}`,
-                    transition: 'var(--transition-smooth)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: p.key === 'etc' ? '6px' : '0px',
-                    minWidth: p.key === 'etc' ? '92px' : '68px',
-                    height: '40px',
-                    flexShrink: 0
-                  }}
-                >
-                  {p.icon}
-                  {p.key === 'etc' && <span style={{ fontSize: '0.825rem', fontWeight: 700 }}>기타</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 지역 필터 (카테고리 상세검색처럼 아코디언 스타일로 통일) */}
-          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-            <button
-              onClick={() => setIsLocationOpen(!isLocationOpen)}
-              style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                width: '100%', padding: '4px 0', border: 'none', background: 'none',
-                color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.95rem',
-                cursor: 'pointer'
-              }}
-            >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <img 
-                  src="/images/emojis/pin.jpg" 
-                  alt="" 
-                  style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
-                />
-                지역 상세검색
-                {selectedSido !== 'all' && (
-                  <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 600 }}>
-                    ({selectedSido} {selectedSigungu !== 'all' ? selectedSigungu : '전체'})
-                  </span>
-                )}
-              </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', transition: 'transform 0.2s', transform: isLocationOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
-            </button>
-
-            {isLocationOpen && (
-              <div style={{
-                display: 'flex',
-                height: '320px',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                backgroundColor: 'var(--bg-secondary)',
-                marginTop: '16px',
-                boxShadow: 'var(--shadow-md)'
-              }}>
-                {/* 1열: 광역시도 (세로 목록) */}
-                <div 
-                  style={{ 
-                    width: '140px', 
-                    borderRight: '1px solid var(--border-color)', 
-                    overflowY: 'auto',
-                    backgroundColor: 'var(--bg-tertiary)',
-                    padding: '10px'
-                  }}
-                  className="no-scrollbar"
-                >
-                  <div
-                    onMouseEnter={() => setHoveredSido('all')}
-                    onClick={() => {
-                      setHoveredSido('all');
-                      setSelectedSido('all');
-                      setSelectedSigungu('all');
-                    }}
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: 'var(--radius-md)',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem',
-                      fontWeight: selectedSido === 'all' ? 800 : 500,
-                      color: selectedSido === 'all' ? 'var(--accent)' : 'var(--text-primary)',
-                      backgroundColor: (selectedSido === 'all' || hoveredSido === 'all') ? 'var(--bg-primary)' : 'transparent',
-                      marginBottom: '4px',
-                      transition: 'var(--transition-smooth)'
-                    }}
-                    className="dropdown-item-hover"
-                  >
-                    전국 (전체)
-                  </div>
-                  {Object.keys(LOCATIONS_MAP).map(sido => (
-                    <div
-                      key={sido}
-                      onMouseEnter={() => setHoveredSido(sido)}
-                      onClick={() => {
-                        setHoveredSido(sido);
-                        setSelectedSido(sido);
-                        setSelectedSigungu('all'); // 🔑 지역 검색 정상화의 핵심: 광역시도 변경 시 군구 초기화!
-                      }}
-                      style={{
-                        padding: '12px 16px',
-                        borderRadius: 'var(--radius-md)',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        fontWeight: (selectedSido === sido) ? 800 : 600,
-                        color: (selectedSido === sido) ? 'var(--accent)' : 'var(--text-primary)',
-                        backgroundColor: (selectedSido === sido || hoveredSido === sido) ? 'var(--bg-primary)' : 'transparent',
-                        marginBottom: '4px',
-                        transition: 'var(--transition-smooth)'
-                      }}
-                      className="dropdown-item-hover"
-                    >
-                      {sido}
-                    </div>
-                  ))}
-                </div>
-
-                {/* 2열: 시군구 칩 그리드 */}
-                <div 
-                  style={{ 
-                    flex: 1, 
-                    overflowY: 'auto', 
-                    padding: '20px', 
-                    backgroundColor: 'var(--bg-primary)' 
-                  }}
-                  className="no-scrollbar"
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                      {hoveredSido === 'all' ? '전체 구역' : `${hoveredSido} 상세 지역`}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                      선택 시 즉각 반영됩니다
-                    </span>
-                  </div>
-                  
-                  {hoveredSido === 'all' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '180px', color: 'var(--text-tertiary)', fontSize: '0.85rem', textAlign: 'center', gap: '8px' }}>
-                      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+              <div className="filter-chip-row" style={{ justifyContent: 'flex-start', gap: '16px', width: '100%' }}>
+                {[
+                  { 
+                    key: 'all', 
+                    label: '전체 유형', 
+                    icon: (
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-alltype)' }}>
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        <defs><linearGradient id="grad-alltype" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#8b5cf6" /></linearGradient></defs>
+                      </svg>
+                    )
+                  },
+                  { 
+                    key: 'visit', 
+                    label: '방문형', 
+                    icon: (
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-visit)' }}>
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                         <circle cx="12" cy="10" r="3" />
+                        <defs><linearGradient id="grad-visit" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#8b5cf6" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
                       </svg>
-                      <span>왼쪽 목록에서 광역시도를 선택하면<br/>시/군/구 칩셋 목록이 이곳에 펼쳐집니다.</span>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingBottom: '20px' }}>
-                      <button
-                        onClick={() => {
-                          setSelectedSido(hoveredSido);
-                          setSelectedSigungu('all');
-                        }}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: 'var(--radius-full)',
-                          fontSize: '0.825rem',
-                          fontWeight: (selectedSido === hoveredSido && selectedSigungu === 'all') ? 700 : 500,
-                          backgroundColor: (selectedSido === hoveredSido && selectedSigungu === 'all') ? 'var(--accent)' : 'var(--bg-secondary)',
-                          color: (selectedSido === hoveredSido && selectedSigungu === 'all') ? '#ffffff' : 'var(--text-primary)',
-                          border: '1px solid transparent',
-                          cursor: 'pointer',
-                          boxShadow: (selectedSido === hoveredSido && selectedSigungu === 'all') ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'none',
-                          transition: 'var(--transition-smooth)'
-                        }}
-                        className="region-chip-hover"
-                      >
-                        전체 (전구역)
+                    )
+                  },
+                  { 
+                    key: 'delivery', 
+                    label: '배송형', 
+                    icon: (
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-delivery)' }}>
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                        <defs><linearGradient id="grad-delivery" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                      </svg>
+                    )
+                  }
+                ].map(t => (
+                  <button 
+                    type="button"
+                    key={t.key} 
+                    className={`filter-desktop-icon ${activeType === t.key ? 'active' : ''}`} 
+                    onClick={() => {
+                      setActiveType(t.key);
+                      setIsTypeOpen(false);
+                    }}
+                  >
+                    <span className="filter-desktop-icon-img">{t.icon}</span>
+                    <span className="filter-desktop-icon-text">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 카테고리 상세 패널 (왼쪽 정렬) */}
+          {isCategoryOpen && (
+            <div className="filter-panel-wrap">
+              {/* 맥 OS 스타일 신호등 장식 버튼 */}
+              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
+              </div>
+              <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '24px' }}>
+                {/* 맛집/음식 */}
+                <div style={{ width: '100%', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <img src="/images/emojis/food.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                    맛집 / 음식
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                    {[
+                      { 
+                        key: 'food-restaurant', 
+                        label: '식당/맛집', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-restaurant)' }}>
+                            <path d="M3 12h18M5 12a7 7 0 0 0 14 0M12 2v4M9 3v3M15 3v3" />
+                            <defs><linearGradient id="grad-restaurant" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#f59e0b" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'food-cafe', 
+                        label: '카페/디저트', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cafe)' }}>
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                            <line x1="6" y1="2" x2="6" y2="4" />
+                            <line x1="10" y1="2" x2="10" y2="4" />
+                            <line x1="14" y1="2" x2="14" y2="4" />
+                            <defs><linearGradient id="grad-cafe" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#d97706" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'food-pub', 
+                        label: '술집/주점', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-pub)' }}>
+                            <path d="M22 3L12 13L2 3M12 13v9M8 22h8" />
+                            <defs><linearGradient id="grad-pub" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a855f7" /><stop offset="100%" stopColor="#f43f5e" /></linearGradient></defs>
+                          </svg>
+                        )
+                      }
+                    ].map(c => (
+                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                        <span className="filter-desktop-icon-img">{c.icon}</span>
+                        <span className="filter-desktop-icon-text">{c.label}</span>
                       </button>
-                      {LOCATIONS_MAP[hoveredSido]?.map(sigungu => (
-                        <button
-                          key={sigungu}
-                          onClick={() => {
-                            setSelectedSido(hoveredSido);
-                            setSelectedSigungu(sigungu);
-                          }}
-                          style={{
-                            padding: '8px 16px',
-                            borderRadius: 'var(--radius-full)',
-                            fontSize: '0.825rem',
-                            fontWeight: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? 700 : 500,
-                            backgroundColor: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? 'var(--accent)' : 'var(--bg-secondary)',
-                            color: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? '#ffffff' : 'var(--text-primary)',
-                            border: '1px solid transparent',
-                            cursor: 'pointer',
-                            boxShadow: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'none',
-                            transition: 'var(--transition-smooth)'
-                          }}
-                          className="region-chip-hover"
-                        >
-                          {sigungu}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                    ))}
+                  </div>
+                </div>
+                {/* 뷰티 */}
+                <div style={{ width: '100%', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                    뷰티 / 에스테틱
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                    {[
+                      { 
+                        key: 'beauty-cosmetics', 
+                        label: '화장품/스킨케어', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cosme)' }}>
+                            <rect x="6" y="10" width="12" height="11" rx="2" />
+                            <path d="M9 10V5a3 3 0 0 1 6 0v5" />
+                            <line x1="12" y1="10" x2="12" y2="21" />
+                            <defs><linearGradient id="grad-cosme" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#f472b6" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'beauty-salon', 
+                        label: '뷰티샵/에스테틱', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-salon)' }}>
+                            <circle cx="6" cy="6" r="3" />
+                            <circle cx="6" cy="18" r="3" />
+                            <line x1="20" y1="4" x2="8.12" y2="15.88" />
+                            <line x1="14.47" y1="14.48" x2="20" y2="20" />
+                            <line x1="8.12" y1="8.12" x2="12" y2="12" />
+                            <defs><linearGradient id="grad-salon" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#6366f1" /></linearGradient></defs>
+                          </svg>
+                        )
+                      }
+                    ].map(c => (
+                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                        <span className="filter-desktop-icon-img">{c.icon}</span>
+                        <span className="filter-desktop-icon-text">{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* 여행/숙박 */}
+                <div style={{ width: '100%', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <img src="/images/emojis/travel.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                    여행 / 숙박
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                    {[
+                      { 
+                        key: 'accommodation', 
+                        label: '숙박/호텔', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-accommodation)' }}>
+                            <path d="M2 22V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v18M4 22h16M7 8h2M15 8h2M7 13h2M15 13h2M11 18h2" />
+                            <defs><linearGradient id="grad-accommodation" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#6366f1" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'travel', 
+                        label: '여행/레저', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-travel)' }}>
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                            <defs><linearGradient id="grad-travel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
+                          </svg>
+                        )
+                      }
+                    ].map(c => (
+                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                        <span className="filter-desktop-icon-img">{c.icon}</span>
+                        <span className="filter-desktop-icon-text">{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* 패션/생활 */}
+                <div style={{ width: '100%', marginBottom: '0' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <img src="/images/emojis/fashion.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                    패션 / 생활
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                    {[
+                      { 
+                        key: 'fashion', 
+                        label: '패션/의류', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-fashion)' }}>
+                            <path d="M20.37 4.65a2.22 2.22 0 0 0-3.15 0L12 9.87 7.15 5A2.22 2.22 0 0 0 4 8.18l7.15 7.15a1.2 1.2 0 0 0 1.7 0l7.52-7.53a2.22 2.22 0 0 0 0-3.15z" />
+                            <path d="M12 9.87v11" />
+                            <defs><linearGradient id="grad-fashion" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a855f7" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'baby', 
+                        label: '유아동/육아', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-baby)' }}>
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                            <line x1="9" y1="9" x2="9.01" y2="9" />
+                            <line x1="15" y1="9" x2="15.01" y2="9" />
+                            <defs><linearGradient id="grad-baby" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'life-goods', 
+                        label: '생활용품', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-goods)' }}>
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                            <polyline points="9 22 9 12 15 12 15 22" />
+                            <defs><linearGradient id="grad-goods" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'life-appliances', 
+                        label: '가전/디지털', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-appliances)' }}>
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                            <line x1="8" y1="21" x2="16" y2="21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                            <defs><linearGradient id="grad-appliances" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#a855f7" /></linearGradient></defs>
+                          </svg>
+                        )
+                      },
+                      { 
+                        key: 'etc', 
+                        label: '기타', 
+                        icon: (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-etc)' }}>
+                            <polyline points="20 12 20 22 4 22 4 12" />
+                            <rect x="2" y="7" width="20" height="5" />
+                            <line x1="12" y1="22" x2="12" y2="7" />
+                            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                            <defs><linearGradient id="grad-etc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6b7280" /><stop offset="100%" stopColor="#9ca3af" /></linearGradient></defs>
+                          </svg>
+                        )
+                      }
+                    ].map(c => (
+                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                        <span className="filter-desktop-icon-img">{c.icon}</span>
+                        <span className="filter-desktop-icon-text">{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
+          {/* 미디어 플랫폼 상세 패널 (왼쪽 정렬) */}
+          {isPlatformOpen && (
+            <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              {/* 맥 OS 스타일 신호등 장식 버튼 */}
+              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
+              </div>
+              <div className="filter-chip-row" style={{ justifyContent: 'flex-start', gap: '16px', width: '100%' }}>
+                {[
+                  { 
+                    key: 'all', 
+                    label: '전체 플랫폼', 
+                    icon: (
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-allplat)' }}>
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                        <line x1="8" y1="21" x2="16" y2="21" />
+                        <line x1="12" y1="17" x2="12" y2="21" />
+                        <defs><linearGradient id="grad-allplat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
+                      </svg>
+                    )
+                  },
+                  { key: 'blog', label: '네이버 블로그', icon: null },
+                  { key: 'instagram', label: '인스타그램', icon: null },
+                  { key: 'youtube', label: '유튜브', icon: null },
+                  { 
+                    key: 'etc', 
+                    label: '기타 플랫폼', 
+                    icon: (
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-etcplat)' }}>
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        <defs><linearGradient id="grad-etcplat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6b7280" /><stop offset="100%" stopColor="#9ca3af" /></linearGradient></defs>
+                      </svg>
+                    )
+                  }
+                ].map(p => (
+                  <button 
+                    type="button"
+                    key={p.key} 
+                    className={`filter-desktop-icon ${activePlatform === p.key ? 'active' : ''}`} 
+                    onClick={() => {
+                      setActivePlatform(p.key);
+                      setIsPlatformOpen(false);
+                    }}
+                  >
+                    <span className="filter-desktop-icon-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {p.key === 'blog' && (
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                          <rect width="24" height="24" rx="5" fill="#03C75A"/>
+                          <path d="M9.13 16.5H7.5V7.5H9.6L14.7 13.92V7.5H16.3V16.5H14.2L9.13 10.08V16.5Z" fill="white"/>
+                        </svg>
+                      )}
+                      {p.key === 'instagram' && (
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                          <rect width="24" height="24" rx="5" fill="url(#ig11)"/>
+                          <path d="M12 7.5C9.515 7.5 7.5 9.515 7.5 12C7.5 14.485 9.515 16.5 12 16.5C14.485 16.5 16.5 14.485 16.5 12C16.5 9.515 14.485 7.5 12 7.5ZM12 15C10.342 15 9 13.658 9 12C9 10.342 10.342 9 12 9C13.658 9 15 10.342 15 12C15 13.658 13.658 15 12 15Z" fill="white"/>
+                          <circle cx="17.5" cy="6.5" r="1.1" fill="white"/>
+                          <rect x="5.5" y="5.5" width="13" height="13" rx="3.5" stroke="white" strokeWidth="1.5"/>
+                          <defs><linearGradient id="ig11" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse"><stop stopColor="#F9ED32"/><stop offset="0.25" stopColor="#EE2A7B"/><stop offset="0.75" stopColor="#D2149F"/><stop offset="1" stopColor="#6C24AA"/></linearGradient></defs>
+                        </svg>
+                      )}
+                      {p.key === 'youtube' && (
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                          <rect width="24" height="24" rx="5" fill="#FF0000"/>
+                          <path d="M9.8 15.6V8.4L16 12L9.8 15.6Z" fill="white"/>
+                        </svg>
+                      )}
+                      {p.icon}
+                    </span>
+                    <span className="filter-desktop-icon-text">{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-
-
-
-          </div>
-
+          {/* 지역 상세 패널 */}
+          {isLocationOpen && (
+            <div className="filter-panel-wrap">
+              {/* 맥 OS 스타일 신호등 장식 버튼 */}
+              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
+              </div>
+              <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <div className="region-two-col">
+                  {/* 좌: 시도 목록 */}
+                  <div className="region-sido-list">
+                    <button
+                      type="button"
+                      className={`region-sido-btn ${selectedSido === 'all' ? 'active' : ''}`}
+                      onClick={() => { setSelectedSido('all'); setSelectedSigungu('all'); setIsLocationOpen(false); }}
+                    >
+                      전국
+                    </button>
+                    {[
+                      '서울','경기','인천','부산','대구','대전','광주','울산','강원',
+                      '충북','충남','전북','전남','경북','경남','제주','세종'
+                    ].map(sido => (
+                      <button
+                        type="button"
+                        key={sido}
+                        className={`region-sido-btn ${selectedSido === sido ? 'active' : ''}`}
+                        onMouseEnter={() => setHoveredSido(sido)}
+                        onClick={() => {
+                          setSelectedSido(sido);
+                          setSelectedSigungu('all');
+                          if (!LOCATIONS_MAP[sido] || LOCATIONS_MAP[sido].length === 0) {
+                            setIsLocationOpen(false);
+                          }
+                        }}
+                      >
+                        {sido}
+                      </button>
+                    ))}
+                  </div>
+                  {/* 우: 시군구 칩 */}
+                  <div className="region-sigungu-wrap" style={{ justifyContent: 'flex-start' }}>
+                    <div style={{ width: '100%', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>📍</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        {hoveredSido !== 'all' ? hoveredSido : selectedSido === 'all' ? '전국' : selectedSido} 지역 상세 설정
+                      </span>
+                    </div>
+                    {(hoveredSido !== 'all' && LOCATIONS_MAP[hoveredSido]?.length > 0
+                      ? LOCATIONS_MAP[hoveredSido]
+                      : selectedSido !== 'all' && LOCATIONS_MAP[selectedSido]?.length > 0
+                        ? LOCATIONS_MAP[selectedSido]
+                        : []
+                    ).length > 0 ? (
+                      <>
+                        <button
+                          type="button"
+                          className={`filter-chip ${selectedSigungu === 'all' ? 'active' : ''}`}
+                          style={{ fontSize: '0.82rem', padding: '5px 12px' }}
+                          onClick={() => { setSelectedSigungu('all'); setIsLocationOpen(false); }}
+                        >
+                          {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
+                        </button>
+                        {(hoveredSido !== 'all' && LOCATIONS_MAP[hoveredSido]?.length > 0
+                          ? LOCATIONS_MAP[hoveredSido]
+                          : LOCATIONS_MAP[selectedSido] || []
+                        ).map(sigungu => (
+                          <button
+                            type="button"
+                            key={sigungu}
+                            className={`filter-chip ${selectedSigungu === sigungu && selectedSido === (hoveredSido !== 'all' ? hoveredSido : selectedSido) ? 'active' : ''}`}
+                            style={{ fontSize: '0.82rem', padding: '5px 12px' }}
+                            onClick={() => {
+                              const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
+                              setSelectedSido(targetSido);
+                              setSelectedSigungu(sigungu);
+                              setIsLocationOpen(false);
+                            }}
+                          >
+                            {sigungu}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <div style={{ padding: '24px 16px', color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+                        좌측에서 지역을 선택하세요
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* 검색조건과 검색결과 사이의 모던 구분선 */}
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '36px 0 28px 0' }} />
 
         {/* 4. Results List Section */}
 
-        <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0', marginBottom: '24px' }}>
           <div>
             <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
               검색 결과 <span style={{ color: 'var(--accent)' }}>{displayedCampaigns.length}</span>건
@@ -1689,160 +2003,240 @@ export default function Home() {
         ) : (
           /* 실제 리스트 카드 렌더링 */
           <>
+            {/* 1. 상단 2개 라인 (카드 8개) */}
             <div className="campaign-grid">
-              {displayedCampaigns.slice(0, visibleCount).map((c, index) => {
-              const dday = calculateDday(c.endDate);
-              const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
-              const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
+              {displayedCampaigns.slice(0, Math.min(8, visibleCount)).map((c) => {
+                const dday = calculateDday(c.endDate);
+                const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
+                const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
 
-              // D-Day 상태별 클래스 컬러 매칭
-              let ddayColor = 'var(--success)';
-              if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
-              else if (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5) ddayColor = 'var(--warning)';
-              else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
+                let ddayColor = 'var(--success)';
+                if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
+                else if (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5) ddayColor = 'var(--warning)';
+                else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
 
-              return (
-                <>
-                <article 
-                  key={c.id} 
-                  className="premium-card animate-fade-in"
-                  onClick={() => setSelectedCampaign(c)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  
-                  {/* 카드 썸네일 영역 */}
-                  <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
-                    <img 
-                      src={c.imageUrl} 
-                      alt={c.title}
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      style={{
-                        width: '100%', height: '100%', objectFit: 'cover',
-                        transition: 'transform 0.4s ease'
-                      }}
-                      className="card-image-hover"
-                    />
-                    
-                    {/* 상단 뱃지 오버레이 */}
-                    <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
-                      <span className={`badge badge-${c.platform}`}>
-                        {c.platform === 'blog' ? 'Blog' : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
-                      </span>
-                    </div>
-
-                    <div style={{
-                      position: 'absolute', top: '12px', right: '12px',
-                      backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
-                      fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
-                    }}>
-                      {c.targetSite}
-                    </div>
-
-                    {/* D-day 오버레이 */}
-                    <div style={{
-                      position: 'absolute', bottom: '12px', left: '12px',
-                      backgroundColor: ddayColor, color: '#ffffff',
-                      fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
-                    }}>
-                      {dday}
-                    </div>
-
-                  </div>
-
-                  {/* 카드 내용 영역 */}
-                  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                    <div>
-                      {c.location && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
-                          <Icons.MapPin /> {c.location}
-                        </div>
-                      )}
-                      <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {c.title}
-                      </h3>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {c.description}
-                      </p>
-                    </div>
-
-                    {/* 하단 지원 현황 및 정원 정보 */}
-                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                        <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
-                        <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
-                          경쟁률 {competitionRate}:1
+                return (
+                  <article 
+                    key={c.id} 
+                    className="premium-card animate-fade-in"
+                    onClick={() => setSelectedCampaign(c)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {/* 카드 썸네일 영역 */}
+                    <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
+                      <img 
+                        src={c.imageUrl} 
+                        alt={c.title}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        style={{
+                          width: '100%', height: '100%', objectFit: 'cover',
+                          transition: 'transform 0.4s ease'
+                        }}
+                        className="card-image-hover"
+                      />
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                        <span className={`badge badge-${c.platform}`}>
+                          {c.platform === 'blog' ? 'Blog' : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
                         </span>
                       </div>
-                      
-                      {/* 경쟁률 게이지 바 */}
-                      <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                        <div style={{
-                          width: `${ratePercent}%`, height: '100%',
-                          backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
-                          borderRadius: 'var(--radius-full)',
-                          transition: 'width 0.4s ease'
-                        }} />
+                      <div style={{
+                        position: 'absolute', top: '12px', right: '12px',
+                        backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
+                        fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
+                      }}>
+                        {c.targetSite}
+                      </div>
+                      <div style={{
+                        position: 'absolute', bottom: '12px', left: '12px',
+                        backgroundColor: ddayColor, color: '#ffffff',
+                        fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
+                      }}>
+                        {dday}
                       </div>
                     </div>
 
-                  </div>
-                </article>
-                
-                {/* 💻📱 인피드 카드 광고 주입 (8번째 카드 뒤에 삽입) */}
-                {index === 7 && (
-                  <div 
-                    className="premium-card ad-card animate-fade-in" 
-                    style={{
-                      cursor: 'pointer',
-                      border: '1px dashed var(--accent)',
-                      background: 'linear-gradient(180deg, var(--bg-secondary) 0%, rgba(99,102,241,0.02) 100%)',
-                      position: 'relative',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%'
-                    }}
-                  >
-                    <span style={{
-                      position: 'absolute', top: '12px', left: '12px',
-                      fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-tertiary)',
-                      backgroundColor: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px',
-                      zIndex: 2,
-                      lineHeight: 1
-                    }}>SPONSOR AD</span>
-                    
-                    <div style={{ height: '170px', position: 'relative', overflow: 'hidden' }}>
-                      <img 
-                        src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&h=340&q=80" 
-                        alt="Sponsor Ad" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                    
-                    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', gap: '12px' }}>
+                    {/* 카드 내용 영역 */}
+                    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                       <div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
-                          제휴 협찬 광고
-                        </div>
-                        <h3 style={{ fontSize: '1.02rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-primary)' }}>
-                          내 블로그 노출 순위 수직 상승 비법서 무상 배포!
+                        {c.location && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
+                            <Icons.MapPin /> {c.location}
+                          </div>
+                        )}
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {c.title}
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>
-                          최신 C-Rank 로직 분석 및 상위 노출에 최적화된 소제목/키워드 배치 가이드를 단독 공개합니다.
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {c.description}
                         </p>
                       </div>
-                      <a href="https://viral-re.vercel.app" target="_blank" rel="noopener noreferrer" className="premium-button-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px', borderRadius: 'var(--radius-sm)' }}>
-                        로켓 성장 도구 다운로드
-                        <Icons.ExternalLink />
-                      </a>
+                      <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                          <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
+                          <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
+                            경쟁률 {competitionRate}:1
+                          </span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                          <div style={{
+                            width: `${ratePercent}%`, height: '100%',
+                            backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
+                            borderRadius: 'var(--radius-full)',
+                            transition: 'width 0.4s ease'
+                          }} />
+                        </div>
+                      </div>
                     </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* 💻📱 인피드 가로형 띠 배너 광고 (3라인 통째로 100% 너비로 삽입) */}
+            {displayedCampaigns.length > 8 && (
+              <div 
+                className="glass-panel" 
+                onClick={() => window.open('https://viral-re.vercel.app', '_blank')}
+                style={{
+                  margin: '32px 0',
+                  width: '100%',
+                  minHeight: '220px',
+                  borderRadius: 'var(--radius-md)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  backgroundImage: `url(https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&h=200&q=80)`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  border: '1px dashed var(--accent)',
+                }}
+              >
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                  zIndex: 1
+                }} />
+                
+                <div style={{
+                  position: 'relative', zIndex: 2, padding: '36px 48px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  width: '100%', color: '#ffffff', flexWrap: 'wrap', gap: '16px',
+                  minHeight: '220px'
+                }}>
+                  <div>
+                    <span style={{
+                      fontSize: '0.65rem', fontWeight: 900, color: '#ffffff',
+                      backgroundColor: 'var(--accent)', padding: '3px 8px', borderRadius: '4px',
+                      marginRight: '10px', verticalAlign: 'middle'
+                    }}>IN-FEED AD</span>
+                    <h4 style={{ fontSize: '1.45rem', fontWeight: 800, display: 'inline-block', margin: 0, verticalAlign: 'middle', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                      내 블로그 노출 순위 수직 상승 비법서 무상 배포!
+                    </h4>
+                    <p style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '8px', marginBottom: 0, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                      최신 C-Rank 로직 분석 및 상위 노출에 최적화된 소제목/키워드 배치 가이드를 단독 공개합니다.
+                    </p>
                   </div>
-                )}
-                </>
-              );
-            })}
-          </div>
+                  <div className="premium-button-primary" style={{ fontSize: '0.85rem', padding: '12px 24px', borderRadius: 'var(--radius-sm)' }}>
+                    비법서 다운로드하기
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. 하단 3번째 라인 이후 (카드 9번째부터 끝까지) */}
+            {visibleCount > 8 && displayedCampaigns.length > 8 && (
+              <div className="campaign-grid" style={{ marginTop: '0' }}>
+                {displayedCampaigns.slice(8, visibleCount).map((c) => {
+                  const dday = calculateDday(c.endDate);
+                  const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
+                  const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
+
+                  let ddayColor = 'var(--success)';
+                  if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
+                  else if (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5) ddayColor = 'var(--warning)';
+                  else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
+
+                  return (
+                    <article 
+                      key={c.id} 
+                      className="premium-card animate-fade-in"
+                      onClick={() => setSelectedCampaign(c)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {/* 카드 썸네일 영역 */}
+                      <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
+                        <img 
+                          src={c.imageUrl} 
+                          alt={c.title}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          style={{
+                            width: '100%', height: '100%', objectFit: 'cover',
+                            transition: 'transform 0.4s ease'
+                          }}
+                          className="card-image-hover"
+                        />
+                        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                          <span className={`badge badge-${c.platform}`}>
+                            {c.platform === 'blog' ? 'Blog' : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
+                          </span>
+                        </div>
+                        <div style={{
+                          position: 'absolute', top: '12px', right: '12px',
+                          backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
+                          fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
+                        }}>
+                          {c.targetSite}
+                        </div>
+                        <div style={{
+                          position: 'absolute', bottom: '12px', left: '12px',
+                          backgroundColor: ddayColor, color: '#ffffff',
+                          fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
+                        }}>
+                          {dday}
+                        </div>
+                      </div>
+
+                      {/* 카드 내용 영역 */}
+                      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                        <div>
+                          {c.location && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
+                              <Icons.MapPin /> {c.location}
+                            </div>
+                          )}
+                          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {c.title}
+                          </h3>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {c.description}
+                          </p>
+                        </div>
+                        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                            <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
+                            <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
+                              경쟁률 {competitionRate}:1
+                            </span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${ratePercent}%`, height: '100%',
+                              backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
+                              borderRadius: 'var(--radius-full)',
+                              transition: 'width 0.4s ease'
+                            }} />
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
 
           {/* 🔑 더보기 (Load More) 버튼 영역 */}
           {displayedCampaigns.length > visibleCount && (
@@ -2168,6 +2562,54 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 💻📱 우측 하단 최상단 탑 버튼 (Scroll to Top) */}
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          style={{
+            position: 'fixed',
+            bottom: '32px',
+            right: '32px',
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--accent)',
+            color: '#ffffff',
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 500,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(99, 102, 241, 0.35)';
+          }}
+          title="맨 위로 이동"
+        >
+          <svg 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="3" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
       )}
 
       {/* CSS Pulse 애니메이션용 style 정의 */}
