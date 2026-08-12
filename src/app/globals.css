@@ -565,3 +565,33 @@ input, select {
     overflow: hidden;
   }
 }
+
+/* 히어로 영역 모바일 반응형 룰 */
+@media (max-width: 900px) {
+  .hero-section-container {
+    padding: 40px 16px !important;
+  }
+  .hero-inner-wrapper {
+    flex-direction: column !important;
+    gap: 0px !important;
+  }
+  .hero-inner-wrapper > div:first-of-type {
+    text-align: center !important;
+    width: 100% !important;
+  }
+  .hero-inner-wrapper h2 {
+    font-size: 2.0rem !important;
+    text-align: center !important;
+  }
+  .hero-inner-wrapper p {
+    text-align: center !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 24px !important;
+  }
+  .hero-inner-wrapper form {
+    margin: 0 auto !important;
+  }
+  .hero-graphic-side {
+    display: none !important;
+  }
+}

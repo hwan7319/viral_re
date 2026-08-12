@@ -766,20 +766,31 @@ export default function Home() {
       </header>
 
       {/* 2. Hero Section */}
-      <section style={{
-        padding: '60px 24px 40px 24px',
-        textAlign: 'center',
+      <section className="hero-section-container" style={{
+        padding: '60px 24px',
         background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
-        borderBottom: '1px solid var(--border-color)'
+        borderBottom: '1px solid var(--border-color)',
+        display: 'flex',
+        justifyContent: 'center'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '12px', lineHeight: 1.35, wordBreak: 'keep-all' }}>
-            <span style={{ display: 'inline-block', marginRight: '6px' }}>블로그 & SNS 체험단</span>{' '}
-            <span style={{ display: 'inline-block' }} className="text-gradient">실시간 모아보기</span>
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.975rem' }}>
-            원하는 지역과 키워드로 나에게 딱 맞는 체험단을 빠르게 찾아보세요.
-          </p>
+        <div className="hero-inner-wrapper" style={{
+          maxWidth: '1200px',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '40px'
+        }}>
+          {/* 좌측 콘텐츠 영역 */}
+          <div style={{ flex: 1.2, textAlign: 'left', minWidth: 0 }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '16px', lineHeight: 1.25, wordBreak: 'keep-all' }}>
+              블로그 & SNS 체험단<br />
+              <span className="text-gradient">실시간 모아보기</span>
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', fontSize: '0.975rem', lineHeight: 1.5 }}>
+              레뷰, 디너의여왕, 강남맛집 등 17개 플랫폼의 활성 체험단을 한 곳에 모았습니다.<br />
+              지능형 상세 필터와 통합 검색으로 나에게 딱 맞는 캠페인을 실시간으로 찾아보세요.
+            </p>
 
           {/* 통합 검색창 */}
           <form 
@@ -1004,6 +1015,49 @@ export default function Home() {
             </div>
 
           </div>
+          </div>
+
+          {/* 우측 3D 소셜 미디어 그래픽 이미지 영역 (PC/태블릿 전용) */}
+          <div className="hero-graphic-side" style={{
+            flex: 0.8,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'relative'
+          }}>
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '380px',
+              height: '320px',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-xl)',
+              border: '1px solid var(--border-color)',
+              transform: 'perspective(1000px) rotateY(-8deg) rotateX(4deg)',
+              transition: 'transform 0.5s ease',
+            }}
+            className="hero-3d-card"
+            >
+              <img 
+                src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=500&h=400&q=80" 
+                alt="Viral Re Platform Graphic"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 100%)',
+                pointerEvents: 'none'
+              }} />
+            </div>
+            <div style={{
+              position: 'absolute', width: '250px', height: '250px',
+              borderRadius: '50%', background: 'var(--accent)',
+              opacity: 0.15, filter: 'blur(80px)', zIndex: -1,
+              top: '10%', right: '10%'
+            }} />
+          </div>
+
         </div>
       </section>
 
@@ -1418,9 +1472,13 @@ export default function Home() {
           <div className="glass-panel" style={{
             padding: '80px 24px', textAlign: 'center', borderRadius: 'var(--radius-lg)'
           }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '4rem', height: '4rem', margin: '0 auto 16px auto', color: 'var(--text-tertiary)' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-            </svg>
+            <div style={{ width: '120px', height: '120px', margin: '0 auto 20px auto', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+              <img 
+                src="https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=200&h=200&q=80" 
+                alt="No campaigns found"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8, filter: 'grayscale(100%)' }}
+              />
+            </div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>조건에 맞는 체험단이 없습니다</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
               필터를 조정하거나 다른 검색어를 입력해 보세요.
@@ -1865,6 +1923,17 @@ export default function Home() {
             <button className="social-modal-close" onClick={() => setIsLoginModalOpen(false)}>
               ✕
             </button>
+            
+            {/* 로그인 헤더 트렌디 감성 이미지 배너 */}
+            <div style={{ width: 'calc(100% + 32px)', height: '100px', borderRadius: 'var(--radius-md) var(--radius-md) 0 0', overflow: 'hidden', margin: '-24px -16px 20px -16px', position: 'relative' }}>
+              <img 
+                src="https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?auto=format&fit=crop&w=400&h=100&q=80" 
+                alt="Login Header" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)' }} />
+            </div>
+
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)' }}>
                 소셜 로그인 / 회원가입
