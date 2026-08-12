@@ -71,6 +71,9 @@ export default function Home() {
   // 상세 모달 상태
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   
+  // 모바일 하단 플로팅 앵커 광고 노출 상태
+  const [showStickyAd, setShowStickyAd] = useState(true);
+
   // 다크모드 상태
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
@@ -944,6 +947,58 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 💻📱 상단 가로형 반응형 배너 광고 (Header Ad Slot) */}
+      <div 
+        className="glass-panel ad-header-banner" 
+        style={{
+          margin: '24px auto 0 auto',
+          maxWidth: '1200px',
+          width: 'calc(100% - 48px)',
+          minHeight: '80px',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 24px',
+          border: '1px dashed var(--accent)',
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.04) 0%, rgba(236, 72, 153, 0.04) 100%)',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}
+      >
+        <span style={{
+          position: 'absolute', top: '4px', left: '4px',
+          fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-tertiary)',
+          border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px',
+          lineHeight: 1
+        }}>AD</span>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
+          <span style={{ fontSize: '1.8rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}>🎁</span>
+          <div style={{ textAlign: 'left' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
+              블로그 체험단 자동화 키워드 마스터 프로그램 무료 체험 오픈!
+            </h4>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+              조회수 폭발하는 황금 키워드 탐색 및 인플루언서 노출 지수 진단 혜택을 30일간 무료로 만나보세요.
+            </p>
+          </div>
+        </div>
+        
+        <a 
+          href="https://viral-re.vercel.app" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="premium-button-primary" 
+          style={{ padding: '8px 16px', fontSize: '0.8rem', borderRadius: 'var(--radius-sm)', whiteSpace: 'nowrap' }}
+        >
+          자세히 보기
+          <Icons.ExternalLink />
+        </a>
+      </div>
+
       {/* 3. Main Dashboard Body */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
         
@@ -1287,7 +1342,7 @@ export default function Home() {
           /* 실제 리스트 카드 렌더링 */
           <>
             <div className="campaign-grid">
-              {displayedCampaigns.slice(0, visibleCount).map(c => {
+              {displayedCampaigns.slice(0, visibleCount).map((c, index) => {
               const dday = calculateDday(c.endDate);
               const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
               const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
@@ -1299,6 +1354,7 @@ export default function Home() {
               else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
 
               return (
+                <>
                 <article 
                   key={c.id} 
                   className="premium-card animate-fade-in"
@@ -1384,6 +1440,55 @@ export default function Home() {
 
                   </div>
                 </article>
+                
+                {/* 💻📱 인피드 카드 광고 주입 (8번째 카드 뒤에 삽입) */}
+                {index === 7 && (
+                  <div 
+                    className="premium-card ad-card animate-fade-in" 
+                    style={{
+                      cursor: 'pointer',
+                      border: '1px dashed var(--accent)',
+                      background: 'linear-gradient(180deg, var(--bg-secondary) 0%, rgba(99,102,241,0.02) 100%)',
+                      position: 'relative',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%'
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '12px', left: '12px',
+                      fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-tertiary)',
+                      backgroundColor: 'var(--bg-primary)',
+                      border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px',
+                      zIndex: 2,
+                      lineHeight: 1
+                    }}>SPONSOR AD</span>
+                    
+                    <div style={{ height: '170px', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', inset: 0, opacity: 0.08, background: 'radial-gradient(circle, var(--accent) 10%, transparent 10%)', backgroundSize: '12px 12px' }} />
+                      <span style={{ fontSize: '3.5rem', zIndex: 1, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))' }}>📈</span>
+                    </div>
+                    
+                    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
+                          📢 인플루언서 제휴 광고
+                        </div>
+                        <h3 style={{ fontSize: '1.02rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-primary)' }}>
+                          내 블로그 노출 순위 수직 상승 비법서 무상 배포!
+                        </h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>
+                          최신 C-Rank 로직 분석 및 상위 노출에 최적화된 소제목/키워드 배치 가이드를 단독 공개합니다.
+                        </p>
+                      </div>
+                      <a href="https://viral-re.vercel.app" target="_blank" rel="noopener noreferrer" className="premium-button-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px', borderRadius: 'var(--radius-sm)' }}>
+                        로켓 성장 도구 다운로드
+                        <Icons.ExternalLink />
+                      </a>
+                    </div>
+                  </div>
+                )}
+                </>
               );
             })}
           </div>
@@ -1600,6 +1705,54 @@ export default function Home() {
           본 사이트는 각 블로그 체험단 사이트의 공개 데이터를 기술적 프로토타입 목적으로 연동/시연하는 애그리게이터 데모 웹 사이트입니다.
         </p>
       </footer>
+
+      {/* 📱 모바일 전용 하단 고정 플로팅 앵커 배너 (Bottom Sticky Anchor Ad) */}
+      {showStickyAd && (
+        <div 
+          className="mobile-only-ad-sticky" 
+          style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90,
+            height: '56px', backgroundColor: 'var(--bg-secondary)',
+            borderTop: '2px solid var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '0 16px',
+            boxShadow: '0 -4px 16px rgba(0,0,0,0.12)',
+            animation: 'fadeIn 0.3s ease-out'
+          }}
+        >
+          {/* 닫기 버튼 */}
+          <button 
+            onClick={() => setShowStickyAd(false)} 
+            style={{
+              position: 'absolute', top: '-10px', right: '12px',
+              width: '20px', height: '20px', borderRadius: '50%',
+              backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+              fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: 'var(--shadow-sm)', cursor: 'pointer', zIndex: 10,
+              color: 'var(--text-secondary)'
+            }}
+          >
+            ✕
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '0.55rem', fontWeight: 900, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', color: 'var(--text-tertiary)' }}>AD</span>
+            <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+              <p style={{ fontSize: '0.78rem', fontWeight: 800, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>🚀 인플루언서 제휴 문의 폭주! VIP 선착순 등록</p>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>조기 마감 임박! 지금 무료 프리패스 신청하기</p>
+            </div>
+          </div>
+          <a 
+            href="https://viral-re.vercel.app" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="premium-button-primary" 
+            style={{ padding: '6px 12px', fontSize: '0.72rem', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}
+          >
+            이동
+          </a>
+        </div>
+      )}
 
       {/* 🔑 소셜 로그인 모달 */}
       {isLoginModalOpen && (

@@ -530,3 +530,10 @@ input, select {
     padding-bottom: 4px !important;
   }
 }
+
+/* PC 화면에서 모바일 전용 고정 배너 숨김 */
+@media (min-width: 641px) {
+  .mobile-only-ad-sticky {
+    display: none !important;
+  }
+}
