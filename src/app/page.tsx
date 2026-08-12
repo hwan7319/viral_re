@@ -1051,10 +1051,10 @@ export default function Home() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
               <div style={{ textAlign: 'left' }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                   {AD_SLIDES[currentAdIndex].title}
                 </h4>
-                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                <p style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                   {AD_SLIDES[currentAdIndex].desc}
                 </p>
               </div>
@@ -1069,7 +1069,7 @@ export default function Home() {
             padding: '4px 12px',
             borderRadius: 'var(--radius-sm)',
             color: '#ffffff',
-            fontSize: '0.75rem',
+            fontSize: '0.8rem',
             zIndex: 3,
             userSelect: 'none',
             border: '1px solid rgba(255,255,255,0.15)',
@@ -1123,9 +1123,9 @@ export default function Home() {
                   onClick={() => setActiveType(typeItem.key)}
                   style={{
                     flex: '1 1 0px',
-                    padding: '8px 6px',
+                    padding: '10px 8px',
                     borderRadius: 'var(--radius-md)',
-                    fontSize: '0.8rem',
+                    fontSize: '0.925rem',
                     fontWeight: 700,
                     backgroundColor: activeType === typeItem.key ? 'var(--accent)' : 'var(--bg-secondary)',
                     color: activeType === typeItem.key ? '#ffffff' : 'var(--text-primary)',
@@ -1136,12 +1136,12 @@ export default function Home() {
                     textAlign: 'center'
                   }}
                 >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     {typeItem.img && (
                       <img 
                         src={typeItem.img} 
                         alt="" 
-                        style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
+                        style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
                       />
                     )}
                     {typeItem.label}
@@ -1200,8 +1200,8 @@ export default function Home() {
 
                 {/* 1. 맛집/카페 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/food.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="/images/emojis/food.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                     맛집 / 음식
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1210,15 +1210,15 @@ export default function Home() {
                       { key: 'food-cafe', label: '카페/디저트' },
                       { key: 'food-pub', label: '술집/주점' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 2. 뷰티/케어 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                     뷰티 / 에스테틱
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1227,15 +1227,15 @@ export default function Home() {
                       { key: 'beauty-hair', label: '헤어숍' },
                       { key: 'beauty-skin', label: '피부/네일/왁싱' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 3. 숙박/여행 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/travel.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="/images/emojis/travel.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                     숙박 / 레저
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1243,15 +1243,15 @@ export default function Home() {
                       { key: 'travel-stay', label: '숙소 (호텔/펜션)' },
                       { key: 'travel-leisure', label: '레저 / 입장권' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 4. 패션/의류 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/fashion.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="/images/emojis/fashion.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                     패션 / 잡화
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1259,15 +1259,15 @@ export default function Home() {
                       { key: 'fashion-clothing', label: '의류/코디' },
                       { key: 'fashion-accessory', label: '패션잡화/악세사리' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 5. 생활용품 vs 가전디지털 분리 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/life.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="/images/emojis/life.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                     생활 / 가전
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1275,15 +1275,15 @@ export default function Home() {
                       { key: 'life-goods', label: '생활용품' },
                       { key: 'life-appliances', label: '가전/디지털기기' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* 6. 신규 분리 카테고리 (도서, 건강식품, 유아동) */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="/images/emojis/box.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="/images/emojis/box.jpg" alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                     기타 전문 카테고리
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1294,7 +1294,7 @@ export default function Home() {
                       { key: 'baby', label: '유아동 / 육아' },
                       { key: 'etc', label: '기타 서비스' }
                     ].map(c => (
-                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
+                      <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
                   </div>
                 </div>
@@ -1307,29 +1307,85 @@ export default function Home() {
             <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>미디어 플랫폼</span>
             <div className="filter-row" style={{ display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
               {[
-                { key: 'all', label: '전체' },
-                { key: 'blog', label: '네이버 블로그' },
-                { key: 'instagram', label: '인스타그램' },
-                { key: 'youtube', label: '유튜브' },
-                { key: 'etc', label: '기타' }
+                { 
+                  key: 'all', 
+                  label: '전체',
+                  icon: (
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>ALL</span>
+                  )
+                },
+                { 
+                  key: 'blog', 
+                  label: '네이버 블로그', 
+                  icon: (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                      <rect width="24" height="24" rx="5" fill="#03C75A"/>
+                      <path d="M9.13 16.5H7.5V7.5H9.6L14.7 13.92V7.5H16.3V16.5H14.2L9.13 10.08V16.5Z" fill="white"/>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'instagram', 
+                  label: '인스타그램', 
+                  icon: (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                      <rect width="24" height="24" rx="5" fill="url(#instaGrad)"/>
+                      <path d="M12 7.5C9.515 7.5 7.5 9.515 7.5 12C7.5 14.485 9.515 16.5 12 16.5C14.485 16.5 16.5 14.485 16.5 12C16.5 9.515 14.485 7.5 12 7.5ZM12 15C10.342 15 9 13.658 9 12C9 10.342 10.342 9 12 9C13.658 9 15 10.342 15 12C15 13.658 13.658 15 12 15Z" fill="white"/>
+                      <circle cx="17.5" cy="6.5" r="1.1" fill="white"/>
+                      <rect x="5.5" y="5.5" width="13" height="13" rx="3.5" stroke="white" strokeWidth="1.5"/>
+                      <defs>
+                        <linearGradient id="instaGrad" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
+                          <stop stopColor="#F9ED32"/>
+                          <stop offset="0.25" stopColor="#EE2A7B"/>
+                          <stop offset="0.75" stopColor="#D2149F"/>
+                          <stop offset="1" stopColor="#6C24AA"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'youtube', 
+                  label: '유튜브', 
+                  icon: (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                      <rect width="24" height="24" rx="5" fill="#FF0000"/>
+                      <path d="M9.8 15.6V8.4L16 12L9.8 15.6Z" fill="white"/>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'etc', 
+                  label: '기타', 
+                  icon: (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                  )
+                }
               ].map(p => (
                 <button
                   key={p.key}
                   onClick={() => setActivePlatform(p.key)}
+                  title={p.label}
                   style={{
                     padding: '8px 16px',
                     borderRadius: 'var(--radius-md)',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    backgroundColor: activePlatform === p.key ? 'var(--accent-light)' : 'transparent',
+                    backgroundColor: activePlatform === p.key ? 'var(--accent-light)' : 'var(--bg-secondary)',
                     color: activePlatform === p.key ? 'var(--accent)' : 'var(--text-primary)',
                     border: `1px solid ${activePlatform === p.key ? 'var(--accent)' : 'var(--border-color)'}`,
                     transition: 'var(--transition-smooth)',
-                    whiteSpace: 'nowrap',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '68px',
+                    height: '40px',
                     flexShrink: 0
                   }}
                 >
-                  {p.label}
+                  {p.icon}
                 </button>
               ))}
             </div>
