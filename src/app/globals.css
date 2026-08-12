@@ -529,6 +529,11 @@ input, select {
     overflow-x: auto !important;
     padding-bottom: 4px !important;
   }
+
+  /* 모바일 하단 고정 배너로 인해 요소들이 가려지지 않도록 안전 바디 패딩 확보 */
+  body {
+    padding-bottom: 64px !important;
+  }
 }
 
 /* PC 화면에서 모바일 전용 고정 배너 숨김 */
