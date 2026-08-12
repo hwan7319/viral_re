@@ -532,7 +532,7 @@ input, select {
 
   /* 모바일 하단 고정 배너로 인해 요소들이 가려지지 않도록 안전 바디 패딩 확보 */
   body {
-    padding-bottom: 64px !important;
+    padding-bottom: 110px !important;
   }
 }
 

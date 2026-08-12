@@ -48,6 +48,26 @@ const Icons = {
   ),
 };
 
+const SIDO_QUICK_TABS = [
+  { key: 'all', label: '전국' },
+  { key: '서울', label: '서울' },
+  { key: '경기', label: '경기' },
+  { key: '인천', label: '인천' },
+  { key: '부산', label: '부산' },
+  { key: '대구', label: '대구' },
+  { key: '광주', label: '광주' },
+  { key: '대전', label: '대전' },
+  { key: '울산', label: '울산' },
+  { key: '강원', label: '강원' },
+  { key: '충북', label: '충북' },
+  { key: '충남', label: '충남' },
+  { key: '전북', label: '전북' },
+  { key: '전남', label: '전남' },
+  { key: '경북', label: '경북' },
+  { key: '경남', label: '경남' },
+  { key: '제주', label: '제주' }
+];
+
 // 💻📱 상단 가로 롤링 배너 광고 샘플 슬라이드 데이터
 const AD_SLIDES = [
   {
@@ -145,7 +165,7 @@ export default function Home() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   // 프론트엔드 성능 최적화: 초기 노출 카드 제한 및 더보기 페이징
-  const [visibleCount, setVisibleCount] = useState(24);
+  const [visibleCount, setVisibleCount] = useState(12);
 
   // 검색 히스토리 상태
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -1609,6 +1629,45 @@ export default function Home() {
         </div>
 
         {/* 4. Results List Section */}
+        {/* 💻📱 행정구역(도별) 퀵 탭 필터 (Sido Quick Roll Tabs) */}
+        <div 
+          className="no-scrollbar"
+          style={{ 
+            display: 'flex', 
+            gap: '8px', 
+            overflowX: 'auto', 
+            whiteSpace: 'nowrap', 
+            padding: '4px 0 16px 0', 
+            marginBottom: '20px',
+            borderBottom: '1px solid var(--border-color)',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {SIDO_QUICK_TABS.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setSelectedSido(tab.key);
+                setSelectedSigungu('all');
+              }}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                backgroundColor: selectedSido === tab.key ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: selectedSido === tab.key ? '#ffffff' : 'var(--text-primary)',
+                border: '1px solid var(--border-color)',
+                cursor: 'pointer',
+                transition: 'var(--transition-smooth)',
+                flexShrink: 0
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
             <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
@@ -1854,7 +1913,7 @@ export default function Home() {
           {displayedCampaigns.length > visibleCount && (
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '36px', marginBottom: '12px' }}>
               <button 
-                onClick={() => setVisibleCount(visibleCount + 24)}
+                onClick={() => setVisibleCount(visibleCount + 12)}
                 className="premium-button-secondary"
                 style={{
                   padding: '12px 32px',
