@@ -53,35 +53,35 @@ const AD_SLIDES = [
   {
     id: 1,
     image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '✨ 화장품 & 에스테틱 프리미엄 뷰티 체험단 모집',
+    title: '화장품 & 에스테틱 프리미엄 뷰티 체험단 모집',
     desc: '신상 크림부터 유명 네일숍 왁싱케어권까지 무상 혜택 대모집!',
     link: 'https://viral-re.vercel.app'
   },
   {
     id: 2,
     image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '🍖 동네 한우 & 삼겹살 맛집 탐방단 모집',
-    desc: '푸짐한 고기 식사권과 디저트 혜택! 맛집 블로거라면 지금 클릭하세요.',
+    title: '동네 한우 & 삼겹살 맛집 탐방단 모집',
+    desc: '푸짐한 고기 식사권과 디저트 혜택! 맛집 블로거라면 지금 신청하세요.',
     link: 'https://viral-re.vercel.app'
   },
   {
     id: 3,
     image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '✈️ 럭셔리 독채 풀빌라 무료 숙박권 찬스',
+    title: '럭셔리 독채 풀빌라 무료 숙박권 찬스',
     desc: '이번 주말은 오션뷰 힐링! SNS 전용 여행 크리에이터 선착순 매칭 중입니다.',
     link: 'https://viral-re.vercel.app'
   },
   {
     id: 4,
     image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '💻 최신 IT 기기 / 이어폰 리뷰 원정대',
+    title: '최신 IT 기기 / 이어폰 리뷰 원정대',
     desc: '아이패드 및 스마트폰 주변기기 무상 대여 체험 및 우수자 경품 증정!',
     link: 'https://viral-re.vercel.app'
   },
   {
     id: 5,
     image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '👕 가을 신상 데일리 캐주얼 패션 협찬',
+    title: '가을 신상 데일리 캐주얼 패션 협찬',
     desc: '스타일리시한 니트와 아우터 무상 제공! 블로그 & 인스타 마케터 선착순 마감.',
     link: 'https://viral-re.vercel.app'
   }
@@ -931,7 +931,7 @@ export default function Home() {
               gap: '12px',
               width: '100%'
             }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px' }}>🔥 실시간 인기</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 700, minWidth: '60px' }}>실시간 인기</span>
               
               <div 
                 style={{
@@ -1013,6 +1013,7 @@ export default function Home() {
         {/* 💻📱 상단 가로형 반응형 배너 광고 (Auto-rolling Carousel Ad Slot) */}
         <div 
           className="glass-panel ad-header-banner" 
+          onClick={() => window.open(AD_SLIDES[currentAdIndex].link, '_blank')}
           style={{
             margin: '0 auto 32px auto',
             width: '100%',
@@ -1025,7 +1026,8 @@ export default function Home() {
             backgroundPosition: 'center',
             transition: 'background-image 0.5s ease-in-out',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            cursor: 'pointer'
           }}
         >
           {/* 가독성을 위한 어두운 레이어 (Dark Overlay) */}
@@ -1044,11 +1046,10 @@ export default function Home() {
           
           <div style={{ 
             position: 'relative', zIndex: 2,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
             padding: '24px 32px', width: '100%', gap: '16px', flexWrap: 'wrap'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
-              <span style={{ fontSize: '2rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>📢</span>
               <div style={{ textAlign: 'left' }}>
                 <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                   {AD_SLIDES[currentAdIndex].title}
@@ -1058,21 +1059,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            
-            <a 
-              href={AD_SLIDES[currentAdIndex].link} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="premium-button-primary" 
-              style={{ 
-                padding: '10px 20px', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', 
-                whiteSpace: 'nowrap', zIndex: 2, border: 'none',
-                boxShadow: '0 4px 12px rgba(99,102,241,0.4)'
-              }}
-            >
-              자세히 보기
-              <Icons.ExternalLink />
-            </a>
           </div>
 
           {/* 🔢 캐러셀 수동 및 자동 롤링 컨트롤러 (화살표 & 페이지번호) */}
@@ -1129,8 +1115,8 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', width: '100%' }}>
               {[
                 { key: 'all', label: '전체' },
-                { key: 'visit', label: '방문형 📍' },
-                { key: 'delivery', label: '배송형 📦' }
+                { key: 'visit', label: '방문형' },
+                { key: 'delivery', label: '배송형' }
               ].map(typeItem => (
                 <button
                   key={typeItem.key}
@@ -1168,7 +1154,7 @@ export default function Home() {
               }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                📂 카테고리 상세검색 
+                카테고리 상세검색 
                 {activeCategory !== 'all' && (
                   <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 600 }}>
                     ({
@@ -1200,7 +1186,7 @@ export default function Home() {
 
                 {/* 1. 맛집/카페 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>🍽️ 맛집 / 음식</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>맛집 / 음식</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'food-restaurant', label: '식당/맛집' },
@@ -1214,7 +1200,7 @@ export default function Home() {
 
                 {/* 2. 뷰티/케어 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>💄 뷰티 / 에스테틱</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>뷰티 / 에스테틱</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'beauty-cosmetic', label: '화장품/뷰티템' },
@@ -1228,11 +1214,11 @@ export default function Home() {
 
                 {/* 3. 숙박/여행 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>✈️ 숙박 / 레저</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>숙박 / 레저</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'travel-stay', label: '숙소 (호텔/펜션)' },
-                      { key: 'travel-leisure', label: '레저 / 입장권 🎫' }
+                      { key: 'travel-leisure', label: '레저 / 입장권' }
                     ].map(c => (
                       <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
@@ -1241,7 +1227,7 @@ export default function Home() {
 
                 {/* 4. 패션/의류 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>👕 패션 / 잡화</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>패션 / 잡화</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'fashion-clothing', label: '의류/코디' },
@@ -1254,11 +1240,11 @@ export default function Home() {
 
                 {/* 5. 생활용품 vs 가전디지털 분리 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>🏠 생활 / 가전</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>생활 / 가전</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
-                      { key: 'life-goods', label: '생활용품 🧼' },
-                      { key: 'life-appliances', label: '가전/디지털기기 💻' }
+                      { key: 'life-goods', label: '생활용품' },
+                      { key: 'life-appliances', label: '가전/디지털기기' }
                     ].map(c => (
                       <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
                     ))}
@@ -1267,13 +1253,13 @@ export default function Home() {
 
                 {/* 6. 신규 분리 카테고리 (도서, 건강식품, 유아동) */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>📦 기타 전문 카테고리</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>기타 전문 카테고리</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
-                      { key: 'book', label: '도서 / 교육 📚' },
-                      { key: 'health-fresh', label: '신선식품/밀키트 🍎' },
-                      { key: 'health-food', label: '건강식품/영양제 💊' },
-                      { key: 'baby', label: '유아동 / 육아 👶' },
+                      { key: 'book', label: '도서 / 교육' },
+                      { key: 'health-fresh', label: '신선식품/밀키트' },
+                      { key: 'health-food', label: '건강식품/영양제' },
+                      { key: 'baby', label: '유아동 / 육아' },
                       { key: 'etc', label: '기타 서비스' }
                     ].map(c => (
                       <button key={c.key} onClick={() => setActiveCategory(c.key)} style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, backgroundColor: activeCategory === c.key ? 'var(--accent)' : 'var(--bg-primary)', color: activeCategory === c.key ? '#ffffff' : 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c.label}</button>
@@ -1853,7 +1839,7 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <span style={{ fontSize: '0.55rem', fontWeight: 900, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', color: 'var(--text-tertiary)' }}>AD</span>
             <div style={{ textAlign: 'left', overflow: 'hidden' }}>
-              <p style={{ fontSize: '0.78rem', fontWeight: 800, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>🚀 인플루언서 제휴 문의 폭주! VIP 선착순 등록</p>
+              <p style={{ fontSize: '0.78rem', fontWeight: 800, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>인플루언서 제휴 문의 폭주! VIP 선착순 등록</p>
               <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>조기 마감 임박! 지금 무료 프리패스 신청하기</p>
             </div>
           </div>
