@@ -1007,116 +1007,115 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 💻📱 상단 가로형 반응형 배너 광고 (Auto-rolling Carousel Ad Slot) */}
-      <div 
-        className="glass-panel ad-header-banner" 
-        style={{
-          margin: '24px auto 0 auto',
-          maxWidth: '1200px',
-          width: 'calc(100% - 48px)',
-          minHeight: '120px',
-          borderRadius: 'var(--radius-md)',
-          position: 'relative',
-          overflow: 'hidden',
-          backgroundImage: `url(${AD_SLIDES[currentAdIndex].image})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          transition: 'background-image 0.5s ease-in-out',
-          display: 'flex',
-          alignItems: 'center'
-        }}
-      >
-        {/* 가독성을 위한 어두운 레이어 (Dark Overlay) */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.3) 100%)',
-          zIndex: 1
-        }} />
-
-        <span style={{
-          position: 'absolute', top: '8px', left: '12px',
-          fontSize: '0.55rem', fontWeight: 900, color: 'rgba(255,255,255,0.7)',
-          border: '1px solid rgba(255,255,255,0.3)', padding: '2px 6px', borderRadius: '3px',
-          lineHeight: 1, zIndex: 2
-        }}>AD</span>
-        
-        <div style={{ 
-          position: 'relative', zIndex: 2,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '24px 32px', width: '100%', gap: '16px', flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
-            <span style={{ fontSize: '2rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>📢</span>
-            <div style={{ textAlign: 'left' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                {AD_SLIDES[currentAdIndex].title}
-              </h4>
-              <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                {AD_SLIDES[currentAdIndex].desc}
-              </p>
-            </div>
-          </div>
-          
-          <a 
-            href={AD_SLIDES[currentAdIndex].link} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="premium-button-primary" 
-            style={{ 
-              padding: '10px 20px', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', 
-              whiteSpace: 'nowrap', zIndex: 2, border: 'none',
-              boxShadow: '0 4px 12px rgba(99,102,241,0.4)'
-            }}
-          >
-            자세히 보기
-            <Icons.ExternalLink />
-          </a>
-        </div>
-
-        {/* 🔢 캐러셀 수동 및 자동 롤링 컨트롤러 (화살표 & 페이지번호) */}
-        <div style={{
-          position: 'absolute', bottom: '8px', right: '16px',
-          display: 'flex', alignItems: 'center', gap: '10px',
-          backgroundColor: 'rgba(0, 0, 0, 0.65)',
-          padding: '4px 12px',
-          borderRadius: 'var(--radius-sm)',
-          color: '#ffffff',
-          fontSize: '0.75rem',
-          zIndex: 3,
-          userSelect: 'none',
-          border: '1px solid rgba(255,255,255,0.15)',
-          backdropFilter: 'blur(4px)'
-        }}>
-          <button 
-            type="button" 
-            onClick={handlePrevAd} 
-            style={{ 
-              border: 'none', background: 'transparent', color: '#ffffff', 
-              cursor: 'pointer', padding: '0 6px', fontWeight: 900, fontSize: '0.8rem' 
-            }}
-            title="이전 광고"
-          >
-            ◀
-          </button>
-          <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>
-            {currentAdIndex + 1} / {AD_SLIDES.length}
-          </span>
-          <button 
-            type="button" 
-            onClick={handleNextAd} 
-            style={{ 
-              border: 'none', background: 'transparent', color: '#ffffff', 
-              cursor: 'pointer', padding: '0 6px', fontWeight: 900, fontSize: '0.8rem' 
-            }}
-            title="다음 광고"
-          >
-            ▶
-          </button>
-        </div>
-      </div>
-
       {/* 3. Main Dashboard Body */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
+        
+        {/* 💻📱 상단 가로형 반응형 배너 광고 (Auto-rolling Carousel Ad Slot) */}
+        <div 
+          className="glass-panel ad-header-banner" 
+          style={{
+            margin: '0 auto 32px auto',
+            width: '100%',
+            minHeight: '120px',
+            borderRadius: 'var(--radius-md)',
+            position: 'relative',
+            overflow: 'hidden',
+            backgroundImage: `url(${AD_SLIDES[currentAdIndex].image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            transition: 'background-image 0.5s ease-in-out',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {/* 가독성을 위한 어두운 레이어 (Dark Overlay) */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.3) 100%)',
+            zIndex: 1
+          }} />
+
+          <span style={{
+            position: 'absolute', top: '8px', left: '12px',
+            fontSize: '0.55rem', fontWeight: 900, color: 'rgba(255,255,255,0.7)',
+            border: '1px solid rgba(255,255,255,0.3)', padding: '2px 6px', borderRadius: '3px',
+            lineHeight: 1, zIndex: 2
+          }}>AD</span>
+          
+          <div style={{ 
+            position: 'relative', zIndex: 2,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '24px 32px', width: '100%', gap: '16px', flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
+              <span style={{ fontSize: '2rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>📢</span>
+              <div style={{ textAlign: 'left' }}>
+                <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                  {AD_SLIDES[currentAdIndex].title}
+                </h4>
+                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                  {AD_SLIDES[currentAdIndex].desc}
+                </p>
+              </div>
+            </div>
+            
+            <a 
+              href={AD_SLIDES[currentAdIndex].link} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="premium-button-primary" 
+              style={{ 
+                padding: '10px 20px', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', 
+                whiteSpace: 'nowrap', zIndex: 2, border: 'none',
+                boxShadow: '0 4px 12px rgba(99,102,241,0.4)'
+              }}
+            >
+              자세히 보기
+              <Icons.ExternalLink />
+            </a>
+          </div>
+
+          {/* 🔢 캐러셀 수동 및 자동 롤링 컨트롤러 (화살표 & 페이지번호) */}
+          <div style={{
+            position: 'absolute', bottom: '8px', right: '16px',
+            display: 'flex', alignItems: 'center', gap: '10px',
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            padding: '4px 12px',
+            borderRadius: 'var(--radius-sm)',
+            color: '#ffffff',
+            fontSize: '0.75rem',
+            zIndex: 3,
+            userSelect: 'none',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(4px)'
+          }}>
+            <button 
+              type="button" 
+              onClick={handlePrevAd} 
+              style={{ 
+                border: 'none', background: 'transparent', color: '#ffffff', 
+                cursor: 'pointer', padding: '0 6px', fontWeight: 900, fontSize: '0.8rem' 
+              }}
+              title="이전 광고"
+            >
+              ◀
+            </button>
+            <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>
+              {currentAdIndex + 1} / {AD_SLIDES.length}
+            </span>
+            <button 
+              type="button" 
+              onClick={handleNextAd} 
+              style={{ 
+                border: 'none', background: 'transparent', color: '#ffffff', 
+                cursor: 'pointer', padding: '0 6px', fontWeight: 900, fontSize: '0.8rem' 
+              }}
+              title="다음 광고"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
         
         {/* 필터 세션 */}
         <div className="glass-panel animate-fade-in" style={{
