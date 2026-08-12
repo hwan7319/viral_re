@@ -766,31 +766,19 @@ export default function Home() {
       </header>
 
       {/* 2. Hero Section */}
-      <section className="hero-section-container" style={{
-        padding: '60px 24px',
+      <section style={{
+        padding: '60px 24px 40px 24px',
+        textAlign: 'center',
         background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
-        borderBottom: '1px solid var(--border-color)',
-        display: 'flex',
-        justifyContent: 'center'
+        borderBottom: '1px solid var(--border-color)'
       }}>
-        <div className="hero-inner-wrapper" style={{
-          maxWidth: '1200px',
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '40px'
-        }}>
-          {/* 좌측 콘텐츠 영역 */}
-          <div style={{ flex: 1.2, textAlign: 'left', minWidth: 0 }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '16px', lineHeight: 1.25, wordBreak: 'keep-all' }}>
-              블로그 & SNS 체험단<br />
-              <span className="text-gradient">실시간 모아보기</span>
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', fontSize: '0.975rem', lineHeight: 1.5 }}>
-              레뷰, 디너의여왕, 강남맛집 등 17개 플랫폼의 활성 체험단을 한 곳에 모았습니다.<br />
-              지능형 상세 필터와 통합 검색으로 나에게 딱 맞는 캠페인을 실시간으로 찾아보세요.
-            </p>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '12px', lineHeight: 1.35, wordBreak: 'keep-all' }}>
+            블로그 & SNS 체험단 <span className="text-gradient">실시간 모아보기</span>
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.975rem' }}>
+            레뷰, 디너의여왕, 강남맛집 등 17개 플랫폼의 활성 체험단을 한 곳에 모았습니다. 원하는 지역과 키워드로 찾아보세요.
+          </p>
 
           {/* 통합 검색창 */}
           <form 
@@ -1015,48 +1003,6 @@ export default function Home() {
             </div>
 
           </div>
-          </div>
-
-          {/* 우측 3D 소셜 미디어 그래픽 이미지 영역 (PC/태블릿 전용) */}
-          <div className="hero-graphic-side" style={{
-            flex: 0.8,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'relative'
-          }}>
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              maxWidth: '380px',
-              height: '320px',
-              borderRadius: 'var(--radius-lg)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-xl)',
-              border: '1px solid var(--border-color)',
-              transform: 'perspective(1000px) rotateY(-8deg) rotateX(4deg)',
-              transition: 'transform 0.5s ease',
-            }}
-            className="hero-3d-card"
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=500&h=400&q=80" 
-                alt="Viral Re Platform Graphic"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 100%)',
-                pointerEvents: 'none'
-              }} />
-            </div>
-            <div style={{
-              position: 'absolute', width: '250px', height: '250px',
-              borderRadius: '50%', background: 'var(--accent)',
-              opacity: 0.15, filter: 'blur(80px)', zIndex: -1,
-              top: '10%', right: '10%'
-            }} />
-          </div>
 
         </div>
       </section>
@@ -1168,9 +1114,9 @@ export default function Home() {
             <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>모집 유형</span>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', width: '100%' }}>
               {[
-                { key: 'all', label: '전체' },
-                { key: 'visit', label: '방문형' },
-                { key: 'delivery', label: '배송형' }
+                { key: 'all', label: '전체', img: null },
+                { key: 'visit', label: '방문형', img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=80&h=80&q=80' },
+                { key: 'delivery', label: '배송형', img: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=80&h=80&q=80' }
               ].map(typeItem => (
                 <button
                   key={typeItem.key}
@@ -1190,7 +1136,16 @@ export default function Home() {
                     textAlign: 'center'
                   }}
                 >
-                  {typeItem.label}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    {typeItem.img && (
+                      <img 
+                        src={typeItem.img} 
+                        alt="" 
+                        style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
+                      />
+                    )}
+                    {typeItem.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1207,7 +1162,12 @@ export default function Home() {
                 cursor: 'pointer'
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <img 
+                  src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=80&h=80&q=80" 
+                  alt="" 
+                  style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
+                />
                 카테고리 상세검색 
                 {activeCategory !== 'all' && (
                   <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 600 }}>
@@ -1240,7 +1200,10 @@ export default function Home() {
 
                 {/* 1. 맛집/카페 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>맛집 / 음식</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    맛집 / 음식
+                  </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'food-restaurant', label: '식당/맛집' },
@@ -1254,7 +1217,10 @@ export default function Home() {
 
                 {/* 2. 뷰티/케어 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>뷰티 / 에스테틱</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    뷰티 / 에스테틱
+                  </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'beauty-cosmetic', label: '화장품/뷰티템' },
@@ -1268,7 +1234,10 @@ export default function Home() {
 
                 {/* 3. 숙박/여행 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>숙박 / 레저</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    숙박 / 레저
+                  </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'travel-stay', label: '숙소 (호텔/펜션)' },
@@ -1281,7 +1250,10 @@ export default function Home() {
 
                 {/* 4. 패션/의류 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>패션 / 잡화</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    패션 / 잡화
+                  </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'fashion-clothing', label: '의류/코디' },
@@ -1294,7 +1266,10 @@ export default function Home() {
 
                 {/* 5. 생활용품 vs 가전디지털 분리 */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>생활 / 가전</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    생활 / 가전
+                  </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'life-goods', label: '생활용품' },
@@ -1307,7 +1282,10 @@ export default function Home() {
 
                 {/* 6. 신규 분리 카테고리 (도서, 건강식품, 유아동) */}
                 <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', whiteSpace: 'nowrap' }}>기타 전문 카테고리</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+                    <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    기타 전문 카테고리
+                  </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {[
                       { key: 'book', label: '도서 / 교육' },
