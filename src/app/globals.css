@@ -595,3 +595,9 @@ input, select {
     display: none !important;
   }
 }
+
+/* 커스텀 지역 필터 드롭다운 항목 호버 스타일 */
+.dropdown-item-hover:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--accent) !important;
+}

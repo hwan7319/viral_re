@@ -102,6 +102,8 @@ export default function Home() {
   const [activeLocation, setActiveLocation] = useState('all');
   const [selectedSido, setSelectedSido] = useState('all'); // 광역시도 선택 상태
   const [selectedSigungu, setSelectedSigungu] = useState('all'); // 시군구 선택 상태
+  const [isSidoDropdownOpen, setIsSidoDropdownOpen] = useState(false); // 광역시도 드롭다운 상태
+  const [isSigunguDropdownOpen, setIsSigunguDropdownOpen] = useState(false); // 시군구 드롭다운 상태
   const [activeSite, setActiveSite] = useState('all');
   const [activeType, setActiveType] = useState('all'); // 'all' | 'visit' | 'delivery'
   const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
@@ -1398,44 +1400,203 @@ export default function Home() {
           }}>
             
             {/* 지역 필터 드롭다운 (광역시도 + 시군구 상세 세분화) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <div>
+            {/* 지역 필터 커스텀 드롭다운 (광역시도 + 시군구 상세 세분화) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {/* 시/도 드롭다운 */}
+              <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>방문 지역 (시/도)</label>
-                <select
-                  value={selectedSido}
-                  onChange={(e) => {
-                    setSelectedSido(e.target.value);
-                    setSelectedSigungu('all'); // 시도 변경 시 군구 초기화
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSidoDropdownOpen(!isSidoDropdownOpen);
+                    setIsSigunguDropdownOpen(false);
                   }}
                   style={{
-                    width: '100%', padding: '10px 16px', borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'
+                    width: '100%', 
+                    padding: '12px 16px', 
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-secondary)', 
+                    border: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    color: 'var(--text-primary)',
+                    fontWeight: selectedSido !== 'all' ? 700 : 500,
+                    outline: 'none',
+                    transition: 'var(--transition-smooth)'
                   }}
                 >
-                  <option value="all">전국 (전체)</option>
-                  {Object.keys(LOCATIONS_MAP).map(sido => (
-                    <option key={sido} value={sido}>{sido}</option>
-                  ))}
-                </select>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: selectedSido !== 'all' ? 'var(--accent)' : 'var(--text-tertiary)' }}>
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    {selectedSido === 'all' ? '전국 (전체)' : selectedSido}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', transform: isSidoDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                </button>
+
+                {isSidoDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-lg)',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    zIndex: 100,
+                    padding: '4px 0'
+                  }}
+                  className="no-scrollbar"
+                  >
+                    <div
+                      onClick={() => {
+                        setSelectedSido('all');
+                        setSelectedSigungu('all');
+                        setIsSidoDropdownOpen(false);
+                      }}
+                      style={{
+                        padding: '10px 16px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        color: selectedSido === 'all' ? 'var(--accent)' : 'var(--text-primary)',
+                        backgroundColor: selectedSido === 'all' ? 'var(--bg-tertiary)' : 'transparent',
+                        fontWeight: selectedSido === 'all' ? 700 : 500,
+                        transition: 'background 0.15s'
+                      }}
+                      className="dropdown-item-hover"
+                    >
+                      전국 (전체)
+                    </div>
+                    {Object.keys(LOCATIONS_MAP).map(sido => (
+                      <div
+                        key={sido}
+                        onClick={() => {
+                          setSelectedSido(sido);
+                          setSelectedSigungu('all');
+                          setIsSidoDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: '10px 16px',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          color: selectedSido === sido ? 'var(--accent)' : 'var(--text-primary)',
+                          backgroundColor: selectedSido === sido ? 'var(--bg-tertiary)' : 'transparent',
+                          fontWeight: selectedSido === sido ? 700 : 500,
+                          transition: 'background 0.15s'
+                        }}
+                        className="dropdown-item-hover"
+                      >
+                        {sido}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
+
+              {/* 시/군/구 드롭다운 */}
+              <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>상세 (시/군/구)</label>
-                <select
-                  value={selectedSigungu}
-                  onChange={(e) => setSelectedSigungu(e.target.value)}
+                <button
+                  type="button"
                   disabled={selectedSido === 'all'}
+                  onClick={() => {
+                    setIsSigunguDropdownOpen(!isSigunguDropdownOpen);
+                    setIsSidoDropdownOpen(false);
+                  }}
                   style={{
-                    width: '100%', padding: '10px 16px', borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                    width: '100%', 
+                    padding: '12px 16px', 
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-secondary)', 
+                    border: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: selectedSido === 'all' ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    color: 'var(--text-primary)',
+                    fontWeight: selectedSigungu !== 'all' ? 700 : 500,
+                    outline: 'none',
                     opacity: selectedSido === 'all' ? 0.5 : 1,
-                    cursor: selectedSido === 'all' ? 'not-allowed' : 'default'
+                    transition: 'var(--transition-smooth)'
                   }}
                 >
-                  <option value="all">전체 (전구역)</option>
-                  {selectedSido !== 'all' && LOCATIONS_MAP[selectedSido]?.map(sigungu => (
-                    <option key={sigungu} value={sigungu}>{sigungu}</option>
-                  ))}
-                </select>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: selectedSigungu !== 'all' ? 'var(--accent)' : 'var(--text-tertiary)' }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                    {selectedSigungu === 'all' ? '전체 (전구역)' : selectedSigungu}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', transform: isSigunguDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                </button>
+
+                {isSigunguDropdownOpen && selectedSido !== 'all' && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-lg)',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    zIndex: 100,
+                    padding: '4px 0'
+                  }}
+                  className="no-scrollbar"
+                  >
+                    <div
+                      onClick={() => {
+                        setSelectedSigungu('all');
+                        setIsSigunguDropdownOpen(false);
+                      }}
+                      style={{
+                        padding: '10px 16px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        color: selectedSigungu === 'all' ? 'var(--accent)' : 'var(--text-primary)',
+                        backgroundColor: selectedSigungu === 'all' ? 'var(--bg-tertiary)' : 'transparent',
+                        fontWeight: selectedSigungu === 'all' ? 700 : 500,
+                        transition: 'background 0.15s'
+                      }}
+                      className="dropdown-item-hover"
+                    >
+                      전체 (전구역)
+                    </div>
+                    {LOCATIONS_MAP[selectedSido]?.map(sigungu => (
+                      <div
+                        key={sigungu}
+                        onClick={() => {
+                          setSelectedSigungu(sigungu);
+                          setIsSigunguDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: '10px 16px',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          color: selectedSigungu === sigungu ? 'var(--accent)' : 'var(--text-primary)',
+                          backgroundColor: selectedSigungu === sigungu ? 'var(--bg-tertiary)' : 'transparent',
+                          fontWeight: selectedSigungu === sigungu ? 700 : 500,
+                          transition: 'background 0.15s'
+                        }}
+                        className="dropdown-item-hover"
+                      >
+                        {sigungu}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
