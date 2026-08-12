@@ -48,6 +48,45 @@ const Icons = {
   ),
 };
 
+// 💻📱 상단 가로 롤링 배너 광고 샘플 슬라이드 데이터
+const AD_SLIDES = [
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&h=240&q=80',
+    title: '✨ 화장품 & 에스테틱 프리미엄 뷰티 체험단 모집',
+    desc: '신상 크림부터 유명 네일숍 왁싱케어권까지 무상 혜택 대모집!',
+    link: 'https://viral-re.vercel.app'
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&h=240&q=80',
+    title: '🍖 동네 한우 & 삼겹살 맛집 탐방단 모집',
+    desc: '푸짐한 고기 식사권과 디저트 혜택! 맛집 블로거라면 지금 클릭하세요.',
+    link: 'https://viral-re.vercel.app'
+  },
+  {
+    id: 3,
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&h=240&q=80',
+    title: '✈️ 럭셔리 독채 풀빌라 무료 숙박권 찬스',
+    desc: '이번 주말은 오션뷰 힐링! SNS 전용 여행 크리에이터 선착순 매칭 중입니다.',
+    link: 'https://viral-re.vercel.app'
+  },
+  {
+    id: 4,
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&h=240&q=80',
+    title: '💻 최신 IT 기기 / 이어폰 리뷰 원정대',
+    desc: '아이패드 및 스마트폰 주변기기 무상 대여 체험 및 우수자 경품 증정!',
+    link: 'https://viral-re.vercel.app'
+  },
+  {
+    id: 5,
+    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&h=240&q=80',
+    title: '👕 가을 신상 데일리 캐주얼 패션 협찬',
+    desc: '스타일리시한 니트와 아우터 무상 제공! 블로그 & 인스타 마케터 선착순 마감.',
+    link: 'https://viral-re.vercel.app'
+  }
+];
+
 export default function Home() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +112,27 @@ export default function Home() {
   
   // 모바일 하단 플로팅 앵커 광고 노출 상태
   const [showStickyAd, setShowStickyAd] = useState(true);
+
+  // 상단 광고 캐러셀 인덱스 상태
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+
+  // 상단 광고 자동 롤링 효과 (4초 간격)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentAdIndex((prev) => (prev + 1) % AD_SLIDES.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handlePrevAd = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentAdIndex((prev) => (prev - 1 + AD_SLIDES.length) % AD_SLIDES.length);
+  };
+
+  const handleNextAd = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentAdIndex((prev) => (prev + 1) % AD_SLIDES.length);
+  };
 
   // 다크모드 상태
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -947,56 +1007,112 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 💻📱 상단 가로형 반응형 배너 광고 (Header Ad Slot) */}
+      {/* 💻📱 상단 가로형 반응형 배너 광고 (Auto-rolling Carousel Ad Slot) */}
       <div 
         className="glass-panel ad-header-banner" 
         style={{
           margin: '24px auto 0 auto',
           maxWidth: '1200px',
           width: 'calc(100% - 48px)',
-          minHeight: '80px',
+          minHeight: '120px',
           borderRadius: 'var(--radius-md)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '16px 24px',
-          border: '1px dashed var(--accent)',
           position: 'relative',
           overflow: 'hidden',
-          background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.04) 0%, rgba(236, 72, 153, 0.04) 100%)',
-          gap: '16px',
-          flexWrap: 'wrap'
+          backgroundImage: `url(${AD_SLIDES[currentAdIndex].image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          transition: 'background-image 0.5s ease-in-out',
+          display: 'flex',
+          alignItems: 'center'
         }}
       >
+        {/* 가독성을 위한 어두운 레이어 (Dark Overlay) */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.3) 100%)',
+          zIndex: 1
+        }} />
+
         <span style={{
-          position: 'absolute', top: '4px', left: '4px',
-          fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-tertiary)',
-          border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px',
-          lineHeight: 1
+          position: 'absolute', top: '8px', left: '12px',
+          fontSize: '0.55rem', fontWeight: 900, color: 'rgba(255,255,255,0.7)',
+          border: '1px solid rgba(255,255,255,0.3)', padding: '2px 6px', borderRadius: '3px',
+          lineHeight: 1, zIndex: 2
         }}>AD</span>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
-          <span style={{ fontSize: '1.8rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}>🎁</span>
-          <div style={{ textAlign: 'left' }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
-              블로그 체험단 자동화 키워드 마스터 프로그램 무료 체험 오픈!
-            </h4>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.3 }}>
-              조회수 폭발하는 황금 키워드 탐색 및 인플루언서 노출 지수 진단 혜택을 30일간 무료로 만나보세요.
-            </p>
+        <div style={{ 
+          position: 'relative', zIndex: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '24px 32px', width: '100%', gap: '16px', flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
+            <span style={{ fontSize: '2rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>📢</span>
+            <div style={{ textAlign: 'left' }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginBottom: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                {AD_SLIDES[currentAdIndex].title}
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                {AD_SLIDES[currentAdIndex].desc}
+              </p>
+            </div>
           </div>
+          
+          <a 
+            href={AD_SLIDES[currentAdIndex].link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="premium-button-primary" 
+            style={{ 
+              padding: '10px 20px', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', 
+              whiteSpace: 'nowrap', zIndex: 2, border: 'none',
+              boxShadow: '0 4px 12px rgba(99,102,241,0.4)'
+            }}
+          >
+            자세히 보기
+            <Icons.ExternalLink />
+          </a>
         </div>
-        
-        <a 
-          href="https://viral-re.vercel.app" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="premium-button-primary" 
-          style={{ padding: '8px 16px', fontSize: '0.8rem', borderRadius: 'var(--radius-sm)', whiteSpace: 'nowrap' }}
-        >
-          자세히 보기
-          <Icons.ExternalLink />
-        </a>
+
+        {/* 🔢 캐러셀 수동 및 자동 롤링 컨트롤러 (화살표 & 페이지번호) */}
+        <div style={{
+          position: 'absolute', bottom: '8px', right: '16px',
+          display: 'flex', alignItems: 'center', gap: '10px',
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          padding: '4px 12px',
+          borderRadius: 'var(--radius-sm)',
+          color: '#ffffff',
+          fontSize: '0.75rem',
+          zIndex: 3,
+          userSelect: 'none',
+          border: '1px solid rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <button 
+            type="button" 
+            onClick={handlePrevAd} 
+            style={{ 
+              border: 'none', background: 'transparent', color: '#ffffff', 
+              cursor: 'pointer', padding: '0 6px', fontWeight: 900, fontSize: '0.8rem' 
+            }}
+            title="이전 광고"
+          >
+            ◀
+          </button>
+          <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>
+            {currentAdIndex + 1} / {AD_SLIDES.length}
+          </span>
+          <button 
+            type="button" 
+            onClick={handleNextAd} 
+            style={{ 
+              border: 'none', background: 'transparent', color: '#ffffff', 
+              cursor: 'pointer', padding: '0 6px', fontWeight: 900, fontSize: '0.8rem' 
+            }}
+            title="다음 광고"
+          >
+            ▶
+          </button>
+        </div>
       </div>
 
       {/* 3. Main Dashboard Body */}
