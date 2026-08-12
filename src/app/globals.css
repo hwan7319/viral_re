@@ -598,6 +598,13 @@ input, select {
 
 /* 커스텀 지역 필터 드롭다운 항목 호버 스타일 */
 .dropdown-item-hover:hover {
-  background-color: var(--bg-tertiary) !important;
+  background-color: var(--accent-light) !important;
   color: var(--accent) !important;
+}
+
+/* 지역 칩 호버 스타일 (조약돌 칩셋 피드백) */
+.region-chip-hover:hover {
+  background-color: var(--accent-light) !important;
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
 }

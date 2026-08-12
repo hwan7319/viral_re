@@ -536,7 +536,7 @@ export default function Home() {
       
       if (result.success) {
         setCampaigns(result.data);
-        setVisibleCount(24); // 필터 변경 시 1페이지부터 노출되도록 초기화
+        setVisibleCount(12); // 필터 변경 시 1페이지부터 노출되도록 초기화
 
         // 🔑 백그라운드 수집이 유발된 경우 2.2초 뒤 무소음 화면 갱신 실행 (Non-blocking UX)
         if (result.isCrawlingTriggered) {
@@ -1402,12 +1402,14 @@ export default function Home() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minWidth: '68px',
+                    gap: p.key === 'etc' ? '6px' : '0px',
+                    minWidth: p.key === 'etc' ? '92px' : '68px',
                     height: '40px',
                     flexShrink: 0
                   }}
                 >
                   {p.icon}
+                  {p.key === 'etc' && <span style={{ fontSize: '0.825rem', fontWeight: 700 }}>기타</span>}
                 </button>
               ))}
             </div>
@@ -1443,12 +1445,13 @@ export default function Home() {
             {isLocationOpen && (
               <div style={{
                 display: 'flex',
-                height: '280px',
+                height: '320px',
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-lg)',
                 overflow: 'hidden',
                 backgroundColor: 'var(--bg-secondary)',
-                marginTop: '16px'
+                marginTop: '16px',
+                boxShadow: 'var(--shadow-md)'
               }}>
                 {/* 1열: 광역시도 (세로 목록) */}
                 <div 
@@ -1457,7 +1460,7 @@ export default function Home() {
                     borderRight: '1px solid var(--border-color)', 
                     overflowY: 'auto',
                     backgroundColor: 'var(--bg-tertiary)',
-                    padding: '8px 0'
+                    padding: '10px'
                   }}
                   className="no-scrollbar"
                 >
@@ -1469,15 +1472,17 @@ export default function Home() {
                       setSelectedSigungu('all');
                     }}
                     style={{
-                      padding: '10px 16px',
+                      padding: '12px 16px',
+                      borderRadius: 'var(--radius-md)',
                       cursor: 'pointer',
-                      fontSize: '0.875rem',
+                      fontSize: '0.85rem',
                       fontWeight: selectedSido === 'all' ? 800 : 500,
                       color: selectedSido === 'all' ? 'var(--accent)' : 'var(--text-primary)',
                       backgroundColor: (selectedSido === 'all' || hoveredSido === 'all') ? 'var(--bg-primary)' : 'transparent',
-                      borderLeft: (selectedSido === 'all' || hoveredSido === 'all') ? '3px solid var(--accent)' : '3px solid transparent',
+                      marginBottom: '4px',
                       transition: 'var(--transition-smooth)'
                     }}
+                    className="dropdown-item-hover"
                   >
                     전국 (전체)
                   </div>
@@ -1488,17 +1493,20 @@ export default function Home() {
                       onClick={() => {
                         setHoveredSido(sido);
                         setSelectedSido(sido);
+                        setSelectedSigungu('all'); // 🔑 지역 검색 정상화의 핵심: 광역시도 변경 시 군구 초기화!
                       }}
                       style={{
-                        padding: '10px 16px',
+                        padding: '12px 16px',
+                        borderRadius: 'var(--radius-md)',
                         cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: (selectedSido === sido) ? 800 : 500,
+                        fontSize: '0.85rem',
+                        fontWeight: (selectedSido === sido) ? 800 : 600,
                         color: (selectedSido === sido) ? 'var(--accent)' : 'var(--text-primary)',
                         backgroundColor: (selectedSido === sido || hoveredSido === sido) ? 'var(--bg-primary)' : 'transparent',
-                        borderLeft: (selectedSido === sido || hoveredSido === sido) ? '3px solid var(--accent)' : '3px solid transparent',
+                        marginBottom: '4px',
                         transition: 'var(--transition-smooth)'
                       }}
+                      className="dropdown-item-hover"
                     >
                       {sido}
                     </div>
@@ -1510,37 +1518,48 @@ export default function Home() {
                   style={{ 
                     flex: 1, 
                     overflowY: 'auto', 
-                    padding: '16px', 
+                    padding: '20px', 
                     backgroundColor: 'var(--bg-primary)' 
                   }}
                   className="no-scrollbar"
                 >
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-tertiary)', display: 'block', marginBottom: '12px' }}>
-                    {hoveredSido === 'all' ? '전체 구역' : `${hoveredSido} 상세 지역 선택`}
-                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      {hoveredSido === 'all' ? '전체 구역' : `${hoveredSido} 상세 지역`}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                      선택 시 즉각 반영됩니다
+                    </span>
+                  </div>
                   
                   {hoveredSido === 'all' ? (
-                    <div style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', padding: '16px 0' }}>
-                      왼쪽 목록에 마우스를 올리거나 탭하여 세부 시/군/구 필터를 적용하세요.
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '180px', color: 'var(--text-tertiary)', fontSize: '0.85rem', textAlign: 'center', gap: '8px' }}>
+                      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      <span>왼쪽 목록에서 광역시도를 선택하면<br/>시/군/구 칩셋 목록이 이곳에 펼쳐집니다.</span>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingBottom: '20px' }}>
                       <button
                         onClick={() => {
                           setSelectedSido(hoveredSido);
                           setSelectedSigungu('all');
                         }}
                         style={{
-                          padding: '6px 14px',
+                          padding: '8px 16px',
                           borderRadius: 'var(--radius-full)',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
+                          fontSize: '0.825rem',
+                          fontWeight: (selectedSido === hoveredSido && selectedSigungu === 'all') ? 700 : 500,
                           backgroundColor: (selectedSido === hoveredSido && selectedSigungu === 'all') ? 'var(--accent)' : 'var(--bg-secondary)',
                           color: (selectedSido === hoveredSido && selectedSigungu === 'all') ? '#ffffff' : 'var(--text-primary)',
-                          border: '1px solid var(--border-color)',
+                          border: '1px solid transparent',
                           cursor: 'pointer',
+                          boxShadow: (selectedSido === hoveredSido && selectedSigungu === 'all') ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'none',
                           transition: 'var(--transition-smooth)'
                         }}
+                        className="region-chip-hover"
                       >
                         전체 (전구역)
                       </button>
@@ -1552,16 +1571,18 @@ export default function Home() {
                             setSelectedSigungu(sigungu);
                           }}
                           style={{
-                            padding: '6px 14px',
+                            padding: '8px 16px',
                             borderRadius: 'var(--radius-full)',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
+                            fontSize: '0.825rem',
+                            fontWeight: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? 700 : 500,
                             backgroundColor: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? 'var(--accent)' : 'var(--bg-secondary)',
                             color: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? '#ffffff' : 'var(--text-primary)',
-                            border: '1px solid var(--border-color)',
+                            border: '1px solid transparent',
                             cursor: 'pointer',
+                            boxShadow: (selectedSido === hoveredSido && selectedSigungu === sigungu) ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'none',
                             transition: 'var(--transition-smooth)'
                           }}
+                          className="region-chip-hover"
                         >
                           {sigungu}
                         </button>
