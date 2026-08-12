@@ -1115,8 +1115,8 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', width: '100%' }}>
               {[
                 { key: 'all', label: '전체', img: null },
-                { key: 'visit', label: '방문형', img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=80&h=80&q=80' },
-                { key: 'delivery', label: '배송형', img: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=80&h=80&q=80' }
+                { key: 'visit', label: '방문형', img: '/images/emojis/pin.jpg' },
+                { key: 'delivery', label: '배송형', img: '/images/emojis/box.jpg' }
               ].map(typeItem => (
                 <button
                   key={typeItem.key}
@@ -1164,7 +1164,7 @@ export default function Home() {
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                 <img 
-                  src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=80&h=80&q=80" 
+                  src="/images/emojis/box.jpg" 
                   alt="" 
                   style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
                 />
@@ -1201,7 +1201,7 @@ export default function Home() {
                 {/* 1. 맛집/카페 */}
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/images/emojis/food.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
                     맛집 / 음식
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1218,7 +1218,7 @@ export default function Home() {
                 {/* 2. 뷰티/케어 */}
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
                     뷰티 / 에스테틱
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1235,7 +1235,7 @@ export default function Home() {
                 {/* 3. 숙박/여행 */}
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/images/emojis/travel.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
                     숙박 / 레저
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1251,7 +1251,7 @@ export default function Home() {
                 {/* 4. 패션/의류 */}
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/images/emojis/fashion.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
                     패션 / 잡화
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1267,7 +1267,7 @@ export default function Home() {
                 {/* 5. 생활용품 vs 가전디지털 분리 */}
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/images/emojis/life.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
                     생활 / 가전
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1283,7 +1283,7 @@ export default function Home() {
                 {/* 6. 신규 분리 카테고리 (도서, 건강식품, 유아동) */}
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                    <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=80&h=80&q=80" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/images/emojis/box.jpg" alt="" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
                     기타 전문 카테고리
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>

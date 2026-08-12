@@ -166,6 +166,18 @@ export async function getDB(): Promise<Database> {
     // 이미 컬럼이 존재할 경우 무시 (SQLITE 에러 발생하므로 무시 처리)
   }
 
+  // 🔑 투잡커넥트 도메인 오타 데이터 교정 마이그레이션 (tojobcon.com -> tojobcn.com)
+  try {
+    await dbInstance.exec(`
+      UPDATE campaigns 
+      SET campaignUrl = REPLACE(campaignUrl, 'tojobcon.com', 'tojobcn.com') 
+      WHERE campaignUrl LIKE '%tojobcon.com%';
+    `);
+    console.log('[DB] Successfully corrected tojobcon.com domain typos.');
+  } catch (err: any) {
+    console.warn('[DB] Failed to run tojobcon migration:', err.message);
+  }
+
   return dbInstance;
 }
 

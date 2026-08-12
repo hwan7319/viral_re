@@ -430,7 +430,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
         const mockTitle = `[투잡커넥트] ${keyword} 재택/블로그 기자단 상시 모집`;
         collected.push({
           id: `tc-mock-${Date.now()}`, title: mockTitle, description: 'N잡러들을 위한 원고 작성 및 서포터즈 활동 지원 서비스',
-          platform: 'etc', category: 'life', campaignUrl: 'https://www.tojobcon.com',
+          platform: 'etc', category: 'life', campaignUrl: 'https://www.tojobcn.com',
           imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300', targetSite: '투잡커넥트',
           limitCount: 50, applyCount: 12, endDate: parseRemainDaysToDate(15),
           createdAt: now.toISOString(), updatedAt: now.toISOString(), searchKeywords: `,${keyword},`
