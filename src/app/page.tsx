@@ -1565,15 +1565,18 @@ export default function Home() {
                       lineHeight: 1
                     }}>SPONSOR AD</span>
                     
-                    <div style={{ height: '170px', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                      <div style={{ position: 'absolute', inset: 0, opacity: 0.08, background: 'radial-gradient(circle, var(--accent) 10%, transparent 10%)', backgroundSize: '12px 12px' }} />
-                      <span style={{ fontSize: '3.5rem', zIndex: 1, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))' }}>📈</span>
+                    <div style={{ height: '170px', position: 'relative', overflow: 'hidden' }}>
+                      <img 
+                        src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&h=340&q=80" 
+                        alt="Sponsor Ad" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
                     </div>
                     
                     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', gap: '12px' }}>
                       <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
-                          📢 인플루언서 제휴 광고
+                          제휴 협찬 광고
                         </div>
                         <h3 style={{ fontSize: '1.02rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-primary)' }}>
                           내 블로그 노출 순위 수직 상승 비법서 무상 배포!
