@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Campaign } from '@/lib/db';
 
 // SVG 아이콘 컴포넌트 모음 (외부 패키지 없이 완벽히 구동되도록 인라인 구현)
@@ -159,6 +159,29 @@ export default function Home() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 마우스 호버 버퍼 타이머용 레퍼런스
+  const filterLeaveTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handleFilterMouseEnter = () => {
+    if (filterLeaveTimer.current) {
+      clearTimeout(filterLeaveTimer.current);
+      filterLeaveTimer.current = null;
+    }
+  };
+
+  const handleFilterMouseLeave = () => {
+    if (filterLeaveTimer.current) {
+      clearTimeout(filterLeaveTimer.current);
+    }
+    // 180ms 동안 마우스가 완전히 벗어난 상태로 머물면 패널 닫기
+    filterLeaveTimer.current = setTimeout(() => {
+      setIsTypeOpen(false);
+      setIsCategoryOpen(false);
+      setIsPlatformOpen(false);
+      setIsLocationOpen(false);
+    }, 180);
   };
 
   // 상단 광고 캐러셀 인덱스 상태
@@ -1294,12 +1317,8 @@ export default function Home() {
           />
         )}
         <div 
-          onMouseLeave={() => {
-            setIsTypeOpen(false);
-            setIsCategoryOpen(false);
-            setIsPlatformOpen(false);
-            setIsLocationOpen(false);
-          }}
+          onMouseEnter={handleFilterMouseEnter}
+          onMouseLeave={handleFilterMouseLeave}
           style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: '24px' }}
         >
           {/* 탭바 영역 */}
