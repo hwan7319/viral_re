@@ -487,6 +487,8 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           }
         });
       } catch (err: any) {
+        console.warn('[Parallel-Crawl] 클라우드리뷰 failed:', err.message);
+      }
     })(),
 
     // 9. 레뷰 (REVU) - 100% 라이브 공개 공고 실시간 파서
