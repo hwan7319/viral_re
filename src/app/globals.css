@@ -721,24 +721,23 @@ input, select {
   display: none; /* Chrome/Safari/Webkit 숨김 */
 }
 
-/* 탭 버튼 스타일: 바탕화면 기본 폴더/휴지통 아이콘 형태 */
-/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (요즘 트렌드) */
+/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (테두리 없는 플랫 타원형) */
 .filter-tab {
   display: inline-flex;
-  flex-direction: row !important; /* 가로 배치 */
+  flex-direction: row !important;
   align-items: center;
   justify-content: center;
   height: 40px !important;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
+  border: none !important; /* 테두리 제거 */
+  background-color: var(--bg-tertiary) !important; /* 타원형 배경 고체색 */
   color: var(--text-primary);
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-smooth);
   white-space: nowrap;
   user-select: none;
-  border-radius: var(--radius-full) !important; /* 알약형 모서리 */
+  border-radius: var(--radius-full) !important; /* 완전한 타원형 */
   position: relative;
   gap: 8px;
   box-sizing: border-box;
@@ -746,21 +745,15 @@ input, select {
 }
 
 .filter-tab:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--accent);
+  background-color: rgba(99, 102, 241, 0.08) !important;
   color: var(--accent);
   transform: translateY(-1px);
 }
 
-[data-theme="dark"] .filter-tab:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: var(--accent);
-}
-
 .filter-tab.active {
-  background: var(--accent-light) !important;
-  border-color: var(--accent) !important;
+  background-color: var(--accent-light) !important;
   color: var(--accent) !important;
+  border: none !important;
 }
 
 .filter-tab-img {
@@ -1033,6 +1026,10 @@ input, select {
     align-items: center !important;
     box-sizing: border-box !important;
     border-color: var(--border-color) !important;
+  }
+  
+  .filter-tab-img {
+    display: none !important; /* 모바일에서는 대메뉴 아이콘 숨김 */
   }
   
   .filter-tab svg {
