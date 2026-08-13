@@ -723,38 +723,40 @@ input, select {
 
 /* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (검은색 테두리선 + 흰색 배경 타원형) */
 .filter-tab {
-  display: inline-flex;
+  display: inline-flex !important;
   flex-direction: row !important;
-  align-items: center;
-  justify-content: center;
+  align-items: center !important;
+  justify-content: center !important;
   height: 40px !important;
-  border: 1.5px solid #000000 !important; /* 검은색 선 */
-  background-color: #ffffff !important; /* 내부 흰색 채우기 */
-  color: #000000 !important; /* 글씨 검은색 */
-  font-size: 0.86rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  white-space: nowrap;
-  user-select: none;
-  border-radius: var(--radius-full) !important; /* 타원형 */
-  position: relative;
-  gap: 8px;
-  box-sizing: border-box;
+  border: 1.5px solid #000000 !important; /* 검은색 선 강제 */
+  background-color: #ffffff !important; /* 내부 흰색 채우기 강제 */
+  color: #000000 !important; /* 글씨 검은색 강제 */
+  font-size: 0.86rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  user-select: none !important;
+  border-radius: 9999px !important; /* 타원형 알약 모서리 */
+  position: relative !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
   padding: 0 18px !important;
+  outline: none !important;
 }
 
 .filter-tab:hover {
-  background-color: #f3f4f6 !important; /* 옅은 회색 호버 응답 */
-  border-color: #000000 !important;
+  background-color: #f3f4f6 !important; /* 호버 시 아주 부드럽고 자연스러운 그레이 적용 */
+  border: 1.5px solid #000000 !important; /* 테두리 절대 소멸 방지 */
   color: #000000 !important;
-  transform: translateY(-1px);
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
 .filter-tab.active {
-  background-color: #e5e7eb !important; /* 활성화 시 짙은 회색 */
-  border-color: #000000 !important;
-  color: #000000 !important;
+  background-color: #e0e7ff !important; /* 클릭 활성화 시 산뜻하고 자연스러운 라이트 퍼플 */
+  border: 2px solid #000000 !important; /* 활성화 시 테두리 두께 2px로 또렷하게 강조 */
+  color: #4f46e5 !important; /* 인디고 텍스트 포인트 */
 }
 
 .filter-tab-img {
