@@ -164,26 +164,39 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
       const ogDesc = $('meta[property="og:description"]').attr('content') || '';
       let targetText = '';
+      const benefitText = $('.campaigninfo-text').first().text().trim();
 
+      // 1순위: '★필수 미션', '필수 미션', '리뷰 필수가이드', '포스팅 제목' 이 명시된 구역
       $('.campaigninfo-text').each((_, el) => {
-        const html = $(el).html() || '';
         const text = $(el).text().trim();
-        if (html.includes('sponsorBanner') || text.includes('리뷰 필수가이드') || text.includes('포스팅 제목') || text.includes('가이드')) {
+        if (text.includes('필수 미션') || text.includes('★필수') || text.includes('리뷰 필수가이드') || text.includes('포스팅 제목')) {
           targetText = text;
         }
       });
 
-      if (!targetText && ogDesc && !ogDesc.includes('영수증리뷰필수') && ogDesc.length > 10) {
-        targetText = ogDesc;
-      }
-
+      // 2순위: sponsorBanner 포함 구역 (단, 제공혜택과 동일하지 않은 경우)
       if (!targetText) {
         $('.campaigninfo-text').each((_, el) => {
+          const html = $(el).html() || '';
           const text = $(el).text().trim();
-          if (text && !text.includes('영수증리뷰필수') && !text.includes('테이블합석') && text.length > 15) {
+          if (html.includes('sponsorBanner') && text !== benefitText) {
             targetText = text;
           }
         });
+      }
+
+      // 3순위: 이용안내/예약안내 구역 (제공혜택/주소가 아닌 일반 안내)
+      if (!targetText) {
+        $('.campaigninfo-text').each((i, el) => {
+          const text = $(el).text().trim();
+          if (i > 0 && text !== benefitText && !text.includes('서울 강남구') && text.length > 15) {
+            targetText = text;
+          }
+        });
+      }
+
+      if (!targetText && ogDesc && !ogDesc.includes('영수증리뷰필수') && ogDesc !== benefitText && ogDesc.length > 10) {
+        targetText = ogDesc;
       }
 
       extractedRaw = targetText;
