@@ -285,10 +285,21 @@ export default function Home() {
         .then(res => res.json())
         .then(data => {
           if (data.success) {
+            const combinedText = ((data.mission || '') + ' ' + (selectedCampaign?.title || '')).toLowerCase();
+            let correctedPlatform: 'blog' | 'instagram' | 'youtube' | 'etc' | undefined = undefined;
+            if (combinedText.includes('릴스') || combinedText.includes('인스타') || combinedText.includes('instagram') || combinedText.includes('피드')) {
+              correctedPlatform = 'instagram';
+            } else if (combinedText.includes('유튜브') || combinedText.includes('youtube') || combinedText.includes('쇼츠')) {
+              correctedPlatform = 'youtube';
+            } else if (combinedText.includes('블로그') || combinedText.includes('blog')) {
+              correctedPlatform = 'blog';
+            }
+
             setSelectedCampaign(prev => prev ? {
               ...prev,
               mission: data.mission || prev.mission,
-              description: (data.realBenefit && data.realBenefit !== prev.title) ? data.realBenefit : prev.description
+              description: (data.realBenefit && data.realBenefit !== prev.title) ? data.realBenefit : prev.description,
+              platform: correctedPlatform || prev.platform
             } : null);
           }
         })

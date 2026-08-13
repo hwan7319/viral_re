@@ -93,6 +93,20 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
   return { applyCount: 0, limitCount: 5 };
 };
 
+export const detectPlatform = (title: string, desc: string, mission?: string): 'blog' | 'instagram' | 'youtube' | 'etc' => {
+  const t = (title + ' ' + desc + ' ' + (mission || '')).toLowerCase();
+  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('피드') || t.includes('팔로워') || t.includes('클립')) {
+    return 'instagram';
+  }
+  if (t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠')) {
+    return 'youtube';
+  }
+  if (t.includes('블로그') || t.includes('blog') || t.includes('스마트플레이스') || t.includes('포스팅')) {
+    return 'blog';
+  }
+  return 'blog';
+};
+
 const detectCategory = (title: string, desc: string): string => {
   const t = (title + ' ' + desc).toLowerCase();
   
