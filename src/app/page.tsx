@@ -87,8 +87,9 @@ const sanitizeCampaignText = (text: string): string => {
 const sanitizeOfferDescription = (desc: string, title: string): string => {
   let cleaned = sanitizeCampaignText(desc);
   
-  // 만약 제공 내역이 밋밋하거나 형식적인 텍스트인 경우 title 및 키워드 기반으로 구체적 혜택으로 보완
-  if (!cleaned || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || cleaned.includes('체험 기회') || cleaned.length < 5) {
+  // 만약 제공 내역이 제목과 똑같거나 밋밋한 텍스트인 경우 title 및 카테고리 기반으로 구체적 혜택으로 완벽 보완
+  const cleanTitle = sanitizeCampaignText(title);
+  if (!cleaned || cleaned === cleanTitle || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || cleaned.includes('체험 기회') || cleaned.length < 5) {
     const cleanT = sanitizeCampaignText(title);
     if (cleanT.includes('치킨') || cleanT.includes('통닭')) {
       return '3만5천원권 식사 혹은 대표메뉴(크리스피 치킨/양념치킨/썬오브핫치킨) 중 택 1 + 음료 콜라 체험권';

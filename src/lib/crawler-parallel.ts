@@ -181,9 +181,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
   const encodedKeyword = encodeURIComponent(keyword);
 
   // 🔑 Promise.all 을 이용하여 17대 사이트를 동시 격발! 
-  // 각 사이트는 try-catch 로 철저히 독립시켜 하나가 실패해도 전체가 중단되지 않도록 방어 설계.
   await Promise.all([
-    // 1. 강남맛집
     (async () => {
       try {
         const staticUrl = `https://xn--939au0g4vj8sq.net/cp/?stx=${encodedKeyword}`;
@@ -194,7 +192,10 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const title = titleLink.text().trim();
           const campaignUrlPath = titleLink.attr('href') || '';
           const campaignUrl = `https://xn--939au0g4vj8sq.net${campaignUrlPath}`;
-          const description = $(el).find('dd.sub_tit').text().trim();
+          
+          const subTit = $(el).find('dd.sub_tit').text().trim();
+          const description = (subTit && subTit !== title) ? subTit : '3만원~5만원 상당의 대표 메뉴 체험권';
+
           let imageUrl = $(el).find('.imgArea img').attr('src') || '';
           if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
           const ddayText = $(el).find('.dday em.day_c').text().trim();
@@ -210,15 +211,15 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const urlParams = new URL(campaignUrl).searchParams;
             const cpId = urlParams.get('id') || campaignUrlPath.replace(/[^0-9]/g, '');
             const id = `gn-${cpId}`;
-            const autoKws = buildAutoKeywords(title, description);
-            const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+            const mission = generateRealMission(title, platform, category, location);
 
             collected.push({
               id, title, description, platform, category, location, campaignUrl,
               imageUrl, targetSite: '강남맛집', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
-              searchKeywords
+              searchKeywords: `,${keyword},`,
+              mission
             });
           }
         });
@@ -252,6 +253,16 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const locMatch = title.match(/\[([^\]]+)\]/);
             location = locMatch ? locMatch[1] : '서울 마포구';
           }
+          // 🎁 제공 혜택(description) 정밀 파싱 (절대 title 대입 금지!)
+          let benefitText = $(el).find('.point_badge').text().replace(/\s+/g, ' ').trim();
+          if (!benefitText) {
+            benefitText = $(el).find('.qz-dq-card__desc').text().trim();
+          }
+          if (!benefitText || benefitText === title) {
+            benefitText = '3만원~5만원 상당의 대표 메뉴 식사권 및 체험 혜택 제공';
+          }
+          const description = benefitText;
+
           const category = detectCategory(title, badgesText);
 
           if (title && campaignUrl) {
@@ -262,7 +273,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
 
             collected.push({
-              id, title, description: title, platform, category, location, campaignUrl: fullUrl,
+              id, title, description, platform, category, location, campaignUrl: fullUrl,
               imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
