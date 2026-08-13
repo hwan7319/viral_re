@@ -584,6 +584,17 @@ export default function Home() {
                   )
                 },
                 { 
+                  key: 'youtube', 
+                  label: '유튜브', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-youtube-plat)' }}>
+                      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
+                      <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" />
+                      <defs><linearGradient id="grad-youtube-plat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FF0000" /><stop offset="100%" stopColor="#cc0000" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
                   key: 'etc', 
                   label: '기타 플랫폼', 
                   icon: (
