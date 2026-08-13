@@ -284,8 +284,12 @@ export default function Home() {
       fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.success && data.mission) {
-            setSelectedCampaign(prev => prev ? { ...prev, mission: data.mission } : null);
+          if (data.success) {
+            setSelectedCampaign(prev => prev ? {
+              ...prev,
+              mission: data.mission || prev.mission,
+              description: (data.realBenefit && data.realBenefit !== prev.title) ? data.realBenefit : prev.description
+            } : null);
           }
         })
         .catch(err => console.error('Failed to load detail mission:', err))
