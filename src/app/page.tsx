@@ -161,27 +161,623 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 마우스 호버 버퍼 타이머용 레퍼런스
-  const filterLeaveTimer = useRef<NodeJS.Timeout | null>(null);
+  // 💻📱 필터바 & 상세 패널 통합 렌더러 (얇은 알약 칩셋 + 1회 클릭 호출 바텀시트)
+  const renderFilterContainer = () => {
+    return (
+      <div 
+        className="filter-container-wrap"
+        style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: '28px', textAlign: 'left' }}
+      >
+        {/* 💻📱 모바일용 바텀시트 딤드 오버레이 (자식 노드 편입) */}
+        {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
+          <div 
+            className="mobile-backdrop"
+            onClick={() => {
+              setIsTypeOpen(false);
+              setIsCategoryOpen(false);
+              setIsPlatformOpen(false);
+              setIsLocationOpen(false);
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(2px)',
+              zIndex: 900,
+              display: 'none'
+            }}
+          />
+        )}
+        {/* 탭바 영역 */}
+        <div className="filter-bar-wrap" style={{ marginTop: '0' }}>
+          <div className="filter-bar-scroll" style={{ justifyContent: 'flex-start' }}>
+            
+            {/* 1. 모집 유형 탭 */}
+            <button
+              type="button"
+              className={`filter-tab ${isTypeOpen || activeType !== 'all' ? 'active' : ''}`}
+              onClick={() => handleTabClick('type')}
+            >
+              {activeType !== 'all' && <span className="tab-badge">✓</span>}
+              <span className="filter-tab-img">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-type)' }}>
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <path d="M7 8h10M7 12h10M7 16h6" />
+                  <defs>
+                    <linearGradient id="grad-type" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#ec4899" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
+              <span>
+                {activeType === 'all' ? '모집 유형' :
+                  activeType === 'visit' ? '방문형' : '배송형'}
+              </span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isTypeOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
 
-  const handleFilterMouseEnter = () => {
-    if (filterLeaveTimer.current) {
-      clearTimeout(filterLeaveTimer.current);
-      filterLeaveTimer.current = null;
-    }
+            {/* 2. 카테고리 탭 */}
+            <button
+              type="button"
+              className={`filter-tab ${isCategoryOpen || activeCategory !== 'all' ? 'active' : ''}`}
+              onClick={() => handleTabClick('category')}
+            >
+              {activeCategory !== 'all' && <span className="tab-badge">✓</span>}
+              <span className="filter-tab-img">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cat)' }}>
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <defs>
+                    <linearGradient id="grad-cat" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
+              <span>
+                {activeCategory === 'all' ? '카테고리' :
+                  activeCategory === 'food-restaurant' ? '식당/맛집' :
+                  activeCategory === 'food-cafe' ? '카페/디저트' :
+                  activeCategory === 'food-pub' ? '술집/주점' :
+                  activeCategory === 'beauty-cosmetics' ? '화장품' :
+                  activeCategory === 'beauty-salon' ? '뷰티샵' :
+                  activeCategory === 'accommodation' ? '숙박' :
+                  activeCategory === 'travel' ? '여행' :
+                  activeCategory === 'fashion' ? '패션' :
+                  activeCategory === 'baby' ? '유아/육아' :
+                  activeCategory === 'life-goods' ? '생활용품' :
+                  activeCategory === 'life-appliances' ? '가전/디지털' : '기타'}
+              </span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+
+            {/* 3. 미디어 플랫폼 탭 */}
+            <button
+              type="button"
+              className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
+              onClick={() => handleTabClick('platform')}
+            >
+              {activePlatform !== 'all' && <span className="tab-badge">✓</span>}
+              <span className="filter-tab-img">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat)' }}>
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  <defs>
+                    <linearGradient id="grad-plat" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
+              <span>
+                {activePlatform === 'all' ? '플랫폼' :
+                  activePlatform === 'blog' ? '블로그' :
+                  activePlatform === 'instagram' ? '인스타' :
+                  activePlatform === 'youtube' ? '유튜브' :
+                  activePlatform === 'naver' ? '네이버' : '기타'}
+              </span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+
+            {/* 4. 지역 탭 */}
+            <button
+              type="button"
+              className={`filter-tab ${isLocationOpen || activeLocation !== 'all' ? 'active' : ''}`}
+              onClick={() => handleTabClick('location')}
+            >
+              {activeLocation !== 'all' && <span className="tab-badge">✓</span>}
+              <span className="filter-tab-img">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-loc)' }}>
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                  <defs>
+                    <linearGradient id="grad-loc" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f59e0b" />
+                      <stop offset="100%" stopColor="#ef4444" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
+              <span>
+                {activeLocation === 'all' ? '지역 검색' :
+                  selectedSigungu !== 'all' ? `${selectedSido} ${selectedSigungu}` : selectedSido}
+              </span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isLocationOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+
+            {/* 전체 초기화 단추 */}
+            {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all') && (
+              <button
+                type="button"
+                className="filter-tab"
+                onClick={() => {
+                  setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
+                  setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
+                  setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false);
+                }}
+                style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
+              >
+                <span className="filter-tab-img">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: '#ef4444' }}>
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                  </svg>
+                </span>
+                <span>초기화</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 모집 유형 상세 패널 */}
+        {isTypeOpen && (
+          <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <div className="filter-chip-row" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+              {[
+                { 
+                  key: 'all', 
+                  label: '전체 유형', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-all-type)' }}>
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M21 12H3M12 3v18" />
+                      <defs><linearGradient id="grad-all-type" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#4f46e5" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'visit', 
+                  label: '방문형', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-visit)' }}>
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                      <defs><linearGradient id="grad-visit" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'delivery', 
+                  label: '배송형', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-delivery)' }}>
+                      <rect x="1" y="3" width="15" height="13" />
+                      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                      <circle cx="5.5" cy="18.5" r="2.5" />
+                      <circle cx="18.5" cy="18.5" r="2.5" />
+                      <defs><linearGradient id="grad-delivery" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
+                    </svg>
+                  )
+                }
+              ].map(t => (
+                <button type="button" key={t.key} className={`filter-desktop-icon ${activeType === t.key ? 'active' : ''}`} onClick={() => { setActiveType(activeType === t.key ? 'all' : t.key); setIsTypeOpen(false); }}>
+                  <span className="filter-desktop-icon-img">{t.icon}</span>
+                  <span className="filter-desktop-icon-text">{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 카테고리 상세 패널 */}
+        {isCategoryOpen && (
+          <div className="filter-panel-wrap">
+            <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '24px' }}>
+              {/* 맛집/음식 */}
+              <div style={{ width: '100%', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <img src="/images/emojis/food.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                  맛집 / 음식
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                  {[
+                    { 
+                      key: 'food-restaurant', 
+                      label: '식당/맛집', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-restaurant)' }}>
+                          <path d="M3 12h18M5 12a7 7 0 0 0 14 0M12 2v4M9 3v3M15 3v3" />
+                          <defs><linearGradient id="grad-restaurant" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#f59e0b" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'food-cafe', 
+                      label: '카페/디저트', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cafe)' }}>
+                          <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                          <line x1="6" y1="2" x2="6" y2="4" />
+                          <line x1="10" y1="2" x2="10" y2="4" />
+                          <line x1="14" y1="2" x2="14" y2="4" />
+                          <defs><linearGradient id="grad-cafe" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#d97706" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'food-pub', 
+                      label: '술집/주점', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-pub)' }}>
+                          <path d="M22 3L12 13L2 3M12 13v9M8 22h8" />
+                          <defs><linearGradient id="grad-pub" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a855f7" /><stop offset="100%" stopColor="#f43f5e" /></linearGradient></defs>
+                        </svg>
+                      )
+                    }
+                  ].map(c => (
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-text">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* 뷰티 */}
+              <div style={{ width: '100%', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                  뷰티 / 에스테틱
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                  {[
+                    { 
+                      key: 'beauty-cosmetics', 
+                      label: '화장품/스킨케어', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cosme)' }}>
+                          <rect x="6" y="10" width="12" height="11" rx="2" />
+                          <path d="M9 10V5a3 3 0 0 1 6 0v5" />
+                          <line x1="12" y1="10" x2="12" y2="21" />
+                          <defs><linearGradient id="grad-cosme" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#f472b6" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'beauty-salon', 
+                      label: '뷰티샵/에스테틱', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-salon)' }}>
+                          <circle cx="6" cy="6" r="3" />
+                          <circle cx="6" cy="18" r="3" />
+                          <line x1="20" y1="4" x2="8.12" y2="15.88" />
+                          <line x1="14.47" y1="14.48" x2="20" y2="20" />
+                          <line x1="8.12" y1="8.12" x2="12" y2="12" />
+                          <defs><linearGradient id="grad-salon" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f43f5e" /><stop offset="100%" stopColor="#db2777" /></linearGradient></defs>
+                        </svg>
+                      )
+                    }
+                  ].map(c => (
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-text">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* 여행/숙박 */}
+              <div style={{ width: '100%', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <img src="/images/emojis/travel.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                  여행 / 숙박
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                  {[
+                    { 
+                      key: 'accommodation', 
+                      label: '숙박/호텔', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-accom)' }}>
+                          <path d="M2 22V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v18M4 6h4M4 10h4M16 6h4M16 10h4M12 14v8" />
+                          <defs><linearGradient id="grad-accom" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'travel', 
+                      label: '여행/레저', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-travel)' }}>
+                          <path d="M22 2L15 22L11 13L2 9L22 2z" />
+                          <defs><linearGradient id="grad-travel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#06b6d4" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                        </svg>
+                      )
+                    }
+                  ].map(c => (
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-text">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* 패션/생활 */}
+              <div style={{ width: '100%', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <img src="/images/emojis/life.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
+                  패션 / 생활 / 디지털
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                  {[
+                    { 
+                      key: 'fashion', 
+                      label: '패션/의류', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-fashion)' }}>
+                          <path d="M20.37 4.91l-3.28-3.27A2 2 0 0 0 15.67 1H8.33a2 2 0 0 0-1.42.59L3.63 4.91A2 2 0 0 0 3 6.33V21a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.33a2 2 0 0 0-.63-1.42z" />
+                          <path d="M12 1v6M3 7h18" />
+                          <defs><linearGradient id="grad-fashion" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f43f5e" /><stop offset="100%" stopColor="#f59e0b" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'baby', 
+                      label: '유아동/육아', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-baby)' }}>
+                          <path d="M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
+                          <path d="M8 12c0 2 2 4 4 4s4-2 4-4" />
+                          <circle cx="9" cy="9" r="1" />
+                          <circle cx="15" cy="9" r="1" />
+                          <defs><linearGradient id="grad-baby" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'life-goods', 
+                      label: '생활용품', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-goods)' }}>
+                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                          <defs><linearGradient id="grad-goods" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#8b5cf6" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'life-appliances', 
+                      label: '가전/디지털', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-appli)' }}>
+                          <rect x="2" y="3" width="20" height="14" rx="2" />
+                          <line x1="8" y1="21" x2="16" y2="21" />
+                          <line x1="12" y1="17" x2="12" y2="21" />
+                          <defs><linearGradient id="grad-appli" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#8b5cf6" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
+                        </svg>
+                      )
+                    },
+                    { 
+                      key: 'etc', 
+                      label: '기타', 
+                      icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-etc)' }}>
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="16" x2="12" y2="12" />
+                          <line x1="12" y1="8" x2="12.01" y2="8" />
+                          <defs><linearGradient id="grad-etc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6b7280" /><stop offset="100%" stopColor="#374151" /></linearGradient></defs>
+                        </svg>
+                      )
+                    }
+                  ].map(c => (
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-text">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 플랫폼 상세 패널 */}
+        {isPlatformOpen && (
+          <div className="filter-panel-wrap">
+            <div className="filter-chip-row" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+              {[
+                { 
+                  key: 'all', 
+                  label: '전체 플랫폼', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-all-plat)' }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M8 12h8M12 8v8" />
+                      <defs><linearGradient id="grad-all-plat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'blog', 
+                  label: '네이버 블로그', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-naver)' }}>
+                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                      <defs><linearGradient id="grad-naver" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#2db400" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'instagram', 
+                  label: '인스타그램', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-insta11)' }}>
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                      <defs><linearGradient id="grad-insta11" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f9ce71" /><stop offset="50%" stopColor="#ee2a7b" /><stop offset="100%" stopColor="#6228d7" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'etc', 
+                  label: '기타 플랫폼', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat-etc)' }}>
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                      <defs><linearGradient id="grad-plat-etc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#9ca3af" /><stop offset="100%" stopColor="#4b5563" /></linearGradient></defs>
+                    </svg>
+                  )
+                }
+              ].map(p => (
+                <button type="button" key={p.key} className={`filter-desktop-icon ${activePlatform === p.key ? 'active' : ''}`} onClick={() => { setActivePlatform(activePlatform === p.key ? 'all' : p.key); setIsPlatformOpen(false); }}>
+                  <span className="filter-desktop-icon-img">
+                    {p.icon}
+                  </span>
+                  <span className="filter-desktop-icon-text">{p.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 지역 상세 패널 */}
+        {isLocationOpen && (
+          <div className="filter-panel-wrap">
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div className="region-two-col">
+                {/* 좌: 시도 목록 */}
+                <div className="region-sido-list">
+                  <button
+                    type="button"
+                    className={`region-sido-btn ${selectedSido === 'all' ? 'active' : ''}`}
+                    onClick={() => { setSelectedSido('all'); setSelectedSigungu('all'); setIsLocationOpen(false); }}
+                  >
+                    전국
+                  </button>
+                  {[
+                    '서울','경기','인천','부산','대구','대전','광주','울산','강원',
+                    '충북','충남','전북','전남','경북','경남','제주','세종'
+                  ].map(sido => (
+                    <button
+                      type="button"
+                      key={sido}
+                      className={`region-sido-btn ${selectedSido === sido ? 'active' : ''}`}
+                      onMouseEnter={() => setHoveredSido(sido)}
+                      onClick={() => {
+                        setSelectedSido(sido);
+                        setSelectedSigungu('all');
+                        if (!LOCATIONS_MAP[sido] || LOCATIONS_MAP[sido].length === 0) {
+                          setIsLocationOpen(false);
+                        }
+                      }}
+                    >
+                      {sido}
+                    </button>
+                  ))}
+                </div>
+                {/* 우: 시군구 칩 */}
+                <div className="region-sigungu-wrap" style={{ justifyContent: 'flex-start' }}>
+                  <div style={{ width: '100%', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>📍</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      {hoveredSido !== 'all' ? hoveredSido : selectedSido === 'all' ? '전국' : selectedSido} 지역 상세 설정
+                    </span>
+                  </div>
+                  {(hoveredSido !== 'all' && LOCATIONS_MAP[hoveredSido]?.length > 0
+                    ? LOCATIONS_MAP[hoveredSido]
+                    : selectedSido !== 'all' && LOCATIONS_MAP[selectedSido]?.length > 0
+                      ? LOCATIONS_MAP[selectedSido]
+                      : []
+                  ).length > 0 ? (
+                    <>
+                      <button
+                        type="button"
+                        className={`filter-chip ${selectedSigungu === 'all' ? 'active' : ''}`}
+                        style={{ fontSize: '0.82rem', padding: '5px 12px' }}
+                        onClick={() => { setSelectedSigungu('all'); setIsLocationOpen(false); }}
+                      >
+                        {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
+                      </button>
+                      {(hoveredSido !== 'all' && LOCATIONS_MAP[hoveredSido]?.length > 0
+                        ? LOCATIONS_MAP[hoveredSido]
+                        : LOCATIONS_MAP[selectedSido] || []
+                      ).map(sigungu => (
+                        <button
+                          type="button"
+                          key={sigungu}
+                          className={`filter-chip ${selectedSigungu === sigungu && selectedSido === (hoveredSido !== 'all' ? hoveredSido : selectedSido) ? 'active' : ''}`}
+                          style={{ fontSize: '0.82rem', padding: '5px 12px' }}
+                          onClick={() => {
+                            const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
+                            setSelectedSido(targetSido);
+                            setSelectedSigungu(sigungu);
+                            setIsLocationOpen(false);
+                          }}
+                        >
+                          {sigungu}
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <div style={{ padding: '24px 16px', color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+                      좌측에서 지역을 선택하세요
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
-  const handleFilterMouseLeave = () => {
-    if (filterLeaveTimer.current) {
-      clearTimeout(filterLeaveTimer.current);
-    }
-    // 180ms 동안 마우스가 완전히 벗어난 상태로 머물면 패널 닫기
-    filterLeaveTimer.current = setTimeout(() => {
-      setIsTypeOpen(false);
-      setIsCategoryOpen(false);
-      setIsPlatformOpen(false);
-      setIsLocationOpen(false);
-    }, 180);
+  // 필터 외부 영역 클릭 시 드롭다운 닫기 핸들러
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.filter-container-wrap')) {
+        setIsTypeOpen(false);
+        setIsCategoryOpen(false);
+        setIsPlatformOpen(false);
+        setIsLocationOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const handleTabClick = (tab: 'type' | 'category' | 'platform' | 'location') => {
+    setIsTypeOpen(tab === 'type' ? !isTypeOpen : false);
+    setIsCategoryOpen(tab === 'category' ? !isCategoryOpen : false);
+    setIsPlatformOpen(tab === 'platform' ? !isPlatformOpen : false);
+    setIsLocationOpen(tab === 'location' ? !isLocationOpen : false);
   };
 
   // 상단 광고 캐러셀 인덱스 상태
@@ -872,8 +1468,11 @@ export default function Home() {
             여러 플랫폼의 활성 체험단을 한 곳에서 찾아보세요.
           </p>
 
+          {/* 최상위에 배치된 필터바 영역 호출 */}
+          {renderFilterContainer()}
+
           {/* 검색 & 실시간 검색어 가로 정렬 영역 - 반응형 클래스 사용 */}
-          <div className="hero-search-wrapper">
+          <div className="hero-search-wrapper" style={{ marginTop: '24px' }}>
             {/* 좌측/가운데: 통합 검색창 (최근검색어 레이어 팝업 포함) */}
             <div className="hero-search-box" style={{ position: 'relative' }}>
               <form 
@@ -1293,666 +1892,7 @@ export default function Home() {
           </div>
         </div>
         
-        {/* ─── 필터 탭바 + 상세 패널 (sticky, 2025 modern style, 마우스 호버 및 왼쪽 정렬 버전) ─── */}
-        <div 
-          onMouseEnter={handleFilterMouseEnter}
-          onMouseLeave={handleFilterMouseLeave}
-          style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: '24px' }}
-        >
-          {/* 💻📱 모바일용 바텀시트 딤드 오버레이 (바깥 영역 클릭 시 필터 닫기 - Stacking Context 상속을 위해 자식 노드로 편입) */}
-          {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
-            <div 
-              className="mobile-backdrop"
-              onClick={() => {
-                setIsTypeOpen(false);
-                setIsCategoryOpen(false);
-                setIsPlatformOpen(false);
-                setIsLocationOpen(false);
-              }}
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                backdropFilter: 'blur(2px)',
-                zIndex: 900,
-                display: 'none'
-              }}
-            />
-          )}
-          {/* 탭바 영역 */}
-          <div className="filter-bar-wrap" style={{ marginTop: '0' }}>
-            <div className="filter-bar-scroll" style={{ justifyContent: 'flex-start' }}>
-              
-              {/* 1. 모집 유형 탭 */}
-              <button
-                type="button"
-                className={`filter-tab ${isTypeOpen || activeType !== 'all' ? 'active' : ''}`}
-                onMouseEnter={() => {
-                  setIsTypeOpen(true);
-                  setIsCategoryOpen(false);
-                  setIsPlatformOpen(false);
-                  setIsLocationOpen(false);
-                }}
-                onClick={() => setIsTypeOpen(prev => !prev)}
-              >
-                {activeType !== 'all' && <span className="tab-badge">✓</span>}
-                <span className="filter-tab-img">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-type)' }}>
-                    <rect x="3" y="4" width="18" height="16" rx="2" />
-                    <path d="M7 8h10M7 12h10M7 16h6" />
-                    <defs>
-                      <linearGradient id="grad-type" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#6366f1" />
-                        <stop offset="100%" stopColor="#ec4899" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  {activeType === 'all' ? '모집 유형' :
-                    activeType === 'visit' ? '방문형' : '배송형'}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isTypeOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
-                </span>
-              </button>
 
-              {/* 2. 카테고리 탭 */}
-              <button
-                type="button"
-                className={`filter-tab ${isCategoryOpen || activeCategory !== 'all' ? 'active' : ''}`}
-                onMouseEnter={() => {
-                  setIsCategoryOpen(true);
-                  setIsTypeOpen(false);
-                  setIsPlatformOpen(false);
-                  setIsLocationOpen(false);
-                }}
-                onClick={() => setIsCategoryOpen(prev => !prev)}
-              >
-                {activeCategory !== 'all' && <span className="tab-badge">✓</span>}
-                <span className="filter-tab-img">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cat)' }}>
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                    <defs>
-                      <linearGradient id="grad-cat" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#3b82f6" />
-                        <stop offset="100%" stopColor="#8b5cf6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  {activeCategory === 'all' ? '카테고리' :
-                    activeCategory === 'food-restaurant' ? '식당/맛집' :
-                    activeCategory === 'food-cafe' ? '카페/디저트' :
-                    activeCategory === 'food-pub' ? '술집/주점' :
-                    activeCategory === 'beauty-cosmetics' ? '화장품' :
-                    activeCategory === 'beauty-salon' ? '뷰티샵' :
-                    activeCategory === 'accommodation' ? '숙박' :
-                    activeCategory === 'travel' ? '여행' :
-                    activeCategory === 'fashion' ? '패션' :
-                    activeCategory === 'baby' ? '유아/육아' :
-                    activeCategory === 'life-goods' ? '생활용품' :
-                    activeCategory === 'life-appliances' ? '가전/디지털' : '기타'}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
-                </span>
-              </button>
-
-              {/* 3. 미디어 플랫폼 탭 */}
-              <button
-                type="button"
-                className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
-                onMouseEnter={() => {
-                  setIsPlatformOpen(true);
-                  setIsTypeOpen(false);
-                  setIsCategoryOpen(false);
-                  setIsLocationOpen(false);
-                }}
-                onClick={() => setIsPlatformOpen(prev => !prev)}
-              >
-                {activePlatform !== 'all' && <span className="tab-badge">✓</span>}
-                <span className="filter-tab-img">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat)' }}>
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                    <defs>
-                      <linearGradient id="grad-plat" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#3b82f6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  {activePlatform === 'all' ? '플랫폼' :
-                    activePlatform === 'blog' ? '블로그' :
-                    activePlatform === 'instagram' ? '인스타' :
-                    activePlatform === 'youtube' ? '유튜브' :
-                    activePlatform === 'naver' ? '네이버' : '기타'}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
-                </span>
-              </button>
-
-              {/* 4. 지역 탭 */}
-              <button
-                type="button"
-                className={`filter-tab ${isLocationOpen || activeLocation !== 'all' ? 'active' : ''}`}
-                onMouseEnter={() => {
-                  setIsLocationOpen(true);
-                  setIsTypeOpen(false);
-                  setIsCategoryOpen(false);
-                  setIsPlatformOpen(false);
-                }}
-                onClick={() => setIsLocationOpen(prev => !prev)}
-              >
-                {activeLocation !== 'all' && <span className="tab-badge">✓</span>}
-                <span className="filter-tab-img">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-loc)' }}>
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                    <defs>
-                      <linearGradient id="grad-loc" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="#ef4444" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  {activeLocation === 'all' ? '지역 검색' :
-                    selectedSigungu !== 'all' ? `${selectedSido} ${selectedSigungu}` : selectedSido}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isLocationOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
-                </span>
-              </button>
-
-              {/* 전체 초기화 단추 */}
-              {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all') && (
-                <button
-                  type="button"
-                  className="filter-tab"
-                  onClick={() => {
-                    setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
-                    setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
-                    setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false);
-                  }}
-                  style={{ color: 'var(--danger)' }}
-                >
-                  <span className="filter-tab-img">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: '#ef4444' }}>
-                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                    </svg>
-                  </span>
-                  <span style={{ marginTop: '2px' }}>초기화</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* 모집 유형 상세 패널 (왼쪽 정렬) */}
-          {isTypeOpen && (
-            <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              {/* 맥 OS 스타일 신호등 장식 버튼 */}
-              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
-              </div>
-              <div className="filter-chip-row" style={{ justifyContent: 'flex-start', gap: '16px', width: '100%' }}>
-                {[
-                  { 
-                    key: 'all', 
-                    label: '전체 유형', 
-                    icon: (
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-alltype)' }}>
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                        <defs><linearGradient id="grad-alltype" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#8b5cf6" /></linearGradient></defs>
-                      </svg>
-                    )
-                  },
-                  { 
-                    key: 'visit', 
-                    label: '방문형', 
-                    icon: (
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-visit)' }}>
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                        <defs><linearGradient id="grad-visit" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#8b5cf6" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
-                      </svg>
-                    )
-                  },
-                  { 
-                    key: 'delivery', 
-                    label: '배송형', 
-                    icon: (
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-delivery)' }}>
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                        <line x1="12" y1="22.08" x2="12" y2="12" />
-                        <defs><linearGradient id="grad-delivery" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
-                      </svg>
-                    )
-                  }
-                ].map(t => (
-                  <button 
-                    type="button"
-                    key={t.key} 
-                    className={`filter-desktop-icon ${activeType === t.key ? 'active' : ''}`} 
-                    onClick={() => {
-                      setActiveType(t.key);
-                      setIsTypeOpen(false);
-                    }}
-                  >
-                    <span className="filter-desktop-icon-img">{t.icon}</span>
-                    <span className="filter-desktop-icon-text">{t.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 카테고리 상세 패널 (왼쪽 정렬) */}
-          {isCategoryOpen && (
-            <div className="filter-panel-wrap">
-              {/* 맥 OS 스타일 신호등 장식 버튼 */}
-              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
-              </div>
-              <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '24px' }}>
-                {/* 맛집/음식 */}
-                <div style={{ width: '100%', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <img src="/images/emojis/food.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                    맛집 / 음식
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
-                    {[
-                      { 
-                        key: 'food-restaurant', 
-                        label: '식당/맛집', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-restaurant)' }}>
-                            <path d="M3 12h18M5 12a7 7 0 0 0 14 0M12 2v4M9 3v3M15 3v3" />
-                            <defs><linearGradient id="grad-restaurant" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#f59e0b" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'food-cafe', 
-                        label: '카페/디저트', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cafe)' }}>
-                            <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-                            <line x1="6" y1="2" x2="6" y2="4" />
-                            <line x1="10" y1="2" x2="10" y2="4" />
-                            <line x1="14" y1="2" x2="14" y2="4" />
-                            <defs><linearGradient id="grad-cafe" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#d97706" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'food-pub', 
-                        label: '술집/주점', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-pub)' }}>
-                            <path d="M22 3L12 13L2 3M12 13v9M8 22h8" />
-                            <defs><linearGradient id="grad-pub" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a855f7" /><stop offset="100%" stopColor="#f43f5e" /></linearGradient></defs>
-                          </svg>
-                        )
-                      }
-                    ].map(c => (
-                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                        <span className="filter-desktop-icon-img">{c.icon}</span>
-                        <span className="filter-desktop-icon-text">{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* 뷰티 */}
-                <div style={{ width: '100%', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                    뷰티 / 에스테틱
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
-                    {[
-                      { 
-                        key: 'beauty-cosmetics', 
-                        label: '화장품/스킨케어', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cosme)' }}>
-                            <rect x="6" y="10" width="12" height="11" rx="2" />
-                            <path d="M9 10V5a3 3 0 0 1 6 0v5" />
-                            <line x1="12" y1="10" x2="12" y2="21" />
-                            <defs><linearGradient id="grad-cosme" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#f472b6" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'beauty-salon', 
-                        label: '뷰티샵/에스테틱', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-salon)' }}>
-                            <circle cx="6" cy="6" r="3" />
-                            <circle cx="6" cy="18" r="3" />
-                            <line x1="20" y1="4" x2="8.12" y2="15.88" />
-                            <line x1="14.47" y1="14.48" x2="20" y2="20" />
-                            <line x1="8.12" y1="8.12" x2="12" y2="12" />
-                            <defs><linearGradient id="grad-salon" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#6366f1" /></linearGradient></defs>
-                          </svg>
-                        )
-                      }
-                    ].map(c => (
-                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                        <span className="filter-desktop-icon-img">{c.icon}</span>
-                        <span className="filter-desktop-icon-text">{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* 여행/숙박 */}
-                <div style={{ width: '100%', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <img src="/images/emojis/travel.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                    여행 / 숙박
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
-                    {[
-                      { 
-                        key: 'accommodation', 
-                        label: '숙박/호텔', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-accommodation)' }}>
-                            <path d="M2 22V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v18M4 22h16M7 8h2M15 8h2M7 13h2M15 13h2M11 18h2" />
-                            <defs><linearGradient id="grad-accommodation" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#6366f1" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'travel', 
-                        label: '여행/레저', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-travel)' }}>
-                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-                            <defs><linearGradient id="grad-travel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
-                          </svg>
-                        )
-                      }
-                    ].map(c => (
-                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                        <span className="filter-desktop-icon-img">{c.icon}</span>
-                        <span className="filter-desktop-icon-text">{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* 패션/생활 */}
-                <div style={{ width: '100%', marginBottom: '0' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <img src="/images/emojis/fashion.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                    패션 / 생활
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
-                    {[
-                      { 
-                        key: 'fashion', 
-                        label: '패션/의류', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-fashion)' }}>
-                            <path d="M20.37 4.65a2.22 2.22 0 0 0-3.15 0L12 9.87 7.15 5A2.22 2.22 0 0 0 4 8.18l7.15 7.15a1.2 1.2 0 0 0 1.7 0l7.52-7.53a2.22 2.22 0 0 0 0-3.15z" />
-                            <path d="M12 9.87v11" />
-                            <defs><linearGradient id="grad-fashion" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a855f7" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'baby', 
-                        label: '유아동/육아', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-baby)' }}>
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                            <line x1="9" y1="9" x2="9.01" y2="9" />
-                            <line x1="15" y1="9" x2="15.01" y2="9" />
-                            <defs><linearGradient id="grad-baby" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#ec4899" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'life-goods', 
-                        label: '생활용품', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-goods)' }}>
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                            <polyline points="9 22 9 12 15 12 15 22" />
-                            <defs><linearGradient id="grad-goods" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'life-appliances', 
-                        label: '가전/디지털', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-appliances)' }}>
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                            <line x1="8" y1="21" x2="16" y2="21" />
-                            <line x1="12" y1="17" x2="12" y2="21" />
-                            <defs><linearGradient id="grad-appliances" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#a855f7" /></linearGradient></defs>
-                          </svg>
-                        )
-                      },
-                      { 
-                        key: 'etc', 
-                        label: '기타', 
-                        icon: (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-etc)' }}>
-                            <polyline points="20 12 20 22 4 22 4 12" />
-                            <rect x="2" y="7" width="20" height="5" />
-                            <line x1="12" y1="22" x2="12" y2="7" />
-                            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-                            <defs><linearGradient id="grad-etc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6b7280" /><stop offset="100%" stopColor="#9ca3af" /></linearGradient></defs>
-                          </svg>
-                        )
-                      }
-                    ].map(c => (
-                      <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                        <span className="filter-desktop-icon-img">{c.icon}</span>
-                        <span className="filter-desktop-icon-text">{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 미디어 플랫폼 상세 패널 (왼쪽 정렬) */}
-          {isPlatformOpen && (
-            <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              {/* 맥 OS 스타일 신호등 장식 버튼 */}
-              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
-              </div>
-              <div className="filter-chip-row" style={{ justifyContent: 'flex-start', gap: '16px', width: '100%' }}>
-                {[
-                  { 
-                    key: 'all', 
-                    label: '전체 플랫폼', 
-                    icon: (
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-allplat)' }}>
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                        <line x1="8" y1="21" x2="16" y2="21" />
-                        <line x1="12" y1="17" x2="12" y2="21" />
-                        <defs><linearGradient id="grad-allplat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
-                      </svg>
-                    )
-                  },
-                  { key: 'blog', label: '네이버 블로그', icon: null },
-                  { key: 'instagram', label: '인스타그램', icon: null },
-                  { key: 'youtube', label: '유튜브', icon: null },
-                  { 
-                    key: 'etc', 
-                    label: '기타 플랫폼', 
-                    icon: (
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-etcplat)' }}>
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="2" y1="12" x2="22" y2="12" />
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                        <defs><linearGradient id="grad-etcplat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6b7280" /><stop offset="100%" stopColor="#9ca3af" /></linearGradient></defs>
-                      </svg>
-                    )
-                  }
-                ].map(p => (
-                  <button 
-                    type="button"
-                    key={p.key} 
-                    className={`filter-desktop-icon ${activePlatform === p.key ? 'active' : ''}`} 
-                    onClick={() => {
-                      setActivePlatform(p.key);
-                      setIsPlatformOpen(false);
-                    }}
-                  >
-                    <span className="filter-desktop-icon-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {p.key === 'blog' && (
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                          <rect width="24" height="24" rx="5" fill="#03C75A"/>
-                          <path d="M9.13 16.5H7.5V7.5H9.6L14.7 13.92V7.5H16.3V16.5H14.2L9.13 10.08V16.5Z" fill="white"/>
-                        </svg>
-                      )}
-                      {p.key === 'instagram' && (
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                          <rect width="24" height="24" rx="5" fill="url(#ig11)"/>
-                          <path d="M12 7.5C9.515 7.5 7.5 9.515 7.5 12C7.5 14.485 9.515 16.5 12 16.5C14.485 16.5 16.5 14.485 16.5 12C16.5 9.515 14.485 7.5 12 7.5ZM12 15C10.342 15 9 13.658 9 12C9 10.342 10.342 9 12 9C13.658 9 15 10.342 15 12C15 13.658 13.658 15 12 15Z" fill="white"/>
-                          <circle cx="17.5" cy="6.5" r="1.1" fill="white"/>
-                          <rect x="5.5" y="5.5" width="13" height="13" rx="3.5" stroke="white" strokeWidth="1.5"/>
-                          <defs><linearGradient id="ig11" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse"><stop stopColor="#F9ED32"/><stop offset="0.25" stopColor="#EE2A7B"/><stop offset="0.75" stopColor="#D2149F"/><stop offset="1" stopColor="#6C24AA"/></linearGradient></defs>
-                        </svg>
-                      )}
-                      {p.key === 'youtube' && (
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                          <rect width="24" height="24" rx="5" fill="#FF0000"/>
-                          <path d="M9.8 15.6V8.4L16 12L9.8 15.6Z" fill="white"/>
-                        </svg>
-                      )}
-                      {p.icon}
-                    </span>
-                    <span className="filter-desktop-icon-text">{p.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 지역 상세 패널 */}
-          {isLocationOpen && (
-            <div className="filter-panel-wrap">
-              {/* 맥 OS 스타일 신호등 장식 버튼 */}
-              <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '6px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff5f56', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffbd2e', display: 'inline-block' }} />
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }} />
-              </div>
-              <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                <div className="region-two-col">
-                  {/* 좌: 시도 목록 */}
-                  <div className="region-sido-list">
-                    <button
-                      type="button"
-                      className={`region-sido-btn ${selectedSido === 'all' ? 'active' : ''}`}
-                      onClick={() => { setSelectedSido('all'); setSelectedSigungu('all'); setIsLocationOpen(false); }}
-                    >
-                      전국
-                    </button>
-                    {[
-                      '서울','경기','인천','부산','대구','대전','광주','울산','강원',
-                      '충북','충남','전북','전남','경북','경남','제주','세종'
-                    ].map(sido => (
-                      <button
-                        type="button"
-                        key={sido}
-                        className={`region-sido-btn ${selectedSido === sido ? 'active' : ''}`}
-                        onMouseEnter={() => setHoveredSido(sido)}
-                        onClick={() => {
-                          setSelectedSido(sido);
-                          setSelectedSigungu('all');
-                          if (!LOCATIONS_MAP[sido] || LOCATIONS_MAP[sido].length === 0) {
-                            setIsLocationOpen(false);
-                          }
-                        }}
-                      >
-                        {sido}
-                      </button>
-                    ))}
-                  </div>
-                  {/* 우: 시군구 칩 */}
-                  <div className="region-sigungu-wrap" style={{ justifyContent: 'flex-start' }}>
-                    <div style={{ width: '100%', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '1.2rem' }}>📍</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        {hoveredSido !== 'all' ? hoveredSido : selectedSido === 'all' ? '전국' : selectedSido} 지역 상세 설정
-                      </span>
-                    </div>
-                    {(hoveredSido !== 'all' && LOCATIONS_MAP[hoveredSido]?.length > 0
-                      ? LOCATIONS_MAP[hoveredSido]
-                      : selectedSido !== 'all' && LOCATIONS_MAP[selectedSido]?.length > 0
-                        ? LOCATIONS_MAP[selectedSido]
-                        : []
-                    ).length > 0 ? (
-                      <>
-                        <button
-                          type="button"
-                          className={`filter-chip ${selectedSigungu === 'all' ? 'active' : ''}`}
-                          style={{ fontSize: '0.82rem', padding: '5px 12px' }}
-                          onClick={() => { setSelectedSigungu('all'); setIsLocationOpen(false); }}
-                        >
-                          {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
-                        </button>
-                        {(hoveredSido !== 'all' && LOCATIONS_MAP[hoveredSido]?.length > 0
-                          ? LOCATIONS_MAP[hoveredSido]
-                          : LOCATIONS_MAP[selectedSido] || []
-                        ).map(sigungu => (
-                          <button
-                            type="button"
-                            key={sigungu}
-                            className={`filter-chip ${selectedSigungu === sigungu && selectedSido === (hoveredSido !== 'all' ? hoveredSido : selectedSido) ? 'active' : ''}`}
-                            style={{ fontSize: '0.82rem', padding: '5px 12px' }}
-                            onClick={() => {
-                              const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
-                              setSelectedSido(targetSido);
-                              setSelectedSigungu(sigungu);
-                              setIsLocationOpen(false);
-                            }}
-                          >
-                            {sigungu}
-                          </button>
-                        ))}
-                      </>
-                    ) : (
-                      <div style={{ padding: '24px 16px', color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
-                        좌측에서 지역을 선택하세요
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* 검색조건과 검색결과 사이의 모던 구분선 */}
         <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '36px 0 28px 0' }} />
@@ -2106,12 +2046,27 @@ export default function Home() {
                             <Icons.MapPin /> {c.location}
                           </div>
                         )}
-                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {c.title}
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {c.description}
-                        </p>
+                        <div style={{
+                          backgroundColor: 'var(--accent-light)',
+                          color: 'var(--accent)',
+                          padding: '8px 12px',
+                          borderRadius: 'var(--radius-sm)',
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          marginBottom: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          border: '1px solid rgba(99, 102, 241, 0.12)'
+                        }}>
+                          <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>🎁</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }} title={c.description}>
+                            {c.description}
+                          </span>
+                        </div>
                       </div>
                       <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
@@ -2250,12 +2205,27 @@ export default function Home() {
                               <Icons.MapPin /> {c.location}
                             </div>
                           )}
-                          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                             {c.title}
                           </h3>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {c.description}
-                          </p>
+                          <div style={{
+                            backgroundColor: 'var(--accent-light)',
+                            color: 'var(--accent)',
+                            padding: '8px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            fontSize: '0.8rem',
+                            fontWeight: 800,
+                            marginBottom: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            border: '1px solid rgba(99, 102, 241, 0.12)'
+                          }}>
+                            <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>🎁</span>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }} title={c.description}>
+                              {c.description}
+                            </span>
+                          </div>
                         </div>
                         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
