@@ -1002,46 +1002,52 @@ input, select {
 
 /* 📱 모바일 디바이스 최적화 미디어 쿼리 (768px 이하) */
 @media (max-width: 768px) {
-  /* 1. 대메뉴 필터 탭바 가로 스크롤 제거 및 4분할 격자 강제 배치 */
+  /* 1. 대메뉴 필터 탭바 가로 스크롤 제거 및 4분할 균등 정렬 */
   .filter-bar-wrap {
-    padding: 8px 4px !important;
+    padding: 6px 4px !important;
+    margin: 8px 0 16px 0 !important;
   }
   
   .filter-bar-scroll {
-    overflow-x: hidden !important;
+    overflow: hidden !important;
     width: 100% !important;
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 6px !important;
-    justify-content: stretch !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     padding: 0 !important;
     margin: 0 !important;
   }
   
-  /* 개별 탭 버튼 다이어트 (가로 슬라이드 없이 한눈에!) */
+  /* 개별 탭 버튼 다이어트 (가로 슬라이드 없이 한눈에 들어차도록 패딩 최소화) */
   .filter-tab {
-    width: 100% !important;
-    padding: 6px 2px !important;
-    gap: 4px !important;
-    height: auto !important;
-    min-height: 72px !important;
+    flex: 1 !important;
+    width: 25% !important;
+    padding: 0 2px !important;
+    gap: 2px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    border-radius: var(--radius-sm) !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    border-color: var(--border-color) !important;
   }
   
   .filter-tab svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 8px !important;
+    height: 8px !important;
+    margin-left: 2px !important;
+    flex-shrink: 0 !important;
   }
   
   .filter-tab span {
-    font-size: 0.75rem !important;
+    font-size: 0.7rem !important;
     font-weight: 700 !important;
-  }
-
-  /* 초기화(휴지통) 탭 버튼도 100% 너비 확보 */
-  .filter-tab-reset {
-    width: 100% !important;
-    padding: 6px 2px !important;
-    gap: 4px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   /* 2. 상세 필터 패널의 모던 바텀 시트화 (Bottom Sheet) */
@@ -1053,15 +1059,16 @@ input, select {
     top: auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    border-radius: 20px 20px 0 0 !important;
+    border-radius: 16px 16px 0 0 !important;
     background-color: var(--bg-secondary) !important;
-    box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.15) !important;
-    padding: 24px 16px 24px 16px !important;
-    max-height: 65vh !important;
+    box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.18) !important;
+    /* 모바일 하단 가림 방지를 위해 넉넉한 하단 여백 부여 */
+    padding: 20px 16px 64px 16px !important;
+    max-height: 72vh !important;
     overflow-y: auto !important;
     z-index: 2500 !important;
     overscroll-behavior: contain !important; /* 터치 드래그 시 배경 스크롤 밀림 차단 */
-    animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+    animation: slideUp 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
     border: 1px solid var(--border-color) !important;
     border-bottom: none !important;
   }
@@ -1079,7 +1086,7 @@ input, select {
     border-radius: 2px !important;
   }
 
-  /* macOS 신호등 단추는 바텀 시트에서는 어울리지 않으므로 숨김 또는 우측 닫기 버튼 대응 */
+  /* 모바일 바텀시트에서는 맥 OS 스타일 신호등 장식 버튼(둥근 원) 완전히 무력화 */
   .filter-panel-wrap > div[style*="position: 'absolute'"],
   .filter-panel-wrap > div[style*="position: absolute"] {
     display: none !important;
@@ -1161,33 +1168,46 @@ input, select {
   /* 4. 지역 선택 2열 레이아웃 모바일 최적화 */
   /* 4. 지역 선택 2열 레이아웃 모바일 최적화 (관성 스크롤 및 터치 보완) */
   .region-two-col {
-    grid-template-columns: 100px 1fr !important;
-    height: 290px !important;
+    grid-template-columns: 90px 1fr !important;
+    height: 380px !important;
+    max-height: 380px !important;
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.02) !important;
+    overflow: hidden !important;
   }
 
   .region-sido-list {
-    padding: 8px 4px !important;
+    padding: 8px 2px !important;
+    height: 100% !important;
+    max-height: 380px !important;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
   }
 
   .region-sido-btn {
-    padding: 10px 8px !important;
+    padding: 10px 4px !important;
     font-size: 0.82rem !important;
     min-height: 38px !important;
     text-align: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .region-sigungu-wrap {
-    padding: 16px 12px !important;
+    padding: 12px 10px 48px 10px !important; /* 하단 세이프 패딩 주어 칩이 짤리지 않게 보장 */
     gap: 8px !important;
+    height: 100% !important;
+    max-height: 380px !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-content: flex-start !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
   }
 
   .filter-chip {
-    padding: 8px 12px !important;
+    padding: 8px 10px !important;
     font-size: 0.78rem !important;
   }
 

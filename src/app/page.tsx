@@ -202,18 +202,6 @@ export default function Home() {
               onClick={() => handleTabClick('type')}
             >
               {activeType !== 'all' && <span className="tab-badge">✓</span>}
-              <span className="filter-tab-img">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-type)' }}>
-                  <rect x="3" y="4" width="18" height="16" rx="2" />
-                  <path d="M7 8h10M7 12h10M7 16h6" />
-                  <defs>
-                    <linearGradient id="grad-type" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#6366f1" />
-                      <stop offset="100%" stopColor="#ec4899" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
               <span>
                 {activeType === 'all' ? '모집 유형' :
                   activeType === 'visit' ? '방문형' : '배송형'}
@@ -230,20 +218,6 @@ export default function Home() {
               onClick={() => handleTabClick('category')}
             >
               {activeCategory !== 'all' && <span className="tab-badge">✓</span>}
-              <span className="filter-tab-img">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cat)' }}>
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <defs>
-                    <linearGradient id="grad-cat" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#8b5cf6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
               <span>
                 {activeCategory === 'all' ? '카테고리' :
                   activeCategory === 'food-restaurant' ? '식당/맛집' :
@@ -263,25 +237,13 @@ export default function Home() {
               </svg>
             </button>
 
-            {/* 3. 미디어 플랫폼 탭 */}
+            {/* 3. 플랫폼 탭 */}
             <button
               type="button"
               className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
               onClick={() => handleTabClick('platform')}
             >
               {activePlatform !== 'all' && <span className="tab-badge">✓</span>}
-              <span className="filter-tab-img">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat)' }}>
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                  <defs>
-                    <linearGradient id="grad-plat" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#3b82f6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
               <span>
                 {activePlatform === 'all' ? '플랫폼' :
                   activePlatform === 'blog' ? '블로그' :
@@ -301,18 +263,6 @@ export default function Home() {
               onClick={() => handleTabClick('location')}
             >
               {activeLocation !== 'all' && <span className="tab-badge">✓</span>}
-              <span className="filter-tab-img">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-loc)' }}>
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                  <defs>
-                    <linearGradient id="grad-loc" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f59e0b" />
-                      <stop offset="100%" stopColor="#ef4444" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
               <span>
                 {activeLocation === 'all' ? '지역 검색' :
                   selectedSigungu !== 'all' ? `${selectedSido} ${selectedSigungu}` : selectedSido}
@@ -334,11 +284,6 @@ export default function Home() {
                 }}
                 style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
               >
-                <span className="filter-tab-img">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: '#ef4444' }}>
-                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                  </svg>
-                </span>
                 <span>초기화</span>
               </button>
             )}
@@ -401,8 +346,7 @@ export default function Home() {
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <img src="/images/emojis/food.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                  맛집 / 음식
+                  🍔 맛집 / 음식
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
                   {[
@@ -450,8 +394,7 @@ export default function Home() {
               {/* 뷰티 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <img src="/images/emojis/beauty.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                  뷰티 / 에스테틱
+                  💄 뷰티 / 에스테틱
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
                   {[
@@ -492,8 +435,7 @@ export default function Home() {
               {/* 여행/숙박 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <img src="/images/emojis/travel.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                  여행 / 숙박
+                  ✈️ 여행 / 숙박
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
                   {[
@@ -528,8 +470,7 @@ export default function Home() {
               {/* 패션/생활 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <img src="/images/emojis/life.jpg" alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />
-                  패션 / 생활 / 디지털
+                  🛍️ 패션 / 생활 / 디지털
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
                   {[
