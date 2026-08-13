@@ -1311,7 +1311,7 @@ export default function Home() {
               bottom: 0,
               backgroundColor: 'rgba(0, 0, 0, 0.4)',
               backdropFilter: 'blur(2px)',
-              zIndex: 990,
+              zIndex: 900,
               display: 'none'
             }}
           />
