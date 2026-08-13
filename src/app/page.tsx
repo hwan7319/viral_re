@@ -1294,33 +1294,34 @@ export default function Home() {
         </div>
         
         {/* ─── 필터 탭바 + 상세 패널 (sticky, 2025 modern style, 마우스 호버 및 왼쪽 정렬 버전) ─── */}
-        {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
-          <div 
-            className="mobile-backdrop"
-            onClick={() => {
-              setIsTypeOpen(false);
-              setIsCategoryOpen(false);
-              setIsPlatformOpen(false);
-              setIsLocationOpen(false);
-            }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              backdropFilter: 'blur(2px)',
-              zIndex: 900,
-              display: 'none'
-            }}
-          />
-        )}
         <div 
           onMouseEnter={handleFilterMouseEnter}
           onMouseLeave={handleFilterMouseLeave}
           style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: '24px' }}
         >
+          {/* 💻📱 모바일용 바텀시트 딤드 오버레이 (바깥 영역 클릭 시 필터 닫기 - Stacking Context 상속을 위해 자식 노드로 편입) */}
+          {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
+            <div 
+              className="mobile-backdrop"
+              onClick={() => {
+                setIsTypeOpen(false);
+                setIsCategoryOpen(false);
+                setIsPlatformOpen(false);
+                setIsLocationOpen(false);
+              }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(2px)',
+                zIndex: 900,
+                display: 'none'
+              }}
+            />
+          )}
           {/* 탭바 영역 */}
           <div className="filter-bar-wrap" style={{ marginTop: '0' }}>
             <div className="filter-bar-scroll" style={{ justifyContent: 'flex-start' }}>
