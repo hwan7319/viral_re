@@ -721,23 +721,23 @@ input, select {
   display: none; /* Chrome/Safari/Webkit 숨김 */
 }
 
-/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (검은색 테두리선 + 흰색 배경 타원형) */
+/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (테두리 없는 플랫 타원형) */
 .filter-tab {
   display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
   height: 40px !important;
-  border: 1.5px solid #000000 !important; /* 검은색 선 강제 */
-  background-color: #ffffff !important; /* 내부 흰색 채우기 강제 */
-  color: #000000 !important; /* 글씨 검은색 강제 */
+  border: none !important; /* 테두리선 완전 제거 */
+  background-color: #ffffff !important; /* 안에 흰색 채우기 */
+  color: #000000 !important; /* 글씨 검은색 */
   font-size: 0.86rem !important;
   font-weight: 800 !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.15s ease !important;
   white-space: nowrap !important;
   user-select: none !important;
-  border-radius: 9999px !important; /* 타원형 알약 모서리 */
+  border-radius: 9999px !important; /* 완전한 타원형 */
   position: relative !important;
   gap: 8px !important;
   box-sizing: border-box !important;
@@ -746,34 +746,33 @@ input, select {
 }
 
 .filter-tab:hover {
-  background-color: #f3f4f6 !important; /* 호버 시 아주 부드럽고 자연스러운 그레이 적용 */
-  border: 1.5px solid #000000 !important; /* 테두리 절대 소멸 방지 */
+  background-color: #f3f4f6 !important; /* 호버 시 옅은 회색 */
+  border: none !important;
   color: #000000 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
 .filter-tab.active {
-  background-color: #e0e7ff !important; /* 클릭 활성화 시 산뜻하고 자연스러운 라이트 퍼플 */
-  border: 2px solid #000000 !important; /* 활성화 시 테두리 두께 2px로 또렷하게 강조 */
-  color: #4f46e5 !important; /* 인디고 텍스트 포인트 */
+  background-color: #e0e7ff !important; /* 활성화 시 라이트 퍼플 */
+  border: none !important;
+  color: #4f46e5 !important; /* 인디고 텍스트 */
 }
 
 .filter-tab-img {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 20px;
-  width: 20px;
-  transition: transform 0.2s;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 20px !important;
+  width: 20px !important;
+  transition: transform 0.2s !important;
 }
 
 .filter-tab-img svg {
   width: 18px !important;
   height: 18px !important;
-  stroke: #000000 !important; /* 강제 검정색 선 매핑 */
+  /* stroke: black 강제 선언을 삭제하여 본래 그라데이션 색상(linearGradient)이 정상 발현되도록 복귀 */
 }
-
 .filter-tab:hover .filter-tab-img {
   transform: scale(1.08);
 }

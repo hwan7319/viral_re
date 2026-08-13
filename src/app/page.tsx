@@ -173,8 +173,8 @@ export default function Home() {
         alignItems: 'center',
         justifyContent: 'center',
         height: '40px',
-        border: isActive ? '2.5px solid #000000' : '1.5px solid #000000', // 검정색 테두리선 두께 고수 (액티브 시 2.5px 보강)
-        backgroundColor: isActive ? '#e0e7ff' : isHovered ? '#f3f4f6' : '#ffffff', // 안에 흰색 채우기 (액티브 연보라 / 호버 연그레이)
+        border: 'none', // 테두리선 전면 제거
+        backgroundColor: isActive ? '#e0e7ff' : isHovered ? '#f3f4f6' : '#ffffff', // 안에 흰색 채우기
         color: isActive ? '#4f46e5' : '#000000', // 글씨색
         fontSize: '0.86rem',
         fontWeight: 800,
