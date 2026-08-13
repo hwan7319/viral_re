@@ -2039,22 +2039,33 @@ export default function Home() {
                         <span style={{ color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 600 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                           {item.word}
                         </span>
-                        {item.isNew && (
+                        {(item as any).tagType === 'hot' ? (
+                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#ef4444', flexShrink: 0, marginLeft: 'auto' }}>
+                            🔥 HOT
+                          </span>
+                        ) : (item as any).tagType === 'up' ? (
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3b82f6', flexShrink: 0, marginLeft: 'auto' }}>
+                            {(item as any).tagLabel || '▲'}
+                          </span>
+                        ) : (item as any).tagType === 'new' ? (
                           <span 
                             style={{
                               fontSize: '0.6rem',
                               fontWeight: 900,
                               color: '#ffffff',
-                              background: 'linear-gradient(135deg, #ef4444, #f43f5e)',
+                              background: 'linear-gradient(135deg, #10b981, #059669)',
                               padding: '1px 5px',
                               borderRadius: '9999px',
                               letterSpacing: '0.5px',
-                              boxShadow: '0 2px 5px rgba(239, 68, 68, 0.35)',
                               flexShrink: 0,
                               marginLeft: 'auto'
                             }}
                           >
                             NEW
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', flexShrink: 0, marginLeft: 'auto' }}>
+                            -
                           </span>
                         )}
                       </li>

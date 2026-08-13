@@ -222,6 +222,7 @@ export async function queryCampaigns(filters: {
         c.title.toLowerCase().includes(s) || 
         c.description.toLowerCase().includes(s) || 
         (c.location && c.location.toLowerCase().includes(s)) ||
+        (c.targetSite && c.targetSite.toLowerCase().includes(s)) ||
         (c.searchKeywords && c.searchKeywords.toLowerCase().includes(s))
       );
     }
@@ -319,12 +320,12 @@ export async function queryCampaigns(filters: {
   let query = 'SELECT * FROM campaigns WHERE endDate >= ?';
   const params: any[] = [todayStr];
 
-  // 1. 검색어 필터 (제목, 본문, 지역, 검색 키워드 태그 매칭)
+  // 1. 검색어 필터 (제목, 본문, 지역, 출처사이트명, 검색 키워드 태그 매칭)
   if (filters.search) {
-    query += ' AND (title LIKE ? OR description LIKE ? OR location LIKE ? OR searchKeywords LIKE ?)';
+    query += ' AND (title LIKE ? OR description LIKE ? OR location LIKE ? OR targetSite LIKE ? OR searchKeywords LIKE ?)';
     const searchParam = `%${filters.search}%`;
     const keywordParam = `%,${filters.search},%`;
-    params.push(searchParam, searchParam, searchParam, keywordParam);
+    params.push(searchParam, searchParam, searchParam, searchParam, keywordParam);
   }
 
   // 2. 플랫폼 필터

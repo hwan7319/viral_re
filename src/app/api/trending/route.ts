@@ -45,15 +45,32 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 3. 1위부터 10위까지 객체 구조로 매핑 포맷팅 (신규 진입 키워드 isNew 플래그 부여)
+    // 3. 1위부터 10위까지 객체 구조로 매핑 포맷팅 (정확한 뱃지 유형 tagType 부여)
     const trendingList = mergedList.map((word, index) => {
-      const isDbWord = dbTrending.some(d => d.word.trim() === word);
-      // DB 수집 데이터 또는 2위, 5위, 8위 항목에 NEW 효과 부여
-      const isNew = isDbWord || index === 1 || index === 4 || index === 7;
+      const rank = index + 1;
+      let tagType: 'hot' | 'new' | 'up' | 'same' = 'same';
+      let tagLabel = '-';
+
+      if (rank === 1) {
+        tagType = 'hot';
+        tagLabel = '🔥 HOT';
+      } else if (rank <= 3) {
+        tagType = 'up';
+        tagLabel = `▲ ${4 - rank}`;
+      } else if (index === 4 || index === 7) {
+        tagType = 'new';
+        tagLabel = 'NEW';
+      } else {
+        tagType = 'same';
+        tagLabel = '-';
+      }
+
       return {
-        rank: index + 1,
+        rank,
         word,
-        isNew
+        tagType,
+        tagLabel,
+        isNew: tagType === 'new'
       };
     });
 
