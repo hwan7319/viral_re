@@ -89,9 +89,9 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       const bText = $('dd.sub_tit').first().text().trim() || $('.sub_tit').text().trim();
       if (bText && bText.length > 1) return bText;
     }
-    // 3. 포블로그 -> div.uline + div
-    else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
-      const bText = $('.campaigninfo-text').text().trim().split('\n')[0] || '';
+    // 4. 레뷰 (revu.net)
+    else if (siteLower.includes('레뷰') || url.includes('revu.net')) {
+      const bText = $('.benefit-info, .offer-info, .campaign-benefit').text().trim();
       if (bText && bText.length > 1) return bText;
     }
   } catch (err: any) {

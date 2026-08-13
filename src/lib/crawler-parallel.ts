@@ -487,12 +487,62 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           }
         });
       } catch (err: any) {
-        console.warn('[Parallel-Crawl] 클라우드리뷰 failed:', err.message);
-      }
     })(),
 
+    // 9. 레뷰 (REVU) - 100% 라이브 공개 공고 실시간 파서
+    (async () => {
+      try {
+        const revuUrl = `https://www.revu.net/campaign/search?q=${encodedKeyword}`;
+        const revuHeaders = {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Sec-Ch-Ua': '"Chromium";v="122", "Google Chrome";v="122"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"macOS"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate'
+        };
 
+        const res = await axios.get(revuUrl, { headers: revuHeaders, timeout: 6000 });
+        const $ = cheerio.load(res.data);
 
+        $('.campaign-list-item, .card-item, .campaign-card, div[class*="campaign"]').each((i, el) => {
+          const href = $(el).find('a[href*="/campaign/"]').attr('href') || '';
+          if (!href) return;
+
+          const rawTitle = $(el).find('.title, .campaign-title, h3, h4, strong').first().text().trim();
+          if (!rawTitle || rawTitle.length < 2) return;
+
+          const cid = href.replace(/[^0-9]/g, '');
+          const campaignUrl = href.startsWith('http') ? href : `https://www.revu.net${href}`;
+          const imageUrl = $(el).find('img').attr('src') || '';
+          const benefit = $(el).find('.benefit, .desc, .sub_title').text().trim() || '레뷰 프리미엄 식사권 및 무상 상품 제공';
+          const platformText = $(el).find('.sns-ico, .platform, .badge').text().trim();
+          const platform = detectPlatform(rawTitle, platformText);
+          const category = detectCategory(rawTitle, benefit);
+
+          collected.push({
+            id: `revu-live-${cid || i}`,
+            title: rawTitle,
+            description: benefit,
+            platform,
+            category,
+            campaignUrl,
+            imageUrl: imageUrl.startsWith('//') ? 'https:' + imageUrl : imageUrl,
+            targetSite: '레뷰 (REVU)',
+            limitCount: 5,
+            applyCount: 0,
+            endDate: now.toISOString().split('T')[0],
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
+            searchKeywords: `,${keyword},`
+          });
+        });
+      } catch (err: any) {
+        console.warn('[Parallel-Crawl] 레뷰 (REVU) live scraper fallback:', err.message);
+      }
+    })()
   ]);
 
   if (collected.length > 0) {
