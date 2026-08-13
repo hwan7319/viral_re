@@ -1092,7 +1092,11 @@ input, select {
     width: 100% !important;
     max-height: 45vh !important; /* 스크롤 고정 */
     overflow-y: auto !important;
+    overflow-x: hidden !important; /* 가로 슬라이드 방지 */
     padding-right: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    box-sizing: border-box !important;
   }
 
   /* 카테고리별 그리드 컨테이너 3열화 */
@@ -1101,6 +1105,7 @@ input, select {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 8px !important;
     width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* 모집유형 및 플랫폼 패널 그리드 3열화 */
