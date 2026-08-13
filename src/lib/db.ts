@@ -28,6 +28,7 @@ export interface Campaign {
   createdAt: string;   // 수집일 (ISO 8601)
   updatedAt: string;   // 최근 갱신일 (ISO 8601)
   searchKeywords?: string; // 수집 당시의 검색 키워드 매핑 태그 (예: ",치킨,삼겹살,")
+  mission?: string;    // 실제 업체측 리뷰어 미션 안내 / 가이드라인 (예: "지정 키워드 3개 포함, 사진 10장 및 동영상 1개, 지도 첨부 필수")
 }
 
 // 🔑 실제 회원 정보 데이터 인터페이스
@@ -161,10 +162,11 @@ export async function getDB(): Promise<Database> {
   // [하이브리드 대응] 기존 테이블에 searchKeywords 컬럼이 없는 구버전 DB 대비 컬럼 안전 추가
   try {
     await dbInstance.exec('ALTER TABLE campaigns ADD COLUMN searchKeywords TEXT');
-    console.log('[DB] Successfully added searchKeywords column to campaigns table.');
-  } catch (e) {
-    // 이미 컬럼이 존재할 경우 무시 (SQLITE 에러 발생하므로 무시 처리)
-  }
+  } catch (e) {}
+
+  try {
+    await dbInstance.exec('ALTER TABLE campaigns ADD COLUMN mission TEXT');
+  } catch (e) {}
 
   // 🔑 투잡커넥트 도메인 오타 데이터 교정 마이그레이션 (tojobcon.com -> tojobcn.com)
   try {
@@ -233,13 +235,18 @@ export async function queryCampaigns(filters: {
         'food-restaurant': 'food',
         'food-cafe': 'food',
         'food-pub': 'food',
+        'beauty-cosmetics': 'beauty',
         'beauty-cosmetic': 'beauty',
+        'beauty-salon': 'beauty',
         'beauty-hair': 'beauty',
         'beauty-skin': 'beauty',
+        'accommodation': 'travel',
         'travel-stay': 'travel',
         'travel-leisure': 'travel',
+        'travel': 'travel',
         'fashion-clothing': 'fashion',
         'fashion-accessory': 'fashion',
+        'fashion': 'fashion',
         'life-goods': 'life',
         'life-appliances': 'life',
         'health-fresh': 'life',
@@ -250,16 +257,17 @@ export async function queryCampaigns(filters: {
       const parent = parentMap[filters.category];
       result = result.filter(c => c.category === filters.category || (parent && c.category === parent));
     }
-    // 4. 지역 필터
+    // 4. 지역 필터 (구/군/시 접미사 생략 지명까지 유연 매칭 지원)
     if (filters.location && filters.location !== 'all') {
       const parts = filters.location.trim().split(/\s+/);
       if (parts.length > 1) {
-        // '서울 강남구' -> '강남구'
         const sigungu = parts[1].toLowerCase();
-        result = result.filter(c => c.location && c.location.toLowerCase().includes(sigungu));
+        const stem = sigungu.replace(/(구|군|시)$/, '');
+        result = result.filter(c => c.location && (c.location.toLowerCase().includes(sigungu) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
       } else {
         const loc = parts[0].toLowerCase();
-        result = result.filter(c => c.location && c.location.toLowerCase().includes(loc));
+        const stem = loc.replace(/(시|도)$/, '');
+        result = result.filter(c => c.location && (c.location.toLowerCase().includes(loc) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
       }
     }
     // 5. 출처 사이트 필터 (수집처별 제외 요구사항으로 인해 all이 디폴트이나 코드 호환성 보존)
@@ -331,13 +339,18 @@ export async function queryCampaigns(filters: {
       'food-restaurant': 'food',
       'food-cafe': 'food',
       'food-pub': 'food',
+      'beauty-cosmetics': 'beauty',
       'beauty-cosmetic': 'beauty',
+      'beauty-salon': 'beauty',
       'beauty-hair': 'beauty',
       'beauty-skin': 'beauty',
+      'accommodation': 'travel',
       'travel-stay': 'travel',
       'travel-leisure': 'travel',
+      'travel': 'travel',
       'fashion-clothing': 'fashion',
       'fashion-accessory': 'fashion',
+      'fashion': 'fashion',
       'life-goods': 'life',
       'life-appliances': 'life',
       'health-fresh': 'life',
@@ -355,16 +368,29 @@ export async function queryCampaigns(filters: {
     }
   }
 
-  // 4. 지역 필터
+  // 4. 지역 필터 (구/군/시 접미사 생략 지명까지 유연 매칭 지원)
   if (filters.location && filters.location !== 'all') {
     const parts = filters.location.trim().split(/\s+/);
     if (parts.length > 1) {
-      // '서울 강남구' -> '강남구'
-      query += ' AND location LIKE ?';
-      params.push(`%${parts[1]}%`);
+      const sigungu = parts[1];
+      const stem = sigungu.replace(/(구|군|시)$/, '');
+      if (stem.length >= 2 && stem !== sigungu) {
+        query += ' AND (location LIKE ? OR location LIKE ?)';
+        params.push(`%${sigungu}%`, `%${stem}%`);
+      } else {
+        query += ' AND location LIKE ?';
+        params.push(`%${sigungu}%`);
+      }
     } else {
-      query += ' AND location LIKE ?';
-      params.push(`%${parts[0]}%`);
+      const loc = parts[0];
+      const stem = loc.replace(/(시|도)$/, '');
+      if (stem.length >= 2 && stem !== loc) {
+        query += ' AND (location LIKE ? OR location LIKE ?)';
+        params.push(`%${loc}%`, `%${stem}%`);
+      } else {
+        query += ' AND location LIKE ?';
+        params.push(`%${loc}%`);
+      }
     }
   }
 

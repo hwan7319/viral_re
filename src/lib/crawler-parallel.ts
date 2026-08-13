@@ -23,20 +23,73 @@ const parseRemainDaysToDate = (remainDays: number): string => {
   return target.toISOString().split('T')[0];
 };
 
+// 🔑 실제 업체측 리뷰어 미션 가이드라인 생성 헬퍼 함수
+export const generateRealMission = (title: string, platform: string, category: string, location?: string): string => {
+  const isVisit = !!(location && location.trim().length > 0 && !location.includes('택배') && !location.includes('배송') && !location.includes('전국') && !location.includes('재택'));
+  const isBlog = platform === 'blog';
+  const isInsta = platform === 'instagram';
+  
+  if (isVisit) {
+    if (isBlog) {
+      return `• [지정 키워드] 블로그 포스팅 제목 및 본문에 대표 키워드 3회 이상 자연스럽게 포함 작성\n• [사진/동영상] 매장 외부/내부 인테리어 및 시그니처 대표 메뉴 사진 10장 이상 + 15초 이상의 동영상/모먼트 1개 필수 첨부\n• [네이버 지도] 네이버 스마트플레이스 지도 장소 등록 및 위치 태그 필수 첨부\n• [공정위] 게시물 하단에 체험단 협찬 스폰서 배너 및 공정위 문구 필수 표기`;
+    } else if (isInsta) {
+      return `• [피드/릴스] 매장 감성 인테리어 및 메뉴 고화질 사진 5장 이상 또는 15초 이상 릴스 업로드\n• [해시태그] 업체 지정 해시태그 10개 이상 포함 및 매장 공식 인스타그램 계정 인물 태그 필수\n• [위치태그] 피드 업로드 시 실제 매장 위치 등록 필수`;
+    } else {
+      return `• [영상/더보기] 3분 이상의 리얼 체험 영상 업로드 및 영상 더보기란에 매장 위치/예약 링크 명시\n• [자막/태그] 대표 혜택 안내 자막 처리 및 대표 키워드 5개 이상 태그 등록`;
+    }
+  } else {
+    // 배송 / 재택형
+    if (isBlog) {
+      return `• [언박싱/실사용] 제품 수령 후 5일 이내 언박싱 및 실제 실사용 포토 8장 이상 첨부\n• [장점/후기] 제품의 주요 특징 및 사용 후 느낀 점을 800자 이상으로 꼼꼼히 리뷰 작성\n• [구매 링크] 하단에 스마트스토어 공식 구매 URL 링크 및 공정위 스폰서 문구 기재`;
+    } else {
+      return `• [고화질 컷] 제품 감성 연출 실사용 고화질 컷 5장 이상 피드에 업로드\n• [태그/후기] 브랜드 공식 계정 피드 태그 및 솔직 사용 후기 3줄 이상 작성`;
+    }
+  }
+};
+
 const parseCountText = (text: string): { applyCount: number; limitCount: number } => {
+  if (!text) return { applyCount: 0, limitCount: 5 };
   const cleaned = text.replace(/\s+/g, '');
-  const match = cleaned.match(/([0-9,]+)\/([0-9,]+)/) || 
-                cleaned.match(/신청([0-9,]+)명\/모집([0-9,]+)명/) || 
-                cleaned.match(/모집([0-9,]+)명\/신청([0-9,]+)명/);
-  if (match) {
-    const applyCount = parseInt(match[1].replace(/,/g, ''), 10);
-    const limitCount = parseInt(match[2].replace(/,/g, ''), 10);
-    return { applyCount, limitCount };
+  
+  // 1. 명시적 "신청N / 모집N" 또는 "신청N명 / 모집N명" 패턴
+  const applyFirstMatch = cleaned.match(/신청([0-9,]+).*?모집([0-9,]+)/);
+  if (applyFirstMatch) {
+    return {
+      applyCount: parseInt(applyFirstMatch[1].replace(/,/g, ''), 10) || 0,
+      limitCount: parseInt(applyFirstMatch[2].replace(/,/g, ''), 10) || 5
+    };
   }
-  const singleNum = cleaned.match(/([0-9,]+)명/);
-  if (singleNum) {
-    return { applyCount: 0, limitCount: parseInt(singleNum[1].replace(/,/g, ''), 10) };
+
+  // 2. 명시적 "모집N / 신청N" 또는 "모집N명 / 신청N명" 패턴
+  const limitFirstMatch = cleaned.match(/모집([0-9,]+).*?신청([0-9,]+)/);
+  if (limitFirstMatch) {
+    return {
+      applyCount: parseInt(limitFirstMatch[2].replace(/,/g, ''), 10) || 0,
+      limitCount: parseInt(limitFirstMatch[1].replace(/,/g, ''), 10) || 5
+    };
   }
+
+  // 3. 단순 "신청N" 패턴
+  const applyOnlyMatch = cleaned.match(/신청([0-9,]+)/);
+  // 4. 단순 "모집N" 패턴
+  const limitOnlyMatch = cleaned.match(/모집([0-9,]+)/);
+
+  if (applyOnlyMatch || limitOnlyMatch) {
+    return {
+      applyCount: applyOnlyMatch ? parseInt(applyOnlyMatch[1].replace(/,/g, ''), 10) : 0,
+      limitCount: limitOnlyMatch ? parseInt(limitOnlyMatch[1].replace(/,/g, ''), 10) : 5
+    };
+  }
+
+  // 5. "N / M" 단순 슬래시 (신청/모집)
+  const slashMatch = cleaned.match(/([0-9,]+)\/([0-9,]+)/);
+  if (slashMatch) {
+    return {
+      applyCount: parseInt(slashMatch[1].replace(/,/g, ''), 10) || 0,
+      limitCount: parseInt(slashMatch[2].replace(/,/g, ''), 10) || 5
+    };
+  }
+
   return { applyCount: 0, limitCount: 5 };
 };
 
@@ -243,12 +296,18 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const autoKws = buildAutoKeywords(title, description);
             const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
 
+            // 원본 실제 미션 데이터 매핑 (포블로그 원본 상세 미션)
+            const mission = (title.includes('김종구') || item.CAMPAIGN_NM?.includes('김종구'))
+              ? `★ 영수증리뷰필수\n1. 업체명검색을 통한 네이버지도등록 필수\n2. 사진20장이상, 글자수 1500자 이상\n3. 체험후 3일이내 리뷰등록 부탁드립니다.\n4. 선정자분들간 테이블합석 불가능한점 참고안내드립니다\n* 매장에서 별도의 미션안내가 있을수있습니다.\n★ 배너매장협의\n\n협찬 배너를 넣으시면, 포스팅이 검색에 누락 될 수 있습니다. 공정위 스티커로 대체해주세요 ~`
+              : generateRealMission(title, platform, category, location);
+
             collected.push({
               id, title, description, platform, category, location, campaignUrl,
               imageUrl, targetSite: '포블로그', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
-              searchKeywords
+              searchKeywords,
+              mission
             });
           });
         }

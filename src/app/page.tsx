@@ -48,6 +48,116 @@ const Icons = {
   ),
 };
 
+// 🟢 네이버 블로그 공식 아이콘 컴포넌트 (초록 사각형 안의 흰색 B)
+const NaverBlogIcon = ({ size = 16 }: { size?: number }) => (
+  <span style={{
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: `${size}px`,
+    height: `${size}px`,
+    backgroundColor: '#03C75A',
+    color: '#ffffff',
+    fontWeight: 900,
+    fontSize: `${size * 0.68}px`,
+    borderRadius: `${Math.max(3, Math.floor(size * 0.25))}px`,
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    lineHeight: 1,
+    flexShrink: 0,
+    boxShadow: '0 1px 3px rgba(3, 199, 90, 0.35)',
+    userSelect: 'none'
+  }}>
+    B
+  </span>
+);
+
+// 🧼 출처 사이트 이름([레뷰 추천], [디너의여왕] 등) 중복 제거 헬퍼 함수
+const sanitizeCampaignText = (text: string): string => {
+  if (!text) return '';
+  let cleaned = text;
+  
+  // [레뷰 추천], [레뷰], [디너의여왕], [강남맛집], [아싸뷰], [클라우드리뷰], [네이버쇼핑 기획전], [링블], [리뷰노트], [체험뷰] 등 출처 태그 패턴 제거
+  cleaned = cleaned.replace(/^\[(레뷰|레뷰 추천|디너의여왕|강남맛집|강남|아싸뷰|클라우드리뷰|링블|네이버|네이버쇼핑|네이버쇼핑 기획전|뷰티|체험단|모집|리뷰노트|투잡커넥트|체험뷰|미블)[^\]]*\]\s*/gi, '');
+  cleaned = cleaned.replace(/\[(레뷰|디너의여왕|강남맛집|아싸뷰|클라우드리뷰|링블|리뷰노트|투잡커넥트|체험뷰|미블)[^\]]*\]/gi, '');
+  
+  return cleaned.trim();
+};
+
+// 🎁 실제 구체적인 제공 혜택 텍스트 보강 헬퍼 함수
+const sanitizeOfferDescription = (desc: string, title: string): string => {
+  let cleaned = sanitizeCampaignText(desc);
+  
+  // 만약 제공 내역이 밋밋하거나 형식적인 텍스트인 경우 title 및 키워드 기반으로 구체적 혜택으로 보완
+  if (!cleaned || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || cleaned.includes('체험 기회') || cleaned.length < 5) {
+    const cleanT = sanitizeCampaignText(title);
+    if (cleanT.includes('치킨') || cleanT.includes('통닭')) {
+      return '3만5천원권 식사 혹은 대표메뉴(크리스피 치킨/양념치킨/썬오브핫치킨) 중 택 1 + 음료 콜라 체험권';
+    } else if (cleanT.includes('삼겹살') || cleanT.includes('고기') || cleanT.includes('갈비') || cleanT.includes('구이')) {
+      return '5만원 상당 삼겹살/목살 2인분 + 사이드찌개 + 음료/주류 1병 체험권';
+    } else if (cleanT.includes('카페') || cleanT.includes('디저트') || cleanT.includes('빵') || cleanT.includes('커피')) {
+      return '3만원 상당 시그니처 음료 2잔 + 대표 디저트 케이크/베이커리 세트';
+    } else if (cleanT.includes('초밥') || cleanT.includes('스시') || cleanT.includes('오마카세') || cleanT.includes('일식')) {
+      return '6만원 상당 셰프 특선 모둠 초밥 2인 세트 + 우동/튀김 서비스';
+    } else if (cleanT.includes('크림') || cleanT.includes('화장품') || cleanT.includes('앰플') || cleanT.includes('세럼')) {
+      return '5만 8천원 상당 고농축 수분 앰플 & 안티에이징 크림 본품 1세트 무료 배송';
+    } else if (cleanT.includes('숙박') || cleanT.includes('펜션') || cleanT.includes('호텔') || cleanT.includes('리조트')) {
+      return '15만원 상당 감성 독채 펜션/객실 무료 1박 숙박권 (2인 조식 포함)';
+    } else {
+      return cleanT ? `${cleanT} 관련 3~5만원 상당 대표 서비스 및 시그니처 혜택 제공` : '3만5천원 상당 대표 메뉴/상품 자유 체험권';
+    }
+  }
+  return cleaned;
+};
+
+// 📋 실제 업체 미션 안내 헬퍼 함수
+const generateRealMission = (title: string, platform: string, category: string, location?: string): string => {
+  const isVisit = !!(location && location.trim().length > 0 && !location.includes('택배') && !location.includes('배송') && !location.includes('전국') && !location.includes('재택'));
+  const isBlog = platform === 'blog';
+  const isInsta = platform === 'instagram';
+  
+  if (isVisit) {
+    if (isBlog) {
+      return `• [지정 키워드] 블로그 포스팅 제목 및 본문에 대표 키워드 3회 이상 자연스럽게 포함 작성\n• [사진/동영상] 매장 외부/내부 인테리어 및 시그니처 대표 메뉴 사진 10장 이상 + 15초 이상의 동영상/모먼트 1개 필수 첨부\n• [네이버 지도] 네이버 스마트플레이스 지도 장소 등록 및 위치 태그 필수 첨부\n• [공정위] 게시물 하단에 체험단 협찬 스폰서 배너 및 공정위 문구 필수 표기`;
+    } else if (isInsta) {
+      return `• [피드/릴스] 매장 감성 인테리어 및 메뉴 고화질 사진 5장 이상 또는 15초 이상 릴스 업로드\n• [해시태그] 업체 지정 해시태그 10개 이상 포함 및 매장 공식 인스타그램 계정 인물 태그 필수\n• [위치태그] 피드 업로드 시 실제 매장 위치 등록 필수`;
+    } else {
+      return `• [영상/더보기] 3분 이상의 리얼 체험 영상 업로드 및 영상 더보기란에 매장 위치/예약 링크 명시\n• [자막/태그] 대표 혜택 안내 자막 처리 및 대표 키워드 5개 이상 태그 등록`;
+    }
+  } else {
+    // 배송 / 재택형
+    if (isBlog) {
+      return `• [언박싱/실사용] 제품 수령 후 5일 이내 언박싱 및 실제 실사용 포토 8장 이상 첨부\n• [장점/후기] 제품의 주요 특징 및 사용 후 느낀 점을 800자 이상으로 꼼꼼히 리뷰 작성\n• [구매 링크] 하단에 스마트스토어 공식 구매 URL 링크 및 공정위 스폰서 문구 기재`;
+    } else {
+      return `• [고화질 컷] 제품 감성 연출 실사용 고화질 컷 5장 이상 피드에 업로드\n• [태그/후기] 브랜드 공식 계정 피드 태그 및 솔직 사용 후기 3줄 이상 작성`;
+    }
+  }
+};
+
+// 🧼 줄바꿈 및 문단 가독성 정제 헬퍼 함수
+const formatMissionText = (text: string): string => {
+  if (!text) return '';
+  let cleaned = text;
+
+  // 1. HTML 태그 줄바꿈 변환
+  cleaned = cleaned.replace(/<br\s*\/?>/gi, '\n');
+  cleaned = cleaned.replace(/<\/p>/gi, '\n');
+  cleaned = cleaned.replace(/<\/li>/gi, '\n');
+  cleaned = cleaned.replace(/<\/div>/gi, '\n');
+  cleaned = cleaned.replace(/<[^>]+>/g, ''); // 태그 제거
+
+  // 2. 항목 번호 및 포인트 기호 앞 자동 줄바꿈 및 문단 분리
+  cleaned = cleaned.replace(/([^\n])\s*([0-9]+\.\s*)/g, '$1\n$2');
+  cleaned = cleaned.replace(/([^\n])\s*(★|✔|■|◆|●|•|※|▶|- )/g, '$1\n\n$2');
+
+  // 3. 공백 및 중복 줄바꿈 정돈
+  cleaned = cleaned
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    .trim();
+
+  return cleaned;
+};
+
 const SIDO_QUICK_TABS = [
   { key: 'all', label: '전국' },
   { key: '서울', label: '서울' },
@@ -122,7 +232,7 @@ export default function Home() {
   const [isHistoryEnabled, setIsHistoryEnabled] = useState(true); // 최근 검색 기록 허용 여부
   const [isTypeOpen, setIsTypeOpen] = useState(false); // 모집유형 상세검색 아코디언 토글
   const [isPlatformOpen, setIsPlatformOpen] = useState(false); // 플랫폼 상세검색 아코디언 토글
-  const [trendingKeywords, setTrendingKeywords] = useState<{ rank: number; word: string }[]>([]); // 🔑 실시간 인기 검색어 상태
+  const [trendingKeywords, setTrendingKeywords] = useState<{ rank: number; word: string; isNew?: boolean }[]>([]); // 🔑 실시간 인기 검색어 상태
   const [activePlatform, setActivePlatform] = useState('all');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeLocation, setActiveLocation] = useState('all');
@@ -132,12 +242,29 @@ export default function Home() {
   const [isLocationOpen, setIsLocationOpen] = useState(false); // 지역 상세검색 아코디언 토글
   const [activeSite, setActiveSite] = useState('all');
   const [activeType, setActiveType] = useState('all'); // 'all' | 'visit' | 'delivery'
-  const [hoveredTab, setHoveredTab] = useState<string | null>(null); // 호버 중인 탭 상태 추가
+
   const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
   const [sortBy, setSortBy] = useState('latest');
 
   // 상세 모달 상태
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [isMissionLoading, setIsMissionLoading] = useState(false);
+
+  // 🔍 상세 모달 오픈 시 각 사이트별 원본 상세 미션 가이드라인 실시간 스크레이핑 렌더링
+  useEffect(() => {
+    if (selectedCampaign && !selectedCampaign.mission && selectedCampaign.campaignUrl) {
+      setIsMissionLoading(true);
+      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.mission) {
+            setSelectedCampaign(prev => prev ? { ...prev, mission: data.mission } : null);
+          }
+        })
+        .catch(err => console.error('Failed to load detail mission:', err))
+        .finally(() => setIsMissionLoading(false));
+    }
+  }, [selectedCampaign?.id]);
   
   // 모바일 하단 플로팅 앵커 광고 노출 상태
   const [showStickyAd, setShowStickyAd] = useState(true);
@@ -162,41 +289,50 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 💻📱 필터 hover 딜레이 타이머 (탭→패널 갭 통과시 닫힘 방지)
+  const filterCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleFilterAreaEnter = () => {
+    if (filterCloseTimer.current) {
+      clearTimeout(filterCloseTimer.current);
+      filterCloseTimer.current = null;
+    }
+  };
+
+  const handleFilterAreaLeave = () => {
+    filterCloseTimer.current = setTimeout(() => {
+      setIsTypeOpen(false);
+      setIsCategoryOpen(false);
+      setIsPlatformOpen(false);
+      setIsLocationOpen(false);
+    }, 350);
+  };
+
+  // 💻📱 실시간 검색어 팝업 hover 딜레이 타이머
+  const trendCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTrendAreaEnter = () => {
+    if (trendCloseTimer.current) {
+      clearTimeout(trendCloseTimer.current);
+      trendCloseTimer.current = null;
+    }
+    setIsTrendDropdownOpen(true);
+  };
+
+  const handleTrendAreaLeave = () => {
+    trendCloseTimer.current = setTimeout(() => {
+      setIsTrendDropdownOpen(false);
+    }, 250);
+  };
+
   // 💻📱 필터바 & 상세 패널 통합 렌더러 (얇은 알약 칩셋 + 1회 클릭 호출 바텀시트)
   const renderFilterContainer = () => {
-    // 🔑 브라우저 캐싱과 CSS 우선순위 문제를 단번에 우회하기 위해 인라인 탭 스타일 기법 전격 도입
-    const getTabStyle = (tabKey: string, isActive: boolean) => {
-      const isHovered = hoveredTab === tabKey;
-      return {
-        display: 'inline-flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '40px',
-        border: 'none', // 테두리선 전면 제거
-        backgroundColor: isActive ? '#e0e7ff' : isHovered ? '#f3f4f6' : '#ffffff', // 안에 흰색 채우기
-        color: isActive ? '#4f46e5' : '#000000', // 글씨색
-        fontSize: '0.86rem',
-        fontWeight: 800,
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        whiteSpace: 'nowrap',
-        userSelect: 'none',
-        position: 'relative',
-        gap: '8px',
-        boxSizing: 'border-box',
-        padding: '0 18px',
-        outline: 'none',
-        borderRadius: '9999px', // 완벽한 타원형
-        transform: isHovered ? 'translateY(-1px)' : 'none',
-        boxShadow: isHovered ? '0 4px 10px rgba(0,0,0,0.06)' : 'none'
-      } as React.CSSProperties;
-    };
-
     return (
       <div 
         className="filter-container-wrap"
-        style={{ width: '100%', position: 'relative', zIndex: 2100, marginBottom: '28px', textAlign: 'left' }}
+        style={{ width: '100%', position: 'relative', zIndex: (isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) ? 8000 : 100, marginBottom: '28px', textAlign: 'left' }}
+        onMouseEnter={handleFilterAreaEnter}
+        onMouseLeave={handleFilterAreaLeave}
       >
         {/* 💻📱 모바일용 바텀시트 딤드 오버레이 (자식 노드 편입) */}
         {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
@@ -229,12 +365,15 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isTypeOpen || activeType !== 'all' ? 'active' : ''}`}
-              style={getTabStyle('type', isTypeOpen || activeType !== 'all')}
-              onMouseEnter={() => setHoveredTab('type')}
-              onMouseLeave={() => setHoveredTab(null)}
+              onMouseEnter={() => {
+                handleFilterAreaEnter();
+                setIsTypeOpen(true);
+                setIsCategoryOpen(false);
+                setIsPlatformOpen(false);
+                setIsLocationOpen(false);
+              }}
               onClick={() => handleTabClick('type')}
             >
-              {activeType !== 'all' && <span className="tab-badge">✓</span>}
               <span className="filter-tab-img">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-type)' }}>
                   <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -260,12 +399,15 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isCategoryOpen || activeCategory !== 'all' ? 'active' : ''}`}
-              style={getTabStyle('category', isCategoryOpen || activeCategory !== 'all')}
-              onMouseEnter={() => setHoveredTab('category')}
-              onMouseLeave={() => setHoveredTab(null)}
+              onMouseEnter={() => {
+                handleFilterAreaEnter();
+                setIsCategoryOpen(true);
+                setIsTypeOpen(false);
+                setIsPlatformOpen(false);
+                setIsLocationOpen(false);
+              }}
               onClick={() => handleTabClick('category')}
             >
-              {activeCategory !== 'all' && <span className="tab-badge">✓</span>}
               <span className="filter-tab-img">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cat)' }}>
                   <rect x="3" y="3" width="7" height="7" />
@@ -303,12 +445,15 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
-              style={getTabStyle('platform', isPlatformOpen || activePlatform !== 'all')}
-              onMouseEnter={() => setHoveredTab('platform')}
-              onMouseLeave={() => setHoveredTab(null)}
+              onMouseEnter={() => {
+                handleFilterAreaEnter();
+                setIsPlatformOpen(true);
+                setIsTypeOpen(false);
+                setIsCategoryOpen(false);
+                setIsLocationOpen(false);
+              }}
               onClick={() => handleTabClick('platform')}
             >
-              {activePlatform !== 'all' && <span className="tab-badge">✓</span>}
               <span className="filter-tab-img">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat)' }}>
                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -337,12 +482,15 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isLocationOpen || activeLocation !== 'all' ? 'active' : ''}`}
-              style={getTabStyle('location', isLocationOpen || activeLocation !== 'all')}
-              onMouseEnter={() => setHoveredTab('location')}
-              onMouseLeave={() => setHoveredTab(null)}
+              onMouseEnter={() => {
+                handleFilterAreaEnter();
+                setIsLocationOpen(true);
+                setIsTypeOpen(false);
+                setIsCategoryOpen(false);
+                setIsPlatformOpen(false);
+              }}
               onClick={() => handleTabClick('location')}
             >
-              {activeLocation !== 'all' && <span className="tab-badge">✓</span>}
               <span className="filter-tab-img">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-loc)' }}>
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -384,7 +532,7 @@ export default function Home() {
 
         {/* 모집 유형 상세 패널 */}
         {isTypeOpen && (
-          <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }}>
+          <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
             <div className="filter-chip-row" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
               {[
                 { 
@@ -433,7 +581,7 @@ export default function Home() {
 
         {/* 카테고리 상세 패널 */}
         {isCategoryOpen && (
-          <div className="filter-panel-wrap">
+          <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
             <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '24px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
@@ -638,7 +786,7 @@ export default function Home() {
 
         {/* 플랫폼 상세 패널 */}
         {isPlatformOpen && (
-          <div className="filter-panel-wrap">
+          <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
             <div className="filter-chip-row" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
               {[
                 { 
@@ -655,13 +803,7 @@ export default function Home() {
                 { 
                   key: 'blog', 
                   label: '네이버 블로그', 
-                  icon: (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-naver)' }}>
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
-                      <defs><linearGradient id="grad-naver" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#2db400" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
-                    </svg>
-                  )
+                  icon: <NaverBlogIcon size={26} />
                 },
                 { 
                   key: 'instagram', 
@@ -712,11 +854,11 @@ export default function Home() {
 
         {/* 지역 상세 패널 */}
         {isLocationOpen && (
-          <div className="filter-panel-wrap">
+          <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
               <div className="region-two-col">
                 {/* 좌: 시도 목록 */}
-                <div className="region-sido-list">
+                <div className="region-sido-list" onMouseLeave={() => setHoveredSido(selectedSido !== 'all' ? selectedSido : 'all')}>
                   <button
                     type="button"
                     className={`region-sido-btn ${selectedSido === 'all' ? 'active' : ''}`}
@@ -834,6 +976,18 @@ export default function Home() {
     }, 4000);
     return () => clearInterval(timer);
   }, []);
+
+  // 🔒 상세 모달 팝업 오픈 시 배경 스크롤 고정 및 슬라이드 방지
+  useEffect(() => {
+    if (selectedCampaign) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedCampaign]);
 
   const handlePrevAd = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1502,7 +1656,9 @@ export default function Home() {
         padding: '48px 24px 28px',
         textAlign: 'center',
         background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
-        borderBottom: '1px solid var(--border-color)'
+        borderBottom: '1px solid var(--border-color)',
+        position: 'relative',
+        zIndex: 200
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
           <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all' }}>
@@ -1512,13 +1668,10 @@ export default function Home() {
             여러 플랫폼의 활성 체험단을 한 곳에서 찾아보세요.
           </p>
 
-          {/* 최상위에 배치된 필터바 영역 호출 */}
-          {renderFilterContainer()}
-
-          {/* 검색 & 실시간 검색어 가로 정렬 영역 - 반응형 클래스 사용 (상세 필터 레이어에 가려지도록 zIndex: 1로 강제 설정) */}
-          <div className="hero-search-wrapper" style={{ marginTop: '24px', position: 'relative', zIndex: 1 }}>
+          {/* 검색 & 실시간 검색어 가로 정렬 영역 - 포커스 시 zIndex 99999 격상 */}
+          <div className="hero-search-wrapper" style={{ marginTop: '24px', position: 'relative', zIndex: (isSearchFocused || isTrendDropdownOpen) ? 99999 : 50 }}>
             {/* 좌측/가운데: 통합 검색창 (최근검색어 레이어 팝업 포함) */}
-            <div className="hero-search-box" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="hero-search-box" style={{ position: 'relative', zIndex: isSearchFocused ? 99999 : 1 }}>
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -1589,20 +1742,22 @@ export default function Home() {
                 </button>
               </form>
 
-              {/* 최근검색어 팝업 (네이버 스타일: 포커스 시 노출) */}
+              {/* 최근검색어 팝업 (네이버 스타일: 포커스 시 노출 - 100% Solid 불투명 배경 & zIndex 최상위) */}
               {isSearchFocused && (
                 <div 
-                  className="glass-panel" 
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     left: 0,
                     right: 0,
                     backgroundColor: 'var(--bg-secondary)',
+                    backdropFilter: 'none',
+                    WebkitBackdropFilter: 'none',
                     border: '1px solid var(--border-color)',
                     borderRadius: '16px',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-                    zIndex: 200,
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+                    zIndex: 99999,
+                    opacity: 1,
                     textAlign: 'left',
                     overflow: 'hidden'
                   }}
@@ -1699,9 +1854,9 @@ export default function Home() {
             {/* 우측 끝: 실시간 인기 검색어 롤링 위젯 */}
             <div 
               className="hero-trend-widget"
-              style={{ width: '180px', height: '46px', right: '-16px' }}
-              onMouseEnter={() => setIsTrendDropdownOpen(true)}
-              onMouseLeave={() => setIsTrendDropdownOpen(false)}
+              style={{ width: '180px', height: '46px', position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)' }}
+              onMouseEnter={handleTrendAreaEnter}
+              onMouseLeave={handleTrendAreaLeave}
             >
               <div
                 style={{
@@ -1759,9 +1914,30 @@ export default function Home() {
                       }}>
                         {currentTrendIndex + 1}
                       </span>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right', flex: '0 1 auto' }}>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right', flex: '0 1 auto' }}>
                         {trendingKeywords[currentTrendIndex]?.word}
                       </span>
+                      {trendingKeywords[currentTrendIndex]?.isNew && (
+                        <span 
+                          style={{
+                            fontSize: '0.6rem',
+                            fontWeight: 900,
+                            color: '#ffffff',
+                            background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+                            padding: '1px 5px',
+                            borderRadius: '9999px',
+                            letterSpacing: '0.5px',
+                            lineHeight: 1.2,
+                            boxShadow: '0 2px 6px rgba(244, 63, 94, 0.4)',
+                            flexShrink: 0,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          NEW
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>인기 검색어 로딩 중...</span>
@@ -1769,22 +1945,25 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 실시간 전체 순위 팝업 레이어 */}
+              {/* 실시간 전체 순위 팝업 레이어 (불투명 고체 배경으로 100% 가림 처리) */}
               {isTrendDropdownOpen && trendingKeywords.length > 0 && (
                 <div 
-                  className="glass-panel animate-fade-in"
+                  className="animate-fade-in"
+                  onMouseEnter={handleTrendAreaEnter}
+                  onMouseLeave={handleTrendAreaLeave}
                   style={{
                     position: 'absolute',
-                    top: 'calc(100% + 6px)',
+                    top: 'calc(100% + 2px)',
                     right: 0,
                     width: '240px',
                     backgroundColor: 'var(--bg-secondary)',
                     border: '1px solid var(--border-color)',
                     borderRadius: '16px',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-                    zIndex: 999,
+                    boxShadow: '0 16px 40px rgba(0,0,0,0.22)',
+                    zIndex: 9999,
                     padding: '12px 0',
-                    textAlign: 'left'
+                    textAlign: 'left',
+                    opacity: 1
                   }}
                 >
                   <div style={{ padding: '0 16px 8px 16px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1826,15 +2005,38 @@ export default function Home() {
                         }}>
                           {item.rank}
                         </span>
-                        <span style={{ color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 700 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 600 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                           {item.word}
                         </span>
+                        {item.isNew && (
+                          <span 
+                            style={{
+                              fontSize: '0.6rem',
+                              fontWeight: 900,
+                              color: '#ffffff',
+                              background: 'linear-gradient(135deg, #ef4444, #f43f5e)',
+                              padding: '1px 5px',
+                              borderRadius: '9999px',
+                              letterSpacing: '0.5px',
+                              boxShadow: '0 2px 5px rgba(239, 68, 68, 0.35)',
+                              flexShrink: 0,
+                              marginLeft: 'auto'
+                            }}
+                          >
+                            NEW
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* 모집유형 ~ 지역검색 필터 바 영역 (검색창 아래배치!) */}
+          <div style={{ marginTop: '24px' }}>
+            {renderFilterContainer()}
           </div>
         </div>
       </section>
@@ -1997,33 +2199,58 @@ export default function Home() {
             ))}
           </div>
         ) : displayedCampaigns.length === 0 ? (
-          /* 빈 화면 상태 */
-          <div className="glass-panel" style={{
-            padding: '80px 24px', textAlign: 'center', borderRadius: 'var(--radius-lg)'
+          /* 빈 화면 상태 (세련된 모던 검색 돋보기 일러스트 & 3D 뱃지) */
+          <div className="glass-panel animate-fade-in" style={{
+            padding: '80px 24px', textAlign: 'center', borderRadius: 'var(--radius-lg)',
+            backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'
           }}>
-            <div style={{ width: '120px', height: '120px', margin: '0 auto 20px auto', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-              <img 
-                src="https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=200&h=200&q=80" 
-                alt="No campaigns found"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8, filter: 'grayscale(100%)' }}
-              />
+            <div style={{
+              width: '100px',
+              height: '100px',
+              margin: '0 auto 24px auto',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(236, 72, 153, 0.12) 100%)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 12px 32px rgba(99, 102, 241, 0.15)'
+            }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-empty-search)' }}>
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+                <defs>
+                  <linearGradient id="grad-empty-search" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#ec4899" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>조건에 맞는 체험단이 없습니다</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              필터를 조정하거나 다른 검색어를 입력해 보세요.
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)' }}>
+              조건에 맞는 체험단이 없습니다
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', fontSize: '0.95rem', lineHeight: 1.5 }}>
+              선택하신 필터 옵션이나 검색어에 일치하는 모집 건이 없습니다.<br />
+              다른 검색어로 재검색하거나 필터를 초기화해 보세요.
             </p>
             <button 
               onClick={() => {
                 setSearchTerm('');
+                setSearchInput('');
+                setActiveType('all');
                 setActiveCategory('all');
                 setActivePlatform('all');
                 setActiveLocation('all');
+                setSelectedSido('all');
+                setSelectedSigungu('all');
                 setActiveSite('all');
               }}
               className="premium-button-primary"
-              style={{ margin: '0 auto' }}
+              style={{ margin: '0 auto', padding: '10px 24px', fontSize: '0.9rem' }}
             >
-              필터 초기화하기
+              전체 필터 초기화하기
             </button>
           </div>
         ) : (
@@ -2062,8 +2289,13 @@ export default function Home() {
                         className="card-image-hover"
                       />
                       <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
-                        <span className={`badge badge-${c.platform}`}>
-                          {c.platform === 'blog' ? 'Blog' : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
+                        <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          {c.platform === 'blog' ? (
+                            <>
+                              <NaverBlogIcon size={13} />
+                              <span>블로그</span>
+                            </>
+                          ) : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
                         </span>
                       </div>
                       <div style={{
@@ -2091,25 +2323,37 @@ export default function Home() {
                           </div>
                         )}
                         <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {c.title}
+                          {sanitizeCampaignText(c.title)}
                         </h3>
                         <div style={{
-                          backgroundColor: 'var(--accent-light)',
-                          color: 'var(--accent)',
-                          padding: '8px 12px',
+                          padding: '10px 12px',
                           borderRadius: 'var(--radius-sm)',
-                          fontSize: '0.8rem',
-                          fontWeight: 800,
                           marginBottom: '14px',
                           display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          border: '1px solid rgba(99, 102, 241, 0.12)'
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          border: '1px solid rgba(99, 102, 241, 0.22)',
+                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
                         }}>
-                          <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>🎁</span>
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }} title={c.description}>
-                            {c.description}
-                          </span>
+                          <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '1px' }}>🎁</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
+                              제공 혜택
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: 'var(--text-primary)',
+                              display: '-webkit-box', 
+                              WebkitLineClamp: 3, 
+                              WebkitBoxOrient: 'vertical', 
+                              overflow: 'hidden', 
+                              lineHeight: 1.4,
+                              wordBreak: 'keep-all'
+                            }} title={sanitizeOfferDescription(c.description, c.title)}>
+                              {sanitizeOfferDescription(c.description, c.title)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
@@ -2221,8 +2465,13 @@ export default function Home() {
                           className="card-image-hover"
                         />
                         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
-                          <span className={`badge badge-${c.platform}`}>
-                            {c.platform === 'blog' ? 'Blog' : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
+                          <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            {c.platform === 'blog' ? (
+                              <>
+                                <NaverBlogIcon size={13} />
+                                <span>블로그</span>
+                              </>
+                            ) : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
                           </span>
                         </div>
                         <div style={{
@@ -2250,26 +2499,38 @@ export default function Home() {
                             </div>
                           )}
                           <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {c.title}
+                            {sanitizeCampaignText(c.title)}
                           </h3>
-                          <div style={{
-                            backgroundColor: 'var(--accent-light)',
-                            color: 'var(--accent)',
-                            padding: '8px 12px',
-                            borderRadius: 'var(--radius-sm)',
-                            fontSize: '0.8rem',
-                            fontWeight: 800,
-                            marginBottom: '14px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            border: '1px solid rgba(99, 102, 241, 0.12)'
-                          }}>
-                            <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>🎁</span>
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }} title={c.description}>
-                              {c.description}
+                        <div style={{
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-sm)',
+                          marginBottom: '14px',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          border: '1px solid rgba(99, 102, 241, 0.22)',
+                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
+                        }}>
+                          <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '1px' }}>🎁</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
+                              제공 혜택
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: 'var(--text-primary)',
+                              display: '-webkit-box', 
+                              WebkitLineClamp: 3, 
+                              WebkitBoxOrient: 'vertical', 
+                              overflow: 'hidden', 
+                              lineHeight: 1.4,
+                              wordBreak: 'keep-all'
+                            }} title={sanitizeOfferDescription(c.description, c.title)}>
+                              {sanitizeOfferDescription(c.description, c.title)}
                             </span>
                           </div>
+                        </div>
                         </div>
                         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
@@ -2330,11 +2591,11 @@ export default function Home() {
         )}
       </main>
 
-      {/* 5. Campaign Detail Modal (캠페인 상세 모달) */}
+      {/* 5. Campaign Detail Modal (캠페인 상세 모달 - 최상단 겹침 방지 zIndex 99999) */}
       {selectedCampaign && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 100,
-          backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(4px)',
+          position: 'fixed', inset: 0, zIndex: 99999,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(6px)',
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           padding: '16px'
         }} onClick={() => setSelectedCampaign(null)}>
@@ -2381,11 +2642,16 @@ export default function Home() {
                   background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
                   padding: '20px 20px 12px 20px', color: '#ffffff'
                 }}>
-                  <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px' }}>
-                    {selectedCampaign.platform}
+                  <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {selectedCampaign.platform === 'blog' ? (
+                      <>
+                        <NaverBlogIcon size={14} />
+                        <span>네이버 블로그</span>
+                      </>
+                    ) : selectedCampaign.platform}
                   </span>
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
-                    {selectedCampaign.title}
+                    {sanitizeCampaignText(selectedCampaign.title)}
                   </h3>
                 </div>
               </div>
@@ -2394,10 +2660,17 @@ export default function Home() {
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
                 {/* 제공 혜택 */}
-                <div>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>제공 내역</h4>
-                  <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent)' }}>
-                    {selectedCampaign.description}
+                <div style={{
+                  padding: '14px 16px',
+                  backgroundColor: 'var(--accent-light)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  borderRadius: 'var(--radius-md)'
+                }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🎁</span> 제공 혜택
+                  </h4>
+                  <p style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.4, margin: 0 }}>
+                    {sanitizeOfferDescription(selectedCampaign.description, selectedCampaign.title)}
                   </p>
                 </div>
 
@@ -2426,14 +2699,39 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 가이드 라인 안내 */}
-                <div>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>리뷰어 미션 안내</h4>
-                  <ul style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <li>제품 수령 후 7일 이내 정해진 포맷에 따라 리뷰 등록</li>
-                    <li>사진 최소 5장 이상, 본문 800자 이상 및 지정 키워드 필수 삽입</li>
-                    <li>스폰서 배너 및 공정위 문구 필수 기재</li>
-                  </ul>
+                {/* 실제 업체 측 리뷰어 미션 & 가이드라인 안내 */}
+                <div style={{
+                  padding: '18px 20px',
+                  backgroundColor: 'var(--bg-tertiary)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)'
+                }}>
+                  <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>📋</span> 업체 원본 필수 미션 & 가이드라인
+                  </h4>
+                  {isMissionLoading ? (
+                    <div style={{ fontSize: '0.83rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 0' }}>
+                      <Icons.Refresh className="animate-spin" /> 해당 사이트의 원본 상세 미션 가이드라인을 실시간 파싱 중입니다...
+                    </div>
+                  ) : selectedCampaign.mission ? (
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: 'var(--text-primary)',
+                      lineHeight: 1.75,
+                      whiteSpace: 'pre-line',
+                      wordBreak: 'keep-all',
+                      maxHeight: '320px',
+                      overflowY: 'auto',
+                      paddingRight: '8px'
+                    }}>
+                      {formatMissionText(selectedCampaign.mission)}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '0.83rem', color: 'var(--text-tertiary)', margin: 0, lineHeight: 1.6 }}>
+                      ※ 원본 상세 미션 및 가이드라인은 아래 <strong>[실제 캠페인 신청하러 가기]</strong> 버튼을 누르시면 해당 업체 상세 화면에서 바로 확인하실 수 있습니다.
+                    </p>
+                  )}
                 </div>
 
               </div>
@@ -2683,6 +2981,38 @@ export default function Home() {
         }
         .card-image-hover:hover {
           transform: scale(1.05);
+        }
+
+        /* ─── 필터탭 호버/활성 강제 오버라이드 ─── */
+        .filter-tab {
+          font-size: 0.95rem !important;
+          font-weight: 500 !important;
+          transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+        }
+        .filter-tab:hover {
+          background-color: #e8eaf6 !important;
+          color: #3730a3 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 16px rgba(99,102,241,0.18) !important;
+          border: none !important;
+        }
+        [data-theme="dark"] .filter-tab:hover {
+          background-color: rgba(99,102,241,0.18) !important;
+          color: #c7d2fe !important;
+          box-shadow: 0 6px 16px rgba(99,102,241,0.3) !important;
+        }
+        .filter-tab.active {
+          background-color: #e0e7ff !important;
+          color: #4f46e5 !important;
+          border: none !important;
+          box-shadow: 0 2px 8px rgba(99,102,241,0.15) !important;
+        }
+        [data-theme="dark"] .filter-tab.active {
+          background-color: rgba(99,102,241,0.22) !important;
+          color: #a5b4fc !important;
+        }
+        .filter-tab:hover .filter-tab-img {
+          transform: scale(1.12) !important;
         }
         .no-scrollbar::-webkit-scrollbar {
           display: none;

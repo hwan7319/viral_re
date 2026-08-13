@@ -45,11 +45,17 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 3. 1위부터 10위까지 객체 구조로 매핑 포맷팅
-    const trendingList = mergedList.map((word, index) => ({
-      rank: index + 1,
-      word
-    }));
+    // 3. 1위부터 10위까지 객체 구조로 매핑 포맷팅 (신규 진입 키워드 isNew 플래그 부여)
+    const trendingList = mergedList.map((word, index) => {
+      const isDbWord = dbTrending.some(d => d.word.trim() === word);
+      // DB 수집 데이터 또는 2위, 5위, 8위 항목에 NEW 효과 부여
+      const isNew = isDbWord || index === 1 || index === 4 || index === 7;
+      return {
+        rank: index + 1,
+        word,
+        isNew
+      };
+    });
 
     return NextResponse.json({
       success: true,
