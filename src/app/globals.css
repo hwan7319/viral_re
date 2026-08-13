@@ -693,7 +693,7 @@ input, select {
   -webkit-backdrop-filter: none;
   position: sticky;
   top: 16px;
-  z-index: 190;
+  z-index: 2100; /* 실시간 검색어 및 히스토리 레이어보다 위에 있도록 격상 */
   padding: 8px 0;
   width: 100%;
   display: flex;
@@ -721,23 +721,23 @@ input, select {
   display: none; /* Chrome/Safari/Webkit 숨김 */
 }
 
-/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (테두리 없는 플랫 타원형) */
+/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (검은색 테두리선 + 흰색 배경 타원형) */
 .filter-tab {
   display: inline-flex;
   flex-direction: row !important;
   align-items: center;
   justify-content: center;
   height: 40px !important;
-  border: none !important; /* 테두리 제거 */
-  background-color: var(--bg-tertiary) !important; /* 타원형 배경 고체색 */
-  color: var(--text-primary);
+  border: 1.5px solid #000000 !important; /* 검은색 선 */
+  background-color: #ffffff !important; /* 내부 흰색 채우기 */
+  color: #000000 !important; /* 글씨 검은색 */
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: var(--transition-smooth);
   white-space: nowrap;
   user-select: none;
-  border-radius: var(--radius-full) !important; /* 완전한 타원형 */
+  border-radius: var(--radius-full) !important; /* 타원형 */
   position: relative;
   gap: 8px;
   box-sizing: border-box;
@@ -745,15 +745,16 @@ input, select {
 }
 
 .filter-tab:hover {
-  background-color: rgba(99, 102, 241, 0.08) !important;
-  color: var(--accent);
+  background-color: #f3f4f6 !important; /* 옅은 회색 호버 응답 */
+  border-color: #000000 !important;
+  color: #000000 !important;
   transform: translateY(-1px);
 }
 
 .filter-tab.active {
-  background-color: var(--accent-light) !important;
-  color: var(--accent) !important;
-  border: none !important;
+  background-color: #e5e7eb !important; /* 활성화 시 짙은 회색 */
+  border-color: #000000 !important;
+  color: #000000 !important;
 }
 
 .filter-tab-img {
@@ -768,6 +769,7 @@ input, select {
 .filter-tab-img svg {
   width: 18px !important;
   height: 18px !important;
+  stroke: #000000 !important; /* 강제 검정색 선 매핑 */
 }
 
 .filter-tab:hover .filter-tab-img {
@@ -800,7 +802,7 @@ input, select {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-premium);
   padding: 36px 24px 24px 24px; /* 신호등 버튼 영역 패딩 확보 */
-  z-index: 195;
+  z-index: 2200; /* 형제 노드 및 최근 검색 팝업보다 명확히 위에 배치 */
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

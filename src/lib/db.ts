@@ -252,8 +252,15 @@ export async function queryCampaigns(filters: {
     }
     // 4. 지역 필터
     if (filters.location && filters.location !== 'all') {
-      const loc = filters.location.toLowerCase();
-      result = result.filter(c => c.location && c.location.toLowerCase().includes(loc));
+      const parts = filters.location.trim().split(/\s+/);
+      if (parts.length > 1) {
+        // '서울 강남구' -> '강남구'
+        const sigungu = parts[1].toLowerCase();
+        result = result.filter(c => c.location && c.location.toLowerCase().includes(sigungu));
+      } else {
+        const loc = parts[0].toLowerCase();
+        result = result.filter(c => c.location && c.location.toLowerCase().includes(loc));
+      }
     }
     // 5. 출처 사이트 필터 (수집처별 제외 요구사항으로 인해 all이 디폴트이나 코드 호환성 보존)
     if (filters.targetSite && filters.targetSite !== 'all') {
@@ -350,8 +357,15 @@ export async function queryCampaigns(filters: {
 
   // 4. 지역 필터
   if (filters.location && filters.location !== 'all') {
-    query += ' AND location LIKE ?';
-    params.push(`%${filters.location}%`);
+    const parts = filters.location.trim().split(/\s+/);
+    if (parts.length > 1) {
+      // '서울 강남구' -> '강남구'
+      query += ' AND location LIKE ?';
+      params.push(`%${parts[1]}%`);
+    } else {
+      query += ' AND location LIKE ?';
+      params.push(`%${parts[0]}%`);
+    }
   }
 
   // 5. 출처 사이트 필터
