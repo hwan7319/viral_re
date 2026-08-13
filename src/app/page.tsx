@@ -1271,6 +1271,28 @@ export default function Home() {
         </div>
         
         {/* ─── 필터 탭바 + 상세 패널 (sticky, 2025 modern style, 마우스 호버 및 왼쪽 정렬 버전) ─── */}
+        {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
+          <div 
+            className="mobile-backdrop"
+            onClick={() => {
+              setIsTypeOpen(false);
+              setIsCategoryOpen(false);
+              setIsPlatformOpen(false);
+              setIsLocationOpen(false);
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(2px)',
+              zIndex: 990,
+              display: 'none'
+            }}
+          />
+        )}
         <div 
           onMouseLeave={() => {
             setIsTypeOpen(false);
