@@ -281,7 +281,7 @@ export default function Home() {
   useEffect(() => {
     if (selectedCampaign && !selectedCampaign.mission && selectedCampaign.campaignUrl) {
       setIsMissionLoading(true);
-      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}`)
+      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
