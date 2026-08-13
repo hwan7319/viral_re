@@ -121,8 +121,31 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     }
     // 2. 포블로그 (4blog.net)
     else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
-      extractedRaw = $('.campaigninfo-text').html() || 
-                     $('div.uline + div + div.campaigninfo-text').html() || '';
+      const ogDesc = $('meta[property="og:description"]').attr('content') || '';
+      let targetText = '';
+
+      $('.campaigninfo-text').each((_, el) => {
+        const html = $(el).html() || '';
+        const text = $(el).text().trim();
+        if (html.includes('sponsorBanner') || text.includes('리뷰 필수가이드') || text.includes('포스팅 제목') || text.includes('가이드')) {
+          targetText = text;
+        }
+      });
+
+      if (!targetText && ogDesc && !ogDesc.includes('영수증리뷰필수') && ogDesc.length > 10) {
+        targetText = ogDesc;
+      }
+
+      if (!targetText) {
+        $('.campaigninfo-text').each((_, el) => {
+          const text = $(el).text().trim();
+          if (text && !text.includes('영수증리뷰필수') && !text.includes('테이블합석') && text.length > 15) {
+            targetText = text;
+          }
+        });
+      }
+
+      extractedRaw = targetText;
     }
     // 3. 디너의여왕 (dinnerqueen.net)
     else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
