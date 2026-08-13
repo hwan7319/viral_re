@@ -20,19 +20,10 @@ export async function GET(request: NextRequest) {
       scrapeDetailBenefit(url, targetSite)
     ]);
 
-    // 🔑 DB 실시간 백그라운드 동기화 (Sync Back to DB)
+    // 🔑 DB 실시간 백그라운드 동기화 (Sync Back to DB - mission & description 만 수복)
     if ((mission || realBenefit) && campaignId) {
       try {
         const db = await getDB();
-        const combinedText = ((mission || '') + ' ' + (realBenefit || '')).toLowerCase();
-        let correctedPlatform: 'blog' | 'instagram' | 'youtube' | 'etc' | undefined = undefined;
-        if (combinedText.includes('릴스') || combinedText.includes('인스타') || combinedText.includes('instagram') || combinedText.includes('피드')) {
-          correctedPlatform = 'instagram';
-        }
-
-        if (correctedPlatform) {
-          await db.run('UPDATE campaigns SET platform = ? WHERE id = ?', [correctedPlatform, campaignId]);
-        }
         if (mission) {
           await db.run('UPDATE campaigns SET mission = ? WHERE id = ?', [mission, campaignId]);
         }

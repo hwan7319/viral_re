@@ -93,17 +93,29 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
   return { applyCount: 0, limitCount: 5 };
 };
 
-export const detectPlatform = (title: string, desc: string, mission?: string): 'blog' | 'instagram' | 'youtube' | 'etc' => {
-  const t = (title + ' ' + desc + ' ' + (mission || '')).toLowerCase();
-  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('피드') || t.includes('팔로워') || t.includes('클립')) {
+export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'instagram' | 'youtube' | 'etc' => {
+  const p = (rawPlatformText || '').toLowerCase();
+  const t = title.toLowerCase();
+
+  // 1. 원본 뱃지 텍스트 1순위 최우선 판정
+  if (p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스')) {
     return 'instagram';
   }
-  if (t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠')) {
+  if (p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠')) {
     return 'youtube';
   }
-  if (t.includes('블로그') || t.includes('blog') || t.includes('스마트플레이스') || t.includes('포스팅')) {
+  if (p.includes('blog') || p.includes('블로그')) {
     return 'blog';
   }
+
+  // 2. 제목 태그 [릴스], [인스타], [유튜브] 2순위 판정
+  if (t.includes('[릴스]') || t.includes('[인스타]') || t.includes('[instagram]')) {
+    return 'instagram';
+  }
+  if (t.includes('[유튜브]') || t.includes('[youtube]')) {
+    return 'youtube';
+  }
+
   return 'blog';
 };
 
