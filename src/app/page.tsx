@@ -133,29 +133,55 @@ const generateRealMission = (title: string, platform: string, category: string, 
   }
 };
 
-// 🧼 줄바꿈 및 문단 가독성 정제 헬퍼 함수
+// 🧼 줄바꿈, 텍스트 정렬, 앞머리 기호 정밀 가독성 정제 엔진
 const formatMissionText = (text: string): string => {
   if (!text) return '';
   let cleaned = text;
 
-  // 1. HTML 태그 줄바꿈 변환
+  // 1. HTML 태그 정제 및 엔티티 치환
   cleaned = cleaned.replace(/<br\s*\/?>/gi, '\n');
-  cleaned = cleaned.replace(/<\/p>/gi, '\n');
-  cleaned = cleaned.replace(/<\/li>/gi, '\n');
-  cleaned = cleaned.replace(/<\/div>/gi, '\n');
-  cleaned = cleaned.replace(/<[^>]+>/g, ''); // 태그 제거
-
-  // 2. 항목 번호 및 포인트 기호 앞 자동 줄바꿈 및 문단 분리
-  cleaned = cleaned.replace(/([^\n])\s*([0-9]+\.\s*)/g, '$1\n$2');
-  cleaned = cleaned.replace(/([^\n])\s*(★|✔|■|◆|●|•|※|▶|- )/g, '$1\n\n$2');
-
-  // 3. 공백 및 중복 줄바꿈 정돈
+  cleaned = cleaned.replace(/<\/(p|li|div|h[1-6])>/gi, '\n');
+  cleaned = cleaned.replace(/<[^>]+>/g, '');
   cleaned = cleaned
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n\s*\n\s*\n+/g, '\n\n')
-    .trim();
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&gt;/gi, '>')
+    .replace(/&lt;/gi, '<')
+    .replace(/&amp;/gi, '&');
 
-  return cleaned;
+  // 2. 부자연스러운 숫자/날짜 사이 중간 줄바꿈 복원 (예: "26.0\n8.13" -> "26.08.13")
+  cleaned = cleaned.replace(/([0-9]+\.[0-9]*)\n([0-9]+)/g, '$1$2');
+
+  // 3. 줄 단위 분석 및 앞머리 기호 정제
+  const lines = cleaned.split('\n');
+  const formattedLines: string[] = [];
+
+  for (let line of lines) {
+    let trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // 단독으로 남아있는 의미없는 기호 무시 (예: "•", "-", "★")
+    if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
+
+    // 중복 및 어색한 앞머리 기호 정리 (예: "• • 01." -> "• 01.")
+    trimmed = trimmed.replace(/^([•\-\*★✔◈※▶]\s*)+/g, (match) => {
+      const symbol = match.trim()[0];
+      return symbol ? `${symbol} ` : '';
+    });
+
+    // 불렛이나 숫자가 없는 일반 지침 문장에만 보기 좋게 불렛 보강
+    const hasPrefix = /^[0-9]+\.|\d+[\.\)]|^[•\-\*★✔◈※▶#]/.test(trimmed);
+    if (!hasPrefix && trimmed.length > 2) {
+      trimmed = `• ${trimmed}`;
+    }
+
+    formattedLines.push(trimmed);
+  }
+
+  // 4. 줄간격 및 문단 뭉침 정리
+  let result = formattedLines.join('\n');
+  result = result.replace(/\n{3,}/g, '\n\n');
+
+  return result.trim();
 };
 
 const SIDO_QUICK_TABS = [
