@@ -67,7 +67,48 @@ export function formatMissionText(text: string): string {
   return result.trim();
 }
 
-// 🔑 원본 상세 페이지의 진짜 제공 혜택(Offer/Benefit) 전용 스크레이퍼
+// 🔑 원본 상세 페이지의 진짜 지원 현황(applyCount / limitCount) 스크레이퍼
+export async function scrapeDetailCounts(url: string, targetSite: string): Promise<{ applyCount?: number; limitCount?: number }> {
+  if (!url) return {};
+  try {
+    const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+    const html = res.data;
+    if (typeof html !== 'string') return {};
+
+    const $ = cheerio.load(html);
+    const siteLower = (targetSite || '').toLowerCase();
+
+    // 1. 포블로그 -> .reviewerCnt 또는 신청자(N)
+    if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
+      const cntText = $('.reviewerCnt').text().replace(/\s+/g, ' ').trim() || $('body').text();
+      const match = cntText.match(/신청\s*(\d+)\s*\/\s*(\d+)/i) || cntText.match(/신청자\s*\(\s*(\d+)\s*\)/);
+      if (match) {
+        const applyCount = parseInt(match[1], 10);
+        const limitCount = match[2] ? parseInt(match[2], 10) : undefined;
+        return { applyCount, limitCount };
+      }
+    }
+    // 2. 디너의여왕 -> .qz-dq-card__text 또는 apply_badge
+    else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
+      const text = $('.apply_badge').text().trim() || $('body').text();
+      const match = text.match(/신청\s*(\d+)\s*\/\s*모집\s*(\d+)/i);
+      if (match) {
+        return { applyCount: parseInt(match[1], 10), limitCount: parseInt(match[2], 10) };
+      }
+    }
+    // 3. 강남맛집 -> .item_info .numb
+    else if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
+      const text = $('.item_info .numb').text().trim() || $('#cmp_guide').text();
+      const match = text.match(/신청\s*(\d+)\s*\/\s*모집\s*(\d+)/i);
+      if (match) {
+        return { applyCount: parseInt(match[1], 10), limitCount: parseInt(match[2], 10) };
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[Detail-Counts-Scraper] Failed for ${url}:`, err.message);
+  }
+  return {};
+}
 export async function scrapeDetailBenefit(url: string, targetSite: string): Promise<string | undefined> {
   if (!url) return undefined;
   try {

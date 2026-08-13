@@ -288,7 +288,9 @@ export default function Home() {
             setSelectedCampaign(prev => prev ? {
               ...prev,
               mission: data.mission || prev.mission,
-              description: (data.realBenefit && data.realBenefit !== prev.title) ? data.realBenefit : prev.description
+              description: (data.realBenefit && data.realBenefit !== prev.title) ? data.realBenefit : prev.description,
+              applyCount: data.applyCount !== undefined ? data.applyCount : prev.applyCount,
+              limitCount: data.limitCount !== undefined ? data.limitCount : prev.limitCount
             } : null);
           }
         })
