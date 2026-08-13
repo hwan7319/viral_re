@@ -132,6 +132,7 @@ export default function Home() {
   const [isLocationOpen, setIsLocationOpen] = useState(false); // 지역 상세검색 아코디언 토글
   const [activeSite, setActiveSite] = useState('all');
   const [activeType, setActiveType] = useState('all'); // 'all' | 'visit' | 'delivery'
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null); // 호버 중인 탭 상태 추가
   const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
   const [sortBy, setSortBy] = useState('latest');
 
@@ -163,10 +164,39 @@ export default function Home() {
 
   // 💻📱 필터바 & 상세 패널 통합 렌더러 (얇은 알약 칩셋 + 1회 클릭 호출 바텀시트)
   const renderFilterContainer = () => {
+    // 🔑 브라우저 캐싱과 CSS 우선순위 문제를 단번에 우회하기 위해 인라인 탭 스타일 기법 전격 도입
+    const getTabStyle = (tabKey: string, isActive: boolean) => {
+      const isHovered = hoveredTab === tabKey;
+      return {
+        display: 'inline-flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '40px',
+        border: isActive ? '2.5px solid #000000' : '1.5px solid #000000', // 검정색 테두리선 두께 고수 (액티브 시 2.5px 보강)
+        backgroundColor: isActive ? '#e0e7ff' : isHovered ? '#f3f4f6' : '#ffffff', // 안에 흰색 채우기 (액티브 연보라 / 호버 연그레이)
+        color: isActive ? '#4f46e5' : '#000000', // 글씨색
+        fontSize: '0.86rem',
+        fontWeight: 800,
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        whiteSpace: 'nowrap',
+        userSelect: 'none',
+        position: 'relative',
+        gap: '8px',
+        boxSizing: 'border-box',
+        padding: '0 18px',
+        outline: 'none',
+        borderRadius: '9999px', // 완벽한 타원형
+        transform: isHovered ? 'translateY(-1px)' : 'none',
+        boxShadow: isHovered ? '0 4px 10px rgba(0,0,0,0.06)' : 'none'
+      } as React.CSSProperties;
+    };
+
     return (
       <div 
         className="filter-container-wrap"
-        style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: '28px', textAlign: 'left' }}
+        style={{ width: '100%', position: 'relative', zIndex: 2100, marginBottom: '28px', textAlign: 'left' }}
       >
         {/* 💻📱 모바일용 바텀시트 딤드 오버레이 (자식 노드 편입) */}
         {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
@@ -192,13 +222,16 @@ export default function Home() {
           />
         )}
         {/* 탭바 영역 */}
-        <div className="filter-bar-wrap" style={{ marginTop: '0' }}>
+        <div className="filter-bar-wrap" style={{ marginTop: '0', position: 'relative', zIndex: 2100 }}>
           <div className="filter-bar-scroll" style={{ justifyContent: 'flex-start' }}>
             
             {/* 1. 모집 유형 탭 */}
             <button
               type="button"
               className={`filter-tab ${isTypeOpen || activeType !== 'all' ? 'active' : ''}`}
+              style={getTabStyle('type', isTypeOpen || activeType !== 'all')}
+              onMouseEnter={() => setHoveredTab('type')}
+              onMouseLeave={() => setHoveredTab(null)}
               onClick={() => handleTabClick('type')}
             >
               {activeType !== 'all' && <span className="tab-badge">✓</span>}
@@ -227,6 +260,9 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isCategoryOpen || activeCategory !== 'all' ? 'active' : ''}`}
+              style={getTabStyle('category', isCategoryOpen || activeCategory !== 'all')}
+              onMouseEnter={() => setHoveredTab('category')}
+              onMouseLeave={() => setHoveredTab(null)}
               onClick={() => handleTabClick('category')}
             >
               {activeCategory !== 'all' && <span className="tab-badge">✓</span>}
@@ -267,6 +303,9 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
+              style={getTabStyle('platform', isPlatformOpen || activePlatform !== 'all')}
+              onMouseEnter={() => setHoveredTab('platform')}
+              onMouseLeave={() => setHoveredTab(null)}
               onClick={() => handleTabClick('platform')}
             >
               {activePlatform !== 'all' && <span className="tab-badge">✓</span>}
@@ -298,6 +337,9 @@ export default function Home() {
             <button
               type="button"
               className={`filter-tab ${isLocationOpen || activeLocation !== 'all' ? 'active' : ''}`}
+              style={getTabStyle('location', isLocationOpen || activeLocation !== 'all')}
+              onMouseEnter={() => setHoveredTab('location')}
+              onMouseLeave={() => setHoveredTab(null)}
               onClick={() => handleTabClick('location')}
             >
               {activeLocation !== 'all' && <span className="tab-badge">✓</span>}
@@ -1473,10 +1515,10 @@ export default function Home() {
           {/* 최상위에 배치된 필터바 영역 호출 */}
           {renderFilterContainer()}
 
-          {/* 검색 & 실시간 검색어 가로 정렬 영역 - 반응형 클래스 사용 */}
-          <div className="hero-search-wrapper" style={{ marginTop: '24px' }}>
+          {/* 검색 & 실시간 검색어 가로 정렬 영역 - 반응형 클래스 사용 (상세 필터 레이어에 가려지도록 zIndex: 1로 강제 설정) */}
+          <div className="hero-search-wrapper" style={{ marginTop: '24px', position: 'relative', zIndex: 1 }}>
             {/* 좌측/가운데: 통합 검색창 (최근검색어 레이어 팝업 포함) */}
-            <div className="hero-search-box" style={{ position: 'relative' }}>
+            <div className="hero-search-box" style={{ position: 'relative', zIndex: 1 }}>
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
