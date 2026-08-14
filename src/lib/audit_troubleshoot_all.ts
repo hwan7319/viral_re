@@ -35,7 +35,7 @@ async function runTroubleAudit() {
     const linkPath = el.find('dt.tit a').attr('href') || '';
     const fullUrl = linkPath.startsWith('http') ? linkPath : `https://xn--939au0g4vj8sq.net${linkPath}`;
     const mission = await scrapeDetailMission(fullUrl, '강남맛집') || '';
-    const platform = detectPlatform(title, benefit, mission);
+    const platform = detectPlatform(title, `${benefit} ${mission}`);
 
     const isSame = (title === benefit);
     const hasBlacklist = benefit.includes('체험단·인플루언서') || mission.includes('디지털,신기술');
@@ -63,7 +63,7 @@ async function runTroubleAudit() {
     const fullUrl = linkPath.startsWith('http') ? linkPath : `https://dinnerqueen.net${linkPath}`;
     const benefit = await scrapeDetailBenefit(fullUrl, '디너의여왕') || '3만원 식사권';
     const mission = await scrapeDetailMission(fullUrl, '디너의여왕') || '';
-    const platform = detectPlatform(title, benefit, mission);
+    const platform = detectPlatform(title, `${benefit} ${mission}`);
 
     const isSame = (title === benefit);
     const hasBlacklist = benefit.includes('전체 클립형') || mission.includes('전체 클립형 릴스형');
@@ -89,7 +89,7 @@ async function runTroubleAudit() {
       const benefit = item.REVIEWER_BENEFIT || '전기바베큐 하나 + 생맥2잔';
       const fullUrl = `https://4blog.net/campaign/${item.CID}/`;
       const mission = await scrapeDetailMission(fullUrl, '포블로그') || item.REVIEWER_BENEFIT || '';
-      const platform = detectPlatform(title, benefit, mission);
+      const platform = detectPlatform(title, `${benefit} ${mission}`);
 
       const isSame = (title === benefit);
       const hasBlacklist = benefit.includes('포블로그 메인') || mission.includes('체험단 마케팅');

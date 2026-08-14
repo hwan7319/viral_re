@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Campaign } from '@/lib/db';
 
 // SVG 아이콘 컴포넌트 모음 (외부 패키지 없이 완벽히 구동되도록 인라인 구현)
@@ -10,8 +10,8 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
     </svg>
   ),
-  Refresh: ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className} style={{ width: '1.25rem', height: '1.25rem' }}>
+  Refresh: ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className} style={{ width: '1.25rem', height: '1.25rem', ...style }}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
     </svg>
   ),
@@ -1055,6 +1055,44 @@ export default function Home() {
   // 프론트엔드 성능 최적화: 초기 노출 카드 제한 및 더보기 페이징
   const [visibleCount, setVisibleCount] = useState(12);
 
+  // 🔑 무한 스크롤(Infinite Scroll) - IntersectionObserver Callback Ref 및 윈도우 스크롤 이중 이중 보장
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    if (node) {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisibleCount((prev) => prev + 12);
+          }
+        },
+        { threshold: 0, rootMargin: '600px' }
+      );
+      observerRef.current.observe(node);
+    }
+  }, []);
+
+  // 윈도우 스크롤 감지 백업 보장 (다양한 브라우저 환경 및 스크롤바 조작 시 즉각 반응)
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    const handleScroll = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 700) {
+          setVisibleCount((prev) => prev + 12);
+        }
+      }, 50);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   // 검색 히스토리 상태
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [placeholderText, setPlaceholderText] = useState('식당명, 제품명, 지역명 등을 검색해보세요');
@@ -1613,26 +1651,32 @@ export default function Home() {
             INTEGRATOR v1.0
           </span>
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
-          <button 
-            onClick={triggerCrawling} 
-            disabled={crawling}
-            className="premium-button-secondary"
+          <div 
             style={{ 
-              padding: '8px 12px', 
-              fontSize: '0.8rem', 
-              borderRadius: 'var(--radius-md)', 
-              borderColor: crawling ? 'var(--text-tertiary)' : 'var(--border-color)',
-              opacity: crawling ? 0.7 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px',
+              padding: '6px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              color: '#10b981',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              whiteSpace: 'nowrap'
             }}
+            title="17개 체험단 사이트 실시간 백그라운드 자동 동기화 적용 중"
           >
-            <Icons.Refresh className={crawling ? 'animate-spin' : ''} />
-            <span className="header-btn-text">{crawling ? '수집 중...' : '실시간 수집'}</span>
-          </button>
+            <span style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              backgroundColor: '#10b981',
+              boxShadow: '0 0 6px #10b981'
+            }} />
+            <span>자동 동기화 🟢</span>
+          </div>
 
           {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
           {user ? (
@@ -2609,36 +2653,23 @@ export default function Home() {
               </div>
             )}
 
-          {/* 🔑 더보기 (Load More) 버튼 영역 */}
+          {/* 🔑 무한 스크롤(Infinite Scroll) 스크롤 감지 센티널 바 */}
           {displayedCampaigns.length > visibleCount && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '36px', marginBottom: '12px' }}>
-              <button 
-                onClick={() => setVisibleCount(visibleCount + 12)}
-                className="premium-button-secondary"
-                style={{
-                  padding: '12px 32px',
-                  borderRadius: 'var(--radius-md)',
-                  fontWeight: 700,
-                  fontSize: '0.95rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  boxShadow: 'var(--shadow-md)',
-                  borderColor: 'var(--accent)'
-                }}
-              >
-                <span>더 많은 체험단 보기</span>
-                <span style={{ 
-                  fontSize: '0.8rem', 
-                  backgroundColor: 'var(--accent-light)', 
-                  color: 'var(--accent)', 
-                  padding: '2px 8px', 
-                  borderRadius: 'var(--radius-sm)',
-                  fontWeight: 800
-                }}>
-                  +{displayedCampaigns.length - visibleCount}개 남음
-                </span>
-              </button>
+            <div 
+              ref={loadMoreRef}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                padding: '36px 0', 
+                gap: '8px',
+                color: 'var(--text-tertiary)',
+                fontSize: '0.85rem',
+                fontWeight: 600
+              }}
+            >
+              <Icons.Refresh className="animate-spin" style={{ width: '16px', height: '16px' }} />
+              <span>체험단 정보 자동으로 더 불러오는 중... ({visibleCount} / {displayedCampaigns.length}개 표출 중)</span>
             </div>
           )}
           </>

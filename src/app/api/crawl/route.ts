@@ -6,7 +6,7 @@ let isCrawlingActive = false;
 let lastCrawlSuccessTime = 0;
 const GLOBAL_CRAWL_COOLTIME_MS = 60 * 1000; // 60초(1분) 쿨타임
 
-export async function POST() {
+async function handleCrawl() {
   try {
     const now = Date.now();
 
@@ -16,7 +16,7 @@ export async function POST() {
         { 
           success: false, 
           error: 'busy',
-          message: '현재 다른 사용자에 의해 실시간 수집이 이미 진행 중입니다. 잠시 후 다시 시도해 주세요.' 
+          message: '현재 백그라운드 수집이 이미 진행 중입니다.' 
         },
         { status: 429 } // Too Many Requests
       );
@@ -66,4 +66,12 @@ export async function POST() {
       { status: 500 }
     );
   }
+}
+
+export async function POST() {
+  return handleCrawl();
+}
+
+export async function GET() {
+  return handleCrawl();
 }
