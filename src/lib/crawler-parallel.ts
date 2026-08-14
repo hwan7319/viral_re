@@ -98,21 +98,21 @@ export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' 
   const t = title.toLowerCase();
 
   // 1. 원본 뱃지 텍스트 1순위 최우선 판정
-  if (p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스')) {
+  if (p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels')) {
     return 'instagram';
   }
-  if (p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠')) {
+  if (p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts')) {
     return 'youtube';
   }
   if (p.includes('blog') || p.includes('블로그')) {
     return 'blog';
   }
 
-  // 2. 제목 태그 [릴스], [인스타], [유튜브] 2순위 판정
-  if (t.includes('[릴스]') || t.includes('[인스타]') || t.includes('[instagram]')) {
+  // 2. 제목 키워드 (릴스, 인스타, 쇼츠) 2순위 판정
+  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) {
     return 'instagram';
   }
-  if (t.includes('[유튜브]') || t.includes('[youtube]')) {
+  if (t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠') || t.includes('shorts')) {
     return 'youtube';
   }
 
@@ -270,7 +270,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const ddayText = $(element).find('.layer-primary p.qz-caption-kr--line strong').text().trim();
           const endDate = parseDdayToDate(ddayText);
           const badgesText = $(element).find('.qz-wrap').text();
-          const platform = badgesText.includes('인스타그램') ? 'instagram' : 'blog';
+          const platform = detectPlatform(title, badgesText);
           const applyText = $(element).find('.apply_badge .qz-caption-kr').text().trim();
           const { applyCount, limitCount } = parseCountText(applyText);
           
