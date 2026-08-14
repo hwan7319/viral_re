@@ -1061,6 +1061,45 @@ export default function Home() {
   // 프론트엔드 성능 최적화: 초기 노출 카드 제한 및 더보기 페이징
   const [visibleCount, setVisibleCount] = useState(12);
 
+  // 🔑 키워드마스터 모달 및 분석 데이터 상태
+  const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
+  const [keywordQuery, setKeywordQuery] = useState('');
+  const [keywordData, setKeywordData] = useState<any>(null);
+  const [isKeywordLoading, setIsKeywordLoading] = useState(false);
+
+  // 키워드 분석 실행 함수
+  const analyzeKeyword = async (targetQuery: string) => {
+    const q = targetQuery.trim();
+    if (!q) return;
+    setKeywordQuery(q);
+    setIsKeywordLoading(true);
+    setIsKeywordModalOpen(true);
+
+    try {
+      const res = await fetch(`/api/keyword?query=${encodeURIComponent(q)}`);
+      const json = await res.json();
+      if (json.success) {
+        setKeywordData(json.data);
+      } else {
+        showToast(json.error || '키워드 분석에 실패했습니다.', 'error');
+      }
+    } catch (e: any) {
+      showToast('키워드 분석 중 오류가 발생했습니다.', 'error');
+    } finally {
+      setIsKeywordLoading(false);
+    }
+  };
+
+  // 공고 제목에서 핵심 키워드 정제 추출 함수
+  const extractCoreKeyword = (title: string) => {
+    return title
+      .replace(/\[.*?\]/g, '')
+      .replace(/\(.*?\)/g, '')
+      .replace(/신청하기|보러가기|체험단|포토체험단|즉시제공|랜덤픽/g, '')
+      .trim()
+      .split(/\s+/)[0] || title;
+  };
+
   // 🔑 무한 스크롤(Infinite Scroll) - IntersectionObserver Callback Ref 및 윈도우 스크롤 이중 이중 보장
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -1658,6 +1697,30 @@ export default function Home() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+          <button
+            onClick={() => {
+              setKeywordQuery('');
+              setKeywordData(null);
+              setIsKeywordModalOpen(true);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              color: 'var(--accent)',
+              border: '1px solid rgba(99, 102, 241, 0.25)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+            title="네이버 키워드 월간 검색량 & 블로그 경쟁도 실시간 분석"
+          >
+            <span>🔑 키워드마스터</span>
+          </button>
           <div 
             style={{ 
               display: 'flex', 
@@ -2825,6 +2888,32 @@ export default function Home() {
                   )}
                 </div>
 
+                {/* 🔑 이 공고 전용 황금키워드 & SEO 분석 버튼 */}
+                <button
+                  onClick={() => {
+                    const kw = extractCoreKeyword(selectedCampaign.title);
+                    analyzeKeyword(kw);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                    color: '#d97706',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <span>⚡ 이 공고 네이버 황금키워드 & 검색량 분석하기</span>
+                </button>
+
               </div>
             </div>
 
@@ -2877,6 +2966,217 @@ export default function Home() {
           {toast.type === 'error' && '🚨 '}
           {toast.type === 'info' && '💡 '}
           {toast.message}
+        </div>
+      )}
+
+      {/* 🔑 7. Keyword Master Modal (키워드마스터 SEO 분석 모달) */}
+      {isKeywordModalOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 999999,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          padding: '16px'
+        }}>
+          <div className="glass-panel" style={{
+            width: '100%', maxWidth: '640px', maxHeight: '90vh',
+            backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
+            position: 'relative'
+          }}>
+            {/* 헤더 */}
+            <div style={{
+              padding: '16px 20px', borderBottom: '1px solid var(--border-color)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              backgroundColor: 'var(--bg-tertiary)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🔑</span>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  키워드마스터 (네이버 검색량 & 경쟁도 분석)
+                </h3>
+              </div>
+              <button 
+                onClick={() => setIsKeywordModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}
+              >
+                <Icons.Close />
+              </button>
+            </div>
+
+            {/* 검색 입력바 */}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)' }}>
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  analyzeKeyword(keywordQuery);
+                }}
+                style={{ display: 'flex', gap: '8px' }}
+              >
+                <input 
+                  type="text"
+                  value={keywordQuery}
+                  onChange={(e) => setKeywordQuery(e.target.value)}
+                  placeholder="분석할 키워드를 입력하세요 (예: 강남맛집, 후지필름 등)"
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={isKeywordLoading}
+                  className="premium-button-primary"
+                  style={{ padding: '10px 20px', fontSize: '0.9rem', fontWeight: 700, whiteSpace: 'nowrap' }}
+                >
+                  {isKeywordLoading ? '분석 중...' : '키워드 조회'}
+                </button>
+              </form>
+            </div>
+
+            {/* 결과 본문 */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {isKeywordLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
+                  <Icons.Refresh className="animate-spin" style={{ width: '28px', height: '28px', margin: '0 auto 12px auto', color: 'var(--accent)' }} />
+                  <p style={{ fontWeight: 700, margin: 0 }}>네이버 공식 API에서 수치 데이터 실시간 집계 중...</p>
+                </div>
+              ) : keywordData ? (
+                <>
+                  {/* 지표 카운트 3열 카드 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                    <div style={{
+                      padding: '14px', borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--bg-tertiary)', textAlign: 'center',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block', marginBottom: '4px' }}>월간 총 검색량</span>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent)' }}>
+                        {keywordData.totalSearchVolume.toLocaleString()}회
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', display: 'block', marginTop: '2px' }}>
+                        PC {keywordData.pcSearchVolume.toLocaleString()} / 모바일 {keywordData.mobileSearchVolume.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div style={{
+                      padding: '14px', borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--bg-tertiary)', textAlign: 'center',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block', marginBottom: '4px' }}>총 포스팅 문서 수</span>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>
+                        {keywordData.totalPosts.toLocaleString()}건
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', display: 'block', marginTop: '2px' }}>
+                        네이버 블로그 검색 기준
+                      </span>
+                    </div>
+
+                    <div style={{
+                      padding: '14px', borderRadius: 'var(--radius-md)',
+                      backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.1)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                      textAlign: 'center',
+                      border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                    }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block', marginBottom: '4px' }}>경쟁 비율</span>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444' }}>
+                        {keywordData.competitionRatio}
+                      </span>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', display: 'block', marginTop: '2px' }}>
+                        {keywordData.statusText}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 연관 태그 1초 자동 복사 섹션 */}
+                  <div style={{
+                    padding: '14px 16px', borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>🏷️ 블로그 추천 연관 태그</span>
+                      <button
+                        onClick={() => {
+                          const tagText = keywordData.relatedKeywords.map((k: string) => `#${k}`).join(' ');
+                          navigator.clipboard.writeText(tagText);
+                          showToast('추천 태그가 클립보드에 복사되었습니다!', 'success');
+                        }}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.75rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--accent)', color: '#fff',
+                          border: 'none', cursor: 'pointer'
+                        }}
+                      >
+                        태그 전체 복사
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {keywordData.relatedKeywords.map((tag: string, idx: number) => (
+                        <span 
+                          key={idx}
+                          onClick={() => analyzeKeyword(tag)}
+                          style={{
+                            padding: '4px 8px', fontSize: '0.75rem', borderRadius: 'var(--radius-sm)',
+                            backgroundColor: 'var(--bg-primary)', color: 'var(--accent)',
+                            border: '1px solid var(--border-color)', cursor: 'pointer'
+                          }}
+                          title="클릭 시 이 키워드로 다시 분석"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 상위 노출 블로그 목록 */}
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                      🏆 네이버 블로그 상위 노출 랭킹 (Top 10)
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {keywordData.topPosts.map((post: any, idx: number) => (
+                        <a 
+                          key={idx}
+                          href={post.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '10px 12px', borderRadius: 'var(--radius-sm)',
+                            backgroundColor: 'var(--bg-tertiary)', textDecoration: 'none',
+                            border: '1px solid var(--border-color)'
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0, marginRight: '10px' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', marginRight: '6px' }}>
+                              {idx + 1}위
+                            </span>
+                            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {post.title}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+                            {post.bloggerName}
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-tertiary)' }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>상단 검색창에 분석하고 싶은 키워드를 입력해 주세요.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
