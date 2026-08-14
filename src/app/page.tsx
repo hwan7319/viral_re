@@ -3123,13 +3123,22 @@ export default function Home() {
                           key={idx}
                           onClick={() => analyzeKeyword(tag)}
                           style={{
-                            padding: '4px 8px', fontSize: '0.75rem', borderRadius: 'var(--radius-sm)',
+                            padding: '4px 9px', fontSize: '0.75rem', borderRadius: 'var(--radius-sm)',
                             backgroundColor: 'var(--bg-primary)', color: 'var(--accent)',
-                            border: '1px solid var(--border-color)', cursor: 'pointer'
+                            border: '1px solid var(--border-color)', cursor: 'pointer',
+                            display: 'inline-flex', alignItems: 'center', gap: '5px'
                           }}
-                          title="클릭 시 이 키워드로 다시 분석"
+                          title={`연관도 ${idx + 1}위 - 클릭 시 이 키워드로 다시 분석`}
                         >
-                          #{tag}
+                          <span style={{
+                            fontSize: '0.65rem', fontWeight: 800,
+                            padding: '1px 4px', borderRadius: '4px',
+                            backgroundColor: idx < 3 ? 'rgba(99, 102, 241, 0.15)' : 'var(--bg-tertiary)',
+                            color: idx < 3 ? 'var(--accent)' : 'var(--text-tertiary)'
+                          }}>
+                            {idx + 1}위
+                          </span>
+                          <span style={{ fontWeight: 600 }}>#{tag}</span>
                         </span>
                       ))}
                     </div>
