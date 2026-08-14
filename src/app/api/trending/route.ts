@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
 import { getTrendingKeywords } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+// 🔑 체험단 & 바이럴 마케팅 전용 인기 검색어 고정 데이터세트 (메인 체험단 검색 및 필터링 전용)
 const DEFAULT_TRENDING = [
   '강남 맛집',
   '수분 크림',
@@ -19,41 +19,13 @@ const DEFAULT_TRENDING = [
 
 export async function GET(req: NextRequest) {
   try {
-    const liveKeywords: string[] = [];
-
-    // 1. 실시간 이슈 키워드 API (Signal.bz) 실시간 수집 시도
-    try {
-      const sigRes = await axios.get('https://api.signal.bz/news/realtime', {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
-        timeout: 2500,
-      });
-
-      if (sigRes.data && Array.isArray(sigRes.data.top10)) {
-        sigRes.data.top10.forEach((item: any) => {
-          if (item.keyword && typeof item.keyword === 'string') {
-            liveKeywords.push(item.keyword.trim());
-          }
-        });
-      }
-    } catch (e: any) {
-      console.warn('[Trending API] Signal.bz live fetch skipped:', e.message);
-    }
-
-    // 2. DB 검색 로그 통계 데이터 수집
+    // 1. DB에서 최근 24시간 실제 유저 체험단 검색 로그 집계 조회
     const dbTrending = await getTrendingKeywords();
 
     const mergedList: string[] = [];
     const addedSet = new Set<string>();
 
-    // ① 실시간 급상승 키워드 우선 수집
-    liveKeywords.forEach(kw => {
-      if (kw && !addedSet.has(kw)) {
-        mergedList.push(kw);
-        addedSet.add(kw);
-      }
-    });
-
-    // ② DB 로그 키워드 수집
+    // DB 실데이터 사용자 검색 키워드 우선 배치
     dbTrending.forEach(item => {
       const trimmed = item.word.trim();
       if (trimmed && !addedSet.has(trimmed)) {
@@ -62,7 +34,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // ③ 10개 부족 시 기본 고정 키워드 채움
+    // 10개가 찰 때까지 체험단 전용 시그니처 검색어로 순위 채움
     for (const defWord of DEFAULT_TRENDING) {
       if (mergedList.length >= 10) break;
       if (!addedSet.has(defWord)) {
