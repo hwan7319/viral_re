@@ -3029,44 +3029,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* ⚡ 실시간 급상승 키워드 (1분 자동 동기화) 바 */}
-            <div style={{
-              padding: '10px 20px',
-              backgroundColor: 'rgba(99, 102, 241, 0.05)',
-              borderBottom: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent)' }}>
-                  ⚡ 실시간 급상승 Top 10
-                </span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
-                  ({lastTrendingUpdate || '방금'} 갱신)
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
-                {liveTrendingList.slice(0, 5).map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => analyzeKeyword(item.word)}
-                    style={{
-                      padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
-                      borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)',
-                      color: 'var(--text-primary)', border: '1px solid var(--border-color)',
-                      cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px'
-                    }}
-                    title="클릭 시 실시간 키워드 수치 즉시 분석"
-                  >
-                    <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 800 }}>{item.rank}위</span>
-                    <span>{item.word}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* 검색 입력바 */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)' }}>
               <form 
@@ -3105,6 +3067,69 @@ export default function Home() {
 
             {/* 결과 본문 */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              {/* ⚡ 실시간 급상승 키워드 Top 10 (세로 2열 한 화면 배치) */}
+              {liveTrendingList.length > 0 && (
+                <div style={{
+                  padding: '14px 16px',
+                  backgroundColor: 'rgba(99, 102, 241, 0.04)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid rgba(99, 102, 241, 0.18)',
+                  marginBottom: '4px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent)' }}>
+                        ⚡ 실시간 급상승 검색어 Top 10
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
+                        ({lastTrendingUpdate || '방금'} 갱신)
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--accent)', fontWeight: 700 }}>
+                      1분 자동 동기화 🟢
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    {liveTrendingList.slice(0, 10).map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => analyzeKeyword(item.word)}
+                        style={{
+                          padding: '7px 10px', fontSize: '0.78rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)',
+                          color: 'var(--text-primary)', border: '1px solid var(--border-color)',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="클릭 시 실시간 키워드 수치 즉시 분석"
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
+                          <span style={{
+                            fontSize: '0.7rem', fontWeight: 900,
+                            color: idx < 3 ? 'var(--accent)' : 'var(--text-tertiary)',
+                            minWidth: '22px'
+                          }}>
+                            {item.rank}위
+                          </span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {item.word}
+                          </span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.62rem', fontWeight: 800, padding: '1px 5px', borderRadius: '4px',
+                          backgroundColor: item.tagType === 'hot' ? 'rgba(239,68,68,0.1)' : item.tagType === 'new' ? 'rgba(16,185,129,0.1)' : 'var(--bg-tertiary)',
+                          color: item.tagType === 'hot' ? '#ef4444' : item.tagType === 'new' ? '#10b981' : 'var(--text-tertiary)',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {item.tagLabel}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {isKeywordLoading ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
                   <Icons.Refresh className="animate-spin" style={{ width: '28px', height: '28px', margin: '0 auto 12px auto', color: 'var(--accent)' }} />
