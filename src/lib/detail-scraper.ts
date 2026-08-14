@@ -88,10 +88,26 @@ export async function scrapeDetailCounts(url: string, targetSite: string): Promi
         return { applyCount, limitCount };
       }
     }
-    // 2. 디너의여왕 -> .qz-dq-card__text 또는 apply_badge
+    // 2. 디너의여왕 -> 해당 campaign ID와 exact 매칭되는 apply_badge 정밀 조준
     else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
-      const text = $('.apply_badge').text().trim() || $('body').text();
-      const match = text.match(/신청\s*(\d+)\s*\/\s*모집\s*(\d+)/i);
+      const dqId = url.split('/').pop() || '';
+      let targetBadgeText = '';
+      
+      if (dqId) {
+        $(`a[href*="${dqId}"]`).each((_, el) => {
+          if (!targetBadgeText) {
+            const cardText = $(el).closest('.qz-dq-card').find('.apply_badge').text().trim();
+            if (cardText.includes('신청')) {
+              targetBadgeText = cardText;
+            }
+          }
+        });
+      }
+      if (!targetBadgeText) {
+        targetBadgeText = $('.apply_badge').first().text().trim() || $('body').text();
+      }
+      
+      const match = targetBadgeText.match(/신청\s*(\d+)\s*\/\s*모집\s*(\d+)/i);
       if (match) {
         return { applyCount: parseInt(match[1], 10), limitCount: parseInt(match[2], 10) };
       }
