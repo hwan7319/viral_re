@@ -278,12 +278,29 @@ export default function Home() {
         .then(res => res.json())
         .then(data => {
           if (data.success) {
+            const newApply = data.applyCount !== undefined ? data.applyCount : undefined;
+            const newLimit = data.limitCount !== undefined ? data.limitCount : undefined;
+
             setSelectedCampaign(prev => prev ? {
               ...prev,
               mission: data.mission || prev.mission,
-              applyCount: data.applyCount !== undefined ? data.applyCount : prev.applyCount,
-              limitCount: data.limitCount !== undefined ? data.limitCount : prev.limitCount
+              applyCount: newApply !== undefined ? newApply : prev.applyCount,
+              limitCount: newLimit !== undefined ? newLimit : prev.limitCount
             } : null);
+
+            // 🔑 목록 카드 state (campaigns) 도 실시간 100% 동기화 갱신하여 목록 수치와 상세 수치 일치 보장!
+            if (newApply !== undefined || newLimit !== undefined) {
+              setCampaigns(prevList => prevList.map(item => {
+                if (item.id === selectedCampaign.id) {
+                  return {
+                    ...item,
+                    applyCount: newApply !== undefined ? newApply : item.applyCount,
+                    limitCount: newLimit !== undefined ? newLimit : item.limitCount
+                  };
+                }
+                return item;
+              }));
+            }
           }
         })
         .catch(err => console.error('Failed to load detail mission:', err))
