@@ -21,10 +21,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'viral_re (바이럴리) | 블로그 & SNS 체험단 통합 검색 플랫폼',
-  description: '레뷰, 디너의여왕, 강남맛집 등 40여 개 체험단 플랫폼의 모든 정보를 한 곳에서! 카테고리별, 지역별, 플랫폼별 실시간 스마트 통합 필터로 나에게 딱 맞는 체험단을 찾아보세요.',
-  keywords: ['체험단', '블로그체험단', '인스타그램체험단', '체험단모아보기', '인플렉서', '다나와체험단', '마케팅', 'viral_re', '바이럴리'],
-  authors: [{ name: 'viral_re Team' }],
+  title: '체험픽 (cheheumpick) | 블로그 & SNS 체험단 프리미엄 큐레이션 마켓플레이스',
+  description: '17대 검증된 체험단 플랫폼의 라이브 체험단을 한눈에 검색하고 큐레이션 받으세요. 실시간 스마트 필터와 정밀 데이터 기반 체험단 큐레이션.',
+  keywords: ['체험픽', 'cheheumpick', '체험단', '블로그체험단', '인스타그램체험단', '체험단모아보기', '마켓플레이스'],
+  authors: [{ name: 'cheheumpick Team' }],
 };
 
 export default function RootLayout({
