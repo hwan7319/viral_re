@@ -1067,20 +1067,20 @@ export default function Home() {
   const [keywordData, setKeywordData] = useState<any>(null);
   const [isKeywordLoading, setIsKeywordLoading] = useState(false);
 
-  // ⚡ 실시간 급상승 키워드 1분 자동 동기화 상태
+  // ⚡ 네이버 실시간 급상승 키워드 1분 자동 동기화 상태 (키워드마스터 전용)
   const [liveTrendingList, setLiveTrendingList] = useState<any[]>([]);
   const [lastTrendingUpdate, setLastTrendingUpdate] = useState<string>('');
 
   const fetchLiveTrending = useCallback(async () => {
     try {
-      const res = await fetch('/api/trending');
+      const res = await fetch('/api/naver-trending');
       const json = await res.json();
       if (json.success && json.data) {
         setLiveTrendingList(json.data);
         setLastTrendingUpdate(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
       }
     } catch (e) {
-      console.warn('Failed to fetch trending keywords:', e);
+      console.warn('Failed to fetch naver trending keywords:', e);
     }
   }, []);
 
