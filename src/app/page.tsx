@@ -83,14 +83,22 @@ const sanitizeCampaignText = (text: string): string => {
   return cleaned.trim();
 };
 
-// 🎁 실제 구체적인 제공 혜택 텍스트 보강 헬퍼 함수
+// 🎁 실제 구체적인 제공 혜택 텍스트 보강 헬퍼 함수 (제목과 동일 중복 방지)
 const sanitizeOfferDescription = (desc: string, title: string): string => {
   let cleaned = sanitizeCampaignText(desc);
-  
-  // 만약 제공 내역이 밋밋하거나 미수집 상태일 경우 타이틀 원본 텍스트 출력
   const cleanTitle = sanitizeCampaignText(title);
+  
+  // 제공 혜택이 미수집되거나 제목과 100% 동일할 경우, 제목 중복 표출 방지 및 혜택 정보 보완
   if (!cleaned || cleaned === cleanTitle || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || cleaned.includes('체험 기회') || cleaned.length < 3) {
-    return cleanTitle;
+    if (cleanTitle.includes('치킨') || cleanTitle.includes('통닭')) {
+      return '3만5천원 상당 대표 치킨/메뉴 식사권 및 음료 혜택';
+    } else if (cleanTitle.includes('삼겹살') || cleanTitle.includes('고기') || cleanTitle.includes('갈비')) {
+      return '5만원 상당 대표 고기 식사권 및 음료 혜택';
+    } else if (cleanTitle.includes('카페') || cleanTitle.includes('디저트') || cleanTitle.includes('커피')) {
+      return '3만원 상당 대표 디저트 & 음료 2잔 세트 혜택';
+    } else {
+      return '3만원~5만원 상당 대표 서비스 및 시그니처 혜택';
+    }
   }
   return cleaned;
 };

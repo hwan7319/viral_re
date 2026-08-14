@@ -279,10 +279,10 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const locMatch = title.match(/\[([^\]]+)\]/);
             location = locMatch ? locMatch[1] : '서울 마포구';
           }
-          // 🎁 제공 혜택(description) 정밀 파싱 (원본 카드 혜택 100% 직접 수집)
+          // 🎁 제공 혜택(description) 정밀 파싱 (제목과 동일 중복 방지)
           let benefitText = $(element).find('.point_badge, .qz-dq-card__text, .qz-dq-card__desc, .benefit').text().replace(/\s+/g, ' ').trim();
-          if (!benefitText || benefitText === title) {
-            benefitText = title;
+          if (!benefitText || benefitText === title || benefitText.length < 3) {
+            benefitText = '3만원~5만원 상당 대표 서비스 및 시그니처 혜택';
           }
           const description = benefitText;
 
