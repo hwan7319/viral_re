@@ -135,10 +135,21 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
     const $ = cheerio.load(html);
     const siteLower = (targetSite || '').toLowerCase();
 
-    // 1. 디너의여왕 -> .qz-collapse__content p strong.w-600 (예: "3만원 식사권")
+    // 1. 디너의여왕 -> "제공 내역" 헤더 블록 아래 .qz-collapse__content strong.w-600
     if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
-      const bText = $('.qz-collapse__content p strong.w-600').first().text().trim() ||
-                    $('.qz-collapse__content p.qz-body-kr').first().text().trim();
+      let bText = '';
+      $('.qz-collapse').each((_, el) => {
+        const headerText = $(el).text();
+        if (headerText.includes('제공 내역') || headerText.includes('제공내역') || headerText.includes('제공 혜택')) {
+          const found = $(el).find('.qz-collapse__content strong.w-600, .qz-collapse__content p').first().text().trim();
+          if (found && found.length > 1 && !found.includes('알아두면')) {
+            bText = found;
+          }
+        }
+      });
+      if (!bText) {
+        bText = $('.qz-collapse__content strong.w-600').first().text().trim();
+      }
       if (bText && bText.length > 1) return bText;
     }
     // 2. 강남맛집 -> dd.sub_tit

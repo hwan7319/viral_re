@@ -279,9 +279,9 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const locMatch = title.match(/\[([^\]]+)\]/);
             location = locMatch ? locMatch[1] : '서울 마포구';
           }
-          // 🎁 제공 혜택(description) 정밀 파싱 (제목과 동일 중복 방지)
-          let benefitText = $(element).find('.point_badge, .qz-dq-card__text, .qz-dq-card__desc, .benefit').text().replace(/\s+/g, ' ').trim();
-          if (!benefitText || benefitText === title || benefitText.length < 3) {
+          // 🎁 제공 혜택(description) 정밀 파싱 (p.qz-body-kr strong.w-600 및 point_badge)
+          let benefitText = $(element).find('p.qz-body-kr strong.w-600, .point_badge, .qz-body-kr').first().text().replace(/\s+/g, ' ').trim();
+          if (!benefitText || benefitText === title || benefitText.includes('신청') || benefitText.includes('모집') || benefitText.length < 2) {
             benefitText = `${title} 대표 시그니처 체험권`;
           }
           const description = benefitText;
