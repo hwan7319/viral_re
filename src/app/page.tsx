@@ -2364,7 +2364,6 @@ export default function Home() {
                           border: '1px solid rgba(99, 102, 241, 0.22)',
                           background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
                         }}>
-                          <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '1px' }}>🎁</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
                               제공 혜택
@@ -2540,7 +2539,6 @@ export default function Home() {
                           border: '1px solid rgba(99, 102, 241, 0.22)',
                           background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
                         }}>
-                          <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '1px' }}>🎁</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
                               제공 혜택
@@ -2696,7 +2694,7 @@ export default function Home() {
                   borderRadius: 'var(--radius-md)'
                 }}>
                   <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🎁</span> 제공 혜택
+                    제공 혜택
                   </h4>
                   <p style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.4, margin: 0 }}>
                     {sanitizeOfferDescription(selectedCampaign.description, selectedCampaign.title)}
