@@ -87,25 +87,10 @@ const sanitizeCampaignText = (text: string): string => {
 const sanitizeOfferDescription = (desc: string, title: string): string => {
   let cleaned = sanitizeCampaignText(desc);
   
-  // 만약 제공 내역이 제목과 똑같거나 밋밋한 텍스트인 경우 title 및 카테고리 기반으로 구체적 혜택으로 완벽 보완
+  // 만약 제공 내역이 밋밋하거나 미수집 상태일 경우 타이틀 원본 텍스트 출력
   const cleanTitle = sanitizeCampaignText(title);
-  if (!cleaned || cleaned === cleanTitle || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || cleaned.includes('체험 기회') || cleaned.length < 5) {
-    const cleanT = sanitizeCampaignText(title);
-    if (cleanT.includes('치킨') || cleanT.includes('통닭')) {
-      return '3만5천원권 식사 혹은 대표메뉴(크리스피 치킨/양념치킨/썬오브핫치킨) 중 택 1 + 음료 콜라 체험권';
-    } else if (cleanT.includes('삼겹살') || cleanT.includes('고기') || cleanT.includes('갈비') || cleanT.includes('구이')) {
-      return '5만원 상당 삼겹살/목살 2인분 + 사이드찌개 + 음료/주류 1병 체험권';
-    } else if (cleanT.includes('카페') || cleanT.includes('디저트') || cleanT.includes('빵') || cleanT.includes('커피')) {
-      return '3만원 상당 시그니처 음료 2잔 + 대표 디저트 케이크/베이커리 세트';
-    } else if (cleanT.includes('초밥') || cleanT.includes('스시') || cleanT.includes('오마카세') || cleanT.includes('일식')) {
-      return '6만원 상당 셰프 특선 모둠 초밥 2인 세트 + 우동/튀김 서비스';
-    } else if (cleanT.includes('크림') || cleanT.includes('화장품') || cleanT.includes('앰플') || cleanT.includes('세럼')) {
-      return '5만 8천원 상당 고농축 수분 앰플 & 안티에이징 크림 본품 1세트 무료 배송';
-    } else if (cleanT.includes('숙박') || cleanT.includes('펜션') || cleanT.includes('호텔') || cleanT.includes('리조트')) {
-      return '15만원 상당 감성 독채 펜션/객실 무료 1박 숙박권 (2인 조식 포함)';
-    } else {
-      return cleanT ? `${cleanT} 관련 3~5만원 상당 대표 서비스 및 시그니처 혜택 제공` : '3만5천원 상당 대표 메뉴/상품 자유 체험권';
-    }
+  if (!cleaned || cleaned === cleanTitle || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || cleaned.includes('체험 기회') || cleaned.length < 3) {
+    return cleanTitle;
   }
   return cleaned;
 };

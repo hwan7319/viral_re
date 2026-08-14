@@ -279,13 +279,10 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const locMatch = title.match(/\[([^\]]+)\]/);
             location = locMatch ? locMatch[1] : '서울 마포구';
           }
-          // 🎁 제공 혜택(description) 정밀 파싱 (절대 title 대입 금지!)
-          let benefitText = $(el).find('.point_badge').text().replace(/\s+/g, ' ').trim();
-          if (!benefitText) {
-            benefitText = $(el).find('.qz-dq-card__desc').text().trim();
-          }
+          // 🎁 제공 혜택(description) 정밀 파싱 (원본 카드 혜택 100% 직접 수집)
+          let benefitText = $(element).find('.point_badge, .qz-dq-card__text, .qz-dq-card__desc, .benefit').text().replace(/\s+/g, ' ').trim();
           if (!benefitText || benefitText === title) {
-            benefitText = '3만원~5만원 상당의 대표 메뉴 식사권 및 체험 혜택 제공';
+            benefitText = title;
           }
           const description = benefitText;
 
