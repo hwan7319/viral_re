@@ -9,7 +9,7 @@ interface IconProps {
   filled?: boolean;
 }
 
-// SVG 아이콘 컴포넌트 모음 (외부 패키지 없이 완벽히 구동되도록 인라인 구현)
+// SVG 아이콘 컴포넌트 모음 (IconProps 프로퍼티 타입 지원)
 const Icons = {
   Search: ({ className, style }: IconProps = {}) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className} style={{ width: '1.25rem', height: '1.25rem', ...style }}>
