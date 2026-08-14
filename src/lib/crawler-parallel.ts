@@ -220,7 +220,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const campaignUrl = `https://xn--939au0g4vj8sq.net${campaignUrlPath}`;
           
           const subTit = $(el).find('dd.sub_tit').text().trim();
-          const description = (subTit && subTit !== title) ? subTit : '3만원~5만원 상당의 대표 메뉴 체험권';
+          const description = (subTit && subTit !== title) ? subTit : `${title} 대표 시그니처 체험권`;
 
           let imageUrl = $(el).find('.imgArea img').attr('src') || '';
           if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
@@ -282,7 +282,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           // 🎁 제공 혜택(description) 정밀 파싱 (제목과 동일 중복 방지)
           let benefitText = $(element).find('.point_badge, .qz-dq-card__text, .qz-dq-card__desc, .benefit').text().replace(/\s+/g, ' ').trim();
           if (!benefitText || benefitText === title || benefitText.length < 3) {
-            benefitText = '3만원~5만원 상당 대표 서비스 및 시그니처 혜택';
+            benefitText = `${title} 대표 시그니처 체험권`;
           }
           const description = benefitText;
 
