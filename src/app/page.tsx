@@ -1571,100 +1571,139 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* 1. Header (체험픽 - 큐레이션 마켓플레이스 프리미엄 헤더) */}
-      <header className="marketplace-header">
-        <div className="header-content">
-          <div className="header-brand" onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
-            <span className="brand-logo-text">
-              체험<span>픽</span>
-            </span>
-            <span className="brand-version-badge">beta</span>
-          </div>
+      {/* 1. Header (글래스모피즘 헤더) */}
+      <header className="glass-panel" style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img 
+            src="/logo.png" 
+            alt="viral_re logo" 
+            style={{ 
+              height: '38px', 
+              width: 'auto', 
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              cursor: 'pointer'
+            }}
+            onClick={() => window.location.reload()}
+          />
+          <span className="integrator-badge" style={{
+            fontSize: '0.7rem',
+            padding: '2px 6px',
+            backgroundColor: 'var(--accent-light)',
+            color: 'var(--accent)',
+            borderRadius: 'var(--radius-sm)',
+            fontWeight: 700,
+            whiteSpace: 'nowrap'
+          }}>
+            INTEGRATOR v1.0
+          </span>
+        </div>
 
-          <div className="header-actions">
-            <button 
-              onClick={triggerCrawling} 
-              disabled={crawling}
-              className="btn-header-secondary"
-            >
-              <Icons.Refresh className={crawling ? 'animate-spin' : ''} />
-              <span>{crawling ? '수집 중...' : '실시간 수집'}</span>
-            </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+          <button 
+            onClick={triggerCrawling} 
+            disabled={crawling}
+            className="premium-button-secondary"
+            style={{ 
+              padding: '8px 12px', 
+              fontSize: '0.8rem', 
+              borderRadius: 'var(--radius-md)', 
+              borderColor: crawling ? 'var(--text-tertiary)' : 'var(--border-color)',
+              opacity: crawling ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Icons.Refresh className={crawling ? 'animate-spin' : ''} />
+            <span className="header-btn-text">{crawling ? '수집 중...' : '실시간 수집'}</span>
+          </button>
 
-            {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
-            {user ? (
-              <div style={{ position: 'relative' }}>
-                <button 
-                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className="user-avatar-btn"
-                  title={`${user.name} network`}
-                >
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  />
-                </button>
-                
-                {isUserDropdownOpen && (
-                  <div className="user-dropdown-menu">
-                    <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-light)', marginBottom: '4px' }}>
-                      <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-strong)' }}>{user.name}님</p>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', wordBreak: 'break-all' }}>{user.email}</p>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        setUser(null);
-                        setIsUserDropdownOpen(false);
-                        showToast('성공적으로 로그아웃되었습니다.', 'info');
-                      }}
-                      className="user-dropdown-item danger"
-                    >
-                      로그아웃
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
+          {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
+          {user ? (
+            <div style={{ position: 'relative' }}>
               <button 
-                onClick={() => setIsLoginModalOpen(true)}
-                className="btn-header-primary"
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                className="user-avatar-btn"
+                title={`${user.name} network`}
               >
-                <span>로그인 / 회원가입</span>
+                <img 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
               </button>
-            )}
-
+              
+              {isUserDropdownOpen && (
+                <div className="user-dropdown-menu">
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)', marginBottom: '4px' }}>
+                    <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>{user.name}님</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', wordBreak: 'break-all' }}>{user.email}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setUser(null);
+                      setIsUserDropdownOpen(false);
+                      showToast('성공적으로 로그아웃되었습니다.', 'info');
+                    }}
+                    className="user-dropdown-item danger"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
             <button 
-              onClick={toggleTheme}
-              style={{
-                width: '36px', height: '36px',
-                borderRadius: '10px',
-                border: '1px solid var(--color-border)',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-text)',
-                transition: 'var(--transition-smooth)'
-              }}
-              aria-label="Toggle Theme"
+              onClick={() => setIsLoginModalOpen(true)}
+              className="premium-button-primary header-login-btn"
+              style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-md)', whiteSpace: 'nowrap' }}
             >
-              {theme === 'light' ? <Icons.Moon /> : <Icons.Sun />}
+              <span className="login-btn-text-desktop">로그인 / 회원가입</span>
+              <span className="login-btn-text-mobile" style={{ display: 'none' }}>로그인</span>
             </button>
-          </div>
+          )}
+
+          <button 
+            onClick={toggleTheme}
+            style={{
+              width: '40px', height: '40px',
+              borderRadius: '50%',
+              border: '1px solid var(--border-color)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              backgroundColor: 'var(--bg-secondary)',
+              transition: 'var(--transition-smooth)'
+            }}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? <Icons.Moon /> : <Icons.Sun />}
+          </button>
         </div>
       </header>
 
-      {/* 2. Hero Search Section */}
-      <section className="hero-search-section">
-        <div className="page-container" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <h1 className="hero-title">
-            블로그 & SNS 체험단 <span className="highlight">실시간 모아보기</span>
-          </h1>
-          <p className="hero-description">
-            17대 검증된 플랫폼의 라이브 체험단을 한눈에 검색하고 큐레이션 받으세요.
+      {/* 2. Hero Section - compact & modern */}
+      <section style={{
+        padding: '48px 24px 28px',
+        textAlign: 'center',
+        background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
+        borderBottom: '1px solid var(--border-color)',
+        position: 'relative',
+        zIndex: 200
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+          <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all' }}>
+            블로그 & SNS 체험단 <span className="text-gradient">실시간 모아보기</span>
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '1rem' }}>
+            여러 플랫폼의 활성 체험단을 한 곳에서 찾아보세요.
           </p>
 
-          {/* 🔍 고도화된 메인 검색창 (높이 52px, max-width 640px) */}
-          <div style={{ width: '100%', maxWidth: '640px', position: 'relative', zIndex: (isSearchFocused || isTrendDropdownOpen) ? 99999 : 50 }}>
+          {/* 검색 & 실시간 검색어 가로 정렬 영역 - 포커스 시 zIndex 99999 격상 */}
+          <div className="hero-search-wrapper" style={{ marginTop: '24px', position: 'relative', zIndex: (isSearchFocused || isTrendDropdownOpen) ? 99999 : 50 }}>
+            {/* 좌측/가운데: 통합 검색창 (최근검색어 레이어 팝업 포함) */}
             <div className="hero-search-box" style={{ position: 'relative', zIndex: isSearchFocused ? 99999 : 1 }}>
               <form 
                 onSubmit={(e) => {
@@ -1676,9 +1715,20 @@ export default function Home() {
                     document.activeElement.blur();
                   }
                 }}
-                className="search-bar-form"
+                className="glass-panel" 
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '6px 8px 6px 16px',
+                  borderRadius: 'var(--radius-full)',
+                  boxShadow: 'var(--shadow-lg)',
+                  border: isSearchFocused ? '1px solid var(--accent)' : '1px solid var(--border-focus)',
+                  transition: 'var(--transition-smooth)',
+                  flexWrap: 'nowrap',
+                  width: '100%',
+                  backgroundColor: 'var(--bg-secondary)'
+                }}
               >
-                <Icons.Search style={{ color: 'var(--color-text-muted)', marginRight: '10px', flexShrink: 0 }} />
+                <Icons.Search />
                 <input 
                   type="text" 
                   placeholder={placeholderText}
@@ -1686,7 +1736,13 @@ export default function Home() {
                   onChange={(e) => setSearchInput(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                  className="search-input"
+                  style={{
+                    flex: 1, border: 'none', background: 'transparent',
+                    padding: '8px 12px', fontSize: '0.95rem',
+                    color: 'var(--text-primary)',
+                    minWidth: 0,
+                    outline: 'none'
+                  }}
                 />
                 {searchInput && (
                   <button 
@@ -1695,7 +1751,7 @@ export default function Home() {
                       setSearchInput('');
                       setSearchTerm('');
                     }}
-                    style={{ color: 'var(--color-text-muted)', marginRight: '8px', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{ color: 'var(--text-tertiary)', marginRight: '8px', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer' }}
                     title="검색어 초기화"
                   >
                     <Icons.Close />
@@ -1703,10 +1759,19 @@ export default function Home() {
                 )}
                 <button
                   type="submit"
-                  className="btn-search-submit"
-                  title="검색하기"
+                  className="premium-button-primary"
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap'
+                  }}
                 >
-                  <Icons.Search size={18} />
+                  검색
                 </button>
               </form>
 
@@ -2235,88 +2300,120 @@ export default function Home() {
         ) : (
           /* 실제 리스트 카드 렌더링 */
           <>
-            {/* 체험단 카드 Grid (4열) */}
-            <div className="campaign-card-grid">
-              {displayedCampaigns.slice(0, visibleCount).map((c) => {
+            {/* 1. 상단 2개 라인 (카드 8개) */}
+            <div className="campaign-grid">
+              {displayedCampaigns.slice(0, Math.min(8, visibleCount)).map((c) => {
                 const dday = calculateDday(c.endDate);
-                const compNum = c.limitCount > 0 ? c.applyCount / c.limitCount : 0;
-                const competitionRate = c.limitCount > 0 ? compNum.toFixed(1) : '0';
-                const ratePercent = Math.min(100, Math.floor((c.applyCount / Math.max(1, c.limitCount)) * 100));
+                const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
+                const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
 
-                const ddayClass = (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2')
-                  ? 'badge-dday-today'
-                  : (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5)
-                  ? 'badge-dday-urgent'
-                  : 'badge-dday-normal';
-
-                const compClass = compNum >= 2.0 ? 'high' : compNum >= 1.0 ? 'medium' : 'low';
+                let ddayColor = 'var(--success)';
+                if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
+                else if (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5) ddayColor = 'var(--warning)';
+                else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
 
                 return (
                   <article 
                     key={c.id} 
-                    className="campaign-card animate-fade-in"
+                    className="premium-card animate-fade-in"
                     onClick={() => setSelectedCampaign(c)}
+                    style={{ cursor: 'pointer' }}
                   >
                     {/* 카드 썸네일 영역 */}
-                    <div className="card-image-wrap">
+                    <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
                       <img 
                         src={c.imageUrl} 
                         alt={c.title}
                         loading="lazy"
                         referrerPolicy="no-referrer"
-                        className="card-image"
+                        style={{
+                          width: '100%', height: '100%', objectFit: 'cover',
+                          transition: 'transform 0.4s ease'
+                        }}
+                        className="card-image-hover"
                       />
-                      {/* 이미지 위: 마감 상태 뱃지 전용 */}
-                      <div className={`badge-overlay-dday ${ddayClass}`}>
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                        <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          {c.platform === 'blog' ? (
+                            <>
+                              <NaverBlogIcon size={13} />
+                              <span>블로그</span>
+                            </>
+                          ) : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
+                        </span>
+                      </div>
+                      <div style={{
+                        position: 'absolute', top: '12px', right: '12px',
+                        backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
+                        fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
+                      }}>
+                        {c.targetSite}
+                      </div>
+                      <div style={{
+                        position: 'absolute', bottom: '12px', left: '12px',
+                        backgroundColor: ddayColor, color: '#ffffff',
+                        fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
+                      }}>
                         {dday}
                       </div>
                     </div>
 
                     {/* 카드 내용 영역 */}
-                    <div className="card-body">
-                      {/* 상단 메타: 지역 · 출처 및 플랫폼 뱃지 */}
-                      <div className="card-meta-top">
-                        <span className="card-location">
-                          {c.location ? c.location.replace('/', ' · ') : '전국 · 온라인'}
-                        </span>
-                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                          <span className={`platform-badge ${c.platform}`}>
-                            {c.platform === 'blog' ? '블로그' : c.platform === 'instagram' ? '인스타그램' : c.platform === 'youtube' ? '유튜브' : '기타'}
-                          </span>
-                          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                            {c.targetSite}
-                          </span>
+                    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                      <div>
+                        {c.location && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
+                            <Icons.MapPin /> {c.location}
+                          </div>
+                        )}
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {sanitizeCampaignText(c.title)}
+                        </h3>
+                        <div style={{
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-sm)',
+                          marginBottom: '14px',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          border: '1px solid rgba(99, 102, 241, 0.22)',
+                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
+                        }}>
+                          <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '1px' }}>🎁</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
+                              제공 혜택
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: 'var(--text-primary)',
+                              display: '-webkit-box', 
+                              WebkitLineClamp: 3, 
+                              WebkitBoxOrient: 'vertical', 
+                              overflow: 'hidden', 
+                              lineHeight: 1.4,
+                              wordBreak: 'keep-all'
+                            }} title={sanitizeOfferDescription(c.description, c.title)}>
+                              {sanitizeOfferDescription(c.description, c.title)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-
-                      {/* 카드 제목 */}
-                      <h3 className="card-title">
-                        {sanitizeCampaignText(c.title)}
-                      </h3>
-
-                      {/* 요약 혜택 박스 (2줄 요약) */}
-                      <div className="benefit-summary-box">
-                        <span className="benefit-label">제공 혜택</span>
-                        <span className="benefit-text" title={sanitizeOfferDescription(c.description, c.title)}>
-                          {sanitizeOfferDescription(c.description, c.title)}
-                        </span>
-                      </div>
-
-                      {/* 하단 지원 현황 & progress bar & 경쟁률 */}
-                      <div className="card-status-footer">
-                        <div className="status-counts-row">
-                          <span className="apply-count-text">
-                            {c.applyCount} <span>/ {c.limitCount}명 지원</span>
-                          </span>
-                          <span className={`competition-rate-text ${compClass}`}>
+                      <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                          <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
+                          <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
                             경쟁률 {competitionRate}:1
                           </span>
                         </div>
-                        <div className="progress-bar-track">
-                          <div 
-                            className={`progress-bar-fill ${compClass}`} 
-                            style={{ width: `${ratePercent}%` }}
-                          />
+                        <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                          <div style={{
+                            width: `${ratePercent}%`, height: '100%',
+                            backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
+                            borderRadius: 'var(--radius-full)',
+                            transition: 'width 0.4s ease'
+                          }} />
                         </div>
                       </div>
                     </div>
