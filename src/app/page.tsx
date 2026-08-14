@@ -1067,6 +1067,31 @@ export default function Home() {
   const [keywordData, setKeywordData] = useState<any>(null);
   const [isKeywordLoading, setIsKeywordLoading] = useState(false);
 
+  // ⚡ 실시간 급상승 키워드 1분 자동 동기화 상태
+  const [liveTrendingList, setLiveTrendingList] = useState<any[]>([]);
+  const [lastTrendingUpdate, setLastTrendingUpdate] = useState<string>('');
+
+  const fetchLiveTrending = useCallback(async () => {
+    try {
+      const res = await fetch('/api/trending');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setLiveTrendingList(json.data);
+        setLastTrendingUpdate(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+      }
+    } catch (e) {
+      console.warn('Failed to fetch trending keywords:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveTrending();
+    const interval = setInterval(() => {
+      fetchLiveTrending();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [fetchLiveTrending]);
+
   // 키워드 분석 실행 함수
   const analyzeKeyword = async (targetQuery: string) => {
     const q = targetQuery.trim();
@@ -3002,6 +3027,44 @@ export default function Home() {
               >
                 <Icons.Close />
               </button>
+            </div>
+
+            {/* ⚡ 실시간 급상승 키워드 (1분 자동 동기화) 바 */}
+            <div style={{
+              padding: '10px 20px',
+              backgroundColor: 'rgba(99, 102, 241, 0.05)',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent)' }}>
+                  ⚡ 실시간 급상승 Top 10
+                </span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
+                  ({lastTrendingUpdate || '방금'} 갱신)
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+                {liveTrendingList.slice(0, 5).map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => analyzeKeyword(item.word)}
+                    style={{
+                      padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
+                      borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)',
+                      color: 'var(--text-primary)', border: '1px solid var(--border-color)',
+                      cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px'
+                    }}
+                    title="클릭 시 실시간 키워드 수치 즉시 분석"
+                  >
+                    <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 800 }}>{item.rank}위</span>
+                    <span>{item.word}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* 검색 입력바 */}

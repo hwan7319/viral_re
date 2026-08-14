@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import axios from 'axios';
 import { getTrendingKeywords } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-// 기본 고정 데모 인기 키워드 리스트 (DB 로그가 부족할 때 순위를 보장하기 위한 스티키 병합용)
 const DEFAULT_TRENDING = [
   '강남 맛집',
   '수분 크림',
@@ -17,17 +17,43 @@ const DEFAULT_TRENDING = [
   '헤어 클리닉'
 ];
 
-// 🔑 GET /api/trending: DB 검색 로그 기반 실시간 인기 검색어 1~10위 산출 반환
 export async function GET(req: NextRequest) {
   try {
-    // 1. DB에서 최근 24시간 실시간 검색 로그 집계 조회
+    const liveKeywords: string[] = [];
+
+    // 1. 실시간 이슈 키워드 API (Signal.bz) 실시간 수집 시도
+    try {
+      const sigRes = await axios.get('https://api.signal.bz/news/realtime', {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
+        timeout: 2500,
+      });
+
+      if (sigRes.data && Array.isArray(sigRes.data.top10)) {
+        sigRes.data.top10.forEach((item: any) => {
+          if (item.keyword && typeof item.keyword === 'string') {
+            liveKeywords.push(item.keyword.trim());
+          }
+        });
+      }
+    } catch (e: any) {
+      console.warn('[Trending API] Signal.bz live fetch skipped:', e.message);
+    }
+
+    // 2. DB 검색 로그 통계 데이터 수집
     const dbTrending = await getTrendingKeywords();
 
-    // 2. 병합(Merge) 로직: DB 결과에 있는 키워드 우선 배치 후, 10개가 안 차면 기본 리스트로 순위 채움
     const mergedList: string[] = [];
     const addedSet = new Set<string>();
 
-    // DB 통계 키워드 먼저 추가
+    // ① 실시간 급상승 키워드 우선 수집
+    liveKeywords.forEach(kw => {
+      if (kw && !addedSet.has(kw)) {
+        mergedList.push(kw);
+        addedSet.add(kw);
+      }
+    });
+
+    // ② DB 로그 키워드 수집
     dbTrending.forEach(item => {
       const trimmed = item.word.trim();
       if (trimmed && !addedSet.has(trimmed)) {
@@ -36,7 +62,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // 10개가 찰 때까지 기본 키워드 채워 넣기
+    // ③ 10개 부족 시 기본 고정 키워드 채움
     for (const defWord of DEFAULT_TRENDING) {
       if (mergedList.length >= 10) break;
       if (!addedSet.has(defWord)) {
@@ -45,8 +71,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 3. 1위부터 10위까지 객체 구조로 매핑 포맷팅 (정확한 뱃지 유형 tagType 부여)
-    const trendingList = mergedList.map((word, index) => {
+    const trendingList = mergedList.slice(0, 10).map((word, index) => {
       const rank = index + 1;
       let tagType: 'hot' | 'new' | 'up' | 'same' = 'same';
       let tagLabel = '-';
@@ -76,6 +101,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      updatedAt: new Date().toISOString(),
       data: trendingList
     }, {
       headers: {
@@ -89,28 +115,14 @@ export async function GET(req: NextRequest) {
     console.error('[API Trending Error]:', error);
     const fallbackList = DEFAULT_TRENDING.map((word, index) => ({
       rank: index + 1,
-      word
+      word,
+      tagType: 'same' as const,
+      tagLabel: '-'
     }));
     return NextResponse.json({
       success: true,
+      updatedAt: new Date().toISOString(),
       data: fallbackList
-    }, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      }
     });
   }
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    }
-  });
 }
