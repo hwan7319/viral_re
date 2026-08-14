@@ -1092,6 +1092,18 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [fetchLiveTrending]);
 
+  // 🔒 모달 오픈 시 배경 윈도우 스크롤 차단 (Body Scroll Lock)
+  useEffect(() => {
+    if (isKeywordModalOpen || selectedCampaign || isLoginModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isKeywordModalOpen, selectedCampaign, isLoginModalOpen]);
+
   // 키워드 분석 실행 함수
   const analyzeKeyword = async (targetQuery: string) => {
     const q = targetQuery.trim();
@@ -3003,7 +3015,7 @@ export default function Home() {
           padding: '16px'
         }}>
           <div className="glass-panel" style={{
-            width: '100%', maxWidth: '640px', maxHeight: '90vh',
+            width: '95%', maxWidth: '880px', maxHeight: '94vh',
             backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
