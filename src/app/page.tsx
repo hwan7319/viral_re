@@ -406,6 +406,7 @@ export default function Home() {
   const SYNC_INTERVAL_SEC = 60;
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
+  const [syncToastInfo, setSyncToastInfo] = useState<{ visible: boolean; count: number; updatedCount: number } | null>(null);
 
   const triggerManualSync = useCallback(async () => {
     setIsSyncingData(true);
@@ -413,7 +414,20 @@ export default function Home() {
       const res = await fetch(`/api/campaigns?t=${Date.now()}`);
       const data = await res.json();
       if (data && Array.isArray(data.campaigns)) {
+        const prevCount = campaigns.length;
+        const newCount = data.campaigns.length;
         setCampaigns(data.campaigns);
+
+        // ⚡ 동기화 완료 직후 2.5초간 스르르 나타났다 사라지는 토스트 알림
+        setSyncToastInfo({
+          visible: true,
+          count: newCount,
+          updatedCount: Math.max(0, newCount - prevCount)
+        });
+
+        setTimeout(() => {
+          setSyncToastInfo(prev => prev ? { ...prev, visible: false } : null);
+        }, 2500);
       }
     } catch (e) {
       console.warn('Auto sync failed:', e);
@@ -421,7 +435,7 @@ export default function Home() {
       setIsSyncingData(false);
       setSyncCountdown(SYNC_INTERVAL_SEC);
     }
-  }, []);
+  }, [campaigns.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1847,35 +1861,74 @@ export default function Home() {
           >
             <span>🔑 키워드마스터</span>
           </button>
-          <button 
-            type="button"
-            onClick={triggerManualSync}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              padding: '6px 12px',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              borderRadius: '9999px',
-              backgroundColor: isSyncingData ? 'rgba(59, 130, 246, 0.12)' : 'rgba(16, 185, 129, 0.08)',
-              color: isSyncingData ? '#3b82f6' : '#10b981',
-              border: isSyncingData ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(16, 185, 129, 0.2)',
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            title="클릭 시 즉시 실시간 데이터 동기화 실행 (자동 동기화 주기: 60초)"
-          >
-            <span style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: isSyncingData ? '#3b82f6' : '#10b981',
-              boxShadow: isSyncingData ? '0 0 6px #3b82f6' : '0 0 6px #10b981'
-            }} />
-            <span>{isSyncingData ? '동기화 중...' : `자동 동기화 ${syncCountdown}초 전 🟢`}</span>
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button 
+              type="button"
+              onClick={triggerManualSync}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                padding: '6px 12px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                borderRadius: '9999px',
+                backgroundColor: isSyncingData ? 'rgba(59, 130, 246, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                color: isSyncingData ? '#3b82f6' : '#10b981',
+                border: isSyncingData ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(16, 185, 129, 0.2)',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              title="클릭 시 즉시 실시간 데이터 동기화 실행 (자동 동기화 주기: 60초)"
+            >
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: isSyncingData ? '#3b82f6' : '#10b981',
+                boxShadow: isSyncingData ? '0 0 6px #3b82f6' : '0 0 6px #10b981'
+              }} />
+              <span>{isSyncingData ? '동기화 중...' : `자동 동기화 ${syncCountdown}초 전 🟢`}</span>
+            </button>
+
+            {/* ⚡ 동기화 완료 후 2초간 스르르 나타났다가 사라지는 모션 토스트 */}
+            {syncToastInfo && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                zIndex: 99,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                color: '#ffffff',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.2)',
+                backdropFilter: 'blur(12px)',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                opacity: syncToastInfo.visible ? 1 : 0,
+                transform: syncToastInfo.visible ? 'translateY(0) scale(1)' : 'translateY(-8px) scale(0.95)',
+                transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                pointerEvents: 'none'
+              }}>
+                <span style={{ fontSize: '0.9rem' }}>✨</span>
+                <span>
+                  <strong style={{ color: '#10b981' }}>{syncToastInfo.count.toLocaleString()}개</strong> 공고 실시간 동기화 완료!
+                  {syncToastInfo.updatedCount > 0 && (
+                    <span style={{ color: '#38bdf8', marginLeft: '4px' }}>
+                      (+{syncToastInfo.updatedCount}건 최신 갱신)
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
           {user ? (
