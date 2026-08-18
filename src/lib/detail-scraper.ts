@@ -157,16 +157,20 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       $('.qz-collapse').each((_, el) => {
         const headerText = $(el).text();
         if (headerText.includes('제공 내역') || headerText.includes('제공내역') || headerText.includes('제공 혜택')) {
-          const found = $(el).find('.qz-collapse__content strong.w-600, .qz-collapse__content p, .qz-collapse__content').first().text().trim();
-          if (found && found.length > 1 && !found.includes('알아두면')) {
-            bText = found;
+          const strongText = $(el).find('.qz-collapse__content strong, .qz-collapse__content p, .qz-collapse__content h4').first().text().trim();
+          if (strongText && strongText.length > 1 && !strongText.includes('확인사항') && !strongText.includes('알아두면')) {
+            bText = strongText;
+          } else {
+            const fullContent = $(el).find('.qz-collapse__content').text().trim();
+            const splitText = fullContent.split(/참여\s*전\s*필수\s*확인사항|★|알아두면/)[0].trim();
+            if (splitText && splitText.length > 1) bText = splitText;
           }
         }
       });
-      if (!bText) {
-        bText = $('.qz-collapse__content strong.w-600, .qz-collapse__content p').first().text().trim();
+      if (bText) {
+        bText = bText.replace(/참여\s*전\s*필수\s*확인사항.*$/gi, '').trim();
+        if (bText.length > 1) return bText;
       }
-      if (bText && bText.length > 1) return bText;
     }
     // 2. 강남맛집 -> dd.sub_tit
     else if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {

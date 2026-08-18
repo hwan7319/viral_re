@@ -431,7 +431,7 @@ export default function Home() {
 
   // 🔍 상세 모달 오픈 시 각 사이트별 원본 상세 미션 가이드라인 실시간 스크레이핑 렌더링
   useEffect(() => {
-    if (selectedCampaign && !selectedCampaign.mission && selectedCampaign.campaignUrl) {
+    if (selectedCampaign && selectedCampaign.campaignUrl) {
       setIsMissionLoading(true);
       fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}`)
         .then(res => res.json())
@@ -439,27 +439,28 @@ export default function Home() {
           if (data.success) {
             const newApply = data.applyCount !== undefined ? data.applyCount : undefined;
             const newLimit = data.limitCount !== undefined ? data.limitCount : undefined;
+            const newBenefit = data.realBenefit || undefined;
 
             setSelectedCampaign(prev => prev ? {
               ...prev,
               mission: data.mission || prev.mission,
+              description: (newBenefit && newBenefit !== prev.title) ? newBenefit : prev.description,
               applyCount: newApply !== undefined ? newApply : prev.applyCount,
               limitCount: newLimit !== undefined ? newLimit : prev.limitCount
             } : null);
 
             // 🔑 목록 카드 state (campaigns) 도 실시간 100% 동기화 갱신하여 목록 수치와 상세 수치 일치 보장!
-            if (newApply !== undefined || newLimit !== undefined) {
-              setCampaigns(prevList => prevList.map(item => {
-                if (item.id === selectedCampaign.id) {
-                  return {
-                    ...item,
-                    applyCount: newApply !== undefined ? newApply : item.applyCount,
-                    limitCount: newLimit !== undefined ? newLimit : item.limitCount
-                  };
-                }
-                return item;
-              }));
-            }
+            setCampaigns(prevList => prevList.map(item => {
+              if (item.id === selectedCampaign.id) {
+                return {
+                  ...item,
+                  description: (newBenefit && newBenefit !== item.title) ? newBenefit : item.description,
+                  applyCount: newApply !== undefined ? newApply : item.applyCount,
+                  limitCount: newLimit !== undefined ? newLimit : item.limitCount
+                };
+              }
+              return item;
+            }));
           }
         })
         .catch(err => console.error('Failed to load detail mission:', err))
