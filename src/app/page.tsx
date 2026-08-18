@@ -3366,98 +3366,103 @@ export default function Home() {
                 </div>
               ) : keywordData ? (
                 <>
-                  {/* 📊 지표 카운트 3열 균등 카드 (모바일 1열 콤팩트 변환) */}
+                  {/* 📊 지표 카운트 개별 1행 카드 레이아웃 (월간 검색량, 포스팅수, 경쟁비율 각각 1행 전용) */}
                   <div>
                     <div 
-                      className="keyword-modal-cards"
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '12px',
+                        gridTemplateColumns: '1fr',
+                        gap: '10px',
                         marginBottom: '12px'
                       }}
                     >
-                      {/* 1. 월간 총 검색량 카드 */}
+                      {/* 1. 월간 총 검색량 카드 (전체 1행) */}
                       <div style={{
-                        padding: '16px',
+                        padding: '14px 18px',
                         borderRadius: 'var(--radius-md)',
                         backgroundColor: 'var(--bg-tertiary)',
                         border: '1px solid var(--border-color)',
                         display: 'flex',
-                        flexDirection: 'column',
+                        alignItems: 'center',
                         justifyContent: 'space-between',
-                        minHeight: '100px'
+                        gap: '12px'
                       }}>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          월간 총 검색량
-                        </span>
-                        <div style={{ margin: '8px 0 4px 0' }}>
-                          <span style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            월간 총 검색량
+                          </span>
+                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>
+                            PC {keywordData.pcSearchVolume.toLocaleString()}회 / 모바일 {keywordData.mobileSearchVolume.toLocaleString()}회
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>
                             {keywordData.totalSearchVolume.toLocaleString()}
                           </span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent)', marginLeft: '2px' }}>회</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent)' }}>회</span>
                         </div>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                          PC {keywordData.pcSearchVolume.toLocaleString()} / 모바일 {keywordData.mobileSearchVolume.toLocaleString()}
-                        </span>
                       </div>
 
-                      {/* 2. 총 블로그 포스팅 수 카드 */}
+                      {/* 2. 총 블로그 포스팅 수 카드 (전체 1행) */}
                       <div style={{
-                        padding: '16px',
+                        padding: '14px 18px',
                         borderRadius: 'var(--radius-md)',
                         backgroundColor: 'var(--bg-tertiary)',
                         border: '1px solid var(--border-color)',
                         display: 'flex',
-                        flexDirection: 'column',
+                        alignItems: 'center',
                         justifyContent: 'space-between',
-                        minHeight: '100px'
+                        gap: '12px'
                       }}>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          총 블로그 포스팅 수
-                        </span>
-                        <div style={{ margin: '8px 0 4px 0' }}>
-                          <span style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            총 블로그 포스팅 수
+                          </span>
+                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>
+                            네이버 블로그 누적 등록 문서 기준
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
                             {keywordData.totalPosts.toLocaleString()}
                           </span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginLeft: '2px' }}>건</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>건</span>
                         </div>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                          네이버 블로그 누적 등록 문서
-                        </span>
                       </div>
 
-                      {/* 3. 경쟁비율 및 등급 카드 */}
+                      {/* 3. 경쟁비율 및 등급 카드 (전체 1행) */}
                       <div style={{
-                        padding: '16px',
+                        padding: '14px 18px',
                         borderRadius: 'var(--radius-md)',
                         backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)',
                         border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
                         display: 'flex',
-                        flexDirection: 'column',
+                        alignItems: 'center',
                         justifyContent: 'space-between',
-                        minHeight: '100px'
+                        gap: '12px'
                       }}>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          경쟁비율 (문서 ÷ 검색량)
-                        </span>
-                        <div style={{ margin: '8px 0 4px 0' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            경쟁비율 (문서 ÷ 검색량)
+                          </span>
                           <span style={{
-                            fontSize: '1.45rem',
-                            fontWeight: 800,
+                            fontSize: '0.74rem',
+                            fontWeight: 700,
+                            color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444'
+                          }}>
+                            {keywordData.statusText}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{
+                            fontSize: '1.4rem',
+                            fontWeight: 900,
                             color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444',
                             fontVariantNumeric: 'tabular-nums'
                           }}>
                             {keywordData.competitionRatio}
                           </span>
                         </div>
-                        <span style={{
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444'
-                        }}>
-                          {keywordData.statusText}
-                        </span>
                       </div>
                     </div>
 
