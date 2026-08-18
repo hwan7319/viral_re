@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Campaign } from '@/lib/db';
 
 interface IconProps {
@@ -1199,6 +1199,44 @@ export default function Home() {
   const [keywordQuery, setKeywordQuery] = useState('');
   const [keywordData, setKeywordData] = useState<any>(null);
   const [isKeywordLoading, setIsKeywordLoading] = useState(false);
+  const [keywordSortField, setKeywordSortField] = useState<'rank' | 'keyword' | 'volume' | 'posts' | 'ratio' | 'date'>('rank');
+  const [keywordSortOrder, setKeywordSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // 🔑 키워드마스터 결과 동적 정렬 (검색량순, 포스팅순, 황금키워드순, 기본순위순)
+  const processedRelatedKeywords = useMemo(() => {
+    if (!keywordData || !keywordData.relatedKeywords) return [];
+    const list = [...keywordData.relatedKeywords];
+    list.sort((a: any, b: any) => {
+      let valA: any = a[keywordSortField];
+      let valB: any = b[keywordSortField];
+
+      if (keywordSortField === 'rank') {
+        valA = a.rank;
+        valB = b.rank;
+      } else if (keywordSortField === 'keyword') {
+        valA = a.keyword;
+        valB = b.keyword;
+      } else if (keywordSortField === 'volume') {
+        valA = a.totalSearchVolume;
+        valB = b.totalSearchVolume;
+      } else if (keywordSortField === 'posts') {
+        valA = a.totalPosts;
+        valB = b.totalPosts;
+      } else if (keywordSortField === 'ratio') {
+        valA = a.competitionRatio;
+        valB = b.competitionRatio;
+      } else if (keywordSortField === 'date') {
+        valA = a.recentDate;
+        valB = b.recentDate;
+      }
+
+      if (typeof valA === 'string') {
+        return keywordSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+      return keywordSortOrder === 'asc' ? valA - valB : valB - valA;
+    });
+    return list;
+  }, [keywordData, keywordSortField, keywordSortOrder]);
 
   // ⚡ 네이버 실시간 급상승 키워드 1분 자동 동기화 상태 (키워드마스터 전용)
   const [liveTrendingList, setLiveTrendingList] = useState<any[]>([]);
@@ -3461,25 +3499,144 @@ export default function Home() {
                       </button>
                     </div>
 
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', margin: '0 0 12px 0' }}>
-                      💡 검색량 대비 블로그 문서수가 적은 🟢 황금 키워드를 우선 발굴하세요. (연관검색어를 클릭하면 실시간 재검색됩니다)
-                    </p>
+                    {/* ⚡ 정렬 필터 퀵 버튼 패널 */}
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      gap: '6px',
+                      marginBottom: '10px',
+                      padding: '8px 10px',
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--text-secondary)', marginRight: '4px' }}>
+                        ⚡ 정렬선택:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => { setKeywordSortField('volume'); setKeywordSortOrder('desc'); }}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: keywordSortField === 'volume' ? '#4f46e5' : 'var(--bg-tertiary)',
+                          color: keywordSortField === 'volume' ? '#ffffff' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)', cursor: 'pointer'
+                        }}
+                      >
+                        🔥 검색량 높은순
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setKeywordSortField('ratio'); setKeywordSortOrder('asc'); }}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: keywordSortField === 'ratio' ? '#10b981' : 'var(--bg-tertiary)',
+                          color: keywordSortField === 'ratio' ? '#ffffff' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)', cursor: 'pointer'
+                        }}
+                      >
+                        🟢 황금키워드순 (경쟁률 낮은순)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setKeywordSortField('posts'); setKeywordSortOrder('asc'); }}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: keywordSortField === 'posts' ? '#6366f1' : 'var(--bg-tertiary)',
+                          color: keywordSortField === 'posts' ? '#ffffff' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)', cursor: 'pointer'
+                        }}
+                      >
+                        📝 포스팅 수 적은순
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setKeywordSortField('rank'); setKeywordSortOrder('asc'); }}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: keywordSortField === 'rank' ? '#334155' : 'var(--bg-tertiary)',
+                          color: keywordSortField === 'rank' ? '#ffffff' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)', cursor: 'pointer'
+                        }}
+                      >
+                        🏆 기본 순위순
+                      </button>
+                    </div>
 
-                    {/* 고정 컬럼 폭 및 tabular-nums 대입 정밀 테이블 */}
+                    {/* 고정 컬럼 폭 및 클릭 정렬 헤더 대입 정밀 테이블 */}
                     <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', marginBottom: '12px' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left', tableLayout: 'fixed' }}>
                         <thead>
-                          <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                            <th style={{ padding: '10px 8px', width: '8%', textAlign: 'center', fontWeight: 700 }}>순위</th>
-                            <th style={{ padding: '10px 12px', width: '32%', fontWeight: 700 }}>연관 검색어</th>
-                            <th style={{ padding: '10px 12px', width: '18%', textAlign: 'right', fontWeight: 700 }}>월간 검색량</th>
-                            <th style={{ padding: '10px 12px', width: '18%', textAlign: 'right', fontWeight: 700 }}>블로그 포스팅 수</th>
-                            <th style={{ padding: '10px 8px', width: '14%', textAlign: 'center', fontWeight: 700 }}>경쟁비율</th>
-                            <th style={{ padding: '10px 8px', width: '10%', textAlign: 'center', fontWeight: 700 }}>발행일</th>
+                          <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', userSelect: 'none' }}>
+                            <th 
+                              onClick={() => {
+                                if (keywordSortField === 'rank') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('rank'); setKeywordSortOrder('asc'); }
+                              }}
+                              style={{ padding: '10px 8px', width: '8%', textAlign: 'center', fontWeight: 800, cursor: 'pointer' }}
+                              title="클릭 시 순위 정렬 변경"
+                            >
+                              순위 {keywordSortField === 'rank' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
+                            <th 
+                              onClick={() => {
+                                if (keywordSortField === 'keyword') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('keyword'); setKeywordSortOrder('asc'); }
+                              }}
+                              style={{ padding: '10px 12px', width: '32%', fontWeight: 800, cursor: 'pointer' }}
+                              title="클릭 시 키워드 가나다순 정렬 변경"
+                            >
+                              연관 검색어 {keywordSortField === 'keyword' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
+                            <th 
+                              onClick={() => {
+                                if (keywordSortField === 'volume') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('volume'); setKeywordSortOrder('desc'); }
+                              }}
+                              style={{ padding: '10px 12px', width: '18%', textAlign: 'right', fontWeight: 800, cursor: 'pointer' }}
+                              title="클릭 시 월간 검색량 정렬 변경"
+                            >
+                              월간 검색량 {keywordSortField === 'volume' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
+                            <th 
+                              onClick={() => {
+                                if (keywordSortField === 'posts') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('posts'); setKeywordSortOrder('asc'); }
+                              }}
+                              style={{ padding: '10px 12px', width: '18%', textAlign: 'right', fontWeight: 800, cursor: 'pointer' }}
+                              title="클릭 시 블로그 포스팅 수 정렬 변경"
+                            >
+                              블로그 포스팅 수 {keywordSortField === 'posts' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
+                            <th 
+                              onClick={() => {
+                                if (keywordSortField === 'ratio') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('ratio'); setKeywordSortOrder('asc'); }
+                              }}
+                              style={{ padding: '10px 8px', width: '14%', textAlign: 'center', fontWeight: 800, cursor: 'pointer' }}
+                              title="클릭 시 경쟁비율 정렬 변경 (낮은 순이 황금키워드)"
+                            >
+                              경쟁비율 {keywordSortField === 'ratio' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
+                            <th 
+                              onClick={() => {
+                                if (keywordSortField === 'date') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('date'); setKeywordSortOrder('desc'); }
+                              }}
+                              style={{ padding: '10px 8px', width: '10%', textAlign: 'center', fontWeight: 800, cursor: 'pointer' }}
+                              title="클릭 시 최근 발행일 정렬 변경"
+                            >
+                              발행일 {keywordSortField === 'date' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {(keywordData.relatedKeywords || []).slice(0, relatedVisibleCount).map((item: any) => (
+                          {(processedRelatedKeywords || []).slice(0, relatedVisibleCount).map((item: any) => (
                             <tr 
                               key={item.rank}
                               style={{
