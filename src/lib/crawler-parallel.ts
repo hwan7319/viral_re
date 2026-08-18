@@ -196,7 +196,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const campaignUrl = `https://xn--939au0g4vj8sq.net${campaignUrlPath}`;
           
           const subTit = $(el).find('dd.sub_tit').text().trim();
-          const description = (subTit && subTit !== title) ? subTit : `${title} 대표 시그니처 체험권`;
+          const description = subTit || title || '상세 제공 혜택 원본 참조';
 
           let imageUrl = $(el).find('.imgArea img').attr('src') || '';
           if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
@@ -257,8 +257,8 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           }
           // 🎁 제공 혜택(description) 정밀 파싱 (p.qz-body-kr strong.w-600 및 point_badge)
           let benefitText = $(element).find('p.qz-body-kr strong.w-600, .point_badge, .qz-body-kr').first().text().replace(/\s+/g, ' ').trim();
-          if (!benefitText || benefitText === title || benefitText.includes('신청') || benefitText.includes('모집') || benefitText.length < 2) {
-            benefitText = `${title} 대표 시그니처 체험권`;
+          if (!benefitText || benefitText.includes('신청') || benefitText.includes('모집') || benefitText.length < 2) {
+            benefitText = title || '상세 제공 혜택 원본 참조';
           }
           const description = benefitText;
 
@@ -342,7 +342,9 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const category = detectCategory(title, description);
             const location = c.sido?.name || c.city || undefined;
             const campaignUrl = `https://www.reviewnote.co.kr/campaigns/${c.id}`;
-            const imageUrl = c.imageKey ? `https://d3oxv6xcx9d0j1.cloudfront.net/${c.imageKey}` : (c.img1 || '');
+            const imageUrl = c.imageKey 
+              ? `https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/${encodeURIComponent(c.imageKey)}?alt=media` 
+              : (c.img1 || '');
             const limitCount = c.infNum || c.recruit_count || 1;
             const applyCount = c.applicantCount || c.apply_count || 0;
             const endDate = c.applyEndAt ? c.applyEndAt.split('T')[0] : now.toISOString().split('T')[0];

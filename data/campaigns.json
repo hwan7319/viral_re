@@ -15,7 +15,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:38.546Z",
-    "searchKeywords": ""
+    "searchKeywords": "",
+    "mission": null
   },
   {
     "id": "gn-2253713",
@@ -33,7 +34,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:38.546Z",
-    "searchKeywords": ",카페,"
+    "searchKeywords": ",카페,",
+    "mission": null
   },
   {
     "id": "gn-2253153",
@@ -51,7 +53,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:38.546Z",
-    "searchKeywords": ""
+    "searchKeywords": "",
+    "mission": null
   },
   {
     "id": "gn-2252881",
@@ -69,7 +72,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:38.547Z",
-    "searchKeywords": ""
+    "searchKeywords": "",
+    "mission": null
   },
   {
     "id": "gn-2253173",
@@ -87,7 +91,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:38.547Z",
-    "searchKeywords": ""
+    "searchKeywords": "",
+    "mission": null
   },
   {
     "id": "gn-2253449",
@@ -105,7 +110,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:38.548Z",
-    "searchKeywords": ""
+    "searchKeywords": "",
+    "mission": null
   },
   {
     "id": "gn-2253844",
@@ -123,7 +129,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252697",
@@ -141,7 +148,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253404",
@@ -159,7 +167,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252987",
@@ -177,7 +186,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253386",
@@ -195,7 +205,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252978",
@@ -213,7 +224,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253753",
@@ -231,7 +243,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253712",
@@ -268,7 +281,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253122",
@@ -286,7 +300,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252885",
@@ -304,7 +319,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253299",
@@ -322,7 +338,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-31T01:53:47.873Z",
-    "searchKeywords": ",치킨,"
+    "searchKeywords": ",치킨,",
+    "mission": null
   },
   {
     "id": "gn-2252844",
@@ -340,7 +357,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253676",
@@ -358,7 +376,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253859",
@@ -376,7 +395,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252836",
@@ -394,7 +414,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253618",
@@ -412,7 +433,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252908",
@@ -430,7 +452,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252855",
@@ -448,7 +471,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252988",
@@ -466,7 +490,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253832",
@@ -484,7 +509,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",삼겹살,"
+    "searchKeywords": ",삼겹살,",
+    "mission": null
   },
   {
     "id": "gn-2253361",
@@ -502,7 +528,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253480",
@@ -520,7 +547,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252970",
@@ -538,7 +566,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253209",
@@ -556,7 +585,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253650",
@@ -574,7 +604,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253687",
@@ -592,7 +623,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253316",
@@ -610,7 +642,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253370",
@@ -628,7 +661,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",치킨,"
+    "searchKeywords": ",치킨,",
+    "mission": null
   },
   {
     "id": "gn-2253353",
@@ -646,7 +680,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T07:33:59.419Z",
-    "searchKeywords": ",초밥,"
+    "searchKeywords": ",초밥,",
+    "mission": null
   },
   {
     "id": "gn-2253529",
@@ -664,7 +699,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253286",
@@ -682,7 +718,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253197",
@@ -700,7 +737,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253387",
@@ -718,7 +756,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253746",
@@ -736,7 +775,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252873",
@@ -773,7 +813,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253478",
@@ -810,7 +851,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253419",
@@ -828,7 +870,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253574",
@@ -846,7 +889,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253278",
@@ -864,7 +908,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252703",
@@ -882,7 +927,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253454",
@@ -900,7 +946,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:46:24.424Z",
-    "searchKeywords": ",회,"
+    "searchKeywords": ",회,",
+    "mission": null
   },
   {
     "id": "gn-2253304",
@@ -918,7 +965,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253602",
@@ -936,7 +984,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252861",
@@ -954,7 +1003,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253570",
@@ -972,7 +1022,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",카페,"
+    "searchKeywords": ",카페,",
+    "mission": null
   },
   {
     "id": "gn-2253092",
@@ -990,7 +1041,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253007",
@@ -1008,7 +1060,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",삼겹살,"
+    "searchKeywords": ",삼겹살,",
+    "mission": null
   },
   {
     "id": "gn-2253790",
@@ -1026,7 +1079,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253280",
@@ -1044,7 +1098,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",치킨,파스타,"
+    "searchKeywords": ",치킨,파스타,",
+    "mission": null
   },
   {
     "id": "gn-2253080",
@@ -1062,7 +1117,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252810",
@@ -1080,7 +1136,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252973",
@@ -1098,7 +1155,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253189",
@@ -1116,7 +1174,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252779",
@@ -1153,7 +1212,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253521",
@@ -1171,7 +1231,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T08:55:03.298Z",
-    "searchKeywords": ",미용실,"
+    "searchKeywords": ",미용실,",
+    "mission": null
   },
   {
     "id": "gn-2253252",
@@ -1189,7 +1250,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253341",
@@ -1207,7 +1269,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253123",
@@ -1225,7 +1288,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253258",
@@ -1243,7 +1307,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253558",
@@ -1261,7 +1326,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253852",
@@ -1279,7 +1345,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253677",
@@ -1297,7 +1364,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253251",
@@ -1315,7 +1383,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253533",
@@ -1333,7 +1402,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253183",
@@ -1351,7 +1421,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",온수풀,풀빌라,펜션,"
+    "searchKeywords": ",온수풀,풀빌라,펜션,",
+    "mission": null
   },
   {
     "id": "gn-2253338",
@@ -1369,7 +1440,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253364",
@@ -1387,7 +1459,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": ",카페,"
+    "searchKeywords": ",카페,",
+    "mission": null
   },
   {
     "id": "gn-2253703",
@@ -1424,7 +1497,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253212",
@@ -1442,7 +1516,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253595",
@@ -1460,7 +1535,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2252799",
@@ -1478,7 +1554,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253159",
@@ -1496,7 +1573,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2253853",
@@ -1514,7 +1592,8 @@
     "endDate": "2026-08-05",
     "createdAt": "2026-07-30T05:02:46.138Z",
     "updatedAt": "2026-07-30T05:02:46.138Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "dq-1474782",
@@ -9822,7 +9901,7 @@
   {
     "id": "rn-1358627",
     "title": "강인규수제족발",
-    "description": "강인규수제족발 대표 시그니처 체험권",
+    "description": "강인규수제족발",
     "platform": "blog",
     "category": "travel",
     "location": "인천 부평구",
@@ -10601,7 +10680,7 @@
   {
     "id": "rn-1345014",
     "title": "강인규수제족발",
-    "description": "강인규수제족발 대표 시그니처 체험권",
+    "description": "강인규수제족발",
     "platform": "blog",
     "category": "travel",
     "location": "인천 부평구",
@@ -11969,7 +12048,7 @@
   {
     "id": "rn-1326630",
     "title": "강인규수제족발",
-    "description": "강인규수제족발 대표 시그니처 체험권",
+    "description": "강인규수제족발",
     "platform": "blog",
     "category": "travel",
     "location": "인천 부평구",
@@ -65815,7 +65894,7 @@
   {
     "id": "dq-1482523",
     "title": "[서울 종로] 익선통하다",
-    "description": "[서울 종로] 익선통하다 대표 시그니처 체험권",
+    "description": "[서울 종로] 익선통하다",
     "platform": "blog",
     "category": "travel",
     "location": "서울 종로",
@@ -87646,7 +87725,7 @@
   {
     "id": "dq-1480611",
     "title": "[대전 서구] 히요리",
-    "description": "[대전 서구] 히요리 대표 시그니처 체험권",
+    "description": "[대전 서구] 히요리",
     "platform": "blog",
     "category": "travel",
     "location": "대전 서구",
@@ -101288,7 +101367,7 @@
   {
     "id": "dq-1484272",
     "title": "[경북 포항][클립] 이스트사이드뮤직",
-    "description": "[경북 포항][클립] 이스트사이드뮤직 대표 시그니처 체험권",
+    "description": "[경북 포항][클립] 이스트사이드뮤직",
     "platform": "blog+clip",
     "category": "etc",
     "location": "경북 포항",
@@ -101307,7 +101386,7 @@
   {
     "id": "dq-1468401",
     "title": "[부산 진구] 12.24 서면점",
-    "description": "[부산 진구] 12.24 서면점 대표 시그니처 체험권",
+    "description": "[부산 진구] 12.24 서면점",
     "platform": "blog",
     "category": "etc",
     "location": "부산 진구",
@@ -105449,7 +105528,7 @@
   {
     "id": "dq-1479156",
     "title": "[청주 청원][릴스] 은곡식당",
-    "description": "[청주 청원][릴스] 은곡식당 대표 시그니처 체험권",
+    "description": "[청주 청원][릴스] 은곡식당",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "청주 청원",
@@ -118103,7 +118182,7 @@
   {
     "id": "dq-1476213",
     "title": "[울산 남구][릴스] 벌툰 파리지앵 울산디자인거리점",
-    "description": "[울산 남구][릴스] 벌툰 파리지앵 울산디자인거리점 대표 시그니처 체험권",
+    "description": "[울산 남구][릴스] 벌툰 파리지앵 울산디자인거리점",
     "platform": "instagram",
     "category": "etc",
     "location": "울산 남구",
@@ -122416,7 +122495,7 @@
   {
     "id": "dq-1477021",
     "title": "[대전 유성][릴스] 신대산식당",
-    "description": "[대전 유성][릴스] 신대산식당 대표 시그니처 체험권",
+    "description": "[대전 유성][릴스] 신대산식당",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "대전 유성",
@@ -126881,7 +126960,7 @@
   {
     "id": "dq-1477271",
     "title": "[경남 남해][릴스] 윤용현의도끼농장 남해점",
-    "description": "[경남 남해][릴스] 윤용현의도끼농장 남해점 대표 시그니처 체험권",
+    "description": "[경남 남해][릴스] 윤용현의도끼농장 남해점",
     "platform": "instagram",
     "category": "etc",
     "location": "경남 남해",
@@ -131346,7 +131425,7 @@
   {
     "id": "dq-1477615",
     "title": "[대전 서구] 육첩반상 대전청사점",
-    "description": "[대전 서구] 육첩반상 대전청사점 대표 시그니처 체험권",
+    "description": "[대전 서구] 육첩반상 대전청사점",
     "platform": "blog",
     "category": "etc",
     "location": "대전 서구",
@@ -292721,11 +292800,11 @@
     "imageUrl": "https://gangnam-review.net/data/file/cmp/2026/08/10/thumb-cmp_2265607-656fc7caa32d376c4a8f095326b376f0fbfdacd6_300x300.png",
     "targetSite": "강남맛집",
     "limitCount": 10,
-    "applyCount": 50,
+    "applyCount": 51,
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-11T05:50:05.259Z",
-    "updatedAt": "2026-08-18T04:13:19.099Z",
+    "updatedAt": "2026-08-18T04:27:14.986Z",
     "searchKeywords": ",삼겹살,소고기,",
     "mission": null
   },
@@ -297737,11 +297816,11 @@
     "imageUrl": "https://gangnam-review.net/data/file/cmp/2026/08/10/thumb-cmp_2265405-0f65b00359f8f9889e98af3df59a22ab958edb88_300x300.jpg",
     "targetSite": "강남맛집",
     "limitCount": 5,
-    "applyCount": 19,
+    "applyCount": 20,
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-11T06:32:00.604Z",
-    "updatedAt": "2026-08-18T04:13:19.099Z",
+    "updatedAt": "2026-08-18T04:27:14.986Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -297760,7 +297839,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-11T06:32:00.604Z",
-    "updatedAt": "2026-08-18T04:13:19.099Z",
+    "updatedAt": "2026-08-18T04:27:14.986Z",
     "searchKeywords": ",소고기,맛집,고기,",
     "mission": null
   },
@@ -297779,7 +297858,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-11T06:32:00.604Z",
-    "updatedAt": "2026-08-18T04:13:19.099Z",
+    "updatedAt": "2026-08-18T04:27:14.986Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -297798,7 +297877,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-11T06:32:00.604Z",
-    "updatedAt": "2026-08-18T04:13:19.099Z",
+    "updatedAt": "2026-08-18T04:27:14.986Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -297817,7 +297896,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-11T06:32:00.604Z",
-    "updatedAt": "2026-08-18T04:13:19.099Z",
+    "updatedAt": "2026-08-18T04:27:14.986Z",
     "searchKeywords": ",소고기,고기,",
     "mission": null
   },
@@ -301465,7 +301544,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-12T04:22:43.546Z",
-    "updatedAt": "2026-08-18T04:13:19.098Z",
+    "updatedAt": "2026-08-18T04:27:14.985Z",
     "searchKeywords": ",삼겹살,맛집,소고기,",
     "mission": null
   },
@@ -302130,7 +302209,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-12T04:22:48.261Z",
-    "updatedAt": "2026-08-18T04:13:19.098Z",
+    "updatedAt": "2026-08-18T04:27:14.985Z",
     "searchKeywords": ",제주,소고기,",
     "mission": null
   },
@@ -303619,7 +303698,7 @@
   {
     "id": "pb-404019",
     "title": "[서울/화곡동] 댄디뷰티 아카데미",
-    "description": "[서울/화곡동] 댄디뷰티 아카데미 대표 시그니처 체험권",
+    "description": "[서울/화곡동] 댄디뷰티 아카데미",
     "platform": "blog",
     "category": "travel",
     "location": "서울/화곡동",
@@ -306481,7 +306560,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-12T07:24:52.924Z",
-    "updatedAt": "2026-08-18T04:13:19.098Z",
+    "updatedAt": "2026-08-18T04:27:14.985Z",
     "searchKeywords": ",국밥,고기,소고기,",
     "mission": null
   },
@@ -311098,7 +311177,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-13T04:12:57.430Z",
-    "updatedAt": "2026-08-18T04:13:19.096Z",
+    "updatedAt": "2026-08-18T04:27:14.983Z",
     "searchKeywords": ",삼겹살,고기,소고기,",
     "mission": null
   },
@@ -316001,7 +316080,8 @@
     "endDate": "2026-08-18",
     "createdAt": "2026-08-13T08:05:57.347Z",
     "updatedAt": "2026-08-13T08:21:58.045Z",
-    "searchKeywords": ",양반전,"
+    "searchKeywords": ",양반전,",
+    "mission": null
   },
   {
     "id": "gn-2268564",
@@ -316494,7 +316574,8 @@
     "endDate": "2026-08-20",
     "createdAt": "2026-08-13T08:29:37.863Z",
     "updatedAt": "2026-08-13T08:36:53.196Z",
-    "searchKeywords": ""
+    "searchKeywords": "",
+    "mission": null
   },
   {
     "id": "gn-2269064",
@@ -317291,7 +317372,8 @@
     "endDate": "2026-08-17",
     "createdAt": "2026-08-13T08:37:04.457Z",
     "updatedAt": "2026-08-14T01:52:39.350Z",
-    "searchKeywords": ",강남맛집,"
+    "searchKeywords": ",강남맛집,",
+    "mission": null
   },
   {
     "id": "pb-404859",
@@ -325308,7 +325390,8 @@
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T01:52:49.536Z",
     "updatedAt": "2026-08-14T01:52:49.536Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270325",
@@ -325326,7 +325409,8 @@
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T01:52:49.536Z",
     "updatedAt": "2026-08-14T01:52:49.536Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270588",
@@ -325762,7 +325846,8 @@
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T01:52:49.536Z",
     "updatedAt": "2026-08-14T01:52:49.536Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270417",
@@ -326850,7 +326935,7 @@
   {
     "id": "dq-1504896",
     "title": "[광주 서구][릴스] 돌담막창 상무점",
-    "description": "[광주 서구][릴스] 돌담막창 상무점 대표 시그니처 체험권",
+    "description": "[광주 서구][릴스] 돌담막창 상무점",
     "platform": "instagram",
     "category": "travel",
     "location": "광주 서구",
@@ -327205,7 +327290,8 @@
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T04:54:49.525Z",
     "updatedAt": "2026-08-14T04:54:49.525Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270409",
@@ -327242,7 +327328,8 @@
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T04:54:49.525Z",
     "updatedAt": "2026-08-14T04:54:49.525Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270125",
@@ -327260,7 +327347,8 @@
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T04:54:49.525Z",
     "updatedAt": "2026-08-14T04:54:49.525Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270149",
@@ -328304,7 +328392,8 @@
     "endDate": "2026-08-20",
     "createdAt": "2026-08-14T04:54:49.525Z",
     "updatedAt": "2026-08-14T04:54:49.525Z",
-    "searchKeywords": null
+    "searchKeywords": null,
+    "mission": null
   },
   {
     "id": "gn-2270572",
@@ -328606,7 +328695,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-23",
     "createdAt": "2026-08-14T04:54:49.525Z",
-    "updatedAt": "2026-08-18T04:13:19.095Z",
+    "updatedAt": "2026-08-18T04:27:14.982Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328758,7 +328847,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.082Z",
+    "updatedAt": "2026-08-18T04:27:14.981Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328777,7 +328866,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.090Z",
+    "updatedAt": "2026-08-18T04:27:14.981Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328796,7 +328885,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.090Z",
+    "updatedAt": "2026-08-18T04:27:14.981Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328815,7 +328904,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-23",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.093Z",
+    "updatedAt": "2026-08-18T04:27:14.981Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328834,7 +328923,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-23",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.095Z",
+    "updatedAt": "2026-08-18T04:27:14.982Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328853,7 +328942,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-23",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.095Z",
+    "updatedAt": "2026-08-18T04:27:14.982Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328872,7 +328961,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-23",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.095Z",
+    "updatedAt": "2026-08-18T04:27:14.982Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328891,7 +328980,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-23",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.095Z",
+    "updatedAt": "2026-08-18T04:27:14.982Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328910,7 +328999,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.096Z",
+    "updatedAt": "2026-08-18T04:27:14.982Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328929,7 +329018,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.096Z",
+    "updatedAt": "2026-08-18T04:27:14.983Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328948,7 +329037,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.096Z",
+    "updatedAt": "2026-08-18T04:27:14.983Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328967,7 +329056,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.096Z",
+    "updatedAt": "2026-08-18T04:27:14.983Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -328986,7 +329075,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.097Z",
+    "updatedAt": "2026-08-18T04:27:14.984Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -329005,7 +329094,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.097Z",
+    "updatedAt": "2026-08-18T04:27:14.984Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -329024,7 +329113,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.097Z",
+    "updatedAt": "2026-08-18T04:27:14.984Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -329043,7 +329132,7 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.097Z",
+    "updatedAt": "2026-08-18T04:27:14.984Z",
     "searchKeywords": ",소고기,",
     "mission": null
   },
@@ -329062,9 +329151,9 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.098Z",
+    "updatedAt": "2026-08-18T04:27:14.984Z",
     "searchKeywords": ",소고기,",
-    "mission": null
+    "mission": "★ 제공되는 체험권 외 추가적으로 주문하신 부분에 대해서는 결제해 주셔야 합니다.\n★ 네이버클립 or 인스타(피드,릴스,스토리 등)or틱톡or유튜브 등등 추가적인 sns 업로드 가능하신분의 선정 확률이 높습니다.\n• 가능하신 분들은 옵션사항에 가능한 sns와 계정 기재해 주세요.\n• (네이버 클립은 스마트블럭에도 반영이 됩니다. 업주분들만 좋은게 아니라 블로거님들에게도 방문자 수 에도 상당히 도움이 많이 됩니다)\n★ 네이버 클립 등록 시 참고사항\n✔ ️ 업체 지도 표시\n✔ ️ 해시태그5가지 (키워드 참고)\n• 《해시태그를 먼저 올리고 뒤에 내용을 올려주세요 내용은 짧고 간단히!》"
   },
   {
     "id": "pb-405487",
@@ -329202,7 +329291,7 @@
   {
     "id": "dq-1509249",
     "title": "[경기 남양주][릴스] 모토이시 다산점",
-    "description": "[경기 남양주][릴스] 모토이시 다산점 대표 시그니처 체험권",
+    "description": "[경기 남양주][릴스] 모토이시 다산점",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "경기 남양주",
@@ -329214,14 +329303,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.052Z",
+    "updatedAt": "2026-08-18T04:27:14.987Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1509127",
     "title": "[충남 공주][릴스] 수촌196",
-    "description": "[충남 공주][릴스] 수촌196 대표 시그니처 체험권",
+    "description": "[충남 공주][릴스] 수촌196",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "충남 공주",
@@ -329233,14 +329322,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.054Z",
+    "updatedAt": "2026-08-18T04:27:14.987Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1509253",
     "title": "[경기 남양주] 모토이시 다산점",
-    "description": "[경기 남양주] 모토이시 다산점 대표 시그니처 체험권",
+    "description": "[경기 남양주] 모토이시 다산점",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "경기 남양주",
@@ -329252,14 +329341,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.055Z",
+    "updatedAt": "2026-08-18T04:27:14.988Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1509126",
     "title": "[충남 공주][클립] 수촌196",
-    "description": "[충남 공주][클립] 수촌196 대표 시그니처 체험권",
+    "description": "[충남 공주][클립] 수촌196",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "충남 공주",
@@ -329271,14 +329360,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.055Z",
+    "updatedAt": "2026-08-18T04:27:14.988Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1509134",
     "title": "[충남 공주] 수촌196",
-    "description": "[충남 공주] 수촌196 대표 시그니처 체험권",
+    "description": "[충남 공주] 수촌196",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "충남 공주",
@@ -329290,14 +329379,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.056Z",
+    "updatedAt": "2026-08-18T04:27:14.988Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1509248",
     "title": "[경기 남양주][클립] 모토이시 다산점",
-    "description": "[경기 남양주][클립] 모토이시 다산점 대표 시그니처 체험권",
+    "description": "[경기 남양주][클립] 모토이시 다산점",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "경기 남양주",
@@ -329309,14 +329398,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-24",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.057Z",
+    "updatedAt": "2026-08-18T04:27:14.988Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507736",
     "title": "[경기 용인][릴스] 고기담음 소들녘",
-    "description": "[경기 용인][릴스] 고기담음 소들녘 대표 시그니처 체험권",
+    "description": "[경기 용인][릴스] 고기담음 소들녘",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "경기 용인",
@@ -329328,14 +329417,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.057Z",
+    "updatedAt": "2026-08-18T04:27:14.988Z",
     "searchKeywords": ",소고기,맛집,고기,",
     "mission": null
   },
   {
     "id": "dq-1507668",
     "title": "[인천 남동][릴스] 담가화로구이 인천만수점",
-    "description": "[인천 남동][릴스] 담가화로구이 인천만수점 대표 시그니처 체험권",
+    "description": "[인천 남동][릴스] 담가화로구이 인천만수점",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "인천 남동",
@@ -329347,14 +329436,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.057Z",
+    "updatedAt": "2026-08-18T04:27:14.988Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507596",
     "title": "[경기 화성][릴스] 담가화로구이 화성병점점",
-    "description": "[경기 화성][릴스] 담가화로구이 화성병점점 대표 시그니처 체험권",
+    "description": "[경기 화성][릴스] 담가화로구이 화성병점점",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "경기 화성",
@@ -329366,14 +329455,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.058Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507676",
     "title": "[인천 남동] 담가화로구이 인천만수점",
-    "description": "[인천 남동] 담가화로구이 인천만수점 대표 시그니처 체험권",
+    "description": "[인천 남동] 담가화로구이 인천만수점",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "인천 남동",
@@ -329385,14 +329474,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.058Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507597",
     "title": "[경기 화성] 담가화로구이 화성병점점",
-    "description": "[경기 화성] 담가화로구이 화성병점점 대표 시그니처 체험권",
+    "description": "[경기 화성] 담가화로구이 화성병점점",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "경기 화성",
@@ -329400,18 +329489,18 @@
     "imageUrl": "https://dq-files.gcdn.ntruss.com/contract/019ab263-ab8d-70b9-87e3-eab25f965955.jpeg",
     "targetSite": "디너의여왕",
     "limitCount": 6,
-    "applyCount": 21,
+    "applyCount": 22,
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.059Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507667",
     "title": "[인천 남동][클립] 담가화로구이 인천만수점",
-    "description": "[인천 남동][클립] 담가화로구이 인천만수점 대표 시그니처 체험권",
+    "description": "[인천 남동][클립] 담가화로구이 인천만수점",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "인천 남동",
@@ -329423,14 +329512,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.059Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507364",
     "title": "[경남 창원][클립] 담가화로구이 진해자은점",
-    "description": "[경남 창원][클립] 담가화로구이 진해자은점 대표 시그니처 체험권",
+    "description": "[경남 창원][클립] 담가화로구이 진해자은점",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "경남 창원",
@@ -329442,14 +329531,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.059Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507370",
     "title": "[경남 창시] 담가화로구이 진해자은점",
-    "description": "[경남 창시] 담가화로구이 진해자은점 대표 시그니처 체험권",
+    "description": "[경남 창시] 담가화로구이 진해자은점",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "경남 창시",
@@ -329461,14 +329550,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.060Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1507595",
     "title": "[경기 화성][클립] 담가화로구이 화성병점점",
-    "description": "[경기 화성][클립] 담가화로구이 화성병점점 대표 시그니처 체험권",
+    "description": "[경기 화성][클립] 담가화로구이 화성병점점",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "경기 화성",
@@ -329480,14 +329569,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-20",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.060Z",
+    "updatedAt": "2026-08-18T04:27:14.989Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1505618",
     "title": "[경기 화성][릴스] 요우정",
-    "description": "[경기 화성][릴스] 요우정 대표 시그니처 체험권",
+    "description": "[경기 화성][릴스] 요우정",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "경기 화성",
@@ -329499,14 +329588,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.061Z",
+    "updatedAt": "2026-08-18T04:27:14.990Z",
     "searchKeywords": ",소고기,맛집,",
-    "mission": null
+    "mission": "01.미션에 맞춰 다양한 각도의 동영상을 촬영한다.\n01.미션에 맞춰 다양한 각도의 동영상을 촬영한다.\n02.편집 툴을 통해 미션에 맞춰 콘텐츠를 작성한다.\n02.편집 툴을 통해 미션에 맞춰 콘텐츠를 작성한다.\n03.본인 인스타 계정 '릴스'로 콘텐츠를 등록한다.\n03.본인 인스타 계정 '릴스'로 콘텐츠를 등록한다.\n26.08.13 – 26.08.1926.08.2026.08.21 – 26.09.04\n• 메인 메뉴 단품 15만원 식사권\n• 참여 전 필수 확인사항\n★ 추가금액 본인부담, 2인 기준 1팀 ★리뷰 작성 시 반려동물은 아예 노출되지 않도록 부탁드립니다.\n• 동일 매장에 서로 다른 SNS 선정이 되셨더라도 중복 체험은 불가능 합니다.\n• 위 경우 진행하실 SNS 채널을 제외한 다른 체험은 업체 사정으로 취소 요청드립니다.\n• https://naver.me/FjmErv9x\n• 체험 시간: 평일 11:30~21:00 휴무일: 주말\n• 예약 문의 번호는 선정 시 전달되는 초대권 링크를 통해 확인할 수 있습니다.\n• 디너의여왕 통해 당첨된 OOO블로거or 릴스 체험단 or 클립 체험단 이라고 예약부탁드립니다. (방문 2~3일 전 예약전화/문자 꼭 하시고 시간 준수 바랍니다.) ★당일예약불가 및 예약후 노쇼시 상품의 대한 비용청구 ★대리체험 및 포장체험 불가입니다. *2차 광고로 활용 될 수 있습니다, 해당 내용 동의하시면 신청해주세요.\n• 방문 위치: 경기 화성시 동탄구 여울동 1019\n• 인스타그램은 아래 해시태그를 반드시 필수로 포함해야 합니다.\n#협찬 #동탄롯데백화점맛집 #동탄소고기 #동탄고기집\n• 표시광고법에 따라 #협찬 해시태그를 맨 앞에 표기해 주세요.\n• 키워드가 지켜지지 않으면 수정요청이 있을 수 있어요.\n• 인스타그램 리뷰는 #협찬 #디너의여왕 #브랜드 #상품명 꼭 넣어주세요.\n- 릴스 촬영/편집 미션\n• 분량: 30초~50초 내외\n• 영상에 썸내일 문구 필수\n• 영상은 직접 촬영(편집) 콘텐츠만 허용되며, 사진 슬라이드 영상은 안됩니다.\n• 나레이션 OR 자막 필수\n• 매장 인테리어와 상품이 돋보이는 센스있는 촬영 부탁드립니다.\n- 제시된 해시태그는 필수 포함이며, 이외 해시태그는 자유롭게 작성해주세요.\n★ #요우정#동탄맛집#동탄소고기#동탄오마카세#동탄고기집 ★리뷰 작성시 필수 기재사항 1.프라이빗하게 분리된 공간으로 운영하는 곳으로 외국바이어 접대, 미팅 하기에 좋은 곳이며 넓은 단체석도 있어 모임하기에도 안성맞춤이다. 2.시티뷰가 이쁜 뷰맛집으로 기념일, 프러포즈 하기에 좋다. 3.리베라cc , 기흥cc , 골드cc 등 인근 골프장에서 가까워 접근성이 좋습니다. 4.신동엽 30년 맛집 신림정에서 직접 고기를 배운 대표님께서 운영하시는 곳이라 맛과 퀄리티가 뛰어나다.\n• 키워드는 띄어쓰기까지 정확하게 지켜서 작성되어야 합니다.\n• 캠페인 홍보로 체험하는 만큼 책임감 가지고 성의 있는 리뷰 부탁드립니다.\n• 본 캠페인은 인스타그램 릴스 콘텐츠를 등록해야 하는 캠페인입니다.\n• 릴스가 아닌 피드를 업로드 하실 경우, 재업로드 요청됩니다.\n• 콘텐츠 미션을 꼭 준수하여 제작해 주시길 부탁드립니다.\n• 사진 편집형이 아닌 영상 촬영본을 편집하여 업로드 부탁드립니다.\n★ 체험에 만족하셨다면 개인 SNS(인스타,페이스북)에도 리뷰 올려주세요\n• 별도 안내가 없는 경우에는 아래 조건들이 기본 적용됩니다.(타 쿠폰 적용 불가 / 테이크아웃 불가 / 초과비용 본인 부담)\n• 본 서비스는 광고주와 인플루언서 간의 체험을 연결해 드리는 서비스로,체험과정에 발생한 문제와 금전적 손실에 관한 부분에서는 책임지지 않습니다.\n• 디너의여왕을 통해 제공받은 제품임을 꼭 내용에 넣어주셔야 합니다."
   },
   {
     "id": "dq-1504582",
     "title": "[서울 강서][릴스] 소양인 마곡점",
-    "description": "[서울 강서][릴스] 소양인 마곡점 대표 시그니처 체험권",
+    "description": "[서울 강서][릴스] 소양인 마곡점",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "서울 강서",
@@ -329518,14 +329607,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.061Z",
+    "updatedAt": "2026-08-18T04:27:14.990Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1504509",
     "title": "[충남 당진][릴스] 담가화로구이 당진점",
-    "description": "[충남 당진][릴스] 담가화로구이 당진점 대표 시그니처 체험권",
+    "description": "[충남 당진][릴스] 담가화로구이 당진점",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "충남 당진",
@@ -329537,14 +329626,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.062Z",
+    "updatedAt": "2026-08-18T04:27:14.990Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1503915",
     "title": "[대구 동구][릴스] 가나 한우 직판장",
-    "description": "[대구 동구][릴스] 가나 한우 직판장 대표 시그니처 체험권",
+    "description": "[대구 동구][릴스] 가나 한우 직판장",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "대구 동구",
@@ -329556,14 +329645,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.062Z",
+    "updatedAt": "2026-08-18T04:27:14.990Z",
     "searchKeywords": ",소고기,맛집,고기,",
     "mission": null
   },
   {
     "id": "dq-1505363",
     "title": "[경기 화성] 요우정",
-    "description": "[경기 화성] 요우정 대표 시그니처 체험권",
+    "description": "[경기 화성] 요우정",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "경기 화성",
@@ -329575,14 +329664,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.063Z",
+    "updatedAt": "2026-08-18T04:27:14.990Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1505616",
     "title": "[경기 화성][클립] 요우정",
-    "description": "[경기 화성][클립] 요우정 대표 시그니처 체험권",
+    "description": "[경기 화성][클립] 요우정",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "경기 화성",
@@ -329594,14 +329683,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.063Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1503717",
     "title": "[서울 송파] 담가화로구이 거여점",
-    "description": "[서울 송파] 담가화로구이 거여점 대표 시그니처 체험권",
+    "description": "[서울 송파] 담가화로구이 거여점",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "서울 송파",
@@ -329613,14 +329702,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.064Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1504584",
     "title": "[서울 강서] 소양인 마곡점",
-    "description": "[서울 강서] 소양인 마곡점 대표 시그니처 체험권",
+    "description": "[서울 강서] 소양인 마곡점",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "서울 강서",
@@ -329632,14 +329721,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.065Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1504580",
     "title": "[서울 강서][클립] 소양인 마곡점",
-    "description": "[서울 강서][클립] 소양인 마곡점 대표 시그니처 체험권",
+    "description": "[서울 강서][클립] 소양인 마곡점",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "서울 강서",
@@ -329651,14 +329740,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.070Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1503917",
     "title": "[대구 동구] 가나 한우 직판장",
-    "description": "[대구 동구] 가나 한우 직판장 대표 시그니처 체험권",
+    "description": "[대구 동구] 가나 한우 직판장",
     "platform": "blog",
     "category": "food-restaurant",
     "location": "대구 동구",
@@ -329670,14 +329759,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.072Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,고기,",
     "mission": null
   },
   {
     "id": "dq-1503696",
     "title": "[서울 송파][클립] 담가화로구이 거여점",
-    "description": "[서울 송파][클립] 담가화로구이 거여점 대표 시그니처 체험권",
+    "description": "[서울 송파][클립] 담가화로구이 거여점",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "서울 송파",
@@ -329689,14 +329778,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.074Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1503913",
     "title": "[대구 동구][클립] 가나 한우 직판장",
-    "description": "[대구 동구][클립] 가나 한우 직판장 대표 시그니처 체험권",
+    "description": "[대구 동구][클립] 가나 한우 직판장",
     "platform": "clip",
     "category": "food-restaurant",
     "location": "대구 동구",
@@ -329708,14 +329797,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-19",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.075Z",
+    "updatedAt": "2026-08-18T04:27:14.991Z",
     "searchKeywords": ",소고기,맛집,고기,",
     "mission": null
   },
   {
     "id": "dq-1501943",
     "title": "[부산 기장][릴스] 철마한우 산마루",
-    "description": "[부산 기장][릴스] 철마한우 산마루 대표 시그니처 체험권",
+    "description": "[부산 기장][릴스] 철마한우 산마루",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "부산 기장",
@@ -329727,14 +329816,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.077Z",
+    "updatedAt": "2026-08-18T04:27:14.992Z",
     "searchKeywords": ",소고기,맛집,고기,",
-    "mission": null
+    "mission": "01.미션에 맞춰 다양한 각도의 동영상을 촬영한다.\n01.미션에 맞춰 다양한 각도의 동영상을 촬영한다.\n02.편집 툴을 통해 미션에 맞춰 콘텐츠를 작성한다.\n02.편집 툴을 통해 미션에 맞춰 콘텐츠를 작성한다.\n03.본인 인스타 계정 '릴스'로 콘텐츠를 등록한다.\n03.본인 인스타 계정 '릴스'로 콘텐츠를 등록한다.\n26.08.12 – 26.08.1826.08.1926.08.20 – 26.09.03\n• 모듬 2인분 (6만원) + 2인 식사 (된장찌개 + 반찬 7가지 + 밥제공)\n• 참여 전 필수 확인사항\n★ 추가금액 본인부담, 2인 기준 1팀\n• 동일 매장에 서로 다른 SNS 선정이 되셨더라도 중복 체험은 불가능 합니다.\n• 위 경우 진행하실 SNS 채널을 제외한 다른 체험은 업체 사정으로 취소 요청드립니다.\n• https://naver.me/GgeuOMbY\n• 체험 시간: 매일 : 11:00~18:00 휴무일: 연중무휴\n• 예약 문의 번호는 선정 시 전달되는 초대권 링크를 통해 확인할 수 있습니다.\n★ 방문 2~3일전 반드시 예약 문의 후 방문 부탁드리며 '디너의여왕 당첨자 ㅇㅇㅇ'임을 밝혀주시길 바랍니다. 예약 문의가 없을시 체험이 불가능 할 수 있으니 유의바랍니다.\n• 방문 위치: 부산 기장군 철마면 이곡리 439-2\n• 인스타그램은 아래 해시태그를 반드시 필수로 포함해야 합니다.\n#협찬 #철마한우 #철마한우맛집 #스톤게이트cc맛집\n• 표시광고법에 따라 #협찬 해시태그를 맨 앞에 표기해 주세요.\n• 키워드가 지켜지지 않으면 수정요청이 있을 수 있어요.\n• 인스타그램 리뷰는 #협찬 #디너의여왕 #브랜드 #상품명 꼭 넣어주세요.\n- 릴스 촬영/편집 미션\n• 분량: 30초~50초 내외\n• 영상에 썸내일 문구 필수\n• 영상은 직접 촬영(편집) 콘텐츠만 허용되며, 사진 슬라이드 영상은 안됩니다.\n• 나레이션 OR 자막 필수\n• 매장 인테리어와 상품이 돋보이는 센스있는 촬영 부탁드립니다.\n- 제시된 해시태그는 필수 포함이며, 이외 해시태그는 자유롭게 작성해주세요.\n• 캠페인 홍보로 체험하는 만큼 책임감 가지고 성의 있는 리뷰 부탁드립니다. ★리뷰작성시 아래내용을 담아주세요. - 기장 철마에서 한우 암소로만 23년이상 한자리에서 인정받은 맛집 - 한우 암소 투플러스 등급에서도 직접 선별하여 최상품의 고기만 제공 - 최고급의 비장탄 숯을 사용하여 소고기의 풍미와 향을 극대화 시킴 - 직접 농사를 지은 채소를 제공하며, 모든 음식은 직접 만들고, 된장도 직접 담근 된장을 사용할 만큼 음식을 신경쓰고 있음 - 매장 앞 넓은 주차공간으로 접근성이 좋음 - 각각의 프라이빗한 룸공간과 넓은 룸으로 구성되어 있어서 모임장소나 회식장소로도 아주 좋은 평가와 더불어 각광받고 있음 - 따로 가이드가 필요없을정도의 최고급 소고기 사용 ★챗 GPT등 ai 리뷰 절대 불가 (비용청구 함) ★플레이스 사진 사용 불가, 직접찍은 사진으로 리뷰 올려주세요\n• 키워드는 띄어쓰기까지 정확하게 지켜서 작성되어야 합니다.\n• 캠페인 홍보로 체험하는 만큼 책임감 가지고 성의 있는 리뷰 부탁드립니다.\n• 본 캠페인은 인스타그램 릴스 콘텐츠를 등록해야 하는 캠페인입니다.\n• 릴스가 아닌 피드를 업로드 하실 경우, 재업로드 요청됩니다.\n• 콘텐츠 미션을 꼭 준수하여 제작해 주시길 부탁드립니다.\n• 사진 편집형이 아닌 영상 촬영본을 편집하여 업로드 부탁드립니다.\n※ 체험에 만족하셨다면 개인 SNS(인스타,페이스북)에도 리뷰 올려주세요 ※체험에 만족하셨다면 영수증 리뷰도 작성부탁드립니다\n• 별도 안내가 없는 경우에는 아래 조건들이 기본 적용됩니다.(타 쿠폰 적용 불가 / 테이크아웃 불가 / 초과비용 본인 부담)\n• 본 서비스는 광고주와 인플루언서 간의 체험을 연결해 드리는 서비스로,체험과정에 발생한 문제와 금전적 손실에 관한 부분에서는 책임지지 않습니다.\n• 디너의여왕을 통해 제공받은 제품임을 꼭 내용에 넣어주셔야 합니다."
   },
   {
     "id": "dq-1501633",
     "title": "[대전 유성][릴스] 상백",
-    "description": "[대전 유성][릴스] 상백 대표 시그니처 체험권",
+    "description": "[대전 유성][릴스] 상백",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "대전 유성",
@@ -329746,14 +329835,14 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.078Z",
+    "updatedAt": "2026-08-18T04:27:14.992Z",
     "searchKeywords": ",소고기,맛집,",
     "mission": null
   },
   {
     "id": "dq-1501670",
     "title": "[서울 용산][릴스] 맛나숯불주물럭",
-    "description": "[서울 용산][릴스] 맛나숯불주물럭 대표 시그니처 체험권",
+    "description": "[서울 용산][릴스] 맛나숯불주물럭",
     "platform": "instagram",
     "category": "food-restaurant",
     "location": "서울 용산",
@@ -329765,8 +329854,1832 @@
     "startDate": "2026-08-18",
     "endDate": "2026-08-18",
     "createdAt": "2026-08-18T04:06:33.972Z",
-    "updatedAt": "2026-08-18T04:13:19.079Z",
+    "updatedAt": "2026-08-18T04:27:14.992Z",
     "searchKeywords": ",소고기,맛집,",
+    "mission": null
+  },
+  {
+    "id": "rn-1363537",
+    "title": "풀리오 풀리지 허벅지 마사지기",
+    "description": "풀리오 풀리지 허벅지 마사지기 (정가 378,000원)",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1363537",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fb9d90725-1453-4144-ba12-49b3f5e1a494?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 1,
+    "applyCount": 8266,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-31",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1382550",
+    "title": "퍼스트가든웨딩",
+    "description": "2인 식사권(10만원 상당) / 9/19(토) 17:00 한타임만 체험가능합니다.(2인 한정)",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "파주시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1382550",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F1c36ed1c-a009-4ec2-93d0-e0eaab304c55?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 6,
+    "applyCount": 76,
+    "startDate": "2026-08-18",
+    "endDate": "2026-09-14",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385750",
+    "title": "삼청각 / 일화당",
+    "description": "1인 식사권(10만원 상당) 9/12 (토) 오후 12:30시~ 오후 2시 찰영 및 식사제공(1인 한정) / 1인에 한해 동행자 가능",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "성북구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385750",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F66ebfb28-52a4-4215-b16c-dd68934e4145?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 89,
+    "startDate": "2026-08-18",
+    "endDate": "2026-09-07",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385481",
+    "title": "LG전자 베스트샵 대구 달성점",
+    "description": "원고료 10,000원",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385481",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F6fc16bed-dcb9-4c19-9683-9e32222ab06c?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 30,
+    "applyCount": 201,
+    "startDate": "2026-08-18",
+    "endDate": "2026-09-01",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389943",
+    "title": "스카이라인루지 통영(9월6일)",
+    "description": "루지2회 탑승권 2매+반려동물 동반권 1매(📢애견 동반 필수)+애견 키트(샴푸,빗)1개+5만 포인",
+    "platform": "blog",
+    "category": "life-goods",
+    "location": "통영시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389943",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F0dcadc4f-a280-47d8-95bd-eff318166e5d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 30,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-31",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385752",
+    "title": "삼청각 / 일화당",
+    "description": "1인 식사권(10만원 상당) 9/5(토) 오후 12:30시~ 오후 2시 찰영 및 식사제공(1인 한정) / 1인에 한해 동행자 가능",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "성북구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385752",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F66ebfb28-52a4-4215-b16c-dd68934e4145?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 88,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-31",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1390111",
+    "title": "화랑골프스튜디오",
+    "description": "골프레슨 1회 무료",
+    "platform": "blog",
+    "category": "etc",
+    "location": "경주시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1390111",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F9c8baf54-8caa-4c9a-a81a-84c5d671d1e5?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-31",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385290",
+    "title": "더테라스",
+    "description": "6만원 식사권+10만포인트",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "안양시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385290",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd1050e9f-fe05-41a6-9078-328e94a087e3?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 1,
+    "applyCount": 11,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385309",
+    "title": "부트캠프 인천점",
+    "description": "올라운드패키지 (2~3인 ₩75,000)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "남동구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385309",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F1aaa7d4f-c8e0-46a3-9cde-c4ef33e5397f?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 1,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385345",
+    "title": "포프레쉬",
+    "description": "3만원 식사권",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "영종구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385345",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F0b86bf2d-b888-4f44-b7b3-d8f34aa6ae15?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 5,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385394",
+    "title": "비엣베트남힐링케어",
+    "description": "120분 (110.000원) 여관리사/ 발세척,귀청소,샴푸+면도+팩,손.발톱케어, 아로마 + 핫스톤전신케어",
+    "platform": "blog",
+    "category": "life-goods",
+    "location": "세종",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385394",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fc04b91fb-3720-42bc-aeb7-885999623acb?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 1,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389406",
+    "title": "목포원조예림이네낙지만두",
+    "description": "고기, 김치, 매콤 3가지 만두중 택2 (24000)",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "목포시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389406",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F43a96160-f493-4d9e-bd08-fb5e94672c9a?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385263",
+    "title": "더테라스",
+    "description": "6만원 식사권",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "안양시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385263",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd1050e9f-fe05-41a6-9078-328e94a087e3?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 16,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385293",
+    "title": "포프레쉬",
+    "description": "3만원 식사권",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "영종구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385293",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fe7e3d7fc-493b-440a-be07-a54fda0699a4?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385388",
+    "title": "프렌치쪽갈비 김해장유점",
+    "description": "메인메뉴(간장쪽갈비 or 소금쪽갈비 or 매운쪽갈비) 2인분 + 사이드메뉴 택1(오돌뼈 or 날치알 볶음밥) - 약32000원 금액권 으로 사용가능",
+    "platform": "blog",
+    "category": "etc",
+    "location": "김해시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385388",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fc3cb8dbb-d9ca-47a1-8edd-9b4e8ae62d7d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385406",
+    "title": "차홍룸동탄점",
+    "description": "커트, 염색, 크리닉, 펌 등 모든 헤어시술 //단발모델우대",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "화성시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385406",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fe3d93f42-e3e1-4e64-83a7-2c15a3a0b1ad?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 1,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1390009",
+    "title": "육간명가",
+    "description": "더덕한정식 진품상(1인58000원)4인 식사권(총232000원 상당) 2명이오셔도 4인식사제공",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "사하구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1390009",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F23f79cd2-bc8c-4b22-a81c-7508b360e5c9?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 5,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1390118",
+    "title": "큰형님 소국밥",
+    "description": "소국밥 2개(각 1개씩) + 육사시미 180g 1개 +50,000p",
+    "platform": "blog",
+    "category": "etc",
+    "location": "남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1390118",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F3c2e2482-aeef-4dc1-b8bd-8171573a5a75?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385247",
+    "title": "정과정",
+    "description": "정과정 정과4종 견과류 선물세트 1세트(24,000원)+포인트6,000원",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385247",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F1efe09fe-4969-4f24-ba1a-0dee1cf65dc5?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 16,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1390022",
+    "title": "아빠의주스 사과즙",
+    "description": "아빠의주스 사과즙 100ml 30개입 한박스",
+    "platform": "blog",
+    "category": "health-food",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1390022",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F8fda12fe-ea0e-4f45-8bdb-2d0883da1ea2?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 17,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1337502",
+    "title": "영끌포차",
+    "description": "5만원 자유이용권",
+    "platform": "blog",
+    "category": "food-pub",
+    "location": "부산진구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1337502",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F4f8ebd3d-9e68-46db-b631-745ceb765ce8?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1382902",
+    "title": "마쯔미라멘",
+    "description": "2명 방문 3만원, 3명방문 45000원이하 주문가능 10000P 제공",
+    "platform": "blog",
+    "category": "etc",
+    "location": "유성구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1382902",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F15d03245-920c-498f-ae99-bdadc1577b65?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 10,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385284",
+    "title": "원더바레 영등포점",
+    "description": "바레 2회 (60,000원 상당)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "영등포구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385284",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F20193de7-02af-44bd-9b66-c724906ddd58?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385297",
+    "title": "제주도트 혼술바 양주옥정점",
+    "description": "1인 3만원 , 2인 6만원 칵테일 제공",
+    "platform": "blog",
+    "category": "food-pub",
+    "location": "양주시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385297",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd1007519-51d7-4f7d-bd70-4e4201d76cdd?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385444",
+    "title": "공릉 라이크짐",
+    "description": "1:1 PT 50분 2회(15만원상당) + 1개월 회원권(8만원상당)인바디 측정 > 인바디 설명 > 운동목적 파악 > 운동목적에 따른 개별 운동 지도",
+    "platform": "blog",
+    "category": "etc",
+    "location": "노원구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385444",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F67ee92f9-51a0-4bc2-ac9c-056e4cc84053?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389419",
+    "title": "쟈끄데상쥬 과천점",
+    "description": "(30만원 상당) 펌 or 염색",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "과천시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389419",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F73e70c33-c9de-4d98-aede-dc87512d2168?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389475",
+    "title": "퀸타투",
+    "description": "원고료 1만원 제공",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389475",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Ff78a96be-739d-4406-be34-3af68606c278?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 13,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389476",
+    "title": "퀸타투",
+    "description": "원고료 1만원 제공",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389476",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Ff78a96be-739d-4406-be34-3af68606c278?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 10,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389610",
+    "title": "밸류마크 잠실지점",
+    "description": "재무상담 컨설팅 : 30만원 상당 + 10,000p",
+    "platform": "blog",
+    "category": "etc",
+    "location": "송파구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389610",
+    "imageUrl": "https://d3oxv6xcx9d0j1.cloudfront.net/items/8a59b80b-0606-43ec-8748-49dbd7f9b6c1",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389611",
+    "title": "밸류마크 위드지점",
+    "description": "재무상담 컨설팅 : 30만원 상당 + 10,000p",
+    "platform": "blog",
+    "category": "etc",
+    "location": "강남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389611",
+    "imageUrl": "https://d3oxv6xcx9d0j1.cloudfront.net/items/d8bc30f8-6e7c-42eb-8e29-b7cb5702bf6d",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389612",
+    "title": "밸류마크 위드지점",
+    "description": "재무상담 컨설팅 : 30만원 상당 + 10,000p",
+    "platform": "instagram",
+    "category": "etc",
+    "location": "강남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389612",
+    "imageUrl": "https://d3oxv6xcx9d0j1.cloudfront.net/items/d8bc30f8-6e7c-42eb-8e29-b7cb5702bf6d",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389973",
+    "title": "경기남부법률사무소 성남사무소",
+    "description": "원고료 10,000원",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389973",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F6799409d-e140-49b7-96ee-4e76eda5ee0d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389438",
+    "title": "타이드코",
+    "description": "흡수력 좋은 피트니스 런닝 헤어밴드",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389438",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F41c3b839-ab9e-44b7-b52d-f729115e5956?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385318",
+    "title": "원료공방",
+    "description": "티트리 바디워시+바디미스트 세트 (39,000원)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385318",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F49ed2f4e-cf7a-4ea1-8384-9e4fba40eee7?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 25,
+    "applyCount": 23,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389435",
+    "title": "타이드코",
+    "description": "심플한 변기솔 청소솔, 블랙, 1개",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389435",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F1f82c8e0-1732-4328-b141-60b7b430b6da?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 4,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1363515",
+    "title": "튤네일",
+    "description": "문제성발톱7만원-15만원, 발각질6만5천원",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "송파구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1363515",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F38f84e5e-6168-4045-a307-55df90842dd1?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1378394",
+    "title": "나두 공유 필라테스",
+    "description": "나두 필라테스 주간 2시간 공간대여 이용권 ㅣ39,800원 상당",
+    "platform": "blog",
+    "category": "etc",
+    "location": "성남시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1378394",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F976ec937-0fcb-4cd2-981e-ca5a1f6b06bd?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385116",
+    "title": "강금옥쭈꾸미 동암역점",
+    "description": "1. 삼겹쭈꾸미 2인분 2. 계란찜 3. 음료1개",
+    "platform": "blog",
+    "category": "health-fresh",
+    "location": "부평구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385116",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fc9224946-0609-49d1-9c22-70416b1417f0?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 20,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385235",
+    "title": "유해피심리상담센터 수원점",
+    "description": "아동(만 3세~만 12세), 양육태도검사+해석상담(50분~1시간), 14만원 상당",
+    "platform": "blog",
+    "category": "baby",
+    "location": "수원시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385235",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fc070a126-b910-4782-b261-8408971f9e4b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385241",
+    "title": "그린밤음악학원",
+    "description": "[음악성향진단]을 통한 1:1 레슨(55분) (통기타, 일렉기타, 베이스기타, 피아노, 미디작곡 중 택1) [정가 10만원]",
+    "platform": "blog",
+    "category": "book",
+    "location": "성남시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385241",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fe130e6a9-ce9a-4eea-ae6a-d31777232b1b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385269",
+    "title": "더테라스",
+    "description": "6만원 식사권",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "안양시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385269",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd1050e9f-fe05-41a6-9078-328e94a087e3?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 6,
+    "applyCount": 22,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385271",
+    "title": "복터진집 경주점",
+    "description": "5만원 식사권",
+    "platform": "blog",
+    "category": "food-pub",
+    "location": "경주시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385271",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F7b544a5c-d9aa-4fe9-aee1-5d32abc5f05e?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385299",
+    "title": "컬러드태닝 동탄호수공원점",
+    "description": "브라운태닝 or 화이트태닝 1회(로션포함) - 3만원상당",
+    "platform": "blog",
+    "category": "etc",
+    "location": "화성시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385299",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F0f6fe3e8-48f6-4a57-8754-9f19acc2818d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385303",
+    "title": "참숯구이몬트락",
+    "description": "(77,000원 상당) 몬트락 2인 세트 + 찌개 택1 + 냉면 택1",
+    "platform": "blog",
+    "category": "etc",
+    "location": "제주시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385303",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F63b4def6-fbf2-4975-97a3-5661aac5de9d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385313",
+    "title": "늘에스테틱",
+    "description": "8만원 금액 문제성피부관리+5000p지급",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "구로구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385313",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F384b19fb-4aca-4841-b10c-1c65410cb466?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385317",
+    "title": "휴메이크 휘트니스 송파점",
+    "description": "무료 이용30일",
+    "platform": "blog",
+    "category": "etc",
+    "location": "송파구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385317",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F9538f2ce-95a8-40b0-8b27-b5cc4665c2e7?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385320",
+    "title": "휴메이크 휘트니스 송파점",
+    "description": "무료 이용30일",
+    "platform": "blog",
+    "category": "etc",
+    "location": "송파구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385320",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F8dc290c5-3986-4fc6-8ccd-71e669daff5e?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385325",
+    "title": "혜윰뷰티",
+    "description": "<클래식연장> - 60,000",
+    "platform": "blog",
+    "category": "etc",
+    "location": "수원시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385325",
+    "imageUrl": "https://d3oxv6xcx9d0j1.cloudfront.net/reGenerateImage/9f94a6a2-d105-46df-b151-afdec8753702",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385329",
+    "title": "에스지코에스테틱",
+    "description": "1회 18만원 상당의 아기빛 페이셜 윤곽 밸런스 케어",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "강남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385329",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F8913d2ba-f070-4922-a566-2f486a56ca04?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385340",
+    "title": "여포갈비",
+    "description": "식사권60000원",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "강릉시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385340",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fb0b3bc27-2bcc-45a4-9b5f-989c92faabf3?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385363",
+    "title": "리예필라테스",
+    "description": "3:1 임산부 그룹레슨",
+    "platform": "blog",
+    "category": "etc",
+    "location": "동래구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385363",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fac15ebf7-247b-46e7-baec-24b53ca92f12?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385371",
+    "title": "살롱드코메 안산중앙동점",
+    "description": "20만원 상당의 전체 염색 또는 펌, 매직 등 제공",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "안산시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385371",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F06b4c8a3-4aae-4770-932c-bb6f24504c28?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 4,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385374",
+    "title": "[서울/영등포구] 바이브파티 솔로파티",
+    "description": "동반 1인 메인, 에프터 파티 입장권",
+    "platform": "blog",
+    "category": "travel-leisure",
+    "location": "영등포구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385374",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F0a873e33-263f-42e3-b95a-a241e4b4309d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 11,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385387",
+    "title": "살롱드코메 안산중앙동점",
+    "description": "프리미엄 두피관리권 증정 10만원대",
+    "platform": "blog",
+    "category": "etc",
+    "location": "안산시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385387",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F35040d12-0370-46d4-a715-1140cc7b598f?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385392",
+    "title": "차홍룸동탄점",
+    "description": "커트, 염색, 크리닉, 펌 등 모든 헤어시술 //단발모델우대",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "화성시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385392",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fe3d93f42-e3e1-4e64-83a7-2c15a3a0b1ad?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385393",
+    "title": "포테이션",
+    "description": "1박2일 숙박비용 무료 바베큐세트 무료 애견동반 무료",
+    "platform": "blog",
+    "category": "travel-stay",
+    "location": "양평군",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385393",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F640db25c-43e0-449f-a4e1-68b5cfde2a1d?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385438",
+    "title": "티스테이션 청호점",
+    "description": "엔진오일 무상교체(국산차 한정, 오일필터/에어크리너 포함)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "오산시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385438",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fa7e42b62-eb86-4e4d-997c-f0deb630c37b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385486",
+    "title": "테이스트피트니스PT 수원우만점",
+    "description": "헬스 1개월 + PT 1회권",
+    "platform": "blog",
+    "category": "etc",
+    "location": "수원시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385486",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F037cbd6f-ca39-4aab-9e2a-45752aeca263?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 4,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389231",
+    "title": "벤탄빌라 인천서창점",
+    "description": "25000원",
+    "platform": "blog",
+    "category": "etc",
+    "location": "남동구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389231",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Ff3cae2ba-2d4e-4776-9fa6-9b594bcdeea1?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389960",
+    "title": "브로우온업",
+    "description": "눈썹왁싱(필수) or 눈썹왁싱(필수) + 페이스왁싱 택1 (ex, 인중, 사이드(구렛나루), 헤어라인, 뒷목, 볼, 턱+5,000 포인트",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "강북구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389960",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F22ced0d9-2f59-4f94-867d-f5fbde26570a?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389561",
+    "title": "타이드코",
+    "description": "혈자리 귀지압 패치 스티커 600p",
+    "platform": "blog",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389561",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F8e43a7a9-c478-4413-b80a-9d5dac2d370e?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1389560",
+    "title": "타이드코",
+    "description": "전신 두피 페이스 경락 괄사 마사지기 + 고급 가죽케이스 세트, 1세트",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1389560",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd74bf28f-03aa-4236-be8f-0a472045c1e9?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 6,
+    "applyCount": 4,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-750693",
+    "title": "언디파인 파티룸 신사점",
+    "description": "파티룸 사용금액 무료지원 (최하 7만원 ~ 최대 60만원 정도)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "서초구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/750693",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fef69071d-d322-423c-b9f9-8f256f9ea04b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1339310",
+    "title": "감칠",
+    "description": "식사권 4만원(주류주문 필수)",
+    "platform": "blog",
+    "category": "food-pub",
+    "location": "마포구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1339310",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F08c7fcb5-e1f2-43bd-aee2-c4a927edf73e?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1345522",
+    "title": "움직임클리닉 분당",
+    "description": "1회 88000원 재활 운동 , 통증관리 서비스",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "성남시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1345522",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F7ad558fb-4204-4f00-ae5f-f4a214c45a5f?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1360451",
+    "title": "약손명가에스테틱(노원점)",
+    "description": "얼굴 축소 관리 1회 15만원",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "노원구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1360451",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fca9d95af-7744-4920-9f8f-25ca1cfa46a2?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 16,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1367918",
+    "title": "모케어 일산점",
+    "description": "21만원 상당의 두피케어 제공",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "고양시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1367918",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Ffa7a050e-42e1-4f7c-9c55-3354dfd89a56?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 20,
+    "applyCount": 14,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1369814",
+    "title": "브니엘에스테틱아산본점",
+    "description": "15만원 상당의 프리미엄 맞춤 관리제공 (색소케어 윤곽관리 장벽면역케어  리프팅관리 물광케어)",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "아산시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1369814",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F3970f0b0-867e-4afe-bda2-4fc068639e11?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 6,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1375658",
+    "title": "오송더비(솔로랜드 모임)",
+    "description": "10대10 소개팅이용권/3만원커피/1만원다과/1만원, 추가금액 발생없음",
+    "platform": "blog",
+    "category": "etc",
+    "location": "청주시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1375658",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd0e07b96-62ea-4111-9c51-32c9bedc2437?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 8,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1376366",
+    "title": "[서울/강서구] 룩앳미 가양점 신원검증 100% 전문직 대기업 직장인 결혼 로테이션 소개팅",
+    "description": "커피로테이션(50,000원)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "강서구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1376366",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fc6f379de-9fce-4ce0-b33c-d322a4aafe53?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1377297",
+    "title": "해선옥",
+    "description": "메인메뉴2인",
+    "platform": "instagram",
+    "category": "etc",
+    "location": "강남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1377297",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Ffa7e5356-e56e-4cfd-a07f-346a9ba095e9?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 20,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1378468",
+    "title": "에브리데이크리스마스 역삼점",
+    "description": "'레드백’ 1세트 + 인기 베이커리 2종 또는 음료업그레이드 15,000원상당",
+    "platform": "blog",
+    "category": "food-cafe",
+    "location": "강남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1378468",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F1dedafb3-deb5-47b3-a8a8-d85235d5b290?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 13,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1382172",
+    "title": "프랭크커핀바 대전도안점",
+    "description": "음료2잔+구움과자1종류",
+    "platform": "blog",
+    "category": "health-fresh",
+    "location": "서구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1382172",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F86a1c7d3-1009-408c-8f7e-f551136bc5a1?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 23,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1382233",
+    "title": "갈비로운 하남미사점",
+    "description": "❤️점심특선 메뉴 25000원 식사권❤️",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "하남시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1382233",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F67a26eb8-b41d-409e-a296-4120e7e4a5f4?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1383008",
+    "title": "덕터수 중동점",
+    "description": "모공스파테라피 12만원",
+    "platform": "blog",
+    "category": "etc",
+    "location": "부천시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1383008",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F159131c4-0ee6-469c-9b94-e2835bb0eb58?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 7,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384488",
+    "title": "홍천화로구이 분당점",
+    "description": "최대 6만원 메뉴 제공",
+    "platform": "blog",
+    "category": "etc",
+    "location": "성남시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384488",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F46976829-f0ab-41a2-9e7b-70191049a0d9?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 13,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384518",
+    "title": "[서울/강서구] 룩앳미 가양점 신원검증 100% 전문직 대기업 직장인 결혼 로테이션 소개팅",
+    "description": "커피로테이션(50,000원)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "강서구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384518",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F4c45d892-7d3d-43be-b8fd-6c4a8c8bdea0?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384521",
+    "title": "[서울/강서구] 룩앳미 가양점 신원검증 100% 전문직 대기업 직장인 결혼 로테이션 소개팅",
+    "description": "커피로테이션(50,000원)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "강서구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384521",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F4c45d892-7d3d-43be-b8fd-6c4a8c8bdea0?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384523",
+    "title": "[서울/강서구] 룩앳미 가양점 신원검증 100% 전문직 대기업 직장인 결혼 로테이션 소개팅",
+    "description": "커피로테이션(50,000원)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "강서구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384523",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F4c45d892-7d3d-43be-b8fd-6c4a8c8bdea0?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384693",
+    "title": "리커넥트 신촌점(밋업라운지)",
+    "description": "솔로파티 1인 올나잇 참가권(63,000원 상당) 추가비용 없음",
+    "platform": "blog",
+    "category": "etc",
+    "location": "서대문구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384693",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F584d0a4b-9d29-43c3-9760-c3ca71a2651b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 20,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384716",
+    "title": "수안초밥 안산중앙역점",
+    "description": "금액권 30,000원",
+    "platform": "blog",
+    "category": "food-restaurant",
+    "location": "안산시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384716",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Ff263fdc3-7165-4d71-a26e-4e0646a4eb08?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 24,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384795",
+    "title": "에스테틱봄",
+    "description": "여자 원장이 직접케어하는 10만원 등스페셜 케어",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "양산시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384795",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F0b46d693-e3d4-4e0a-a717-1f0bc83e221c?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 1,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384855",
+    "title": "로라네이처",
+    "description": "로라네이처 비건 디퓨저 200ml(모스몬타나, 릴리부케, 포레스트 샹들리에향 中 1) 정가 12,000원",
+    "platform": "instagram",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384855",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd98d7a71-1076-4a8f-ba08-19660da4ad8c?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 30,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384860",
+    "title": "로라네이처",
+    "description": "로라네이처 비건 섬유향수 룸스프레이 80ml (모스몬타나향, 릴리부케향, 포레스트 샹들리에 향 中 1) 정가 10,000",
+    "platform": "instagram",
+    "category": "etc",
+    "location": "재택",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384860",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F3d478c8b-402c-41bc-9c7e-fc9225a4b244?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 5,
+    "applyCount": 18,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1384989",
+    "title": "뼈의신",
+    "description": "뼈구이 1단계(34000원)or2단계(34000원) or감자탕(27000원) 중에서 선택",
+    "platform": "blog",
+    "category": "etc",
+    "location": "부천시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1384989",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fe9bec74b-c901-44a8-91d7-3d251069b797?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 7,
+    "applyCount": 11,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385016",
+    "title": "교동포차 삼순이23번",
+    "description": "4만원 상당(원하는메뉴1가지)",
+    "platform": "blog",
+    "category": "food-pub",
+    "location": "여수시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385016",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fa3428939-68e3-4e54-9c02-86237a3ca8b0?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 6,
+    "applyCount": 2,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385071",
+    "title": "오하운폴댄스 창원상남점",
+    "description": "무료체험 1회 (회당 3만원 상당)",
+    "platform": "instagram",
+    "category": "etc",
+    "location": "창원시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385071",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fecba6a29-86aa-4444-a66c-c99aea0c3249?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385093",
+    "title": "미쁨뷰티검단",
+    "description": "스킨플래닝or여드름관리",
+    "platform": "blog",
+    "category": "etc",
+    "location": "검단구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385093",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fa1e74a18-4cb6-4eba-a9bc-28842a80152a?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385119",
+    "title": "이철헤어커커 안동점",
+    "description": "모든 시술 무료",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "안동시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385119",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F4afa354c-ac19-494f-bed1-8e629e922410?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 4,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385148",
+    "title": "온앤미뷰티",
+    "description": "브라질리언왁싱",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "수영구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385148",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F870499b8-b3c1-4af2-88ee-5faf52e72504?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 7,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385169",
+    "title": "엘루엔에스테틱홍대점",
+    "description": "맞춤형 피부관리 1회",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "마포구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385169",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F1ffae6e4-341c-433b-97c2-deea62dba87b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 2,
+    "applyCount": 3,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385179",
+    "title": "살롱마치",
+    "description": "아이롱펌 쉐도우펌 190,000원 상당",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "서해구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385179",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fdd898570-327f-46d4-8d33-0ed28938908b?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 0,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385205",
+    "title": "코르브 가로수길본점",
+    "description": "컷55000원 + 퍼스널컬러 염색 170,000  OR  펌 260,000",
+    "platform": "blog",
+    "category": "beauty-hair",
+    "location": "강남구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385205",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fd936797b-0eba-4920-b103-b66d06f30b79?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 10,
+    "applyCount": 1,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385206",
+    "title": "잉글리쉬로즈 송도",
+    "description": "10만원 상당 플라워 2단 케이크(랜덤 테디베어 케이크)",
+    "platform": "blog",
+    "category": "etc",
+    "location": "연수구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385206",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fb62564b9-57a1-4da2-bf79-4b310dc5eea9?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 3,
+    "applyCount": 32,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385209",
+    "title": "밉",
+    "description": "파스타 or 브런치or크림냉면 택1 + 시금치 우삼겹 리조또 + 낮 아메리카노 2잔 or 음료 2잔 / 저녁 칵테일 2잔 (논알콜 가능)",
+    "platform": "blog",
+    "category": "food-pub",
+    "location": "송파구",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385209",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2Fcf05abdd-da2f-4cdc-b7b2-b3da7e4eab91?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 20,
+    "applyCount": 28,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
+    "mission": null
+  },
+  {
+    "id": "rn-1385210",
+    "title": "다올뷰티",
+    "description": "바디왁싱(50,000원 상당)",
+    "platform": "blog",
+    "category": "beauty-skin",
+    "location": "천안시",
+    "campaignUrl": "https://www.reviewnote.co.kr/campaigns/1385210",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/campaigns%2F05ec11ed-0b8b-45e5-ad16-9f725ee5f473?alt=media",
+    "targetSite": "리뷰노트",
+    "limitCount": 6,
+    "applyCount": 6,
+    "startDate": "2026-08-18",
+    "endDate": "2026-08-28",
+    "createdAt": "2026-08-18T04:27:13.975Z",
+    "updatedAt": "2026-08-18T04:27:13.975Z",
+    "searchKeywords": ",소고기,",
     "mission": null
   }
 ]
