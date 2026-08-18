@@ -1308,6 +1308,10 @@ input, select {
     display: block !important;
     z-index: 3000 !important;
   }
+
+  .keyword-master-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @keyframes slideUp {

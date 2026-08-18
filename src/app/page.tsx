@@ -3355,9 +3355,9 @@ export default function Home() {
                 </div>
               ) : keywordData ? (
                 <>
-                  {/* 📊 지표 카운트 개별 1행 카드 레이아웃 (좌: 타이틀/세부, 우: 총계 수치) */}
+                  {/* 📊 지표 카운트 3컬럼 가로 1행 카드 레이아웃 (상단 카드와 하단 표 100% 라인 대칭) */}
                   <div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginBottom: '12px' }}>
+                    <div className="keyword-master-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
                       {/* 1. 월간 총 검색량 카드 */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
