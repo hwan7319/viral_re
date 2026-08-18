@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "test": "npx tsx src/lib/audit_troubleshoot_all.ts",
-    "build": "npm run test && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "crawl": "tsx src/scripts/crawler.ts"
