@@ -634,15 +634,16 @@ export default function Home() {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              backdropFilter: 'blur(2px)',
-              zIndex: 900,
+              backgroundColor: 'rgba(0, 0, 0, 0.55)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              zIndex: 3000,
               display: 'none'
             }}
           />
         )}
         {/* 탭바 영역 */}
-        <div className="filter-bar-wrap" style={{ marginTop: '0', position: 'relative', zIndex: 2100 }}>
+        <div className="filter-bar-wrap" style={{ marginTop: '0', position: 'relative', zIndex: (isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) ? 10 : 2100 }}>
           <div className="filter-bar-scroll" style={{ justifyContent: 'flex-start' }}>
             
             {/* 1. 모집 유형 탭 */}
@@ -826,7 +827,13 @@ export default function Home() {
 
         {/* 모집 유형 상세 패널 */}
         {isTypeOpen && (
-          <div className="filter-panel-wrap" style={{ display: 'flex', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
+          <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                📋 모집 유형 선택
+              </h3>
+              <button type="button" onClick={() => setIsTypeOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
+            </div>
             <div className="filter-chip-row" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
               {[
                 { 
@@ -876,6 +883,12 @@ export default function Home() {
         {/* 카테고리 상세 패널 */}
         {isCategoryOpen && (
           <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                🏷️ 카테고리 선택
+              </h3>
+              <button type="button" onClick={() => setIsCategoryOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
+            </div>
             <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
@@ -965,7 +978,13 @@ export default function Home() {
 
         {/* 플랫폼 상세 패널 */}
         {isPlatformOpen && (
-          <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
+          <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column' }} onMouseEnter={handleFilterAreaEnter}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                🌐 플랫폼 선택
+              </h3>
+              <button type="button" onClick={() => setIsPlatformOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
+            </div>
             <div className="filter-chip-row" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
               {[
                 { 
@@ -1039,6 +1058,12 @@ export default function Home() {
         {/* 지역 상세 패널 */}
         {isLocationOpen && (
           <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                📍 지역 검색 선택
+              </h3>
+              <button type="button" onClick={() => setIsLocationOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
+            </div>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
               <div className="region-two-col">
                 {/* 좌: 시도 목록 */}
