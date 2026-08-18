@@ -3402,8 +3402,13 @@ export default function Home() {
                   </div>
 
                   {/* 🔍 연관 검색어 정밀 랭킹 섹션 */}
-                  <div style={{ padding: '16px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{
+                    padding: '16px 18px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '0 2px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                           🔍 연관 검색어 랭킹 리스트
@@ -3413,12 +3418,19 @@ export default function Home() {
                         </span>
                       </div>
                       <button
+                        type="button"
+                        className="mobile-hide-copy-tags"
                         onClick={() => {
                           const tagText = (keywordData.relatedKeywords || []).map((k: any) => `#${k.keyword}`).join(' ');
-              navigator.clipboard.writeText(tagText);
+                          navigator.clipboard.writeText(tagText);
                           showToast('연관 검색어 태그가 클립보드에 복사되었습니다!', 'success');
                         }}
-                        style={{ padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, borderRadius: 'var(--radius-sm)', backgroundColor: '#4f46e5', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)' }}
+                        style={{
+                          padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700,
+                          borderRadius: 'var(--radius-sm)', backgroundColor: '#4f46e5', color: '#fff',
+                          border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                          boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)'
+                        }}
                       >
                         태그 전체 복사 📋
                       </button>
@@ -3429,7 +3441,7 @@ export default function Home() {
                       overflowX: 'auto',
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--border-color)',
-                      marginBottom: '12px',
+                      margin: '0 2px 12px 2px',
                       backgroundColor: 'var(--bg-primary)'
                     }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '600px' }}>
@@ -3902,7 +3914,8 @@ export default function Home() {
           .integrator-badge {
             display: none !important;
           }
-          .mobile-hide-sync-badge {
+          .mobile-hide-sync-badge,
+          .mobile-hide-copy-tags {
             display: none !important;
           }
           header button {
