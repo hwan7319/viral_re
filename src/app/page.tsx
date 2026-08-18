@@ -531,7 +531,6 @@ export default function Home() {
                 {activePlatform === 'all' ? '플랫폼' :
                   activePlatform === 'blog' ? '네이버 블로그' :
                   activePlatform === 'clip' ? '네이버 클립' :
-                  activePlatform === 'blog+clip' ? '블로그 + 클립' :
                   activePlatform === 'instagram' ? '인스타그램' :
                   activePlatform === 'youtube' ? '유튜브' : '기타'}
               </span>
@@ -756,11 +755,6 @@ export default function Home() {
                   key: 'clip', 
                   label: '네이버 클립', 
                   icon: <span style={{ fontSize: '1.4rem' }}>🎬</span>
-                },
-                { 
-                  key: 'blog+clip', 
-                  label: '블로그 + 클립', 
-                  icon: <span style={{ fontSize: '1.4rem' }}>🟢🎬</span>
                 },
                 { 
                   key: 'instagram', 
