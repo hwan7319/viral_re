@@ -1933,13 +1933,7 @@ export default function Home() {
             <span>🔑 키워드마스터</span>
           </button>
           <div style={{ position: 'relative' }}>
-            <button 
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                triggerManualSync();
-              }}
+            <div 
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -1953,10 +1947,11 @@ export default function Home() {
                 border: isSyncingData ? '1.5px solid #3b82f6' : '1.5px solid #10b981',
                 boxShadow: isSyncingData ? '0 2px 10px rgba(59, 130, 246, 0.3)' : '0 2px 10px rgba(16, 185, 129, 0.2)',
                 whiteSpace: 'nowrap',
-                cursor: 'pointer',
+                cursor: 'default',
+                userSelect: 'none',
                 transition: 'all 0.2s ease'
               }}
-              title="클릭 시 즉시 실시간 데이터 동기화 실행 (자동 동기화 주기: 60초)"
+              title="실시간 60초 자동 동기화 상태 표시 전용 뱃지 (스팸 클릭 서버 부하 방지)"
             >
               <span style={{
                 width: '7px',
@@ -1974,7 +1969,7 @@ export default function Home() {
                   </>
                 )}
               </span>
-            </button>
+            </div>
 
             {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (초고대비 솔리드 다크 캡슐) */}
             {syncToastInfo && (
