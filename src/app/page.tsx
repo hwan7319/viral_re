@@ -501,7 +501,11 @@ export default function Home() {
   // 🔍 상세 모달 오픈 시 각 사이트별 원본 상세 미션 가이드라인 실시간 스크레이핑 렌더링
   useEffect(() => {
     if (selectedCampaign && selectedCampaign.campaignUrl) {
-      setIsMissionLoading(true);
+      // 🔑 미션 데이터가 이미 존재하면 로딩 스피너를 보여주지 않고 즉시 0초 표출!
+      if (!selectedCampaign.mission) {
+        setIsMissionLoading(true);
+      }
+
       fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}`)
         .then(res => res.json())
         .then(data => {
@@ -509,10 +513,11 @@ export default function Home() {
             const newApply = data.applyCount !== undefined ? data.applyCount : undefined;
             const newLimit = data.limitCount !== undefined ? data.limitCount : undefined;
             const newBenefit = data.realBenefit || undefined;
+            const newMission = data.mission || undefined;
 
             setSelectedCampaign(prev => prev ? {
               ...prev,
-              mission: data.mission || prev.mission,
+              mission: newMission || prev.mission,
               description: (newBenefit && newBenefit !== prev.title) ? newBenefit : prev.description,
               applyCount: newApply !== undefined ? newApply : prev.applyCount,
               limitCount: newLimit !== undefined ? newLimit : prev.limitCount
@@ -523,6 +528,7 @@ export default function Home() {
               if (item.id === selectedCampaign.id) {
                 return {
                   ...item,
+                  mission: newMission || item.mission,
                   description: (newBenefit && newBenefit !== item.title) ? newBenefit : item.description,
                   applyCount: newApply !== undefined ? newApply : item.applyCount,
                   limitCount: newLimit !== undefined ? newLimit : item.limitCount
@@ -3144,7 +3150,7 @@ export default function Home() {
                   <h4 style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--accent)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>📋</span> 업체 원본 필수 미션 & 가이드라인
                   </h4>
-                  {isMissionLoading ? (
+                  {isMissionLoading && !selectedCampaign.mission ? (
                     <div style={{ fontSize: '0.83rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 0' }}>
                       <Icons.Refresh className="animate-spin" /> 해당 사이트의 원본 상세 미션 가이드라인을 실시간 파싱 중입니다...
                     </div>

@@ -221,7 +221,18 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
   if (!url) return undefined;
   
   try {
-    const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+    let res;
+    try {
+      res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+    } catch (firstErr) {
+      // Vercel Serverless IP 우회 2차 재시도 (Mobile User-Agent)
+      const mobileHeaders = {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+      };
+      res = await axios.get(url, { headers: mobileHeaders, timeout: 6000 });
+    }
+
     const html = res.data;
     if (typeof html !== 'string') return undefined;
 
