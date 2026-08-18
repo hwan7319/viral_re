@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 import crypto from 'crypto';
+import https from 'https';
 
 export const dynamic = 'force-dynamic';
+
+// 🔑 SSL/TLS Root CA 인증서 검증 오판정 및 차단 방지 (unable to verify the first certificate 우회)
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false
+});
 
 function generateSearchAdSignature(timestamp: string, method: string, uri: string, secretKey: string) {
   const message = `${timestamp}.${method}.${uri}`;
@@ -19,6 +25,7 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
         'X-Naver-Client-Secret': clientSecret,
       },
       timeout: 2500,
+      httpsAgent,
     });
     const totalPosts = res.data.total || 0;
     let recentDate = '-';
@@ -53,6 +60,8 @@ export async function GET(request: Request) {
         'X-Naver-Client-Id': clientId,
         'X-Naver-Client-Secret': clientSecret,
       },
+      timeout: 3000,
+      httpsAgent,
     });
 
     const totalPosts = blogRes.data.total || 0;
@@ -90,6 +99,8 @@ export async function GET(request: Request) {
             'X-Customer': customerId,
             'X-Signature': signature,
           },
+          timeout: 3000,
+          httpsAgent,
         });
 
         const keywordList = adRes.data.keywordList || [];
@@ -124,6 +135,7 @@ export async function GET(request: Request) {
       const acRes = await axios.get(acUrl, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
         timeout: 1500,
+        httpsAgent,
       });
       if (acRes.data && acRes.data.items && acRes.data.items[0]) {
         acRes.data.items[0].forEach((item: any) => {
