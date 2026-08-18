@@ -3268,7 +3268,7 @@ export default function Home() {
           padding: '16px'
         }}>
           <div className="glass-panel" style={{
-            width: '95%', maxWidth: '880px', maxHeight: '94vh',
+            width: '95%', maxWidth: '1080px', maxHeight: '94vh',
             backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
@@ -3484,12 +3484,13 @@ export default function Home() {
 
                     {/* 💻📱 상단 카드와 좌우 경계 100% 완전 일치하는 테이블 박스 */}
                     <div style={{
+                      width: '100%',
                       overflowX: 'auto',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border-color)',
                       backgroundColor: 'var(--bg-tertiary)'
                     }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '600px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
                         <thead>
                           <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', userSelect: 'none' }}>
                             <th 
@@ -3634,8 +3635,8 @@ export default function Home() {
                     <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', marginTop: 0 }}>
                       🏆 네이버 블로그 상위 노출 랭킹
                     </h4>
-                    <div style={{ overflowX: 'auto', padding: '2px 0' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '560px' }}>
+                    <div style={{ width: '100%', overflowX: 'auto', padding: '2px 0' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                       {keywordData.topPosts.map((post: any, idx: number) => (
                         <a 
                           key={idx}
