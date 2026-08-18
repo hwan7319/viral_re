@@ -77,6 +77,30 @@ const NaverBlogIcon = ({ size = 16 }: { size?: number }) => (
   </span>
 );
 
+// 🎬 네이버 클립 공식 아이콘 컴포넌트 (네이버 그린 배경 + 숏폼 비디오 플레이 심볼)
+const NaverClipIcon = ({ size = 16 }: { size?: number }) => (
+  <span style={{
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: `${size}px`,
+    height: `${size}px`,
+    backgroundColor: '#03C75A',
+    color: '#ffffff',
+    borderRadius: `${Math.max(3, Math.floor(size * 0.25))}px`,
+    flexShrink: 0,
+    boxShadow: '0 1px 3px rgba(3, 199, 90, 0.35)',
+    userSelect: 'none'
+  }}>
+    <svg width={size * 0.65} height={size * 0.65} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="#03C75A" />
+      <path d="M10 8.5L16 12L10 15.5V8.5Z" fill="#FFFFFF" />
+      <circle cx="7.5" cy="7.5" r="1" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="16.5" cy="16.5" r="1" fill="#FFFFFF" opacity="0.9" />
+    </svg>
+  </span>
+);
+
 // 🧼 출처 사이트 이름([레뷰 추천], [디너의여왕] 등) 중복 제거 헬퍼 함수
 const sanitizeCampaignText = (text: string): string => {
   if (!text) return '';
@@ -754,7 +778,7 @@ export default function Home() {
                 { 
                   key: 'clip', 
                   label: '네이버 클립', 
-                  icon: <span style={{ fontSize: '1.4rem' }}>🎬</span>
+                  icon: <NaverClipIcon size={26} />
                 },
                 { 
                   key: 'instagram', 
@@ -2406,12 +2430,13 @@ export default function Home() {
                           </span>
                         ) : c.platform === 'clip' ? (
                           <span className="badge badge-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
-                            <span>🎬</span>
+                            <NaverClipIcon size={13} />
                             <span>클립</span>
                           </span>
                         ) : c.platform === 'blog+clip' ? (
                           <span className="badge badge-blog-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
                             <NaverBlogIcon size={13} />
+                            <NaverClipIcon size={13} />
                             <span>블로그·클립</span>
                           </span>
                         ) : c.platform === 'instagram' ? (
@@ -2604,12 +2629,13 @@ export default function Home() {
                             </span>
                           ) : c.platform === 'clip' ? (
                             <span className="badge badge-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
-                              <span>🎬</span>
+                              <NaverClipIcon size={13} />
                               <span>클립</span>
                             </span>
                           ) : c.platform === 'blog+clip' ? (
                             <span className="badge badge-blog-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
                               <NaverBlogIcon size={13} />
+                              <NaverClipIcon size={13} />
                               <span>블로그·클립</span>
                             </span>
                           ) : c.platform === 'instagram' ? (
@@ -2790,12 +2816,13 @@ export default function Home() {
                     </span>
                   ) : selectedCampaign.platform === 'clip' ? (
                     <span className="badge badge-clip" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
-                      <span>🎬</span>
+                      <NaverClipIcon size={14} />
                       <span>네이버 클립</span>
                     </span>
                   ) : selectedCampaign.platform === 'blog+clip' ? (
                     <span className="badge badge-blog-clip" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
                       <NaverBlogIcon size={14} />
+                      <NaverClipIcon size={14} />
                       <span>네이버 블로그 + 클립 (둘 다 필수)</span>
                     </span>
                   ) : selectedCampaign.platform === 'instagram' ? (
