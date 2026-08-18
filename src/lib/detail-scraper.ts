@@ -231,9 +231,46 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
 
     // 1. 강남맛집 (xn--939au0g4vj8sq.net)
     if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
-      extractedRaw = $('#cmp_guide').html() || 
-                     $('dd#cmp_guide').html() || 
-                     $('.guide_box').html() || '';
+      let keywordsStr = '';
+      $('dl').each((_, el) => {
+        const dt = $(el).find('dt').text().trim();
+        if (dt.includes('키워드')) {
+          keywordsStr = $(el).find('dd').text().trim().replace(/\s+/g, ' ');
+        }
+      });
+
+      const rawGuideHtml = $('#cmp_guide').html() || $('dd#cmp_guide').html() || $('.guide_box').html() || '';
+      let text = rawGuideHtml.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|li|div|dd)>/gi, '\n').replace(/<[^>]+>/g, '');
+      const lines = text.split('\n');
+      const cleanLines: string[] = [];
+
+      for (let line of lines) {
+        let t = line.trim();
+        if (!t) continue;
+        if (t.includes('사진을 정성껏 다양하게')) continue;
+        if (t.includes('동영상을 포함하여 사진은 최소')) continue;
+        if (t.includes('하단에 지도 위치 링크를')) continue;
+        if (t.includes('텍스트 1,000자 이상')) continue;
+        if (t.includes('리뷰 작성 시, 제목과 본문 내용에 지정된 키워드')) continue;
+        if (t.includes('참고해 주세요.') && t.length < 15) continue;
+        if (t.includes('SNS에 함께 리뷰 가능하신 분')) continue;
+        if (t.includes('캠페인 미션이 지켜지지 않을 시 수정')) continue;
+        cleanLines.push(t);
+      }
+
+      let resultMission = cleanLines.join('\n').trim();
+      let parts: string[] = [];
+
+      if (keywordsStr) {
+        parts.push(`📌 [지정 필수 키워드]\n${keywordsStr}`);
+      }
+      if (resultMission) {
+        parts.push(`📌 [업체 상세 미션 & 가이드라인]\n${resultMission}`);
+      } else if (keywordsStr) {
+        parts.push(`📌 [안내] 위 지정 필수 키워드를 제목 1회, 본문 3회 이상 자연스럽게 작성해 주시면 됩니다.`);
+      }
+
+      extractedRaw = parts.join('\n\n');
     }
     // 2. 포블로그 (4blog.net)
     else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
