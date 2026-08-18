@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "test": "npx tsx src/lib/audit_troubleshoot_all.ts",
+    "build": "npm run test && next build",
     "start": "next start",
     "lint": "eslint",
     "crawl": "tsx src/scripts/crawler.ts"
