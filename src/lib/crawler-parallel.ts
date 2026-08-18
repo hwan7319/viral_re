@@ -25,26 +25,7 @@ const parseRemainDaysToDate = (remainDays: number): string => {
 
 // 🔑 실제 업체측 리뷰어 미션 가이드라인 생성 헬퍼 함수
 export const generateRealMission = (title: string, platform: string, category: string, location?: string): string => {
-  const isVisit = !!(location && location.trim().length > 0 && !location.includes('택배') && !location.includes('배송') && !location.includes('전국') && !location.includes('재택'));
-  const isBlog = platform === 'blog';
-  const isInsta = platform === 'instagram';
-  
-  if (isVisit) {
-    if (isBlog) {
-      return `• [지정 키워드] 블로그 포스팅 제목 및 본문에 대표 키워드 3회 이상 자연스럽게 포함 작성\n• [사진/동영상] 매장 외부/내부 인테리어 및 시그니처 대표 메뉴 사진 10장 이상 + 15초 이상의 동영상/모먼트 1개 필수 첨부\n• [네이버 지도] 네이버 스마트플레이스 지도 장소 등록 및 위치 태그 필수 첨부\n• [공정위] 게시물 하단에 체험단 협찬 스폰서 배너 및 공정위 문구 필수 표기`;
-    } else if (isInsta) {
-      return `• [피드/릴스] 매장 감성 인테리어 및 메뉴 고화질 사진 5장 이상 또는 15초 이상 릴스 업로드\n• [해시태그] 업체 지정 해시태그 10개 이상 포함 및 매장 공식 인스타그램 계정 인물 태그 필수\n• [위치태그] 피드 업로드 시 실제 매장 위치 등록 필수`;
-    } else {
-      return `• [영상/더보기] 3분 이상의 리얼 체험 영상 업로드 및 영상 더보기란에 매장 위치/예약 링크 명시\n• [자막/태그] 대표 혜택 안내 자막 처리 및 대표 키워드 5개 이상 태그 등록`;
-    }
-  } else {
-    // 배송 / 재택형
-    if (isBlog) {
-      return `• [언박싱/실사용] 제품 수령 후 5일 이내 언박싱 및 실제 실사용 포토 8장 이상 첨부\n• [장점/후기] 제품의 주요 특징 및 사용 후 느낀 점을 800자 이상으로 꼼꼼히 리뷰 작성\n• [구매 링크] 하단에 스마트스토어 공식 구매 URL 링크 및 공정위 스폰서 문구 기재`;
-    } else {
-      return `• [고화질 컷] 제품 감성 연출 실사용 고화질 컷 5장 이상 피드에 업로드\n• [태그/후기] 브랜드 공식 계정 피드 태그 및 솔직 사용 후기 3줄 이상 작성`;
-    }
-  }
+  return '';
 };
 
 const parseCountText = (text: string): { applyCount: number; limitCount: number } => {
@@ -346,32 +327,32 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
     // 4. 리뷰노트
     (async () => {
       try {
-        const rnUrl = `https://www.reviewnote.co.kr/customer/campaign?q=${encodedKeyword}`;
+        const rnUrl = `https://www.reviewnote.co.kr/campaigns`;
         const response = await axios.get(rnUrl, { headers: HEADERS, timeout: 5000 });
         const html = response.data;
         const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
         if (nextDataMatch) {
           const nextData = JSON.parse(nextDataMatch[1]);
-          const campaignList = nextData.props?.pageProps?.campaigns?.data || [];
+          const campaignList = nextData.props?.pageProps?.data?.objects || nextData.props?.pageProps?.campaigns?.data || [];
           campaignList.forEach((c: any) => {
             const id = `rn-${c.id}`;
             const title = c.title || '';
-            const description = c.provide_desc || '';
-            const platform = c.category_id === 1 ? 'blog' : c.category_id === 2 ? 'instagram' : 'blog';
+            const description = c.offer || c.provide_desc || '상세정보 원본 참조';
+            const platform = c.channel === 'INSTAGRAM' ? 'instagram' : 'blog';
             const category = detectCategory(title, description);
-            const location = c.addr1 || undefined;
-            const campaignUrl = `https://www.reviewnote.co.kr/customer/campaign/${c.id}`;
-            const imageUrl = c.img1 || '';
-            const limitCount = c.recruit_count || 0;
-            const applyCount = c.apply_count || 0;
-            const endDate = c.recruit_end_date || now.toISOString().split('T')[0];
+            const location = c.sido?.name || c.city || undefined;
+            const campaignUrl = `https://www.reviewnote.co.kr/campaigns/${c.id}`;
+            const imageUrl = c.imageKey ? `https://d3oxv6xcx9d0j1.cloudfront.net/${c.imageKey}` : (c.img1 || '');
+            const limitCount = c.infNum || c.recruit_count || 1;
+            const applyCount = c.applicantCount || c.apply_count || 0;
+            const endDate = c.applyEndAt ? c.applyEndAt.split('T')[0] : now.toISOString().split('T')[0];
             const autoKws = buildAutoKeywords(title, description);
             const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
 
             collected.push({
               id, title, description, platform, category, location, campaignUrl,
               imageUrl, targetSite: '리뷰노트', limitCount, applyCount,
-              startDate: c.recruit_start_date || now.toISOString().split('T')[0], endDate,
+              startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
               searchKeywords
             });

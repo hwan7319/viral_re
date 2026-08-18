@@ -25,6 +25,20 @@ export function formatMissionText(text: string): string {
   if (!text) return '';
   let cleaned = text;
 
+  // 0. 범용 플랫폼 템플릿 문구 자동 필터링 (업체 커스텀 미션만 정밀 추출)
+  cleaned = cleaned
+    .replace(/1\.\s*사진을 정성껏 다양하게 찍어 주세요\.?/g, '')
+    .replace(/2\.\s*동영상을 포함하여 사진은 최소 15장 이상 사용해주세요\.?/g, '')
+    .replace(/3\.\s*하단에 지도 위치 링크를 꼭 넣어주세요\.?/g, '')
+    .replace(/4\.\s*텍스트 1,000자 이상 서술해주세요\.?/g, '')
+    .replace(/5\.\s*리뷰 작성 시, 제목과 본문 내용에 지정된 키워드.*?\./g, '')
+    .replace(/6\.\s*참고해 주세요\.?/g, '')
+    .replace(/- 인스타, 페이스북 등 SNS에 함께 리뷰 가능하신 분들의 선정 확률이 더 높습니다\.?/g, '')
+    .replace(/※ 캠페인 미션이 지켜지지 않을 시 수정 요청이 있을 수 있습니다\.?/g, '')
+    .trim();
+
+  if (!cleaned) return '';
+
   // 1. HTML 태그 정제 및 엔티티 치환
   cleaned = cleaned.replace(/<br\s*\/?>/gi, '\n');
   cleaned = cleaned.replace(/<\/(p|li|div|h[1-6])>/gi, '\n');

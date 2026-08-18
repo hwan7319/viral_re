@@ -274,32 +274,27 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
 
 // 📋 실제 업체 미션 안내 헬퍼 함수
 const generateRealMission = (title: string, platform: string, category: string, location?: string): string => {
-  const isVisit = !!(location && location.trim().length > 0 && !location.includes('택배') && !location.includes('배송') && !location.includes('전국') && !location.includes('재택'));
-  const isBlog = platform === 'blog';
-  const isInsta = platform === 'instagram';
-  
-  if (isVisit) {
-    if (isBlog) {
-      return `• [지정 키워드] 블로그 포스팅 제목 및 본문에 대표 키워드 3회 이상 자연스럽게 포함 작성\n• [사진/동영상] 매장 외부/내부 인테리어 및 시그니처 대표 메뉴 사진 10장 이상 + 15초 이상의 동영상/모먼트 1개 필수 첨부\n• [네이버 지도] 네이버 스마트플레이스 지도 장소 등록 및 위치 태그 필수 첨부\n• [공정위] 게시물 하단에 체험단 협찬 스폰서 배너 및 공정위 문구 필수 표기`;
-    } else if (isInsta) {
-      return `• [피드/릴스] 매장 감성 인테리어 및 메뉴 고화질 사진 5장 이상 또는 15초 이상 릴스 업로드\n• [해시태그] 업체 지정 해시태그 10개 이상 포함 및 매장 공식 인스타그램 계정 인물 태그 필수\n• [위치태그] 피드 업로드 시 실제 매장 위치 등록 필수`;
-    } else {
-      return `• [영상/더보기] 3분 이상의 리얼 체험 영상 업로드 및 영상 더보기란에 매장 위치/예약 링크 명시\n• [자막/태그] 대표 혜택 안내 자막 처리 및 대표 키워드 5개 이상 태그 등록`;
-    }
-  } else {
-    // 배송 / 재택형
-    if (isBlog) {
-      return `• [언박싱/실사용] 제품 수령 후 5일 이내 언박싱 및 실제 실사용 포토 8장 이상 첨부\n• [장점/후기] 제품의 주요 특징 및 사용 후 느낀 점을 800자 이상으로 꼼꼼히 리뷰 작성\n• [구매 링크] 하단에 스마트스토어 공식 구매 URL 링크 및 공정위 스폰서 문구 기재`;
-    } else {
-      return `• [고화질 컷] 제품 감성 연출 실사용 고화질 컷 5장 이상 피드에 업로드\n• [태그/후기] 브랜드 공식 계정 피드 태그 및 솔직 사용 후기 3줄 이상 작성`;
-    }
-  }
+  return '';
 };
 
 // 🧼 줄바꿈, 텍스트 정렬, 앞머리 기호 정밀 가독성 정제 엔진
 const formatMissionText = (text: string): string => {
   if (!text) return '';
   let cleaned = text;
+
+  // 0. 범용 플랫폼 템플릿 문구 자동 필터링 (업체 커스텀 미션만 정밀 추출)
+  cleaned = cleaned
+    .replace(/1\.\s*사진을 정성껏 다양하게 찍어 주세요\.?/g, '')
+    .replace(/2\.\s*동영상을 포함하여 사진은 최소 15장 이상 사용해주세요\.?/g, '')
+    .replace(/3\.\s*하단에 지도 위치 링크를 꼭 넣어주세요\.?/g, '')
+    .replace(/4\.\s*텍스트 1,000자 이상 서술해주세요\.?/g, '')
+    .replace(/5\.\s*리뷰 작성 시, 제목과 본문 내용에 지정된 키워드.*?\./g, '')
+    .replace(/6\.\s*참고해 주세요\.?/g, '')
+    .replace(/- 인스타, 페이스북 등 SNS에 함께 리뷰 가능하신 분들의 선정 확률이 더 높습니다\.?/g, '')
+    .replace(/※ 캠페인 미션이 지켜지지 않을 시 수정 요청이 있을 수 있습니다\.?/g, '')
+    .trim();
+
+  if (!cleaned) return '';
 
   // 1. HTML 태그 정제 및 엔티티 치환
   cleaned = cleaned.replace(/<br\s*\/?>/gi, '\n');
@@ -311,7 +306,7 @@ const formatMissionText = (text: string): string => {
     .replace(/&lt;/gi, '<')
     .replace(/&amp;/gi, '&');
 
-  // 2. 부자연스러운 숫자/날짜 사이 중간 줄바꿈 복원 (예: "26.0\n8.13" -> "26.08.13")
+  // 2. 부자연스러운 숫자/날짜 사이 중간 줄바꿈 복원
   cleaned = cleaned.replace(/([0-9]+\.[0-9]*)\n([0-9]+)/g, '$1$2');
 
   // 3. 줄 단위 분석 및 앞머리 기호 정제
@@ -322,16 +317,13 @@ const formatMissionText = (text: string): string => {
     let trimmed = line.trim();
     if (!trimmed) continue;
 
-    // 단독으로 남아있는 의미없는 기호 무시 (예: "•", "-", "★")
     if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
 
-    // 중복 및 어색한 앞머리 기호 정리 (예: "• • 01." -> "• 01.")
     trimmed = trimmed.replace(/^([•\-\*★✔◈※▶]\s*)+/g, (match) => {
       const symbol = match.trim()[0];
       return symbol ? `${symbol} ` : '';
     });
 
-    // 불렛이나 숫자가 없는 일반 지침 문장에만 보기 좋게 불렛 보강
     const hasPrefix = /^[0-9]+\.|\d+[\.\)]|^[•\-\*★✔◈※▶#]/.test(trimmed);
     if (!hasPrefix && trimmed.length > 2) {
       trimmed = `• ${trimmed}`;
@@ -340,7 +332,6 @@ const formatMissionText = (text: string): string => {
     formattedLines.push(trimmed);
   }
 
-  // 4. 줄간격 및 문단 뭉침 정리
   let result = formattedLines.join('\n');
   result = result.replace(/\n{3,}/g, '\n\n');
 
