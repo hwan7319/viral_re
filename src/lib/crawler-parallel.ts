@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { Campaign, insertOrUpdateCampaigns } from './db';
+import { scrapeDetailBenefit } from './detail-scraper';
 
 // 🔑 크롤링 브라우저 User-Agent 헤더 셋업 (우회 성능 향상)
 const HEADERS = {
@@ -243,6 +244,8 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
         const dqUrl = `https://dinnerqueen.net/taste?query=${encodedKeyword}`;
         const response = await axios.get(dqUrl, { headers: HEADERS, timeout: 5000 });
         const $ = cheerio.load(response.data);
+        const dqItems: any[] = [];
+
         $('.qz-dq-card').each((index, element) => {
           const linkEl = $(element).find('.qz-dq-card__link');
           const rawTitle = linkEl.attr('title') || '';
@@ -260,14 +263,8 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           let location = undefined;
           if (!badgesText.includes('배송')) {
             const locMatch = title.match(/\[([^\]]+)\]/);
-            location = locMatch ? locMatch[1] : '서울 마포구';
+            location = locMatch ? locMatch[1] : undefined;
           }
-          // 🎁 제공 혜택(description) 정밀 파싱 (p.qz-body-kr strong.w-600 및 point_badge)
-          let benefitText = $(element).find('p.qz-body-kr strong.w-600, .point_badge, .qz-body-kr').first().text().replace(/\s+/g, ' ').trim();
-          if (!benefitText || benefitText.includes('신청') || benefitText.includes('모집') || benefitText.length < 2) {
-            benefitText = title || '상세 제공 혜택 원본 참조';
-          }
-          const description = benefitText;
 
           const category = detectCategory(title, badgesText);
 
@@ -275,18 +272,25 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const fullUrl = campaignUrl.startsWith('http') ? campaignUrl : `https://dinnerqueen.net${campaignUrl}`;
             const dqId = fullUrl.split('/').pop() || fullUrl.replace(/[^0-9]/g, '');
             const id = `dq-${dqId}`;
-            const autoKws = buildAutoKeywords(title, badgesText);
-            const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
 
-            collected.push({
-              id, title, description, platform, category, location, campaignUrl: fullUrl,
+            dqItems.push({
+              id, title, description: title, platform, category, location, campaignUrl: fullUrl,
               imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
-              searchKeywords
+              searchKeywords: `,${keyword},`
             });
           }
         });
+
+        // ⚡ 상세 혜택 원본 병렬 사전 수집 (Concurrent Pre-scrape)
+        await Promise.all(dqItems.map(async (item) => {
+          const realBenefit = await scrapeDetailBenefit(item.campaignUrl, '디너의여왕');
+          if (realBenefit && realBenefit !== item.title) {
+            item.description = realBenefit;
+          }
+          collected.push(item);
+        }));
       } catch (err: any) {
         console.error('[Parallel-Crawl] 디너의여왕 failed:', err.message);
       }
