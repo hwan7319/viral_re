@@ -3789,29 +3789,23 @@ export default function Home() {
           display: none;
         }
 
-        /* 📱 모바일 디바이스 반응형 최적화 (768px 이하) */
+        /* 📱 모바일 & 태블릿 디바이스 반응형 완벽 최적화 (768px 이하 & 480px 이하) */
         @media (max-width: 768px) {
-          /* 헤더 영역 모바일 맞춤 축소 */
+          /* 헤더 영역 모바일 맞춤 콤팩트 배치 */
           header {
-            padding: 10px 12px !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-          }
-          header h1 {
-            font-size: 1.15rem !important;
+            padding: 10px 14px !important;
+            flex-wrap: nowrap !important;
+            gap: 6px !important;
           }
           header img {
-            height: 34px !important;
+            height: 32px !important;
           }
           .integrator-badge {
             display: none !important;
           }
-          .header-btn-text {
-            display: none !important;
-          }
-          .header-login-btn {
-            padding: 6px 10px !important;
+          header button {
+            padding: 5px 10px !important;
+            font-size: 0.75rem !important;
           }
           .login-btn-text-desktop {
             display: none !important;
@@ -3819,48 +3813,34 @@ export default function Home() {
           .login-btn-text-mobile {
             display: inline !important;
             font-size: 0.75rem !important;
-            font-weight: 700 !important;
-          }
-          header button {
-            padding: 6px 10px !important;
-            font-size: 0.75rem !important;
+            font-weight: 800 !important;
           }
 
-          /* 히어로 배너 영역 패딩 및 폰트 줄이기 */
+          /* 히어로 검색 배너 축소 */
           section {
-            padding: 36px 16px 24px 16px !important;
+            padding: 28px 14px 20px 14px !important;
           }
           section h2 {
-            font-size: 1.6rem !important;
-            line-height: 1.25 !important;
+            font-size: 1.45rem !important;
+            line-height: 1.3 !important;
           }
           section p {
-            font-size: 0.85rem !important;
-            margin-bottom: 20px !important;
+            font-size: 0.82rem !important;
+            margin-bottom: 16px !important;
           }
 
-          /* 최근/인기 검색어 가로 라인 간격 다이어트 */
-          #searchWrapper {
-            margin-top: 12px !important;
-          }
-
-          /* 대시보드 메인 영역 */
+          /* 메인 레이아웃 패딩 */
           main {
-            padding: 16px 12px !important;
+            padding: 14px 10px !important;
           }
 
-          /* 필터 판넬 레이아웃 최적화 */
-          .glass-panel.animate-fade-in {
-            padding: 16px 12px !important;
-            gap: 12px !important;
-          }
-
-          /* 플랫폼 및 카테고리 가로 스크롤화로 찌그러짐 원천 차단 */
+          /* 가로 터치 스크롤 패널 (플랫폼 & 카테고리 탭) */
           .filter-row {
             display: flex !important;
             overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
             gap: 6px !important;
-            padding-bottom: 4px !important;
+            padding: 4px 2px 8px 2px !important;
             scrollbar-width: none !important;
           }
           .filter-row::-webkit-scrollbar {
@@ -3869,54 +3849,73 @@ export default function Home() {
           .filter-row button {
             flex-shrink: 0 !important;
             padding: 6px 12px !important;
-            font-size: 0.8rem !important;
+            font-size: 0.78rem !important;
+            white-space: nowrap !important;
           }
 
-          /* 복합 필터 드롭다운 그리드: 모바일은 1열 스택 */
+          /* 필터 조절 판넬 그리드 1열 스택 */
           .filter-dropdown-grid {
             grid-template-columns: 1fr !important;
-            gap: 12px !important;
-            padding-top: 16px !important;
+            gap: 10px !important;
           }
 
-          /* 카드 그리드: 가로 컴팩트 2열 나열로 쇼핑몰급 UX 획득 */
+          /* 카드 그리드 2열 커스텀 레이아웃 */
           .campaign-grid {
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
+            gap: 10px !important;
           }
-
-          /* 카드 내부 컴포넌트 텍스트 및 간격 2열 맞춤화 */
           .campaign-grid > div {
+            min-height: 280px !important;
             height: auto !important;
-            min-height: 290px !important;
           }
-          .campaign-grid div[style*="height: '180px'"] {
-            height: 120px !important;
-          }
-          /* 리액트 style props에 주입된 높이 무시 및 모바일 최적화 */
           .campaign-card-image {
             height: 110px !important;
           }
           .campaign-card-content {
-            padding: 10px !important;
+            padding: 8px 10px 10px 10px !important;
           }
           .campaign-card-content h4 {
-            font-size: 0.82rem !important;
-            line-height: 1.25 !important;
-            height: 34px !important; /* 모바일 카드 높이 균형 */
-          }
-          .campaign-card-content .reward {
-            font-size: 0.72rem !important;
-          }
-          .campaign-card-content .meta-info {
-            font-size: 0.65rem !important;
+            font-size: 0.8rem !important;
+            line-height: 1.3 !important;
+            height: 32px !important;
+            margin-bottom: 4px !important;
           }
 
-          /* 모바일 로그인 모달 팝업 가로폭 꽉 채우기 */
-          div[style*="width: '450px'"] {
-            width: 90% !important;
-            max-width: 380px !important;
-            padding: 24px 16px !important;
+          /* 모바일 모달 팝업 레이아웃 뷰포트 맞춤화 */
+          div[style*="position: 'fixed'"][style*="zIndex: 1000"],
+          div[style*="position: 'fixed'"][style*="zIndex: 99999"] {
+            width: 94vw !important;
+            max-width: 580px !important;
+            max-height: 88vh !important;
+            overflow-y: auto !important;
+            padding: 16px !important;
+            border-radius: 16px !important;
+          }
+        }
+
+        /* 📱 초소형 모바일 기기 반응형 보정 (480px 이하: iPhone SE, Galaxy 등) */
+        @media (max-width: 480px) {
+          header {
+            padding: 8px 10px !important;
+          }
+          header img {
+            height: 28px !important;
+          }
+          .campaign-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+          }
+          .campaign-card-image {
+            height: 98px !important;
+          }
+          .campaign-card-content h4 {
+            font-size: 0.76rem !important;
+            height: 30px !important;
+          }
+          div[style*="width: '450px'"],
+          div[style*="width: '600px'"] {
+            width: 95vw !important;
+            padding: 16px 12px !important;
           }
         }
       `}</style>
