@@ -3287,46 +3287,49 @@ export default function Home() {
           }}>
             {/* 헤더 */}
             <div style={{
-              padding: '16px 20px', borderBottom: '1px solid var(--border-color)',
+              padding: '14px 16px', borderBottom: '1px solid var(--border-color)',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               backgroundColor: 'var(--bg-tertiary)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '1.2rem' }}>🔑</span>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  키워드마스터 (네이버 검색량 & 경쟁도 분석)
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <h3 style={{ fontSize: '1.08rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+                  키워드마스터
                 </h3>
+                <span style={{ fontSize: '0.76rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                  (네이버 검색량 & 경쟁도 분석)
+                </span>
               </div>
               <button 
                 onClick={() => setIsKeywordModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: '4px' }}
               >
                 <Icons.Close />
               </button>
             </div>
 
-            {/* 검색 입력바 */}
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)' }}>
+            {/* 검색 입력바 (모바일 단일 행 완벽 밀착 레이아웃) */}
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
                   analyzeKeyword(keywordQuery);
                 }}
-                style={{ display: 'flex', gap: '8px' }}
+                style={{ display: 'flex', gap: '8px', width: '100%', alignItems: 'center' }}
               >
                 <input 
                   type="text"
                   value={keywordQuery}
                   onChange={(e) => setKeywordQuery(e.target.value)}
-                  placeholder="분석할 키워드를 입력하세요 (예: 강남맛집, 후지필름 등)"
+                  placeholder="분석할 키워드를 입력하세요"
                   style={{
                     flex: 1,
-                    padding: '10px 14px',
+                    minWidth: 0,
+                    padding: '10px 12px',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border-color)',
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.9rem',
+                    fontSize: '0.88rem',
                     fontWeight: 600
                   }}
                 />
@@ -3334,7 +3337,14 @@ export default function Home() {
                   type="submit"
                   disabled={isKeywordLoading}
                   className="premium-button-primary"
-                  style={{ padding: '10px 20px', fontSize: '0.9rem', fontWeight: 700, whiteSpace: 'nowrap' }}
+                  style={{
+                    padding: '10px 14px',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    borderRadius: 'var(--radius-md)'
+                  }}
                 >
                   {isKeywordLoading ? '분석 중...' : '키워드 조회'}
                 </button>
@@ -3356,14 +3366,17 @@ export default function Home() {
                 </div>
               ) : keywordData ? (
                 <>
-                  {/* 📊 지표 카운트 3열 균등 카드 (행/렬 정밀 레이아웃) */}
+                  {/* 📊 지표 카운트 3열 균등 카드 (모바일 1열 콤팩트 변환) */}
                   <div>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: '12px',
-                      marginBottom: '12px'
-                    }}>
+                    <div 
+                      className="keyword-modal-cards"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '12px',
+                        marginBottom: '12px'
+                      }}
+                    >
                       {/* 1. 월간 총 검색량 카드 */}
                       <div style={{
                         padding: '16px',
@@ -4119,6 +4132,12 @@ export default function Home() {
             line-height: 1.3 !important;
             height: 32px !important;
             margin-bottom: 4px !important;
+          }
+
+          /* 키워드마스터 지표 3열 카드 모바일 1열 변환 */
+          .keyword-modal-cards {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
           }
 
           /* 모바일 모달 팝업 레이아웃 뷰포트 맞춤화 */
