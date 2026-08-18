@@ -402,8 +402,30 @@ export default function Home() {
   const [crawling, setCrawling] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
-  // ⏳ 실시간 자동 동기화 카운트다운 타이머 (60초 주기)
+  // ⏳ 실시간 글로벌 타임스탬프 동기화 카운트다운 타이머 (새로고침 F5 시에도 초시간 초기화 없음!)
   const SYNC_INTERVAL_SEC = 60;
+  
+  const setNextSyncTimestamp = useCallback(() => {
+    const nextTarget = Date.now() + SYNC_INTERVAL_SEC * 1000;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('viral_re_next_sync_target', nextTarget.toString());
+    }
+    return nextTarget;
+  }, []);
+
+  const getRemainingSyncSeconds = useCallback(() => {
+    if (typeof window === 'undefined') return SYNC_INTERVAL_SEC;
+    let targetStr = localStorage.getItem('viral_re_next_sync_target');
+    let target = targetStr ? parseInt(targetStr, 10) : 0;
+    
+    if (!target || isNaN(target) || target <= Date.now()) {
+      target = setNextSyncTimestamp();
+    }
+    
+    const diffSec = Math.ceil((target - Date.now()) / 1000);
+    return Math.max(0, Math.min(SYNC_INTERVAL_SEC, diffSec));
+  }, [setNextSyncTimestamp]);
+
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
   const [syncToastInfo, setSyncToastInfo] = useState<{
@@ -416,6 +438,7 @@ export default function Home() {
 
   const triggerManualSync = useCallback(async () => {
     setIsSyncingData(true);
+    setNextSyncTimestamp();
     try {
       const res = await fetch(`/api/campaigns?t=${Date.now()}`);
       const data = await res.json();
@@ -473,20 +496,24 @@ export default function Home() {
       setIsSyncingData(false);
       setSyncCountdown(SYNC_INTERVAL_SEC);
     }
-  }, []);
+  }, [setNextSyncTimestamp]);
 
   useEffect(() => {
+    // 🔑 마운트 시점에 글로벌 타임스탬프 기준으로 남아있는 실제 초시간 즉시 계산 (새로고침 초기화 완전 차단!)
+    setSyncCountdown(getRemainingSyncSeconds());
+
     const timer = setInterval(() => {
-      setSyncCountdown(prev => {
-        if (prev <= 1) {
-          triggerManualSync();
-          return SYNC_INTERVAL_SEC;
-        }
-        return prev - 1;
-      });
+      const rem = getRemainingSyncSeconds();
+      setSyncCountdown(rem);
+
+      if (rem <= 0) {
+        setNextSyncTimestamp();
+        triggerManualSync();
+      }
     }, 1000);
+
     return () => clearInterval(timer);
-  }, [triggerManualSync]);
+  }, [getRemainingSyncSeconds, setNextSyncTimestamp, triggerManualSync]);
   
   // 검색 & 필터 상태
   const [searchTerm, setSearchTerm] = useState('');
