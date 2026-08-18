@@ -1238,6 +1238,9 @@ export default function Home() {
     return list;
   }, [keywordData, keywordSortField, keywordSortOrder]);
 
+  // ⚡ 키워드마스터 지표 클릭 도움말 툴팁 팝업 상태 (volume, ratio)
+  const [activeKeywordGuideTooltip, setActiveKeywordGuideTooltip] = useState<'volume' | 'ratio' | null>(null);
+
   // ⚡ 네이버 실시간 급상승 키워드 1분 자동 동기화 상태 (키워드마스터 전용)
   const [liveTrendingList, setLiveTrendingList] = useState<any[]>([]);
   const [lastTrendingUpdate, setLastTrendingUpdate] = useState<string>('');
@@ -3370,15 +3373,38 @@ export default function Home() {
                   <div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginBottom: '12px' }}>
                       {/* 1. 월간 총 검색량 카드 */}
-                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월간 총 검색량</span>
-                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>(PC {keywordData.pcSearchVolume.toLocaleString()} / 모바일 {keywordData.mobileSearchVolume.toLocaleString()})</span>
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월간 총 검색량</span>
+                            <button
+                              type="button"
+                              onClick={() => setActiveKeywordGuideTooltip(prev => prev === 'volume' ? null : 'volume')}
+                              style={{
+                                background: 'none', border: 'none', padding: '0 4px', cursor: 'pointer',
+                                fontSize: '0.82rem', color: activeKeywordGuideTooltip === 'volume' ? '#4f46e5' : 'var(--text-tertiary)',
+                                opacity: 0.85, transition: 'transform 0.15s ease, color 0.15s ease'
+                              }}
+                              title="클릭 시 월간 총 검색량 산출 기준 안내"
+                            >
+                              ℹ️
+                            </button>
+                            <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>(PC {keywordData.pcSearchVolume.toLocaleString()} / 모바일 {keywordData.mobileSearchVolume.toLocaleString()})</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '1.22rem', fontWeight: 900, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalSearchVolume.toLocaleString()}</span>
+                            <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent)' }}>회</span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
-                          <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalSearchVolume.toLocaleString()}</span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent)' }}>회</span>
-                        </div>
+                        {activeKeywordGuideTooltip === 'volume' && (
+                          <div style={{
+                            padding: '8px 12px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)',
+                            border: '1px solid #4f46e5', fontSize: '0.74rem', color: 'var(--text-primary)', lineHeight: 1.5,
+                            animation: 'fadeIn 0.15s ease-in-out'
+                          }}>
+                            📌 <strong>월간 총 검색량 기준:</strong> 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.
+                          </div>
+                        )}
                       </div>
 
                       {/* 2. 총 블로그 포스팅 수 카드 (한 줄 완성) */}
@@ -3388,37 +3414,44 @@ export default function Home() {
                           <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>(네이버 누적 등록 문서)</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
-                          <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalPosts.toLocaleString()}</span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>건</span>
+                          <span style={{ fontSize: '1.22rem', fontWeight: 900, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalPosts.toLocaleString()}</span>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>건</span>
                         </div>
                       </div>
 
                       {/* 3. 경쟁비율 카드 */}
-                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>경쟁비율 (문서 ÷ 검색량)</span>
-                          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', whiteSpace: 'nowrap' }}>{keywordData.statusText}</span>
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>경쟁비율 (문서 ÷ 검색량)</span>
+                            <button
+                              type="button"
+                              onClick={() => setActiveKeywordGuideTooltip(prev => prev === 'ratio' ? null : 'ratio')}
+                              style={{
+                                background: 'none', border: 'none', padding: '0 4px', cursor: 'pointer',
+                                fontSize: '0.82rem', color: activeKeywordGuideTooltip === 'ratio' ? '#10b981' : 'var(--text-tertiary)',
+                                opacity: 0.85, transition: 'transform 0.15s ease, color 0.15s ease'
+                              }}
+                              title="클릭 시 경쟁비율 산출공식 안내"
+                            >
+                              ℹ️
+                            </button>
+                            <span style={{ fontSize: '0.74rem', fontWeight: 700, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', whiteSpace: 'nowrap' }}>{keywordData.statusText}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '1.22rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', fontVariantNumeric: 'tabular-nums' }}>{keywordData.competitionRatio}</span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
-                          <span style={{ fontSize: '1.4rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', fontVariantNumeric: 'tabular-nums' }}>{keywordData.competitionRatio}</span>
-                        </div>
-                      </div>
-
-                      {/* 📌 지표 산출 기준 가이드 */}
-                      <div style={{
-                        padding: '10px 14px',
-                        borderRadius: 'var(--radius-sm)',
-                        backgroundColor: 'var(--bg-tertiary)',
-                        border: '1px solid var(--border-color)',
-                        fontSize: '0.75rem',
-                        color: 'var(--text-secondary)',
-                        lineHeight: 1.6,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px'
-                      }}>
-                        <div>📌 <strong>월간 총 검색량 기준:</strong> 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.</div>
-                        <div>📌 <strong>경쟁비율 산출공식:</strong> 포스팅 문서 수 ÷ 월간 총 검색량 (수치가 1.0 미만인 🟢 황금키워드는 검색량 대비 글수가 적어 상위 노출에 매우 유리합니다).</div>
+                        {activeKeywordGuideTooltip === 'ratio' && (
+                          <div style={{
+                            padding: '8px 12px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)',
+                            border: `1px solid ${keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#f59e0b' : '#ef4444'}`,
+                            fontSize: '0.74rem', color: 'var(--text-primary)', lineHeight: 1.5,
+                            animation: 'fadeIn 0.15s ease-in-out'
+                          }}>
+                            📌 <strong>경쟁비율 산출공식:</strong> 포스팅 문서 수 ÷ 월간 총 검색량 (수치가 1.0 미만인 🟢 황금키워드는 검색량 대비 글수가 적어 상위 노출에 매우 유리합니다).
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
