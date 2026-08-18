@@ -3415,7 +3415,7 @@ export default function Home() {
                       <button
                         onClick={() => {
                           const tagText = (keywordData.relatedKeywords || []).map((k: any) => `#${k.keyword}`).join(' ');
-                          navigator.clipboard.writeText(tagText);
+              navigator.clipboard.writeText(tagText);
                           showToast('연관 검색어 태그가 클립보드에 복사되었습니다!', 'success');
                         }}
                         style={{ padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, borderRadius: 'var(--radius-sm)', backgroundColor: '#4f46e5', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)' }}
@@ -3577,10 +3577,11 @@ export default function Home() {
                     backgroundColor: 'var(--bg-tertiary)',
                     border: '1px solid var(--border-color)'
                   }}>
-                    <h4 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', marginTop: 0 }}>
-                      🏆 네이버 블로그 상위 노출 랭킹 (Top 10)
+                    <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', marginTop: 0 }}>
+                      🏆 네이버 블로그 상위 노출 랭킹
                     </h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-sm)', padding: '2px 0' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '560px' }}>
                       {keywordData.topPosts.map((post: any, idx: number) => (
                         <a 
                           key={idx}
@@ -3599,15 +3600,16 @@ export default function Home() {
                             transition: 'border-color 0.15s ease'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, marginRight: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, marginRight: '16px' }}>
                             <span style={{
-                              fontSize: '0.75rem',
+                              fontSize: '0.74rem',
                               fontWeight: 800,
-                              padding: '2px 8px',
+                              padding: '3px 8px',
                               borderRadius: '4px',
                               backgroundColor: idx < 3 ? '#4f46e5' : 'var(--bg-tertiary)',
                               color: idx < 3 ? '#ffffff' : 'var(--text-secondary)',
-                              minWidth: '36px',
+                              minWidth: '42px',
+                              width: '42px',
                               textAlign: 'center',
                               flexShrink: 0
                             }}>
@@ -3619,21 +3621,25 @@ export default function Home() {
                               color: 'var(--text-primary)',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap'
-                            }}>
+                              whiteSpace: 'nowrap',
+                              flex: 1,
+                              minWidth: 0,
+                              display: 'block'
+                            }} title={post.title}>
                               {post.title}
                             </span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--accent)' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent)', whiteSpace: 'nowrap' }}>
                               {post.bloggerName}
                             </span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                               {post.postDate}
                             </span>
                           </div>
                         </a>
                       ))}
+                      </div>
                     </div>
                   </div>
                 </>
