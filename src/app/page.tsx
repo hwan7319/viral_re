@@ -1976,23 +1976,23 @@ export default function Home() {
               </span>
             </button>
 
-            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (100% 초선명 픽셀 레이어) */}
+            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (초고대비 솔리드 다크 캡슐) */}
             {syncToastInfo && (
               <div style={{
                 position: 'fixed',
-                top: syncToastInfo.visible ? '76px' : '60px',
+                top: syncToastInfo.visible ? '76px' : '50px',
                 right: '24px',
                 zIndex: 999999,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '12px 20px',
+                padding: '12px 22px',
                 borderRadius: '10px',
-                backgroundColor: '#111827',
+                backgroundColor: '#0f172a',
                 color: '#ffffff',
                 border: '2px solid #10b981',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
-                fontSize: '0.9rem',
+                boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45)',
+                fontSize: '0.92rem',
                 fontWeight: 700,
                 letterSpacing: '-0.01em',
                 whiteSpace: 'nowrap',
