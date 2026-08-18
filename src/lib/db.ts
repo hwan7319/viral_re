@@ -215,16 +215,26 @@ export async function queryCampaigns(filters: {
     // 당일 기준 마감된 건 검색 목록에서 제외 필터링 기본 탑재
     let result: Campaign[] = (globalRef.memoryCampaigns as Campaign[]).filter((c: Campaign) => c.endDate >= todayStr);
     
-    // 1. 검색어 필터
+    // 1. 검색어 정밀 필터 (제목, 제공혜택, 위치에서만 정확 매칭)
     if (filters.search) {
-      const s = filters.search.toLowerCase();
-      result = result.filter(c => 
-        c.title.toLowerCase().includes(s) || 
-        c.description.toLowerCase().includes(s) || 
-        (c.location && c.location.toLowerCase().includes(s)) ||
-        (c.targetSite && c.targetSite.toLowerCase().includes(s)) ||
-        (c.searchKeywords && c.searchKeywords.toLowerCase().includes(s))
-      );
+      const s = filters.search.trim().toLowerCase();
+      if (s) {
+        result = result.filter(c => {
+          const titleLower = c.title.toLowerCase();
+          const descLower = c.description.toLowerCase();
+          const locLower = (c.location || '').toLowerCase();
+
+          const titleMatch = titleLower.includes(s);
+          const descMatch = descLower.includes(s) && 
+                            !descLower.includes(`${s} 제공불가`) && 
+                            !descLower.includes(`${s} 제공 불가`) && 
+                            !descLower.includes(`${s} 제외`) && 
+                            !descLower.includes(`${s} 불가`);
+          const locMatch = locLower.includes(s);
+
+          return titleMatch || descMatch || locMatch;
+        });
+      }
     }
     // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 블로그+클립 복합 매칭 지원)
     if (filters.platform && filters.platform !== 'all') {
@@ -335,12 +345,16 @@ export async function queryCampaigns(filters: {
   let query = 'SELECT * FROM campaigns WHERE endDate >= ?';
   const params: any[] = [todayStr];
 
-  // 1. 검색어 필터 (제목, 본문, 지역, 출처사이트명, 검색 키워드 태그 매칭)
+  // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치에만 정확 매칭 + 부정어 제외)
   if (filters.search) {
-    query += ' AND (title LIKE ? OR description LIKE ? OR location LIKE ? OR targetSite LIKE ? OR searchKeywords LIKE ?)';
-    const searchParam = `%${filters.search}%`;
-    const keywordParam = `%,${filters.search},%`;
-    params.push(searchParam, searchParam, searchParam, searchParam, keywordParam);
+    const s = filters.search.trim();
+    if (s) {
+      query += ' AND (title LIKE ? OR (description LIKE ? AND description NOT LIKE ? AND description NOT LIKE ?) OR location LIKE ?)';
+      const searchParam = `%${s}%`;
+      const noParam1 = `%${s} 제공불가%`;
+      const noParam2 = `%${s} 제공 불가%`;
+      params.push(searchParam, searchParam, noParam1, noParam2, searchParam);
+    }
   }
 
   // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 블로그+클립 복합 매칭 지원)
