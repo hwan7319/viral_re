@@ -2032,8 +2032,8 @@ export default function Home() {
         zIndex: 200
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-          <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all' }}>
-            블로그 & SNS 체험단 <span className="text-gradient">실시간 모아보기</span>
+          <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
+            블로그 & SNS 체험단 <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>실시간 모아보기</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '1rem' }}>
             여러 플랫폼의 활성 체험단을 한 곳에서 찾아보세요.
@@ -3929,8 +3929,9 @@ export default function Home() {
             padding: 28px 14px 20px 14px !important;
           }
           section h2 {
-            font-size: 1.45rem !important;
+            font-size: clamp(1.05rem, 4.2vw, 1.45rem) !important;
             line-height: 1.3 !important;
+            white-space: nowrap !important;
           }
           section p {
             font-size: 0.82rem !important;
