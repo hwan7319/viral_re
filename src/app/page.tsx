@@ -2056,7 +2056,7 @@ export default function Home() {
                 className="glass-panel" 
                 style={{
                   display: 'flex', alignItems: 'center',
-                  padding: '6px 8px 6px 16px',
+                  padding: '3px 4px 3px 14px',
                   borderRadius: 'var(--radius-full)',
                   boxShadow: 'var(--shadow-lg)',
                   border: isSearchFocused ? '1px solid var(--accent)' : '1px solid var(--border-focus)',
@@ -2076,7 +2076,7 @@ export default function Home() {
                   onBlur={() => setIsSearchFocused(false)}
                   style={{
                     flex: 1, border: 'none', background: 'transparent',
-                    padding: '8px 12px', fontSize: '0.95rem',
+                    padding: '4px 8px', fontSize: '0.88rem',
                     color: 'var(--text-primary)',
                     minWidth: 0,
                     outline: 'none'
@@ -2089,7 +2089,7 @@ export default function Home() {
                       setSearchInput('');
                       setSearchTerm('');
                     }}
-                    style={{ color: 'var(--text-tertiary)', marginRight: '8px', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{ color: 'var(--text-tertiary)', marginRight: '6px', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer' }}
                     title="검색어 초기화"
                   >
                     <Icons.Close />
@@ -2099,10 +2099,10 @@ export default function Home() {
                   type="submit"
                   className="premium-button-primary"
                   style={{
-                    padding: '8px 18px',
+                    padding: '5px 14px',
                     borderRadius: 'var(--radius-full)',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    fontWeight: 800,
                     border: 'none',
                     cursor: 'pointer',
                     flexShrink: 0,
