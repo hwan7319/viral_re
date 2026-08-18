@@ -3403,6 +3403,23 @@ export default function Home() {
                           <span style={{ fontSize: '1.4rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', fontVariantNumeric: 'tabular-nums' }}>{keywordData.competitionRatio}</span>
                         </div>
                       </div>
+
+                      {/* 📌 지표 산출 기준 가이드 */}
+                      <div style={{
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--bg-tertiary)',
+                        border: '1px solid var(--border-color)',
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.6,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px'
+                      }}>
+                        <div>📌 <strong>월간 총 검색량 기준:</strong> 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.</div>
+                        <div>📌 <strong>경쟁비율 기준:</strong> <code>포스팅 수 ÷ 검색량</code> (수치가 1.0 미만인 🟢 황금키워드는 상위 노출 확률이 매우 높습니다).</div>
+                      </div>
                     </div>
                   </div>
 
