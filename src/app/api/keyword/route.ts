@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import https from 'https';
 
 export const dynamic = 'force-dynamic';
+// Vercel deployment trigger sync
 
 // 🔑 SSL/TLS Root CA 인증서 검증 오판정 및 차단 방지 (unable to verify the first certificate 우회)
 const httpsAgent = new https.Agent({
