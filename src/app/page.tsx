@@ -3581,10 +3581,10 @@ export default function Home() {
                               <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
                                 <span style={{
                                   fontSize: '0.74rem', fontWeight: 800, padding: '3px 8px', borderRadius: '4px',
-                                  backgroundColor: item.rank <= 3 ? '#4f46e5' : 'rgba(79, 70, 229, 0.1)',
-                                  color: item.rank <= 3 ? '#ffffff' : '#4f46e5',
-                                  border: item.rank <= 3 ? 'none' : '1px solid rgba(79, 70, 229, 0.25)',
-                                  display: 'inline-block', minWidth: '38px'
+                                  backgroundColor: item.rank <= 3 ? '#4f46e5' : 'var(--bg-secondary)',
+                                  color: item.rank <= 3 ? '#ffffff' : 'var(--text-primary)',
+                                  border: item.rank <= 3 ? 'none' : '1px solid var(--border-color)',
+                                  display: 'inline-block', minWidth: '44px', whiteSpace: 'nowrap'
                                 }}>
                                   {item.rank}위
                                 </span>
@@ -3684,13 +3684,14 @@ export default function Home() {
                               fontWeight: 800,
                               padding: '3px 8px',
                               borderRadius: '4px',
-                              backgroundColor: idx < 3 ? '#4f46e5' : 'rgba(79, 70, 229, 0.1)',
-                              color: idx < 3 ? '#ffffff' : '#4f46e5',
-                              border: idx < 3 ? 'none' : '1px solid rgba(79, 70, 229, 0.25)',
-                              minWidth: '42px',
-                              width: '42px',
+                              backgroundColor: idx < 3 ? '#4f46e5' : 'var(--bg-secondary)',
+                              color: idx < 3 ? '#ffffff' : 'var(--text-primary)',
+                              border: idx < 3 ? 'none' : '1px solid var(--border-color)',
+                              minWidth: '44px',
+                              width: '44px',
                               textAlign: 'center',
-                              flexShrink: 0
+                              flexShrink: 0,
+                              whiteSpace: 'nowrap'
                             }}>
                               {idx + 1}위
                             </span>
