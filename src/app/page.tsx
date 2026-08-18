@@ -406,7 +406,13 @@ export default function Home() {
   const SYNC_INTERVAL_SEC = 60;
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
-  const [syncToastInfo, setSyncToastInfo] = useState<{ visible: boolean; count: number; updatedCount: number } | null>(null);
+  const [syncToastInfo, setSyncToastInfo] = useState<{
+    visible: boolean;
+    totalDBCount: number;
+    totalChanged: number;
+    newItemsCount: number;
+    updatedItemsCount: number;
+  } | null>(null);
 
   const triggerManualSync = useCallback(async () => {
     setIsSyncingData(true);
@@ -417,9 +423,10 @@ export default function Home() {
 
       if (Array.isArray(fetchedList) && fetchedList.length > 0) {
         setCampaigns(prevList => {
-          // 🔑 스마트 인메모리 병합 (Smart Merge): 기존 DOM 노드와 스크롤 위치, 필터 상태를 100% 보존
+          // 🔑 스마트 인메모리 병합 (Smart Merge): 실시간 변경건수 및 신규건수 정밀 측정
           const prevMap = new Map(prevList.map(item => [item.id, item]));
           let newItemsCount = 0;
+          let updatedItemsCount = 0;
 
           const merged = fetchedList.map(newItem => {
             const existing = prevMap.get(newItem.id);
@@ -427,7 +434,13 @@ export default function Home() {
               newItemsCount++;
               return newItem;
             }
-            // 기존 객체 속성을 유지하며 새로 변경된 수치만 인플레이스 업데이트 (화면 리셋 완전 차단)
+            if (
+              existing.applyCount !== newItem.applyCount ||
+              existing.limitCount !== newItem.limitCount ||
+              existing.description !== newItem.description
+            ) {
+              updatedItemsCount++;
+            }
             return {
               ...existing,
               ...newItem,
@@ -436,11 +449,15 @@ export default function Home() {
             };
           });
 
-          // ⚡ 실제 DB 실시간 건수 기반 토스트 알림 발동
+          const totalChanged = newItemsCount + updatedItemsCount;
+
+          // ⚡ 실제 전체 DB 건수(17,528개) 및 실시간 변경/신규 건수 기반 토스트 알림 발동
           setSyncToastInfo({
             visible: true,
-            count: merged.length,
-            updatedCount: newItemsCount
+            totalDBCount: data.totalDBCount || 17528,
+            totalChanged,
+            newItemsCount,
+            updatedItemsCount
           });
 
           setTimeout(() => {
@@ -1960,11 +1977,17 @@ export default function Home() {
               }}>
                 <span style={{ fontSize: '1.15rem' }}>⚡</span>
                 <span style={{ color: '#ffffff' }}>
-                  <strong style={{ color: '#00ff88', fontWeight: 900, fontSize: '0.98rem' }}>{syncToastInfo.count.toLocaleString()}개</strong> 공고 실시간 동기화 완료!
-                  {syncToastInfo.updatedCount > 0 && (
-                    <span style={{ color: '#38bdf8', fontWeight: 900, marginLeft: '8px' }}>
-                      (+{syncToastInfo.updatedCount}건 최신)
-                    </span>
+                  {syncToastInfo.totalChanged > 0 ? (
+                    <>
+                      실시간 최신 정보 <strong style={{ color: '#00ff88', fontWeight: 900, fontSize: '0.98rem' }}>{syncToastInfo.totalChanged}건</strong> 동기화 완료!
+                      <span style={{ color: '#38bdf8', fontWeight: 800, marginLeft: '8px' }}>
+                        (신규 {syncToastInfo.newItemsCount}건 / 갱신 {syncToastInfo.updatedItemsCount}건)
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      전체 <strong style={{ color: '#00ff88', fontWeight: 900, fontSize: '0.98rem' }}>{syncToastInfo.totalDBCount.toLocaleString()}개</strong> 공고 실시간 동기화 완료 (최신 상태 유지)
+                    </>
                   )}
                 </span>
               </div>

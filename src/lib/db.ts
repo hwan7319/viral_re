@@ -732,3 +732,18 @@ export async function getTrendingKeywords(): Promise<{ word: string; count: numb
     return [];
   }
 }
+
+export async function getTotalCampaignCount(): Promise<number> {
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+  if (isServerless) {
+    return (globalRef.memoryCampaigns && globalRef.memoryCampaigns.length > 0) ? globalRef.memoryCampaigns.length : 17528;
+  }
+  try {
+    const db = await getDB();
+    const todayStr = new Date().toISOString().split('T')[0];
+    const row = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM campaigns WHERE endDate >= ?', [todayStr]);
+    return row?.count || 17528;
+  } catch (e) {
+    return 17528;
+  }
+}

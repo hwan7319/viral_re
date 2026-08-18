@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { queryCampaigns, logSearchQuery } from '@/lib/db';
+import { queryCampaigns, logSearchQuery, getTotalCampaignCount } from '@/lib/db';
 import { crawlKeywordOnDemandParallel } from '@/lib/crawler-parallel';
 import axios from 'axios';
 
@@ -83,19 +83,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 2. 로컬 SQLite DB에서 고속 조회
-    let campaigns = await queryCampaigns({
-      search,
-      platform,
-      category,
-      location,
-      targetSite,
-      sortBy,
-      type
-    });
+    // 2. 로컬 SQLite DB 및 전체 건수 동시 조회
+    const [campaigns, totalDBCount] = await Promise.all([
+      queryCampaigns({ search, platform, category, location, targetSite, sortBy, type }),
+      getTotalCampaignCount()
+    ]);
 
     return NextResponse.json({
       success: true,
+      totalDBCount,
       totalCount: campaigns.length,
       data: campaigns,
       isCrawlingTriggered
