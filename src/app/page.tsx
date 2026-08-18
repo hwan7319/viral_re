@@ -3456,15 +3456,9 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* 🔍 연관 검색어 정밀 랭킹 섹션 */}
-                  <div style={{
-                    padding: '16px 18px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-color)',
-                    marginBottom: '12px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  {/* 🔍 연관 검색어 정밀 랭킹 섹션 (상단 카드와 100% 동일 폭 가로 정렬) */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                           🔍 연관 검색어 랭킹 리스트
@@ -3502,13 +3496,12 @@ export default function Home() {
                       </button>
                     </div>
 
-                    {/* 💻📱 가독성 극대화 가로 스크롤 & 고정 최소폭 정렬 테이블 */}
+                    {/* 💻📱 상단 카드와 좌우 경계 100% 완전 일치하는 테이블 박스 */}
                     <div style={{
                       overflowX: 'auto',
-                      borderRadius: 'var(--radius-sm)',
+                      borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border-color)',
-                      margin: '0 0 12px 0',
-                      backgroundColor: 'var(--bg-primary)'
+                      backgroundColor: 'var(--bg-tertiary)'
                     }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '600px' }}>
                         <thead>
@@ -3629,16 +3622,17 @@ export default function Home() {
                       </table>
                     </div>
 
-                    {/* 20개씩 더보기 버튼 (최대 35개/100개 노출) */}
+                    {/* 20개씩 더보기 버튼 */}
                     {relatedVisibleCount < (keywordData.relatedKeywords?.length || 0) && (
                       <button
                         onClick={() => setRelatedVisibleCount((prev) => Math.min(prev + 20, 100))}
                         className="premium-button-secondary"
                         style={{
                           width: '100%', padding: '10px', fontSize: '0.85rem', fontWeight: 700,
-                          backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                          color: 'var(--accent)', cursor: 'pointer', borderRadius: 'var(--radius-sm)',
-                          display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
+                          backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)',
+                          color: 'var(--accent)', cursor: 'pointer', borderRadius: 'var(--radius-md)',
+                          display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px',
+                          marginTop: '10px'
                         }}
                       >
                         <span>연관 검색어 더보기 ➕</span>
@@ -3649,17 +3643,12 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* 🏆 네이버 블로그 상위 노출 랭킹 (Top 10) 정밀 정렬 리스트 */}
-                  <div style={{
-                    padding: '16px 18px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', marginTop: 0 }}>
+                  {/* 🏆 네이버 블로그 상위 노출 랭킹 (Top 10) (상단 카드와 100% 동일 폭 가로 정렬) */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', marginTop: 0 }}>
                       🏆 네이버 블로그 상위 노출 랭킹
                     </h4>
-                    <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-sm)', padding: '2px 0' }}>
+                    <div style={{ overflowX: 'auto', padding: '2px 0' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '560px' }}>
                       {keywordData.topPosts.map((post: any, idx: number) => (
                         <a 
@@ -3671,9 +3660,9 @@ export default function Home() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '10px 14px',
-                            borderRadius: 'var(--radius-sm)',
-                            backgroundColor: 'var(--bg-primary)',
+                            padding: '12px 18px',
+                            borderRadius: 'var(--radius-md)',
+                            backgroundColor: 'var(--bg-tertiary)',
                             textDecoration: 'none',
                             border: '1px solid var(--border-color)',
                             transition: 'border-color 0.15s ease'
