@@ -723,71 +723,77 @@ input, select {
   display: none; /* Chrome/Safari/Webkit 숨김 */
 }
 
-/* 탭 버튼 스타일: 가로로 슬림한 알약/칩셋 스타일 (테두리 없는 플랫 타원형) */
+/* 탭 버튼 스타일: 세련된 글래스모피즘 알약/칩셋 스타일 */
 .filter-tab {
   display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 40px !important;
-  border: none !important; /* 테두리선 완전 제거 */
-  background-color: #ffffff !important; /* 안에 흰색 채우기 */
-  color: #000000 !important; /* 글씨 검은색 */
-  font-size: 0.95rem !important;
-  font-weight: 500 !important;
+  height: 42px !important;
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   white-space: nowrap !important;
   user-select: none !important;
-  border-radius: 9999px !important; /* 완전한 타원형 */
+  border-radius: 9999px !important;
   position: relative !important;
   gap: 8px !important;
   box-sizing: border-box !important;
   padding: 0 18px !important;
   outline: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .filter-tab:hover {
-  background-color: #f3f4f6 !important; /* 호버 시 옅은 회색 */
-  border: none !important;
-  color: #000000 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05) !important;
+  background-color: var(--bg-tertiary) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  color: var(--accent) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.12) !important;
 }
 
 [data-theme="dark"] .filter-tab:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(165, 180, 252, 0.4) !important;
+  color: #a5b4fc !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
 }
 
 .filter-tab.active {
-  background-color: #e0e7ff !important; /* 활성화 시 라이트 퍼플 */
-  border: none !important;
-  color: #4f46e5 !important; /* 인디고 텍스트 */
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  border: 1px solid transparent !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.38) !important;
+  transform: translateY(-2px) !important;
 }
 
 [data-theme="dark"] .filter-tab.active {
-  background-color: rgba(99, 102, 241, 0.2) !important;
-  color: #a5b4fc !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.45) !important;
 }
 
 .filter-tab-img {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 20px !important;
-  width: 20px !important;
-  transition: transform 0.2s !important;
+  height: 22px !important;
+  width: 22px !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .filter-tab-img svg {
   width: 18px !important;
   height: 18px !important;
-  /* stroke: black 강제 선언을 삭제하여 본래 그라데이션 색상(linearGradient)이 정상 발현되도록 복귀 */
 }
 .filter-tab:hover .filter-tab-img {
-  transform: scale(1.08);
+  transform: scale(1.15) !important;
 }
 
 /* 탭 선택 배지: 얇은 버튼 룩에 어울리는 미니 포인트 배지 */
@@ -795,35 +801,36 @@ input, select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--accent);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #4f46e5;
   border-radius: 50%;
   width: 8px;
   height: 8px;
   font-size: 0;
-  border: 1px solid var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   margin-left: 2px;
 }
 
-/* 상세 드롭다운 패널 팝업 래퍼 (바탕화면 위에 뜬 불투명 윈도우 위젯 스타일) */
+/* 상세 드롭다운 패널 팝업 래퍼 (트렌디 윈도우 위젯 스타일) */
 .filter-panel-wrap {
   position: absolute;
   top: calc(100% + 12px);
   left: 0;
   right: 0;
-  background-color: var(--bg-secondary); /* 쨍하고 맑은 불투명 고체색 */
+  background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-premium);
-  padding: 36px 24px 24px 24px; /* 신호등 버튼 영역 패딩 확보 */
-  z-index: 2200; /* 형제 노드 및 최근 검색 팝업보다 명확히 위에 배치 */
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.16);
+  padding: 32px 24px 24px 24px;
+  z-index: 2200;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  backdrop-filter: blur(16px);
 }
 
 [data-theme="dark"] .filter-panel-wrap {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
 }
 
 /* 바탕화면 아이콘 스타일 (이모지/아이콘 + 아래 텍스트 구성) */
@@ -832,36 +839,60 @@ input, select {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 116px;
-  height: 96px;
-  border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  background: transparent;
+  width: 118px;
+  height: 98px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color);
+  background-color: var(--bg-tertiary);
   cursor: pointer;
-  transition: var(--transition-smooth);
-  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 8px;
   user-select: none;
   color: var(--text-primary);
   box-sizing: border-box;
-  padding: 8px 6px;
+  padding: 10px 8px;
+  position: relative;
 }
 
 .filter-desktop-icon:hover {
-  background: var(--accent-light);
-  border-color: rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.4);
   color: var(--accent);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
 }
 
 [data-theme="dark"] .filter-desktop-icon:hover {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(165, 180, 252, 0.5);
+  color: #a5b4fc;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
 .filter-desktop-icon.active {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 500;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.38) !important;
+}
+
+.filter-desktop-icon.active::after {
+  content: "✓";
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .filter-desktop-icon-img {
@@ -871,16 +902,16 @@ input, select {
   justify-content: center;
   height: 38px;
   width: 38px;
-  transition: transform 0.2s;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .filter-desktop-icon:hover .filter-desktop-icon-img {
-  transform: scale(1.12);
+  transform: scale(1.15);
 }
 
 .filter-desktop-icon-text {
-  font-size: 0.88rem;
-  font-weight: 400;
+  font-size: 0.84rem;
+  font-weight: 600;
   text-align: center;
   white-space: normal;
   word-break: keep-all;
@@ -896,14 +927,14 @@ input, select {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: var(--radius-full);
+  border-radius: 9999px;
   border: 1px solid var(--border-color);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-tertiary);
   color: var(--text-secondary);
   font-size: 0.85rem;
-  font-weight: 400;
+  font-weight: 600;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
@@ -912,18 +943,18 @@ input, select {
 }
 
 .filter-chip:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--text-tertiary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  background-color: var(--bg-primary);
+  color: var(--accent);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15);
 }
 
 .filter-chip.active {
-  background-color: var(--accent);
-  color: #ffffff;
-  border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
   transform: translateY(-1px);
 }
 
@@ -940,9 +971,9 @@ input, select {
   display: grid;
   grid-template-columns: 180px 1fr;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   overflow: hidden;
-  height: 310px;
+  height: 320px;
   background-color: var(--bg-secondary);
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.015);
 }
@@ -963,38 +994,45 @@ input, select {
   padding: 10px 16px;
   text-align: left;
   border: none;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-secondary);
   background: transparent;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  transition: var(--transition-smooth);
+  transition: all 0.18s ease;
   position: relative;
 }
 
 .region-sido-btn:hover {
-  background-color: rgba(0, 0, 0, 0.03);
-  color: var(--text-primary);
+  background-color: rgba(99, 102, 241, 0.08);
+  color: var(--accent);
 }
 
 [data-theme="dark"] .region-sido-btn:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(165, 180, 252, 0.1);
+  color: #a5b4fc;
 }
 
 .region-sido-btn.active {
-  background-color: var(--accent-light);
-  color: var(--accent);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(99, 102, 241, 0.18) 100%);
+  color: #4f46e5;
+  font-weight: 800;
+}
+
+[data-theme="dark"] .region-sido-btn.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(165, 180, 252, 0.25) 100%);
+  color: #a5b4fc;
 }
 
 .region-sido-btn.active::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 8px;
-  bottom: 8px;
+  top: 6px;
+  bottom: 6px;
   width: 4px;
-  background-color: var(--accent);
+  background: linear-gradient(to bottom, #4f46e5, #ec4899);
   border-radius: 0 4px 4px 0;
 }
 

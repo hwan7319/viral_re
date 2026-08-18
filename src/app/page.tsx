@@ -892,7 +892,7 @@ export default function Home() {
             <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
                   🍽️ 맛집 / 디저트 / 주점
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -911,7 +911,7 @@ export default function Home() {
               </div>
               {/* 뷰티/미용/헬스 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
                   ✨ 뷰티 / 미용 / 헬스
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -931,7 +931,7 @@ export default function Home() {
               </div>
               {/* 여행/숙박/문화 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
                   🧭 여행 / 숙박 / 문화
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -949,7 +949,7 @@ export default function Home() {
               </div>
               {/* 패션/생활/디지털/기타 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
                   🛍️ 패션 / 생활 / 디지털 / 펫 / 기타
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
