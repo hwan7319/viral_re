@@ -3369,32 +3369,37 @@ export default function Home() {
                   {/* 📊 지표 카운트 개별 1행 카드 레이아웃 */}
                   <div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginBottom: '12px' }}>
+                      {/* 1. 월간 총 검색량 카드 */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>월간 총 검색량</span>
-                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>PC {keywordData.pcSearchVolume.toLocaleString()}회 / 모바일 {keywordData.mobileSearchVolume.toLocaleString()}회</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월간 총 검색량</span>
+                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>(PC {keywordData.pcSearchVolume.toLocaleString()} / 모바일 {keywordData.mobileSearchVolume.toLocaleString()})</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
                           <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalSearchVolume.toLocaleString()}</span>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent)' }}>회</span>
                         </div>
                       </div>
+
+                      {/* 2. 총 블로그 포스팅 수 카드 (한 줄 완성) */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>총 블로그 포스팅 수</span>
-                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>네이버 블로그 누적 등록 문서 기준</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>총 블로그 포스팅 수</span>
+                          <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>(네이버 누적 등록 문서)</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
                           <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalPosts.toLocaleString()}</span>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>건</span>
                         </div>
                       </div>
+
+                      {/* 3. 경쟁비율 카드 */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>경쟁비율 (문서 ÷ 검색량)</span>
-                          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444' }}>{keywordData.statusText}</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>경쟁비율 (문서 ÷ 검색량)</span>
+                          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', whiteSpace: 'nowrap' }}>{keywordData.statusText}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', flexShrink: 0 }}>
                           <span style={{ fontSize: '1.4rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', fontVariantNumeric: 'tabular-nums' }}>{keywordData.competitionRatio}</span>
                         </div>
                       </div>
