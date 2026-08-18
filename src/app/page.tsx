@@ -3461,9 +3461,10 @@ export default function Home() {
                     padding: '16px 18px',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-color)'
+                    border: '1px solid var(--border-color)',
+                    marginBottom: '12px'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '0 2px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                           🔍 연관 검색어 랭킹 리스트
@@ -3506,7 +3507,7 @@ export default function Home() {
                       overflowX: 'auto',
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--border-color)',
-                      margin: '0 2px 12px 2px',
+                      margin: '0 0 12px 0',
                       backgroundColor: 'var(--bg-primary)'
                     }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '600px' }}>
@@ -3650,7 +3651,7 @@ export default function Home() {
 
                   {/* 🏆 네이버 블로그 상위 노출 랭킹 (Top 10) 정밀 정렬 리스트 */}
                   <div style={{
-                    padding: '16px',
+                    padding: '16px 18px',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--bg-tertiary)',
                     border: '1px solid var(--border-color)'
