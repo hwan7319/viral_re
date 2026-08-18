@@ -3409,13 +3409,23 @@ export default function Home() {
                     border: '1px solid var(--border-color)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '0 2px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                           🔍 연관 검색어 랭킹 리스트
                         </h4>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-full)', backgroundColor: '#4f46e5', color: '#ffffff' }}>
-                          총 {keywordData.relatedKeywords?.length || 0}개 수집
-                        </span>
+                        <div>
+                          <span style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: 'var(--radius-full)',
+                            backgroundColor: '#4f46e5',
+                            color: '#ffffff',
+                            display: 'inline-block'
+                          }}>
+                            총 {keywordData.relatedKeywords?.length || 0}개 수집
+                          </span>
+                        </div>
                       </div>
                       <button
                         type="button"
