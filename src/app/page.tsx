@@ -249,27 +249,26 @@ const sanitizeCampaignText = (text: string): string => {
   return cleaned.trim();
 };
 
-// 🎁 실제 구체적인 제공 혜택 텍스트 보강 헬퍼 함수 (제목과 동일 중복 방지)
+// 🎁 실제 구체적인 제공 혜택 텍스트 정제 헬퍼 함수
 const sanitizeOfferDescription = (desc: string, title: string): string => {
   let cleaned = sanitizeCampaignText(desc);
   const cleanTitle = sanitizeCampaignText(title);
-  
-  // 제공 혜택이 미수집되거나 제목과 동일, 혹은 D-day/신청자수 등의 부모 카드 텍스트가 통째 오추출된 경우
-  const isGarbageText = !cleaned || cleaned === cleanTitle || cleaned.includes('원본 참조') || cleaned.includes('체험단 모집') || 
-                        (cleaned.includes('신청') && cleaned.includes('모집')) || /D-\d+/.test(cleaned) || cleaned.length < 2;
 
-  if (isGarbageText) {
-    if (cleanTitle.includes('치킨') || cleanTitle.includes('통닭')) {
-      return '대표 시그니처 치킨 및 음료 세트 체험권';
-    } else if (cleanTitle.includes('삼겹살') || cleanTitle.includes('고기') || cleanTitle.includes('갈비')) {
-      return '대표 구이류 고기 메뉴 및 음료 식사권';
-    } else if (cleanTitle.includes('카페') || cleanTitle.includes('디저트') || cleanTitle.includes('커피')) {
-      return '대표 디저트 1종 & 시그니처 음료 2잔 체험권';
-    } else {
-      return `${cleanTitle} 대표 시그니처 체험권`;
-    }
+  if (!cleaned) return cleanTitle || '상세 제공 혜택 원본 참조';
+
+  // 불필요한 관용성 수거 안구 문구 정제 (예: "가이드라인 참고 부탁드립니다!")
+  cleaned = cleaned
+    .replace(/가이드라인\s*참고.*$/gi, '')
+    .replace(/상세정보\s*원본\s*참조.*$/gi, '')
+    .trim();
+
+  // D-day / 신청자수 등의 부모 카드 텍스트가 통째 오추출된 경우 필터링
+  const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^D-\d+/.test(cleaned);
+  if (isCardJunk) {
+    return cleanTitle || '상세 제공 혜택 원본 참조';
   }
-  return cleaned;
+
+  return cleaned || cleanTitle;
 };
 
 // 📋 실제 업체 미션 안내 헬퍼 함수

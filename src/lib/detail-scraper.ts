@@ -151,29 +151,57 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
     const $ = cheerio.load(html);
     const siteLower = (targetSite || '').toLowerCase();
 
-    // 1. 디너의여왕 -> "제공 내역" 헤더 블록 아래 .qz-collapse__content strong.w-600
+    // 1. 디너의여왕 -> "제공 내역" 헤더 블록 아래 .qz-collapse__content
     if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
       let bText = '';
       $('.qz-collapse').each((_, el) => {
         const headerText = $(el).text();
         if (headerText.includes('제공 내역') || headerText.includes('제공내역') || headerText.includes('제공 혜택')) {
-          const found = $(el).find('.qz-collapse__content strong.w-600, .qz-collapse__content p').first().text().trim();
+          const found = $(el).find('.qz-collapse__content strong.w-600, .qz-collapse__content p, .qz-collapse__content').first().text().trim();
           if (found && found.length > 1 && !found.includes('알아두면')) {
             bText = found;
           }
         }
       });
       if (!bText) {
-        bText = $('.qz-collapse__content strong.w-600').first().text().trim();
+        bText = $('.qz-collapse__content strong.w-600, .qz-collapse__content p').first().text().trim();
       }
       if (bText && bText.length > 1) return bText;
     }
     // 2. 강남맛집 -> dd.sub_tit
     else if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
-      const bText = $('dd.sub_tit').first().text().trim() || $('.sub_tit').text().trim();
+      let bText = $('dd.sub_tit').first().text().trim() || $('.sub_tit').text().trim();
+      bText = bText.replace(/가이드라인\s*참고.*$/gi, '').trim();
       if (bText && bText.length > 1) return bText;
     }
-    // 4. 레뷰 (revu.net)
+    // 3. 포블로그 -> .campaigninfo-label "리뷰어 제공"
+    else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
+      let bText = '';
+      $('.campaigninfo-label, label, dt').each((_, el) => {
+        const label = $(el).text().trim();
+        if (label.includes('제공') || label.includes('리뷰어')) {
+          bText = $(el).next('.campaigninfo-text').text().trim() || $(el).parent().find('.campaigninfo-text').text().trim();
+        }
+      });
+      if (!bText) {
+        bText = $('.campaigninfo-text').first().text().trim();
+      }
+      if (bText && bText.length > 1) return bText;
+    }
+    // 4. 리뷰노트 -> Next.js JSON or offer element
+    else if (siteLower.includes('리뷰노트') || url.includes('reviewnote.co.kr')) {
+      const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (match) {
+        try {
+          const parsed = JSON.parse(match[1]);
+          const offer = parsed.props?.pageProps?.campaign?.offer || parsed.props?.pageProps?.data?.offer;
+          if (offer) return offer;
+        } catch (e) {}
+      }
+      const bText = $('.offer, .campaign-offer, .benefit').first().text().trim();
+      if (bText && bText.length > 1) return bText;
+    }
+    // 5. 레뷰 (revu.net)
     else if (siteLower.includes('레뷰') || url.includes('revu.net')) {
       const bText = $('.benefit-info, .offer-info, .campaign-benefit').text().trim();
       if (bText && bText.length > 1) return bText;
