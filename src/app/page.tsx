@@ -77,7 +77,7 @@ const NaverBlogIcon = ({ size = 16 }: { size?: number }) => (
   </span>
 );
 
-// 🎬 네이버 클립 공식 아이콘 컴포넌트 (네이버 그린 배경 + 숏폼 비디오 플레이 심볼)
+// 🎬 네이버 클립 공식 클립(Paperclip) 아이콘 컴포넌트
 const NaverClipIcon = ({ size = 16 }: { size?: number }) => (
   <span style={{
     display: 'inline-flex',
@@ -86,17 +86,13 @@ const NaverClipIcon = ({ size = 16 }: { size?: number }) => (
     width: `${size}px`,
     height: `${size}px`,
     backgroundColor: '#03C75A',
-    color: '#ffffff',
     borderRadius: `${Math.max(3, Math.floor(size * 0.25))}px`,
     flexShrink: 0,
     boxShadow: '0 1px 3px rgba(3, 199, 90, 0.35)',
     userSelect: 'none'
   }}>
-    <svg width={size * 0.65} height={size * 0.65} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="18" height="18" rx="4" fill="#03C75A" />
-      <path d="M10 8.5L16 12L10 15.5V8.5Z" fill="#FFFFFF" />
-      <circle cx="7.5" cy="7.5" r="1" fill="#FFFFFF" opacity="0.9" />
-      <circle cx="16.5" cy="16.5" r="1" fill="#FFFFFF" opacity="0.9" />
+    <svg width={size * 0.68} height={size * 0.68} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   </span>
 );
@@ -2841,7 +2837,7 @@ export default function Home() {
                       <span>{selectedCampaign.platform}</span>
                     </span>
                   )}
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 500, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
                     {sanitizeCampaignText(selectedCampaign.title)}
                   </h3>
                 </div>
@@ -2857,10 +2853,10 @@ export default function Home() {
                   border: '1px solid rgba(99, 102, 241, 0.25)',
                   borderRadius: 'var(--radius-md)'
                 }}>
-                  <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     제공 혜택
                   </h4>
-                  <p style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.4, margin: 0 }}>
+                  <p style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, margin: 0 }}>
                     {sanitizeOfferDescription(selectedCampaign.description, selectedCampaign.title)}
                   </p>
                 </div>
@@ -2872,19 +2868,19 @@ export default function Home() {
                 }}>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 정원</span>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{selectedCampaign.limitCount}명 (현재 {selectedCampaign.applyCount}명 신청)</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{selectedCampaign.limitCount}명 (현재 {selectedCampaign.applyCount}명 신청)</span>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>수집 플랫폼</span>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{selectedCampaign.targetSite}</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{selectedCampaign.targetSite}</span>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 마감일</span>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{selectedCampaign.endDate}</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{selectedCampaign.endDate}</span>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>체험 방식</span>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>
                       {selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
                     </span>
                   </div>
@@ -2898,7 +2894,7 @@ export default function Home() {
                   border: '1px solid var(--border-color)',
                   boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)'
                 }}>
-                  <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <h4 style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--accent)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>📋</span> 업체 원본 필수 미션 & 가이드라인
                   </h4>
                   {isMissionLoading ? (
@@ -2914,13 +2910,14 @@ export default function Home() {
                       wordBreak: 'keep-all',
                       maxHeight: '320px',
                       overflowY: 'auto',
-                      paddingRight: '8px'
+                      paddingRight: '8px',
+                      fontWeight: 400
                     }}>
                       {formatMissionText(selectedCampaign.mission)}
                     </div>
                   ) : (
                     <p style={{ fontSize: '0.83rem', color: 'var(--text-tertiary)', margin: 0, lineHeight: 1.6 }}>
-                      ※ 원본 상세 미션 및 가이드라인은 아래 <strong>[실제 캠페인 신청하러 가기]</strong> 버튼을 누르시면 해당 업체 상세 화면에서 바로 확인하실 수 있습니다.
+                      ※ 원본 상세 미션 및 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 해당 업체 상세 화면에서 바로 확인하실 수 있습니다.
                     </p>
                   )}
                 </div>
@@ -2938,7 +2935,7 @@ export default function Home() {
                     backgroundColor: 'rgba(245, 158, 11, 0.08)',
                     color: '#d97706',
                     border: '1px solid rgba(245, 158, 11, 0.3)',
-                    fontWeight: 800,
+                    fontWeight: 500,
                     fontSize: '0.88rem',
                     display: 'flex',
                     alignItems: 'center',
@@ -3101,10 +3098,10 @@ export default function Home() {
                         backgroundColor: 'var(--bg-tertiary)', textAlign: 'center',
                         border: '1px solid var(--border-color)'
                       }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
                           월간 총 검색량 (월간 기준)
                         </span>
-                        <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)' }}>
+                        <span style={{ fontSize: '1.4rem', fontWeight: 600, color: 'var(--accent)' }}>
                           {keywordData.totalSearchVolume.toLocaleString()}회
                         </span>
                         <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', display: 'block', marginTop: '4px' }}>
@@ -3118,10 +3115,10 @@ export default function Home() {
                         backgroundColor: 'var(--bg-tertiary)', textAlign: 'center',
                         border: '1px solid var(--border-color)'
                       }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
                           총 블로그 포스팅 수
                         </span>
-                        <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)' }}>
+                        <span style={{ fontSize: '1.4rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                           {keywordData.totalPosts.toLocaleString()}건
                         </span>
                         <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', display: 'block', marginTop: '4px' }}>
@@ -3136,13 +3133,13 @@ export default function Home() {
                         textAlign: 'center',
                         border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
                       }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
                           경쟁비율 (포스팅 ÷ 검색량)
                         </span>
-                        <span style={{ fontSize: '1.4rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444' }}>
+                        <span style={{ fontSize: '1.4rem', fontWeight: 600, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444' }}>
                           {keywordData.competitionRatio}
                         </span>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', display: 'block', marginTop: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 500, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', display: 'block', marginTop: '4px' }}>
                           {keywordData.statusText}
                         </span>
                       </div>
@@ -3155,8 +3152,8 @@ export default function Home() {
                       fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.5,
                       display: 'flex', flexDirection: 'column', gap: '3px'
                     }}>
-                      <div>📌 <b>월간 총 검색량 기준</b>: 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.</div>
-                      <div>📌 <b>경쟁비율 산출공식</b>: <code>포스팅 문서 수 ÷ 월간 총 검색량</code> (수치가 1.0 미만인 🟢 황금키워드는 검색량 대비 글수가 적어 상위 노출에 매우 유리합니다).</div>
+                      <div>📌 월간 총 검색량 기준: 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.</div>
+                      <div>📌 경쟁비율 산출공식: <code>포스팅 문서 수 ÷ 월간 총 검색량</code> (수치가 1.0 미만인 🟢 황금키워드는 검색량 대비 글수가 적어 상위 노출에 매우 유리합니다).</div>
                     </div>
                   </div>
 
@@ -3167,10 +3164,10 @@ export default function Home() {
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                        <h4 style={{ fontSize: '0.92rem', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>
                           🔍 연관 검색어 (상위 100개 순위 분석)
                         </h4>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--accent)', color: '#ffffff' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 500, padding: '2px 8px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--accent)', color: '#ffffff' }}>
                           총 {keywordData.relatedKeywords?.length || 0}개 수집
                         </span>
                       </div>
@@ -3181,7 +3178,7 @@ export default function Home() {
                           showToast('연관 검색어 태그가 클립보드에 복사되었습니다!', 'success');
                         }}
                         style={{
-                          padding: '5px 12px', fontSize: '0.75rem', fontWeight: 700,
+                          padding: '5px 12px', fontSize: '0.75rem', fontWeight: 500,
                           borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--accent)', color: '#fff',
                           border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
                         }}
@@ -3199,12 +3196,12 @@ export default function Home() {
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
                         <thead>
                           <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                            <th style={{ padding: '8px 12px', width: '60px', textAlign: 'center' }}>순위</th>
-                            <th style={{ padding: '8px 12px' }}>연관 검색어</th>
-                            <th style={{ padding: '8px 12px', textAlign: 'right' }}>월간 총 검색량</th>
-                            <th style={{ padding: '8px 12px', textAlign: 'right' }}>블로그 포스팅 수</th>
-                            <th style={{ padding: '8px 12px', textAlign: 'center' }}>경쟁비율 / 등급</th>
-                            <th style={{ padding: '8px 12px', textAlign: 'center' }}>최근 발행일</th>
+                            <th style={{ padding: '8px 12px', width: '60px', textAlign: 'center', fontWeight: 500 }}>순위</th>
+                            <th style={{ padding: '8px 12px', fontWeight: 500 }}>연관 검색어</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 500 }}>월간 총 검색량</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 500 }}>블로그 포스팅 수</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 500 }}>경쟁비율 / 등급</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 500 }}>최근 발행일</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -3219,7 +3216,7 @@ export default function Home() {
                             >
                               <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                                 <span style={{
-                                  fontSize: '0.7rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px',
+                                  fontSize: '0.7rem', fontWeight: 500, padding: '2px 6px', borderRadius: '4px',
                                   backgroundColor: item.rank <= 3 ? 'rgba(99, 102, 241, 0.18)' : 'var(--bg-tertiary)',
                                   color: item.rank <= 3 ? 'var(--accent)' : 'var(--text-tertiary)'
                                 }}>
@@ -3232,7 +3229,7 @@ export default function Home() {
                                   onClick={() => analyzeKeyword(item.keyword)}
                                   style={{
                                     background: 'none', border: 'none', padding: 0,
-                                    color: 'var(--accent)', fontWeight: 700, cursor: 'pointer',
+                                    color: 'var(--accent)', fontWeight: 500, cursor: 'pointer',
                                     fontSize: '0.82rem', textDecoration: 'underline'
                                   }}
                                   title="클릭 시 이 연관검색어로 분석"
@@ -3240,15 +3237,15 @@ export default function Home() {
                                   {item.keyword}
                                 </button>
                               </td>
-                              <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 400, color: 'var(--text-primary)' }}>
                                 {item.totalSearchVolume.toLocaleString()}회
                               </td>
-                              <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                              <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 400, color: 'var(--text-secondary)' }}>
                                 {item.totalPosts.toLocaleString()}건
                               </td>
                               <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                                 <span style={{
-                                  fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: 'var(--radius-full)',
+                                  fontSize: '0.72rem', fontWeight: 500, padding: '2px 8px', borderRadius: 'var(--radius-full)',
                                   backgroundColor: item.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.12)' : item.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)',
                                   color: item.grade === 'GOLD' ? '#10b981' : item.grade === 'NORMAL' ? '#d97706' : '#ef4444'
                                 }}>
@@ -3270,14 +3267,14 @@ export default function Home() {
                         onClick={() => setRelatedVisibleCount((prev) => Math.min(prev + 20, 100))}
                         className="premium-button-secondary"
                         style={{
-                          width: '100%', padding: '10px', fontSize: '0.85rem', fontWeight: 800,
+                          width: '100%', padding: '10px', fontSize: '0.85rem', fontWeight: 500,
                           backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)',
                           color: 'var(--accent)', cursor: 'pointer', borderRadius: 'var(--radius-sm)',
                           display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
                         }}
                       >
                         <span>연관 검색어 20개 더보기 ➕</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>
                           (현재 {relatedVisibleCount} / {keywordData.relatedKeywords.length}개 표시 중)
                         </span>
                       </button>
@@ -3286,7 +3283,7 @@ export default function Home() {
 
                   {/* 상위 노출 블로그 목록 */}
                   <div>
-                    <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px' }}>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '10px' }}>
                       🏆 네이버 블로그 상위 노출 랭킹 (Top 10)
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -3304,10 +3301,10 @@ export default function Home() {
                           }}
                         >
                           <div style={{ flex: 1, minWidth: 0, marginRight: '10px' }}>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', marginRight: '8px' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--accent)', marginRight: '8px' }}>
                               {idx + 1}위
                             </span>
-                            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: '0.82rem', fontWeight: 400, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {post.title}
                             </span>
                           </div>
