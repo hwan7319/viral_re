@@ -3490,7 +3490,7 @@ export default function Home() {
                       border: '1px solid var(--border-color)',
                       backgroundColor: 'var(--bg-tertiary)'
                     }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '600px' }}>
                         <thead>
                           <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', userSelect: 'none' }}>
                             <th 
@@ -3636,7 +3636,7 @@ export default function Home() {
                       🏆 네이버 블로그 상위 노출 랭킹
                     </h4>
                     <div style={{ width: '100%', overflowX: 'auto', padding: '2px 0' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', minWidth: '580px' }}>
                       {keywordData.topPosts.map((post: any, idx: number) => (
                         <a 
                           key={idx}
