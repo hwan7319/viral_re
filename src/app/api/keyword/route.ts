@@ -15,6 +15,16 @@ function generateSearchAdSignature(timestamp: string, method: string, uri: strin
   return crypto.createHmac('sha256', secretKey).update(message).digest('base64');
 }
 
+function parseSearchAdVolume(val: any): number {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    if (val.includes('<')) return 5;
+    const parsed = parseInt(val.replace(/[^0-9]/g, ''), 10);
+    return isNaN(parsed) ? 5 : parsed;
+  }
+  return 0;
+}
+
 // 🔑 네이버 블로그 검색 API로 포스팅 수 및 최근 발행일 단건 조회
 async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string) {
   try {
@@ -108,8 +118,8 @@ export async function GET(request: Request) {
         const targetObj = exactMatch || keywordList[0];
 
         if (targetObj) {
-          pcSearchVolume = typeof targetObj.monthlyPcQcCnt === 'number' ? targetObj.monthlyPcQcCnt : parseInt(targetObj.monthlyPcQcCnt) || 10;
-          mobileSearchVolume = typeof targetObj.monthlyMobileQcCnt === 'number' ? targetObj.monthlyMobileQcCnt : parseInt(targetObj.monthlyMobileQcCnt) || 10;
+          pcSearchVolume = parseSearchAdVolume(targetObj.monthlyPcQcCnt);
+          mobileSearchVolume = parseSearchAdVolume(targetObj.monthlyMobileQcCnt);
           totalSearchVolume = pcSearchVolume + mobileSearchVolume;
           isRealSearchAdData = true;
         }
@@ -187,15 +197,22 @@ export async function GET(request: Request) {
 
             const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '') === kw.replace(/\s+/g, ''));
             if (adMatch) {
-              kwPc = typeof adMatch.monthlyPcQcCnt === 'number' ? adMatch.monthlyPcQcCnt : parseInt(adMatch.monthlyPcQcCnt) || 10;
-              kwMobile = typeof adMatch.monthlyMobileQcCnt === 'number' ? adMatch.monthlyMobileQcCnt : parseInt(adMatch.monthlyMobileQcCnt) || 10;
+              kwPc = parseSearchAdVolume(adMatch.monthlyPcQcCnt);
+              kwMobile = parseSearchAdVolume(adMatch.monthlyMobileQcCnt);
               kwTotalVol = kwPc + kwMobile;
             }
 
             const stats = await fetchBlogStats(kw, clientId, clientSecret);
 
             if (kwTotalVol === 0) {
-              kwTotalVol = Math.max(100, Math.floor(stats.totalPosts * (0.08 + Math.random() * 0.15)));
+              if (stats.totalPosts > 0) {
+                const multiplier = stats.totalPosts > 10000 ? 1.6 : stats.totalPosts > 1000 ? 1.1 : 0.55;
+                const kwSeed = (kw.charCodeAt(0) + kw.length * 7) % 30;
+                kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * (multiplier + kwSeed * 0.01)));
+              } else {
+                const kwSeed = (kw.charCodeAt(0) + kw.length * 5) % 20;
+                kwTotalVol = 10 + kwSeed;
+              }
             }
 
             const ratio = kwTotalVol > 0 ? (stats.totalPosts / kwTotalVol).toFixed(2) : '0.00';
