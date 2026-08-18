@@ -413,10 +413,11 @@ export default function Home() {
     try {
       const res = await fetch(`/api/campaigns?t=${Date.now()}`);
       const data = await res.json();
-      if (data && Array.isArray(data.campaigns)) {
+      const fetchedList = (data && (data.data || data.campaigns)) || [];
+      if (Array.isArray(fetchedList) && fetchedList.length > 0) {
         const prevCount = campaigns.length;
-        const newCount = data.campaigns.length;
-        setCampaigns(data.campaigns);
+        const newCount = fetchedList.length;
+        setCampaigns(fetchedList);
 
         // ⚡ 동기화 완료 직후 2.5초간 스르르 나타났다 사라지는 토스트 알림
         setSyncToastInfo({
@@ -1892,37 +1893,37 @@ export default function Home() {
               <span>{isSyncingData ? '동기화 중...' : `자동 동기화 ${syncCountdown}초 전 🟢`}</span>
             </button>
 
-            {/* ⚡ 동기화 완료 후 2초간 스르르 나타났다가 사라지는 모션 토스트 */}
+            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 */}
             {syncToastInfo && (
               <div style={{
                 position: 'absolute',
                 top: 'calc(100% + 8px)',
                 right: 0,
-                zIndex: 99,
+                zIndex: 99999,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '8px 14px',
+                padding: '9px 15px',
                 borderRadius: '12px',
-                backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
                 color: '#ffffff',
-                border: '1px solid rgba(16, 185, 129, 0.4)',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.2)',
+                border: '1px solid rgba(16, 185, 129, 0.5)',
+                boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.25)',
                 backdropFilter: 'blur(12px)',
-                fontSize: '0.78rem',
+                fontSize: '0.8rem',
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
                 opacity: syncToastInfo.visible ? 1 : 0,
-                transform: syncToastInfo.visible ? 'translateY(0) scale(1)' : 'translateY(-8px) scale(0.95)',
+                transform: syncToastInfo.visible ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.95)',
                 transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
                 pointerEvents: 'none'
               }}>
-                <span style={{ fontSize: '0.9rem' }}>✨</span>
+                <span style={{ fontSize: '0.95rem' }}>✨</span>
                 <span>
                   <strong style={{ color: '#10b981' }}>{syncToastInfo.count.toLocaleString()}개</strong> 공고 실시간 동기화 완료!
                   {syncToastInfo.updatedCount > 0 && (
                     <span style={{ color: '#38bdf8', marginLeft: '4px' }}>
-                      (+{syncToastInfo.updatedCount}건 최신 갱신)
+                      (+{syncToastInfo.updatedCount}건 최신)
                     </span>
                   )}
                 </span>
