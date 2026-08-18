@@ -2056,10 +2056,12 @@ export default function Home() {
                 className="glass-panel" 
                 style={{
                   display: 'flex', alignItems: 'center',
-                  padding: '3px 4px 3px 14px',
+                  padding: '2px 4px 2px 14px',
+                  height: '40px',
+                  boxSizing: 'border-box',
                   borderRadius: 'var(--radius-full)',
-                  boxShadow: 'var(--shadow-lg)',
-                  border: isSearchFocused ? '1px solid var(--accent)' : '1px solid var(--border-focus)',
+                  boxShadow: 'var(--shadow-sm)',
+                  border: isSearchFocused ? '1.5px solid var(--accent)' : '1px solid var(--border-focus)',
                   transition: 'var(--transition-smooth)',
                   flexWrap: 'nowrap',
                   width: '100%',
@@ -2076,7 +2078,8 @@ export default function Home() {
                   onBlur={() => setIsSearchFocused(false)}
                   style={{
                     flex: 1, border: 'none', background: 'transparent',
-                    padding: '4px 8px', fontSize: '0.88rem',
+                    padding: '0 8px', fontSize: '0.96rem',
+                    fontWeight: 600,
                     color: 'var(--text-primary)',
                     minWidth: 0,
                     outline: 'none'
@@ -2099,9 +2102,10 @@ export default function Home() {
                   type="submit"
                   className="premium-button-primary"
                   style={{
-                    padding: '5px 14px',
+                    padding: '4px 14px',
+                    height: '32px',
                     borderRadius: 'var(--radius-full)',
-                    fontSize: '0.82rem',
+                    fontSize: '0.88rem',
                     fontWeight: 800,
                     border: 'none',
                     cursor: 'pointer',
