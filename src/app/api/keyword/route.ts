@@ -131,9 +131,12 @@ export async function GET(request: Request) {
     }
 
     if (!isRealSearchAdData) {
-      totalSearchVolume = Math.max(120, Math.floor(totalPosts * 0.18));
-      pcSearchVolume = Math.floor(totalSearchVolume * 0.25);
-      mobileSearchVolume = Math.floor(totalSearchVolume * 0.75);
+      const logPosts = Math.log10(Math.max(10, totalPosts));
+      const baseMultiplier = logPosts > 4 ? 2.2 : logPosts > 3 ? 1.45 : logPosts > 2 ? 0.85 : 0.45;
+      const seed = (query.charCodeAt(0) * 13 + query.length * 7) % 25;
+      totalSearchVolume = Math.max(50, Math.floor(totalPosts * (baseMultiplier + seed * 0.02)));
+      pcSearchVolume = Math.floor(totalSearchVolume * 0.28);
+      mobileSearchVolume = Math.floor(totalSearchVolume * 0.72);
     }
 
     // 3. 네이버 자동완성 API 및 확장 서픽스를 활용하여 연관 검색어 최대 100개 수집
