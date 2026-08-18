@@ -418,12 +418,12 @@ export default function Home() {
     let targetStr = localStorage.getItem('viral_re_next_sync_target');
     let target = targetStr ? parseInt(targetStr, 10) : 0;
     
-    if (!target || isNaN(target) || target <= Date.now()) {
+    if (!target || isNaN(target)) {
       target = setNextSyncTimestamp();
     }
     
     const diffSec = Math.ceil((target - Date.now()) / 1000);
-    return Math.max(0, Math.min(SYNC_INTERVAL_SEC, diffSec));
+    return Math.max(0, diffSec);
   }, [setNextSyncTimestamp]);
 
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
@@ -499,7 +499,7 @@ export default function Home() {
   }, [setNextSyncTimestamp]);
 
   useEffect(() => {
-    // 🔑 마운트 시점에 글로벌 타임스탬프 기준으로 남아있는 실제 초시간 즉시 계산 (새로고침 초기화 완전 차단!)
+    // 🔑 마운트 시점에 글로벌 타임스탬프 기준으로 남아있는 실제 초시간 즉시 계산
     setSyncCountdown(getRemainingSyncSeconds());
 
     const timer = setInterval(() => {
