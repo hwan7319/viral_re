@@ -428,13 +428,6 @@ export default function Home() {
 
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
-  const [syncToastInfo, setSyncToastInfo] = useState<{
-    visible: boolean;
-    totalDBCount: number;
-    totalChanged: number;
-    newItemsCount: number;
-    updatedItemsCount: number;
-  } | null>(null);
 
   const triggerManualSync = useCallback(async () => {
     setIsSyncingData(true);
@@ -446,24 +439,11 @@ export default function Home() {
 
       if (Array.isArray(fetchedList) && fetchedList.length > 0) {
         setCampaigns(prevList => {
-          // 🔑 스마트 인메모리 병합 (Smart Merge): 실시간 변경건수 및 신규건수 정밀 측정
+          // 🔑 스마트 인메모리 병합 (Smart Merge): 인플레이스 수치만 조용히 갱신
           const prevMap = new Map(prevList.map(item => [item.id, item]));
-          let newItemsCount = 0;
-          let updatedItemsCount = 0;
-
-          const merged = fetchedList.map(newItem => {
+          return fetchedList.map(newItem => {
             const existing = prevMap.get(newItem.id);
-            if (!existing) {
-              newItemsCount++;
-              return newItem;
-            }
-            if (
-              existing.applyCount !== newItem.applyCount ||
-              existing.limitCount !== newItem.limitCount ||
-              existing.description !== newItem.description
-            ) {
-              updatedItemsCount++;
-            }
+            if (!existing) return newItem;
             return {
               ...existing,
               ...newItem,
@@ -471,23 +451,6 @@ export default function Home() {
               description: newItem.description || existing.description
             };
           });
-
-          const totalChanged = newItemsCount + updatedItemsCount;
-
-          // ⚡ 실제 전체 DB 건수(17,528개) 및 실시간 변경/신규 건수 기반 토스트 알림 발동
-          setSyncToastInfo({
-            visible: true,
-            totalDBCount: data.totalDBCount || 17528,
-            totalChanged,
-            newItemsCount,
-            updatedItemsCount
-          });
-
-          setTimeout(() => {
-            setSyncToastInfo(prev => prev ? { ...prev, visible: false } : null);
-          }, 2500);
-
-          return merged;
         });
       }
     } catch (e) {
@@ -1971,50 +1934,6 @@ export default function Home() {
                 )}
               </span>
             </div>
-
-            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (100% 불투명 솔리드 울트라 에메랄드 다크 캡슐) */}
-            {syncToastInfo && (
-              <div style={{
-                position: 'fixed',
-                top: syncToastInfo.visible ? '76px' : '50px',
-                right: '24px',
-                zIndex: 999999,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '14px 24px',
-                borderRadius: '12px',
-                backgroundColor: '#064e3b', // 100% 완전 불투명 솔리드 딥 에메랄드 다크
-                color: '#ffffff',
-                border: '2.5px solid #34d399',
-                boxShadow: '0 16px 45px rgba(0, 0, 0, 0.65)',
-                fontSize: '0.96rem',
-                fontWeight: 900,
-                letterSpacing: '-0.02em',
-                whiteSpace: 'nowrap',
-                opacity: syncToastInfo.visible ? 1 : 0,
-                transition: 'opacity 0.25s ease, top 0.25s ease',
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale',
-                pointerEvents: 'none'
-              }}>
-                <span style={{ fontSize: '1.25rem' }}>⚡</span>
-                <span style={{ color: '#ffffff', fontWeight: 900 }}>
-                  {syncToastInfo.totalChanged > 0 ? (
-                    <>
-                      실시간 최신 정보 <strong style={{ color: '#fef08a', fontWeight: 900, fontSize: '1.02rem' }}>{syncToastInfo.totalChanged}건</strong> 동기화 완료!
-                      <span style={{ color: '#67e8f9', fontWeight: 900, marginLeft: '8px' }}>
-                        (신규 {syncToastInfo.newItemsCount}건 / 갱신 {syncToastInfo.updatedItemsCount}건)
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      전체 <strong style={{ color: '#fef08a', fontWeight: 900, fontSize: '1.02rem' }}>{syncToastInfo.totalDBCount.toLocaleString()}개</strong> 공고 실시간 동기화 완료 (최신 상태 유지)
-                    </>
-                  )}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
