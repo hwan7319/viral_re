@@ -768,15 +768,31 @@ input, select {
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
   border: 1px solid transparent !important;
   color: #ffffff !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   box-shadow: 0 6px 20px rgba(79, 70, 229, 0.38) !important;
   transform: translateY(-2px) !important;
+}
+
+.filter-tab.active *,
+.filter-tab.active span,
+.filter-tab.active svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  opacity: 1 !important;
 }
 
 [data-theme="dark"] .filter-tab.active {
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
   color: #ffffff !important;
   box-shadow: 0 6px 22px rgba(99, 102, 241, 0.45) !important;
+}
+
+[data-theme="dark"] .filter-tab.active *,
+[data-theme="dark"] .filter-tab.active span,
+[data-theme="dark"] .filter-tab.active svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  opacity: 1 !important;
 }
 
 .filter-tab-img {
@@ -873,9 +889,18 @@ input, select {
   background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
   border-color: transparent !important;
   color: #ffffff !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 8px 24px rgba(79, 70, 229, 0.38) !important;
+}
+
+.filter-desktop-icon.active *,
+.filter-desktop-icon.active .filter-desktop-icon-text,
+.filter-desktop-icon.active span,
+.filter-desktop-icon.active svg {
+  color: #ffffff !important;
+  fill: opacity 1 !important;
+  opacity: 1 !important;
 }
 
 .filter-desktop-icon.active::after {
@@ -919,6 +944,7 @@ input, select {
   text-overflow: clip;
   width: 100%;
   line-height: 1.25;
+  color: inherit;
 }
 
 /* 칩 스타일 (바탕화면에 녹아드는 조약돌 알약 칩셋 - 예외 상황 및 지역 상세 칩에 유지) */
@@ -956,6 +982,12 @@ input, select {
   border-color: transparent !important;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
   transform: translateY(-1px);
+}
+
+.filter-chip.active *,
+.filter-chip.active span {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 /* 칩셋이 담긴 행 배치 */
