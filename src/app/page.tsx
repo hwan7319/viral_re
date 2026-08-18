@@ -414,21 +414,41 @@ export default function Home() {
       const res = await fetch(`/api/campaigns?t=${Date.now()}`);
       const data = await res.json();
       const fetchedList = (data && (data.data || data.campaigns)) || [];
+
       if (Array.isArray(fetchedList) && fetchedList.length > 0) {
-        const prevCount = campaigns.length;
-        const newCount = fetchedList.length;
-        setCampaigns(fetchedList);
+        setCampaigns(prevList => {
+          // 🔑 스마트 인메모리 병합 (Smart Merge): 기존 DOM 노드와 스크롤 위치, 필터 상태를 100% 보존
+          const prevMap = new Map(prevList.map(item => [item.id, item]));
+          let newItemsCount = 0;
 
-        // ⚡ 동기화 완료 직후 2.5초간 스르르 나타났다 사라지는 토스트 알림
-        setSyncToastInfo({
-          visible: true,
-          count: newCount,
-          updatedCount: Math.max(0, newCount - prevCount)
+          const merged = fetchedList.map(newItem => {
+            const existing = prevMap.get(newItem.id);
+            if (!existing) {
+              newItemsCount++;
+              return newItem;
+            }
+            // 기존 객체 속성을 유지하며 새로 변경된 수치만 인플레이스 업데이트 (화면 리셋 완전 차단)
+            return {
+              ...existing,
+              ...newItem,
+              mission: newItem.mission || existing.mission,
+              description: newItem.description || existing.description
+            };
+          });
+
+          // ⚡ 실제 DB 실시간 건수 기반 토스트 알림 발동
+          setSyncToastInfo({
+            visible: true,
+            count: merged.length,
+            updatedCount: newItemsCount
+          });
+
+          setTimeout(() => {
+            setSyncToastInfo(prev => prev ? { ...prev, visible: false } : null);
+          }, 2500);
+
+          return merged;
         });
-
-        setTimeout(() => {
-          setSyncToastInfo(prev => prev ? { ...prev, visible: false } : null);
-        }, 2500);
       }
     } catch (e) {
       console.warn('Auto sync failed:', e);
@@ -436,7 +456,7 @@ export default function Home() {
       setIsSyncingData(false);
       setSyncCountdown(SYNC_INTERVAL_SEC);
     }
-  }, [campaigns.length]);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1865,7 +1885,11 @@ export default function Home() {
           <div style={{ position: 'relative' }}>
             <button 
               type="button"
-              onClick={triggerManualSync}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                triggerManualSync();
+              }}
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
