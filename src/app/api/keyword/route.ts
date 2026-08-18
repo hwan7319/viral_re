@@ -165,15 +165,15 @@ export async function GET(request: Request) {
     ];
 
     for (const suf of suffixes) {
-      if (wordSet.size >= 35) break;
+      if (wordSet.size >= 100) break;
       wordSet.add(`${query} ${suf}`);
     }
 
-    const candidateKeywords = Array.from(wordSet).slice(0, 35);
+    const candidateKeywords = Array.from(wordSet).slice(0, 100);
 
-    // 4. 연관 검색어 35개에 대해 병렬 고속 분석 (Vercel 10초 렉 차단: 1.5초 이내 고속 응답 보장)
+    // 4. 연관 검색어 100개에 대해 병렬 고속 분석 (Vercel 10초 렉 차단: 25개 병렬 청크로 1초 이내 고속 응답)
     const relatedListRaw: any[] = [];
-    const chunkSize = 15;
+    const chunkSize = 25;
 
     for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
       const chunk = candidateKeywords.slice(i, i + chunkSize);
