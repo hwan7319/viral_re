@@ -1938,14 +1938,14 @@ export default function Home() {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '8px',
-                padding: '6px 14px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
+                padding: '7px 16px',
+                fontSize: '0.84rem',
+                fontWeight: 800,
                 borderRadius: '9999px',
                 backgroundColor: isSyncingData ? '#1e3a8a' : '#0f172a',
                 color: '#ffffff',
-                border: isSyncingData ? '1.5px solid #3b82f6' : '1.5px solid #10b981',
-                boxShadow: isSyncingData ? '0 2px 10px rgba(59, 130, 246, 0.3)' : '0 2px 10px rgba(16, 185, 129, 0.2)',
+                border: isSyncingData ? '2px solid #3b82f6' : '2px solid #10b981',
+                boxShadow: isSyncingData ? '0 2px 10px rgba(59, 130, 246, 0.4)' : '0 2px 10px rgba(16, 185, 129, 0.3)',
                 whiteSpace: 'nowrap',
                 cursor: 'default',
                 userSelect: 'none',
@@ -1954,24 +1954,24 @@ export default function Home() {
               title="실시간 60초 자동 동기화 상태 표시 전용 뱃지 (스팸 클릭 서버 부하 방지)"
             >
               <span style={{
-                width: '7px',
-                height: '7px',
+                width: '8px',
+                height: '8px',
                 borderRadius: '50%',
                 backgroundColor: isSyncingData ? '#60a5fa' : '#34d399',
                 boxShadow: isSyncingData ? '0 0 8px #60a5fa' : '0 0 8px #34d399'
               }} />
-              <span>
+              <span style={{ color: '#ffffff', fontWeight: 800 }}>
                 {isSyncingData ? (
                   <span style={{ color: '#93c5fd' }}>동기화 중...</span>
                 ) : (
                   <>
-                    자동 동기화 <strong style={{ color: '#34d399', fontWeight: 800 }}>{syncCountdown}초 전</strong> 🟢
+                    자동 동기화 <strong style={{ color: '#34d399', fontWeight: 900, fontSize: '0.88rem' }}>{syncCountdown}초 전</strong> 🟢
                   </>
                 )}
               </span>
             </div>
 
-            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (초고대비 솔리드 다크 캡슐) */}
+            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (100% 불투명 솔리드 울트라 에메랄드 다크 캡슐) */}
             {syncToastInfo && (
               <div style={{
                 position: 'fixed',
@@ -1980,16 +1980,16 @@ export default function Home() {
                 zIndex: 999999,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '12px 22px',
-                borderRadius: '10px',
-                backgroundColor: '#0f172a',
+                gap: '12px',
+                padding: '14px 24px',
+                borderRadius: '12px',
+                backgroundColor: '#064e3b', // 100% 완전 불투명 솔리드 딥 에메랄드 다크
                 color: '#ffffff',
-                border: '2px solid #10b981',
-                boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45)',
-                fontSize: '0.92rem',
-                fontWeight: 700,
-                letterSpacing: '-0.01em',
+                border: '2.5px solid #34d399',
+                boxShadow: '0 16px 45px rgba(0, 0, 0, 0.65)',
+                fontSize: '0.96rem',
+                fontWeight: 900,
+                letterSpacing: '-0.02em',
                 whiteSpace: 'nowrap',
                 opacity: syncToastInfo.visible ? 1 : 0,
                 transition: 'opacity 0.25s ease, top 0.25s ease',
@@ -1997,18 +1997,18 @@ export default function Home() {
                 MozOsxFontSmoothing: 'grayscale',
                 pointerEvents: 'none'
               }}>
-                <span style={{ fontSize: '1.15rem' }}>⚡</span>
-                <span style={{ color: '#ffffff' }}>
+                <span style={{ fontSize: '1.25rem' }}>⚡</span>
+                <span style={{ color: '#ffffff', fontWeight: 900 }}>
                   {syncToastInfo.totalChanged > 0 ? (
                     <>
-                      실시간 최신 정보 <strong style={{ color: '#00ff88', fontWeight: 900, fontSize: '0.98rem' }}>{syncToastInfo.totalChanged}건</strong> 동기화 완료!
-                      <span style={{ color: '#38bdf8', fontWeight: 800, marginLeft: '8px' }}>
+                      실시간 최신 정보 <strong style={{ color: '#fef08a', fontWeight: 900, fontSize: '1.02rem' }}>{syncToastInfo.totalChanged}건</strong> 동기화 완료!
+                      <span style={{ color: '#67e8f9', fontWeight: 900, marginLeft: '8px' }}>
                         (신규 {syncToastInfo.newItemsCount}건 / 갱신 {syncToastInfo.updatedItemsCount}건)
                       </span>
                     </>
                   ) : (
                     <>
-                      전체 <strong style={{ color: '#00ff88', fontWeight: 900, fontSize: '0.98rem' }}>{syncToastInfo.totalDBCount.toLocaleString()}개</strong> 공고 실시간 동기화 완료 (최신 상태 유지)
+                      전체 <strong style={{ color: '#fef08a', fontWeight: 900, fontSize: '1.02rem' }}>{syncToastInfo.totalDBCount.toLocaleString()}개</strong> 공고 실시간 동기화 완료 (최신 상태 유지)
                     </>
                   )}
                 </span>
