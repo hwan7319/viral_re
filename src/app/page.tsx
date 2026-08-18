@@ -1898,6 +1898,7 @@ export default function Home() {
           </button>
           <div style={{ position: 'relative' }}>
             <div 
+              className="mobile-hide-sync-badge"
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -3801,6 +3802,9 @@ export default function Home() {
             height: 32px !important;
           }
           .integrator-badge {
+            display: none !important;
+          }
+          .mobile-hide-sync-badge {
             display: none !important;
           }
           header button {
