@@ -1268,7 +1268,7 @@ export default function Home() {
 
   // 🔒 모달 오픈 시 배경 윈도우 스크롤 차단 (Body Scroll Lock)
   useEffect(() => {
-    if (isKeywordModalOpen || selectedCampaign || isLoginModalOpen) {
+    if (isKeywordModalOpen || selectedCampaign) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -1276,7 +1276,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isKeywordModalOpen, selectedCampaign, isLoginModalOpen]);
+  }, [isKeywordModalOpen, selectedCampaign]);
 
   // 키워드 연관검색어 100위 더보기 상태 (기본 20개 노출)
   const [relatedVisibleCount, setRelatedVisibleCount] = useState(20);
@@ -1978,50 +1978,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
-          {user ? (
-            <div style={{ position: 'relative' }}>
-              <button 
-                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                className="user-avatar-btn"
-                title={`${user.name} network`}
-              >
-                <img 
-                  src={user.avatar} 
-                  alt={user.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              </button>
-              
-              {isUserDropdownOpen && (
-                <div className="user-dropdown-menu">
-                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)', marginBottom: '4px' }}>
-                    <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>{user.name}님</p>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', wordBreak: 'break-all' }}>{user.email}</p>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setUser(null);
-                      setIsUserDropdownOpen(false);
-                      showToast('성공적으로 로그아웃되었습니다.', 'info');
-                    }}
-                    className="user-dropdown-item danger"
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button 
-              onClick={() => setIsLoginModalOpen(true)}
-              className="premium-button-primary header-login-btn"
-              style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-md)', whiteSpace: 'nowrap' }}
-            >
-              <span className="login-btn-text-desktop">로그인 / 회원가입</span>
-              <span className="login-btn-text-mobile" style={{ display: 'none' }}>로그인</span>
-            </button>
-          )}
+
 
           <button 
             onClick={toggleTheme}
@@ -3805,70 +3762,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🔑 소셜 로그인 모달 */}
-      {isLoginModalOpen && (
-        <div className="social-modal-overlay" onClick={() => setIsLoginModalOpen(false)}>
-          <div className="social-modal-container" onClick={(e) => e.stopPropagation()}>
-            <button className="social-modal-close" onClick={() => setIsLoginModalOpen(false)}>
-              ✕
-            </button>
-            
-            {/* 로그인 헤더 트렌디 감성 이미지 배너 */}
-            <div style={{ width: 'calc(100% + 32px)', height: '100px', borderRadius: 'var(--radius-md) var(--radius-md) 0 0', overflow: 'hidden', margin: '-24px -16px 20px -16px', position: 'relative' }}>
-              <img 
-                src="https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?auto=format&fit=crop&w=400&h=100&q=80" 
-                alt="Login Header" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)' }} />
-            </div>
 
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)' }}>
-                소셜 로그인 / 회원가입
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                체험단 목록을 연동하고 나만의 북마크를 관리해 보세요!
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* 카카오톡 */}
-              <button onClick={() => handleSocialLogin('kakao')} className="social-login-btn btn-kakao">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style={{ marginRight: '8px' }}>
-                  <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.553 1.7 4.792 4.248 5.992-.17.618-.613 2.227-.702 2.573-.11.438.163.432.342.31 1.758-1.196 2.45-1.7 2.766-1.927.42.062.853.097 1.346.097 4.97 0 9-3.186 9-7.115C21 6.185 16.97 3 12 3z"/>
-                </svg>
-                카카오로 시작하기
-              </button>
-
-              {/* 네이버 */}
-              <button onClick={() => handleSocialLogin('naver')} className="social-login-btn btn-naver">
-                <span style={{ fontWeight: 900, fontSize: '1.2rem', marginRight: '14px', marginLeft: '4px' }}>N</span>
-                네이버로 시작하기
-              </button>
-
-              {/* 구글 */}
-              <button onClick={() => handleSocialLogin('google')} className="social-login-btn btn-google">
-                <svg viewBox="0 0 24 24" width="20" height="20" style={{ marginRight: '8px' }}>
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.23-.66-.35-1.36-.35-2.09z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                Google 계정으로 시작하기
-              </button>
-
-              {/* 인스타그램 */}
-              <button onClick={() => handleSocialLogin('instagram')} className="social-login-btn btn-instagram">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style={{ marginRight: '8px' }}>
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                </svg>
-                Instagram으로 시작하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 💻📱 우측 하단 최상단 탑 버튼 (Scroll to Top) */}
       {showScrollTop && (
