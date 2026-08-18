@@ -3580,10 +3580,11 @@ export default function Home() {
                             >
                               <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
                                 <span style={{
-                                  fontSize: '0.72rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px',
-                                  backgroundColor: item.rank <= 3 ? 'rgba(79, 70, 229, 0.18)' : 'var(--bg-tertiary)',
-                                  color: item.rank <= 3 ? 'var(--accent)' : 'var(--text-tertiary)',
-                                  display: 'inline-block', minWidth: '32px'
+                                  fontSize: '0.74rem', fontWeight: 800, padding: '3px 8px', borderRadius: '4px',
+                                  backgroundColor: item.rank <= 3 ? '#4f46e5' : 'rgba(79, 70, 229, 0.1)',
+                                  color: item.rank <= 3 ? '#ffffff' : '#4f46e5',
+                                  border: item.rank <= 3 ? 'none' : '1px solid rgba(79, 70, 229, 0.25)',
+                                  display: 'inline-block', minWidth: '38px'
                                 }}>
                                   {item.rank}위
                                 </span>
@@ -3683,8 +3684,9 @@ export default function Home() {
                               fontWeight: 800,
                               padding: '3px 8px',
                               borderRadius: '4px',
-                              backgroundColor: idx < 3 ? '#4f46e5' : 'var(--bg-tertiary)',
-                              color: idx < 3 ? '#ffffff' : 'var(--text-secondary)',
+                              backgroundColor: idx < 3 ? '#4f46e5' : 'rgba(79, 70, 229, 0.1)',
+                              color: idx < 3 ? '#ffffff' : '#4f46e5',
+                              border: idx < 3 ? 'none' : '1px solid rgba(79, 70, 229, 0.25)',
                               minWidth: '42px',
                               width: '42px',
                               textAlign: 'center',
@@ -3707,7 +3709,19 @@ export default function Home() {
                             </span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent)', whiteSpace: 'nowrap' }}>
+                            <span 
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                color: 'var(--accent)',
+                                maxWidth: '120px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                display: 'inline-block'
+                              }}
+                              title={post.bloggerName}
+                            >
                               {post.bloggerName}
                             </span>
                             <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
