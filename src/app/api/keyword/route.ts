@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import https from 'https';
 
 export const dynamic = 'force-dynamic';
-// Vercel deployment trigger sync
+export const revalidate = 0;
 
 // 🔑 SSL/TLS Root CA 인증서 검증 오판정 및 차단 방지 (unable to verify the first certificate 우회)
 const httpsAgent = new https.Agent({
@@ -282,10 +282,15 @@ export async function GET(request: Request) {
         grade,
         statusText,
         isRealSearchAdData,
-        relatedKeywords, // 1~100위 연관 검색어 배열 (순위, 월간검색량, 발행포스팅수, 최근발행일 등)
+        relatedKeywords,
         topPosts,
         timestamp: new Date().toISOString(),
       },
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+      }
     });
   } catch (error: any) {
     console.error('[Keyword API] Error:', error);
