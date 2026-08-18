@@ -93,26 +93,21 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
   return { applyCount: 0, limitCount: 5 };
 };
 
-export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'instagram' | 'youtube' | 'etc' => {
+export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'etc' => {
   const p = (rawPlatformText || '').toLowerCase();
   const t = title.toLowerCase();
 
-  // 1. 원본 뱃지 텍스트 1순위 최우선 판정
-  if (p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels')) {
-    return 'instagram';
-  }
-  if (p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts')) {
-    return 'youtube';
-  }
-  if (p.includes('blog') || p.includes('블로그')) {
-    return 'blog';
-  }
+  const hasBlog = p.includes('blog') || p.includes('블로그') || t.includes('블로그');
+  const hasClip = p.includes('clip') || p.includes('클립') || t.includes('클립');
 
-  // 2. 제목 키워드 (릴스, 인스타, 쇼츠) 2순위 판정
-  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) {
+  if (hasBlog && hasClip) return 'blog+clip';
+  if (hasClip) return 'clip';
+  if (hasBlog) return 'blog';
+
+  if (p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels') || t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) {
     return 'instagram';
   }
-  if (t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠') || t.includes('shorts')) {
+  if (p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts') || t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠') || t.includes('shorts')) {
     return 'youtube';
   }
 

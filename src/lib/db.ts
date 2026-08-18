@@ -15,7 +15,7 @@ export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
   title: string;       // 캠페인 제목
   description: string; // 제공 내역 (예: 5만원 식사권)
-  platform: 'blog' | 'instagram' | 'youtube' | 'etc'; // 플랫폼 구분
+  platform: 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'etc'; // 플랫폼 구분
   category: string; // 카테고리 (세분화 맵핑 대응을 위해 string으로 완화)
   location?: string;   // 지역 (예: 서울 강남구, 경기 수원시 등)
   campaignUrl: string; // 원본 상세 페이지 URL
@@ -226,14 +226,23 @@ export async function queryCampaigns(filters: {
         (c.searchKeywords && c.searchKeywords.toLowerCase().includes(s))
       );
     }
-    // 2. 플랫폼 필터
+    // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 블로그+클립 복합 매칭 지원)
     if (filters.platform && filters.platform !== 'all') {
-      result = result.filter(c => c.platform === filters.platform);
+      if (filters.platform === 'blog') {
+        result = result.filter(c => c.platform === 'blog' || c.platform === 'blog+clip');
+      } else if (filters.platform === 'clip') {
+        result = result.filter(c => c.platform === 'clip' || c.platform === 'blog+clip');
+      } else if (filters.platform === 'blog+clip') {
+        result = result.filter(c => c.platform === 'blog+clip');
+      } else {
+        result = result.filter(c => c.platform === filters.platform);
+      }
     }
     // 3. 카테고리 필터 (기존의 대분류 데이터와 신규 상세분류 데이터의 호환을 모두 지원하도록 맵핑 보증)
     if (filters.category && filters.category !== 'all') {
       const parentMap: Record<string, string> = {
         'food-restaurant': 'food',
+        'food-foreign': 'food',
         'food-cafe': 'food',
         'food-pub': 'food',
         'beauty-cosmetics': 'beauty',
@@ -241,10 +250,13 @@ export async function queryCampaigns(filters: {
         'beauty-salon': 'beauty',
         'beauty-hair': 'beauty',
         'beauty-skin': 'beauty',
+        'beauty-spa': 'beauty',
+        'health-fitness': 'beauty',
         'accommodation': 'travel',
         'travel-stay': 'travel',
         'travel-leisure': 'travel',
         'travel': 'travel',
+        'culture': 'travel',
         'fashion-clothing': 'fashion',
         'fashion-accessory': 'fashion',
         'fashion': 'fashion',
@@ -253,7 +265,10 @@ export async function queryCampaigns(filters: {
         'health-fresh': 'life',
         'health-food': 'life',
         'baby': 'life',
-        'book': 'life'
+        'pet': 'life',
+        'book': 'life',
+        'hobby': 'life',
+        'etc': 'etc'
       };
       const parent = parentMap[filters.category];
       result = result.filter(c => c.category === filters.category || (parent && c.category === parent));
@@ -328,16 +343,25 @@ export async function queryCampaigns(filters: {
     params.push(searchParam, searchParam, searchParam, searchParam, keywordParam);
   }
 
-  // 2. 플랫폼 필터
+  // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 블로그+클립 복합 매칭 지원)
   if (filters.platform && filters.platform !== 'all') {
-    query += ' AND platform = ?';
-    params.push(filters.platform);
+    if (filters.platform === 'blog') {
+      query += " AND (platform = 'blog' OR platform = 'blog+clip')";
+    } else if (filters.platform === 'clip') {
+      query += " AND (platform = 'clip' OR platform = 'blog+clip')";
+    } else if (filters.platform === 'blog+clip') {
+      query += " AND platform = 'blog+clip'";
+    } else {
+      query += ' AND platform = ?';
+      params.push(filters.platform);
+    }
   }
 
   // 3. 카테고리 필터 (기존 대분류 데이터와 신규 상세 카테고리 데이터의 크로스 매칭 완벽 보증)
   if (filters.category && filters.category !== 'all') {
     const parentMap: Record<string, string> = {
       'food-restaurant': 'food',
+      'food-foreign': 'food',
       'food-cafe': 'food',
       'food-pub': 'food',
       'beauty-cosmetics': 'beauty',
@@ -345,10 +369,13 @@ export async function queryCampaigns(filters: {
       'beauty-salon': 'beauty',
       'beauty-hair': 'beauty',
       'beauty-skin': 'beauty',
+      'beauty-spa': 'beauty',
+      'health-fitness': 'beauty',
       'accommodation': 'travel',
       'travel-stay': 'travel',
       'travel-leisure': 'travel',
       'travel': 'travel',
+      'culture': 'travel',
       'fashion-clothing': 'fashion',
       'fashion-accessory': 'fashion',
       'fashion': 'fashion',
@@ -357,7 +384,10 @@ export async function queryCampaigns(filters: {
       'health-fresh': 'life',
       'health-food': 'life',
       'baby': 'life',
-      'book': 'life'
+      'pet': 'life',
+      'book': 'life',
+      'hobby': 'life',
+      'etc': 'etc'
     };
     const parent = parentMap[filters.category];
     if (parent) {

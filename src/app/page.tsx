@@ -475,17 +475,27 @@ export default function Home() {
               </span>
               <span>
                 {activeCategory === 'all' ? '카테고리' :
-                  activeCategory === 'food-restaurant' ? '식당/맛집' :
+                  activeCategory === 'food-restaurant' ? '한식/맛집' :
+                  activeCategory === 'food-foreign' ? '양식/일식/중식' :
                   activeCategory === 'food-cafe' ? '카페/디저트' :
                   activeCategory === 'food-pub' ? '술집/주점' :
                   activeCategory === 'beauty-cosmetics' ? '화장품' :
-                  activeCategory === 'beauty-salon' ? '뷰티샵' :
+                  activeCategory === 'beauty-salon' ? '헤어/네일' :
+                  activeCategory === 'beauty-spa' ? '피부/에스테틱' :
+                  activeCategory === 'health-fitness' ? '헬스/피트니스' :
+                  activeCategory === 'health-food' ? '영양제/건강식품' :
                   activeCategory === 'accommodation' ? '숙박' :
-                  activeCategory === 'travel' ? '여행' :
-                  activeCategory === 'fashion' ? '패션' :
+                  activeCategory === 'travel' ? '여행/레저' :
+                  activeCategory === 'culture' ? '문화/공연' :
+                  activeCategory === 'fashion-clothing' ? '의류/패션' :
+                  activeCategory === 'fashion-accessory' ? '패션잡화' :
                   activeCategory === 'baby' ? '유아/육아' :
                   activeCategory === 'life-goods' ? '생활용품' :
-                  activeCategory === 'life-appliances' ? '가전/디지털' : '기타'}
+                  activeCategory === 'health-fresh' ? '밀키트/식품' :
+                  activeCategory === 'life-appliances' ? '가전/디지털' :
+                  activeCategory === 'pet' ? '반려동물' :
+                  activeCategory === 'book' ? '도서/교육' :
+                  activeCategory === 'hobby' ? '취미/클래스' : '기타'}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -519,10 +529,11 @@ export default function Home() {
               </span>
               <span>
                 {activePlatform === 'all' ? '플랫폼' :
-                  activePlatform === 'blog' ? '블로그' :
-                  activePlatform === 'instagram' ? '인스타' :
-                  activePlatform === 'youtube' ? '유튜브' :
-                  activePlatform === 'naver' ? '네이버' : '기타'}
+                  activePlatform === 'blog' ? '네이버 블로그' :
+                  activePlatform === 'clip' ? '네이버 클립' :
+                  activePlatform === 'blog+clip' ? '블로그 + 클립' :
+                  activePlatform === 'instagram' ? '인스타그램' :
+                  activePlatform === 'youtube' ? '유튜브' : '기타'}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -633,199 +644,84 @@ export default function Home() {
         {/* 카테고리 상세 패널 */}
         {isCategoryOpen && (
           <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
-            <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '24px' }}>
+            <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  🍔 맛집 / 음식
+                  🍔 맛집 / 디저트 / 주점
                 </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { 
-                      key: 'food-restaurant', 
-                      label: '식당/맛집', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-restaurant)' }}>
-                          <path d="M3 12h18M5 12a7 7 0 0 0 14 0M12 2v4M9 3v3M15 3v3" />
-                          <defs><linearGradient id="grad-restaurant" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#f59e0b" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'food-cafe', 
-                      label: '카페/디저트', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cafe)' }}>
-                          <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-                          <line x1="6" y1="2" x2="6" y2="4" />
-                          <line x1="10" y1="2" x2="10" y2="4" />
-                          <line x1="14" y1="2" x2="14" y2="4" />
-                          <defs><linearGradient id="grad-cafe" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#d97706" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'food-pub', 
-                      label: '술집/주점', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-pub)' }}>
-                          <path d="M22 3L12 13L2 3M12 13v9M8 22h8" />
-                          <defs><linearGradient id="grad-pub" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a855f7" /><stop offset="100%" stopColor="#f43f5e" /></linearGradient></defs>
-                        </svg>
-                      )
-                    }
+                    { key: 'food-restaurant', label: '한식/맛집', icon: '🍲' },
+                    { key: 'food-foreign', label: '양식/일식/중식', icon: '🍕' },
+                    { key: 'food-cafe', label: '카페/디저트', icon: '☕' },
+                    { key: 'food-pub', label: '술집/주점', icon: '🍺' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-              {/* 뷰티 */}
+              {/* 뷰티/미용/헬스 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  💄 뷰티 / 에스테틱
+                  💄 뷰티 / 미용 / 헬스
                 </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { 
-                      key: 'beauty-cosmetics', 
-                      label: '화장품/스킨케어', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-cosme)' }}>
-                          <rect x="6" y="10" width="12" height="11" rx="2" />
-                          <path d="M9 10V5a3 3 0 0 1 6 0v5" />
-                          <line x1="12" y1="10" x2="12" y2="21" />
-                          <defs><linearGradient id="grad-cosme" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#f472b6" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'beauty-salon', 
-                      label: '뷰티샵/에스테틱', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-salon)' }}>
-                          <circle cx="6" cy="6" r="3" />
-                          <circle cx="6" cy="18" r="3" />
-                          <line x1="20" y1="4" x2="8.12" y2="15.88" />
-                          <line x1="14.47" y1="14.48" x2="20" y2="20" />
-                          <line x1="8.12" y1="8.12" x2="12" y2="12" />
-                          <defs><linearGradient id="grad-salon" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f43f5e" /><stop offset="100%" stopColor="#db2777" /></linearGradient></defs>
-                        </svg>
-                      )
-                    }
+                    { key: 'beauty-cosmetics', label: '화장품/스킨케어', icon: '💄' },
+                    { key: 'beauty-salon', label: '헤어/네일/속눈썹', icon: '✂️' },
+                    { key: 'beauty-spa', label: '피부/에스테틱', icon: '✨' },
+                    { key: 'health-fitness', label: '헬스/피트니스', icon: '🏋️' },
+                    { key: 'health-food', label: '영양제/건강식품', icon: '💊' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-              {/* 여행/숙박 */}
+              {/* 여행/숙박/문화 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  ✈️ 여행 / 숙박
+                  ✈️ 여행 / 숙박 / 문화
                 </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { 
-                      key: 'accommodation', 
-                      label: '숙박/호텔', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-accom)' }}>
-                          <path d="M2 22V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v18M4 6h4M4 10h4M16 6h4M16 10h4M12 14v8" />
-                          <defs><linearGradient id="grad-accom" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'travel', 
-                      label: '여행/레저', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-travel)' }}>
-                          <path d="M22 2L15 22L11 13L2 9L22 2z" />
-                          <defs><linearGradient id="grad-travel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#06b6d4" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
-                        </svg>
-                      )
-                    }
+                    { key: 'accommodation', label: '숙박 (호텔/펜션)', icon: '🏨' },
+                    { key: 'travel', label: '여행/레저/관광', icon: '🏄' },
+                    { key: 'culture', label: '문화/공연/전시', icon: '🎟️' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-              {/* 패션/생활 */}
+              {/* 패션/생활/디지털/기타 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  🛍️ 패션 / 생활 / 디지털
+                  🛍️ 패션 / 생활 / 디지털 / 펫 / 기타
                 </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'flex-start' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { 
-                      key: 'fashion', 
-                      label: '패션/의류', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-fashion)' }}>
-                          <path d="M20.37 4.91l-3.28-3.27A2 2 0 0 0 15.67 1H8.33a2 2 0 0 0-1.42.59L3.63 4.91A2 2 0 0 0 3 6.33V21a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.33a2 2 0 0 0-.63-1.42z" />
-                          <path d="M12 1v6M3 7h18" />
-                          <defs><linearGradient id="grad-fashion" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f43f5e" /><stop offset="100%" stopColor="#f59e0b" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'baby', 
-                      label: '유아동/육아', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-baby)' }}>
-                          <path d="M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
-                          <path d="M8 12c0 2 2 4 4 4s4-2 4-4" />
-                          <circle cx="9" cy="9" r="1" />
-                          <circle cx="15" cy="9" r="1" />
-                          <defs><linearGradient id="grad-baby" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'life-goods', 
-                      label: '생활용품', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-goods)' }}>
-                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                          <defs><linearGradient id="grad-goods" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#8b5cf6" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'life-appliances', 
-                      label: '가전/디지털', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-appli)' }}>
-                          <rect x="2" y="3" width="20" height="14" rx="2" />
-                          <line x1="8" y1="21" x2="16" y2="21" />
-                          <line x1="12" y1="17" x2="12" y2="21" />
-                          <defs><linearGradient id="grad-appli" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#8b5cf6" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient></defs>
-                        </svg>
-                      )
-                    },
-                    { 
-                      key: 'etc', 
-                      label: '기타', 
-                      icon: (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-etc)' }}>
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="12" y1="16" x2="12" y2="12" />
-                          <line x1="12" y1="8" x2="12.01" y2="8" />
-                          <defs><linearGradient id="grad-etc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6b7280" /><stop offset="100%" stopColor="#374151" /></linearGradient></defs>
-                        </svg>
-                      )
-                    }
+                    { key: 'fashion-clothing', label: '의류/패션', icon: '👗' },
+                    { key: 'fashion-accessory', label: '신발/가방/잡화', icon: '👜' },
+                    { key: 'baby', label: '유아동/육아', icon: '👶' },
+                    { key: 'life-goods', label: '생활용품/인테리어', icon: '🛋️' },
+                    { key: 'health-fresh', label: '밀키트/신선식품', icon: '🥗' },
+                    { key: 'life-appliances', label: '가전/디지털', icon: '💻' },
+                    { key: 'pet', label: '반려동물/애견', icon: '🐾' },
+                    { key: 'book', label: '도서/교육', icon: '📚' },
+                    { key: 'hobby', label: '취미/클래스', icon: '🎨' },
+                    { key: 'etc', label: '기타', icon: '🔮' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img">{c.icon}</span>
+                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
@@ -855,6 +751,16 @@ export default function Home() {
                   key: 'blog', 
                   label: '네이버 블로그', 
                   icon: <NaverBlogIcon size={26} />
+                },
+                { 
+                  key: 'clip', 
+                  label: '네이버 클립', 
+                  icon: <span style={{ fontSize: '1.4rem' }}>🎬</span>
+                },
+                { 
+                  key: 'blog+clip', 
+                  label: '블로그 + 클립', 
+                  icon: <span style={{ fontSize: '1.4rem' }}>🟢🎬</span>
                 },
                 { 
                   key: 'instagram', 
@@ -2495,14 +2401,37 @@ export default function Home() {
                         className="card-image-hover"
                       />
                       <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
-                        <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          {c.platform === 'blog' ? (
-                            <>
-                              <NaverBlogIcon size={13} />
-                              <span>블로그</span>
-                            </>
-                          ) : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
-                        </span>
+                        {c.platform === 'blog' ? (
+                          <span className="badge badge-blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <NaverBlogIcon size={13} />
+                            <span>블로그</span>
+                          </span>
+                        ) : c.platform === 'clip' ? (
+                          <span className="badge badge-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
+                            <span>🎬</span>
+                            <span>클립</span>
+                          </span>
+                        ) : c.platform === 'blog+clip' ? (
+                          <span className="badge badge-blog-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
+                            <NaverBlogIcon size={13} />
+                            <span>블로그·클립</span>
+                          </span>
+                        ) : c.platform === 'instagram' ? (
+                          <span className="badge badge-instagram" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span>📸</span>
+                            <span>Insta</span>
+                          </span>
+                        ) : c.platform === 'youtube' ? (
+                          <span className="badge badge-youtube" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span>▶️</span>
+                            <span>YouTube</span>
+                          </span>
+                        ) : (
+                          <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span>🌐</span>
+                            <span>Etc</span>
+                          </span>
+                        )}
                       </div>
                       <div style={{
                         position: 'absolute', top: '12px', right: '12px',
@@ -2670,14 +2599,37 @@ export default function Home() {
                           className="card-image-hover"
                         />
                         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
-                          <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            {c.platform === 'blog' ? (
-                              <>
-                                <NaverBlogIcon size={13} />
-                                <span>블로그</span>
-                              </>
-                            ) : c.platform === 'instagram' ? 'Insta' : c.platform === 'youtube' ? 'YouTube' : 'Etc'}
-                          </span>
+                          {c.platform === 'blog' ? (
+                            <span className="badge badge-blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <NaverBlogIcon size={13} />
+                              <span>블로그</span>
+                            </span>
+                          ) : c.platform === 'clip' ? (
+                            <span className="badge badge-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
+                              <span>🎬</span>
+                              <span>클립</span>
+                            </span>
+                          ) : c.platform === 'blog+clip' ? (
+                            <span className="badge badge-blog-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
+                              <NaverBlogIcon size={13} />
+                              <span>블로그·클립</span>
+                            </span>
+                          ) : c.platform === 'instagram' ? (
+                            <span className="badge badge-instagram" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <span>📸</span>
+                              <span>Insta</span>
+                            </span>
+                          ) : c.platform === 'youtube' ? (
+                            <span className="badge badge-youtube" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <span>▶️</span>
+                              <span>YouTube</span>
+                            </span>
+                          ) : (
+                            <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <span>🌐</span>
+                              <span>Etc</span>
+                            </span>
+                          )}
                         </div>
                         <div style={{
                           position: 'absolute', top: '12px', right: '12px',
@@ -2833,14 +2785,37 @@ export default function Home() {
                   background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
                   padding: '20px 20px 12px 20px', color: '#ffffff'
                 }}>
-                  <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {selectedCampaign.platform === 'blog' ? (
-                      <>
-                        <NaverBlogIcon size={14} />
-                        <span>네이버 블로그</span>
-                      </>
-                    ) : selectedCampaign.platform}
-                  </span>
+                  {selectedCampaign.platform === 'blog' ? (
+                    <span className="badge badge-blog" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <NaverBlogIcon size={14} />
+                      <span>네이버 블로그</span>
+                    </span>
+                  ) : selectedCampaign.platform === 'clip' ? (
+                    <span className="badge badge-clip" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
+                      <span>🎬</span>
+                      <span>네이버 클립</span>
+                    </span>
+                  ) : selectedCampaign.platform === 'blog+clip' ? (
+                    <span className="badge badge-blog-clip" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
+                      <NaverBlogIcon size={14} />
+                      <span>네이버 블로그 + 클립 (둘 다 필수)</span>
+                    </span>
+                  ) : selectedCampaign.platform === 'instagram' ? (
+                    <span className="badge badge-instagram" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>📸</span>
+                      <span>인스타그램</span>
+                    </span>
+                  ) : selectedCampaign.platform === 'youtube' ? (
+                    <span className="badge badge-youtube" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>▶️</span>
+                      <span>유튜브</span>
+                    </span>
+                  ) : (
+                    <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>🌐</span>
+                      <span>{selectedCampaign.platform}</span>
+                    </span>
+                  )}
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
                     {sanitizeCampaignText(selectedCampaign.title)}
                   </h3>
