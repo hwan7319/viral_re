@@ -401,6 +401,40 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [crawling, setCrawling] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  // ⏳ 실시간 자동 동기화 카운트다운 타이머 (60초 주기)
+  const SYNC_INTERVAL_SEC = 60;
+  const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
+  const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
+
+  const triggerManualSync = useCallback(async () => {
+    setIsSyncingData(true);
+    try {
+      const res = await fetch(`/api/campaigns?t=${Date.now()}`);
+      const data = await res.json();
+      if (data && Array.isArray(data.campaigns)) {
+        setCampaigns(data.campaigns);
+      }
+    } catch (e) {
+      console.warn('Auto sync failed:', e);
+    } finally {
+      setIsSyncingData(false);
+      setSyncCountdown(SYNC_INTERVAL_SEC);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSyncCountdown(prev => {
+        if (prev <= 1) {
+          triggerManualSync();
+          return SYNC_INTERVAL_SEC;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [triggerManualSync]);
   
   // 검색 & 필터 상태
   const [searchTerm, setSearchTerm] = useState('');
@@ -1813,7 +1847,9 @@ export default function Home() {
           >
             <span>🔑 키워드마스터</span>
           </button>
-          <div 
+          <button 
+            type="button"
+            onClick={triggerManualSync}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -1822,22 +1858,24 @@ export default function Home() {
               fontSize: '0.75rem',
               fontWeight: 600,
               borderRadius: '9999px',
-              backgroundColor: 'rgba(16, 185, 129, 0.08)',
-              color: '#10b981',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              whiteSpace: 'nowrap'
+              backgroundColor: isSyncingData ? 'rgba(59, 130, 246, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+              color: isSyncingData ? '#3b82f6' : '#10b981',
+              border: isSyncingData ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(16, 185, 129, 0.2)',
+              whiteSpace: 'nowrap',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
-            title="17개 체험단 사이트 실시간 백그라운드 자동 동기화 적용 중"
+            title="클릭 시 즉시 실시간 데이터 동기화 실행 (자동 동기화 주기: 60초)"
           >
             <span style={{
               width: '6px',
               height: '6px',
               borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 6px #10b981'
+              backgroundColor: isSyncingData ? '#3b82f6' : '#10b981',
+              boxShadow: isSyncingData ? '0 0 6px #3b82f6' : '0 0 6px #10b981'
             }} />
-            <span>자동 동기화 🟢</span>
-          </div>
+            <span>{isSyncingData ? '동기화 중...' : `자동 동기화 ${syncCountdown}초 전 🟢`}</span>
+          </button>
 
           {/* 🔑 로그인 버튼 및 아바타 드롭다운 */}
           {user ? (
