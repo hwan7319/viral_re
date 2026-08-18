@@ -1949,30 +1949,30 @@ export default function Home() {
               </span>
             </button>
 
-            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (100% 초선명 크리스탈 퓨어 블랙 레이어) */}
+            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (100% 초선명 픽셀 레이어) */}
             {syncToastInfo && (
               <div style={{
                 position: 'fixed',
-                top: '72px',
+                top: syncToastInfo.visible ? '76px' : '60px',
                 right: '24px',
                 zIndex: 999999,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '12px 22px',
-                borderRadius: '12px',
-                backgroundColor: '#000000',
+                padding: '12px 20px',
+                borderRadius: '10px',
+                backgroundColor: '#111827',
                 color: '#ffffff',
                 border: '2px solid #10b981',
-                boxShadow: '0 16px 45px rgba(0, 0, 0, 0.8), 0 0 20px rgba(16, 185, 129, 0.4)',
-                fontSize: '0.92rem',
-                fontWeight: 800,
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+                fontSize: '0.9rem',
+                fontWeight: 700,
                 letterSpacing: '-0.01em',
                 whiteSpace: 'nowrap',
                 opacity: syncToastInfo.visible ? 1 : 0,
-                transform: syncToastInfo.visible ? 'translateY(0)' : 'translateY(-10px)',
-                transition: 'opacity 0.3초 ease, transform 0.3s ease',
+                transition: 'opacity 0.25s ease, top 0.25s ease',
                 WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale',
                 pointerEvents: 'none'
               }}>
                 <span style={{ fontSize: '1.15rem' }}>⚡</span>
