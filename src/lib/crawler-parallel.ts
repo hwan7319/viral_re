@@ -320,15 +320,13 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const campaignUrl = `https://4blog.net/campaign/${item.CID}/`;
             const imageUrl = `https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/${item.PRID}/thumbnail/${item.IMGKEY}`;
             const endDate = parseRemainDaysToDate(item.REMAINDATE || 7);
-            const limitCount = item.REVIEWER_CNT || 5;
-            const applyCount = item.REVIEWER_REQ_CNT || 0;
+            const limitCount = parseInt(item.REVIEWER_CNT || item.LIMIT_CNT || 5, 10) || 5;
+            const applyCount = parseInt(item.REVIEWER_REQ_CNT || item.REQ_CNT || 0, 10) || 0;
             const autoKws = buildAutoKeywords(title, description);
             const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
 
             // 원본 실제 미션 데이터 매핑 (포블로그 원본 상세 미션)
-            const mission = (title.includes('김종구') || item.CAMPAIGN_NM?.includes('김종구'))
-              ? `★ 영수증리뷰필수\n1. 업체명검색을 통한 네이버지도등록 필수\n2. 사진20장이상, 글자수 1500자 이상\n3. 체험후 3일이내 리뷰등록 부탁드립니다.\n4. 선정자분들간 테이블합석 불가능한점 참고안내드립니다\n* 매장에서 별도의 미션안내가 있을수있습니다.\n★ 배너매장협의\n\n협찬 배너를 넣으시면, 포스팅이 검색에 누락 될 수 있습니다. 공정위 스티커로 대체해주세요 ~`
-              : generateRealMission(title, platform, category, location);
+            const mission = item.MISSION || item.CAMPAIGN_GUIDE || item.GUIDE || generateRealMission(title, platform, category, location);
 
             collected.push({
               id, title, description, platform, category, location, campaignUrl,

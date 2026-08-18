@@ -78,14 +78,16 @@ export async function scrapeDetailCounts(url: string, targetSite: string): Promi
     const $ = cheerio.load(html);
     const siteLower = (targetSite || '').toLowerCase();
 
-    // 1. 포블로그 -> .reviewerCnt 또는 신청자(N)
+    // 1. 포블로그 -> .reviewerCnt 또는 .cat-right-cnt 또는 신청자(N)/선정자(N)
     if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
-      const cntText = $('.reviewerCnt').text().replace(/\s+/g, ' ').trim() || $('body').text();
-      const match = cntText.match(/신청\s*(\d+)\s*\/\s*(\d+)/i) || cntText.match(/신청자\s*\(\s*(\d+)\s*\)/);
+      const cntText = $('.reviewerCnt, .cat-right-cnt, #requestsLegacy, .nav-tabs, body').text().replace(/\s+/g, ' ').trim();
+      const match = cntText.match(/신청\s*(\d+)\s*\/\s*(\d+)/i) || cntText.match(/신청자\s*\(\s*(\d+)\s*\).*?선정자\s*\(\s*(\d+)\s*\)/i);
       if (match) {
         const applyCount = parseInt(match[1], 10);
         const limitCount = match[2] ? parseInt(match[2], 10) : undefined;
-        return { applyCount, limitCount };
+        if (!isNaN(applyCount)) {
+          return { applyCount, limitCount: limitCount && !isNaN(limitCount) ? limitCount : undefined };
+        }
       }
     }
     // 2. 디너의여왕 -> 해당 campaign ID와 exact 매칭되는 apply_badge 정밀 조준
@@ -189,44 +191,34 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     }
     // 2. 포블로그 (4blog.net)
     else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
-      const ogDesc = $('meta[property="og:description"]').attr('content') || '';
-      let targetText = '';
-      const benefitText = $('.campaigninfo-text').first().text().trim();
+      const missionItems: string[] = [];
 
-      // 1순위: '★필수 미션', '필수 미션', '리뷰 필수가이드', '포스팅 제목' 이 명시된 구역
-      $('.campaigninfo-text').each((_, el) => {
-        const text = $(el).text().trim();
-        if (text.includes('필수 미션') || text.includes('★필수') || text.includes('리뷰 필수가이드') || text.includes('포스팅 제목')) {
-          targetText = text;
+      $('.campaigninfo-label, label, dt, strong, .panel-heading').each((_, el) => {
+        const label = $(el).text().trim();
+        if (label.includes('미션') || label.includes('이용 안내') || label.includes('이용안내') || label.includes('가이드') || label.includes('키워드')) {
+          const parent = $(el).parent();
+          const infoText = parent.find('.campaigninfo-text').text().trim() || parent.text().replace(label, '').trim();
+          if (infoText && infoText.length > 5 && !missionItems.includes(infoText)) {
+            missionItems.push(`📌 [${label}]\n${infoText}`);
+          }
         }
       });
 
-      // 2순위: sponsorBanner 포함 구역 (단, 제공혜택과 동일하지 않은 경우)
-      if (!targetText) {
-        $('.campaigninfo-text').each((_, el) => {
-          const html = $(el).html() || '';
-          const text = $(el).text().trim();
-          if (html.includes('sponsorBanner') && text !== benefitText) {
-            targetText = text;
-          }
-        });
-      }
-
-      // 3순위: 이용안내/예약안내 구역 (제공혜택/주소가 아닌 일반 안내)
-      if (!targetText) {
+      if (missionItems.length === 0) {
         $('.campaigninfo-text').each((i, el) => {
           const text = $(el).text().trim();
-          if (i > 0 && text !== benefitText && !text.includes('서울 강남구') && text.length > 15) {
-            targetText = text;
+          if (i > 0 && text.length > 15 && !text.includes('자유이용권') && !text.includes('제공') && !text.includes('도로명') && !text.includes('지번')) {
+            missionItems.push(text);
           }
         });
       }
 
-      if (!targetText && ogDesc && !ogDesc.includes('영수증리뷰필수') && ogDesc !== benefitText && ogDesc.length > 10) {
-        targetText = ogDesc;
+      const ogDesc = $('meta[property="og:description"]').attr('content') || '';
+      if (missionItems.length === 0 && ogDesc && !ogDesc.includes('포블로그') && ogDesc.length > 10) {
+        missionItems.push(ogDesc);
       }
 
-      extractedRaw = targetText;
+      extractedRaw = missionItems.join('\n\n');
     }
     // 3. 디너의여왕 (dinnerqueen.net)
     else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {

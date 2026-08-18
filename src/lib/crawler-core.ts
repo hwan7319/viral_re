@@ -325,8 +325,8 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         // 이미지 경로 조합
         const imageUrl = `https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/${item.PRID}/thumbnail/${item.IMGKEY}`;
         const endDate = parseRemainDaysToDate(item.REMAINDATE || 7);
-        const limitCount = item.REVIEWER_CNT || 5;
-        const applyCount = item.REVIEWER_REQ_CNT || 0;
+        const limitCount = parseInt(item.REVIEWER_CNT || item.LIMIT_CNT || 5, 10) || 5;
+        const applyCount = parseInt(item.REVIEWER_REQ_CNT || item.REQ_CNT || 0, 10) || 0;
 
         const autoKws = buildAutoKeywords(title, description);
         const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
