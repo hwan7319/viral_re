@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+        ],
+      },
+    ];
+  },
   // @ts-ignore - 터널 및 외부 디바이스 접속 시 dev HMR 차단을 허용하기 위한 설정 (TypeScript 컴파일 무시)
   allowedDevOrigins: [
     "funny-adults-kick.loca.lt",

@@ -1896,12 +1896,12 @@ export default function Home() {
             onClick={() => window.location.reload()}
           />
           <span className="integrator-badge" style={{
-            fontSize: '0.7rem',
-            padding: '2px 6px',
-            backgroundColor: 'var(--accent-light)',
-            color: 'var(--accent)',
+            fontSize: '0.72rem',
+            padding: '4px 8px',
+            backgroundColor: '#334155',
+            color: '#ffffff',
             borderRadius: 'var(--radius-sm)',
-            fontWeight: 700,
+            fontWeight: 800,
             whiteSpace: 'nowrap'
           }}>
             INTEGRATOR v1.0
@@ -1918,13 +1918,14 @@ export default function Home() {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
-              fontSize: '0.78rem',
-              fontWeight: 700,
+              padding: '7px 14px',
+              fontSize: '0.82rem',
+              fontWeight: 800,
               borderRadius: 'var(--radius-md)',
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
-              color: 'var(--accent)',
-              border: '1px solid rgba(99, 102, 241, 0.25)',
+              backgroundColor: '#4f46e5',
+              color: '#ffffff',
+              border: '1.5px solid #4338ca',
+              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)',
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
