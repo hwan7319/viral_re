@@ -1932,7 +1932,7 @@ export default function Home() {
               </span>
             </button>
 
-            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (초고대비 솔리드 다크 레이어) */}
+            {/* ⚡ 동기화 완료 후 2.5초간 스르르 나타났다가 사라지는 모션 토스트 (100% 초선명 크리스탈 퓨어 블랙 레이어) */}
             {syncToastInfo && (
               <div style={{
                 position: 'fixed',
@@ -1942,25 +1942,27 @@ export default function Home() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '11px 20px',
+                padding: '12px 22px',
                 borderRadius: '12px',
-                backgroundColor: '#020617',
+                backgroundColor: '#000000',
                 color: '#ffffff',
                 border: '2px solid #10b981',
-                boxShadow: '0 14px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.4)',
-                fontSize: '0.86rem',
-                fontWeight: 700,
+                boxShadow: '0 16px 45px rgba(0, 0, 0, 0.8), 0 0 20px rgba(16, 185, 129, 0.4)',
+                fontSize: '0.92rem',
+                fontWeight: 800,
+                letterSpacing: '-0.01em',
                 whiteSpace: 'nowrap',
                 opacity: syncToastInfo.visible ? 1 : 0,
-                transform: syncToastInfo.visible ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.95)',
-                transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                transform: syncToastInfo.visible ? 'translateY(0)' : 'translateY(-10px)',
+                transition: 'opacity 0.3초 ease, transform 0.3s ease',
+                WebkitFontSmoothing: 'antialiased',
                 pointerEvents: 'none'
               }}>
-                <span style={{ fontSize: '1.1rem' }}>⚡</span>
+                <span style={{ fontSize: '1.15rem' }}>⚡</span>
                 <span style={{ color: '#ffffff' }}>
-                  <strong style={{ color: '#34d399', fontWeight: 800, fontSize: '0.92rem' }}>{syncToastInfo.count.toLocaleString()}개</strong> 공고 실시간 동기화 완료!
+                  <strong style={{ color: '#00ff88', fontWeight: 900, fontSize: '0.98rem' }}>{syncToastInfo.count.toLocaleString()}개</strong> 공고 실시간 동기화 완료!
                   {syncToastInfo.updatedCount > 0 && (
-                    <span style={{ color: '#38bdf8', fontWeight: 800, marginLeft: '6px' }}>
+                    <span style={{ color: '#38bdf8', fontWeight: 900, marginLeft: '8px' }}>
                       (+{syncToastInfo.updatedCount}건 최신)
                     </span>
                   )}
