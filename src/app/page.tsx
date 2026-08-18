@@ -97,6 +97,146 @@ const NaverClipIcon = ({ size = 16 }: { size?: number }) => (
   </span>
 );
 
+// 🎨 카테고리별 세련된 벡터 SVG 아이콘 매핑
+const CategorySvgIcons: Record<string, React.ReactNode> = {
+  'food-restaurant': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z" />
+      <line x1="6" y1="1" x2="6" y2="4" />
+      <line x1="10" y1="1" x2="10" y2="4" />
+      <line x1="14" y1="1" x2="14" y2="4" />
+    </svg>
+  ),
+  'food-foreign': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 2 22 22 22 12 2" />
+      <line x1="12" y1="6" x2="12" y2="18" />
+    </svg>
+  ),
+  'food-cafe': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
+      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z" />
+    </svg>
+  ),
+  'food-pub': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 22h8M12 15v7M17 3l-5 7-5-7h10z" />
+    </svg>
+  ),
+  'beauty-cosmetics': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+  ),
+  'beauty-salon': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="6" r="3" />
+      <circle cx="6" cy="18" r="3" />
+      <line x1="20" y1="4" x2="8.12" y2="15.88" />
+      <line x1="14.47" y1="14.48" x2="20" y2="20" />
+    </svg>
+  ),
+  'beauty-spa': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  'health-fitness': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 6.5h11M6.5 17.5h11M3 10v4M21 10v4M6.5 4v16M17.5 4v16" />
+    </svg>
+  ),
+  'health-food': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7zM8.5 8.5l7 7" />
+    </svg>
+  ),
+  'accommodation': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 4v16M2 8h20v12M2 17h20M6 8v9" />
+    </svg>
+  ),
+  'travel': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3.5c-.5-.5-2.5 0-4 1.5L13.5 8.5 5.3 6.7c-.9-.2-1.8.3-2.1 1.2l-.4 1.3 5.4 3.2-3.3 3.3-2.7-.6-1.4 1.4 3.7 2.2 2.2 3.7 1.4-1.4-.6-2.7 3.3-3.3 3.2 5.4 1.3-.4c.9-.3 1.4-1.2 1.2-2.1z" />
+    </svg>
+  ),
+  'culture': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <line x1="12" y1="6" x2="12" y2="18" strokeDasharray="2 2" />
+    </svg>
+  ),
+  'fashion-clothing': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
+    </svg>
+  ),
+  'fashion-accessory': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" />
+    </svg>
+  ),
+  'baby': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fb7185" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <line x1="9" y1="9" x2="9.01" y2="9" />
+      <line x1="15" y1="9" x2="15.01" y2="9" />
+    </svg>
+  ),
+  'life-goods': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84cc16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  ),
+  'health-fresh': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
+    </svg>
+  ),
+  'life-appliances': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  ),
+  'pet': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="16" r="4" />
+      <circle cx="6" cy="9" r="2" />
+      <circle cx="18" cy="9" r="2" />
+      <circle cx="9" cy="4" r="2" />
+      <circle cx="15" cy="4" r="2" />
+    </svg>
+  ),
+  'book': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z" />
+    </svg>
+  ),
+  'hobby': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.92 0 1.7-.71 1.7-1.63 0-.44-.18-.85-.46-1.16-.27-.31-.44-.73-.44-1.21 0-.92.78-1.7 1.7-1.7h2.5c2.76 0 5-2.24 5-5 0-5.5-4.5-10-10-10z" />
+    </svg>
+  ),
+  'etc': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  ),
+};
+
 // 🧼 출처 사이트 이름([레뷰 추천], [디너의여왕] 등) 중복 제거 헬퍼 함수
 const sanitizeCampaignText = (text: string): string => {
   if (!text) return '';
@@ -666,18 +806,18 @@ export default function Home() {
             <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  🍔 맛집 / 디저트 / 주점
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  🍽️ 맛집 / 디저트 / 주점
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { key: 'food-restaurant', label: '한식/맛집', icon: '🍲' },
-                    { key: 'food-foreign', label: '양식/일식/중식', icon: '🍕' },
-                    { key: 'food-cafe', label: '카페/디저트', icon: '☕' },
-                    { key: 'food-pub', label: '술집/주점', icon: '🍺' },
+                    { key: 'food-restaurant', label: '한식/맛집' },
+                    { key: 'food-foreign', label: '양식/일식/중식' },
+                    { key: 'food-cafe', label: '카페/디저트' },
+                    { key: 'food-pub', label: '술집/주점' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
+                      <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
@@ -685,19 +825,19 @@ export default function Home() {
               </div>
               {/* 뷰티/미용/헬스 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  💄 뷰티 / 미용 / 헬스
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  ✨ 뷰티 / 미용 / 헬스
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { key: 'beauty-cosmetics', label: '화장품/스킨케어', icon: '💄' },
-                    { key: 'beauty-salon', label: '헤어/네일/속눈썹', icon: '✂️' },
-                    { key: 'beauty-spa', label: '피부/에스테틱', icon: '✨' },
-                    { key: 'health-fitness', label: '헬스/피트니스', icon: '🏋️' },
-                    { key: 'health-food', label: '영양제/건강식품', icon: '💊' },
+                    { key: 'beauty-cosmetics', label: '화장품/스킨케어' },
+                    { key: 'beauty-salon', label: '헤어/네일/속눈썹' },
+                    { key: 'beauty-spa', label: '피부/에스테틱' },
+                    { key: 'health-fitness', label: '헬스/피트니스' },
+                    { key: 'health-food', label: '영양제/건강식품' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
+                      <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
@@ -705,17 +845,17 @@ export default function Home() {
               </div>
               {/* 여행/숙박/문화 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  ✈️ 여행 / 숙박 / 문화
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  🧭 여행 / 숙박 / 문화
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { key: 'accommodation', label: '숙박 (호텔/펜션)', icon: '🏨' },
-                    { key: 'travel', label: '여행/레저/관광', icon: '🏄' },
-                    { key: 'culture', label: '문화/공연/전시', icon: '🎟️' },
+                    { key: 'accommodation', label: '숙박 (호텔/펜션)' },
+                    { key: 'travel', label: '여행/레저/관광' },
+                    { key: 'culture', label: '문화/공연/전시' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
+                      <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
@@ -723,24 +863,24 @@ export default function Home() {
               </div>
               {/* 패션/생활/디지털/기타 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   🛍️ 패션 / 생활 / 디지털 / 펫 / 기타
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { key: 'fashion-clothing', label: '의류/패션', icon: '👗' },
-                    { key: 'fashion-accessory', label: '신발/가방/잡화', icon: '👜' },
-                    { key: 'baby', label: '유아동/육아', icon: '👶' },
-                    { key: 'life-goods', label: '생활용품/인테리어', icon: '🛋️' },
-                    { key: 'health-fresh', label: '밀키트/신선식품', icon: '🥗' },
-                    { key: 'life-appliances', label: '가전/디지털', icon: '💻' },
-                    { key: 'pet', label: '반려동물/애견', icon: '🐾' },
-                    { key: 'book', label: '도서/교육', icon: '📚' },
-                    { key: 'hobby', label: '취미/클래스', icon: '🎨' },
-                    { key: 'etc', label: '기타', icon: '🔮' },
+                    { key: 'fashion-clothing', label: '의류/패션' },
+                    { key: 'fashion-accessory', label: '신발/가방/잡화' },
+                    { key: 'baby', label: '유아동/육아' },
+                    { key: 'life-goods', label: '생활용품/인테리어' },
+                    { key: 'health-fresh', label: '밀키트/신선식품' },
+                    { key: 'life-appliances', label: '가전/디지털' },
+                    { key: 'pet', label: '반려동물/애견' },
+                    { key: 'book', label: '도서/교육' },
+                    { key: 'hobby', label: '취미/클래스' },
+                    { key: 'etc', label: '기타' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
-                      <span className="filter-desktop-icon-img" style={{ fontSize: '1.4rem' }}>{c.icon}</span>
+                      <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
                   ))}
@@ -862,7 +1002,7 @@ export default function Home() {
                 <div className="region-sigungu-wrap" style={{ justifyContent: 'flex-start' }}>
                   <div style={{ width: '100%', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontSize: '1.2rem' }}>📍</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)' }}>
                       {hoveredSido !== 'all' ? hoveredSido : selectedSido === 'all' ? '전국' : selectedSido} 지역 상세 설정
                     </span>
                   </div>

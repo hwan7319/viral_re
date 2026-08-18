@@ -861,7 +861,7 @@ input, select {
   background: rgba(99, 102, 241, 0.15);
   border-color: var(--accent);
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .filter-desktop-icon-img {
@@ -880,7 +880,7 @@ input, select {
 
 .filter-desktop-icon-text {
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 400;
   text-align: center;
   white-space: normal;
   word-break: keep-all;
@@ -901,7 +901,7 @@ input, select {
   background-color: var(--bg-primary);
   color: var(--text-secondary);
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
   transition: var(--transition-smooth);
   white-space: nowrap;
