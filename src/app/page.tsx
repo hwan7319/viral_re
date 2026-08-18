@@ -3418,7 +3418,7 @@ export default function Home() {
                         gap: '2px'
                       }}>
                         <div>📌 <strong>월간 총 검색량 기준:</strong> 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.</div>
-                        <div>📌 <strong>경쟁비율 기준:</strong> <code>포스팅 수 ÷ 검색량</code> (수치가 1.0 미만인 🟢 황금키워드는 상위 노출 확률이 매우 높습니다).</div>
+                        <div>📌 <strong>경쟁비율 산출공식:</strong> 포스팅 문서 수 ÷ 월간 총 검색량 (수치가 1.0 미만인 🟢 황금키워드는 검색량 대비 글수가 적어 상위 노출에 매우 유리합니다).</div>
                       </div>
                     </div>
                   </div>
