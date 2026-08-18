@@ -2078,7 +2078,7 @@ export default function Home() {
                   onBlur={() => setIsSearchFocused(false)}
                   style={{
                     flex: 1, border: 'none', background: 'transparent',
-                    padding: '0 8px', fontSize: '0.96rem',
+                    padding: '0 8px', fontSize: '0.91rem',
                     fontWeight: 600,
                     color: 'var(--text-primary)',
                     minWidth: 0,
@@ -2105,7 +2105,7 @@ export default function Home() {
                     padding: '4px 14px',
                     height: '32px',
                     borderRadius: 'var(--radius-full)',
-                    fontSize: '0.88rem',
+                    fontSize: '0.84rem',
                     fontWeight: 800,
                     border: 'none',
                     cursor: 'pointer',
