@@ -170,6 +170,42 @@ export async function GET(request: Request) {
       });
     }
 
+    // 만약 네이버 자동완성 결과가 15개 미만인 경우(예: '치킨' 등 단어 자체가 단편적인 키워드),
+    // 네이버 상위 블로그 문서 제목에서 실제 사용되는 100% 실데이터 관련 키워드(예: 굽네치킨, 네네치킨, 오븐치킨 등) 보충 추출
+    if (wordSet.size < 15) {
+      try {
+        const blogUrl = `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(query)}&display=25&sort=sim`;
+        const blogRes = await axios.get(blogUrl, {
+          headers: {
+            'X-Naver-Client-Id': clientId,
+            'X-Naver-Client-Secret': clientSecret,
+          },
+          timeout: 2000,
+        });
+
+        if (blogRes.data && blogRes.data.items) {
+          blogRes.data.items.forEach((item: any) => {
+            if (item.title) {
+              const cleanTitle = item.title.replace(/<[^>]*>/g, '').replace(/[^\w\s가-힣]/g, ' ');
+              const words = cleanTitle.split(/\s+/);
+              words.forEach((w: string) => {
+                const trimmedWord = w.trim();
+                if (
+                  trimmedWord.includes(query) &&
+                  trimmedWord !== query &&
+                  trimmedWord.length >= query.length + 1 &&
+                  trimmedWord.length <= 15 &&
+                  !/^[0-9]+$/.test(trimmedWord)
+                ) {
+                  wordSet.add(trimmedWord);
+                }
+              });
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
     // 네이버 공식 추천 연관어 상위 순위 실데이터만 최대 15~20개 수집
     const candidateKeywords = Array.from(wordSet).slice(0, 20);
 
