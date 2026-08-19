@@ -3827,7 +3827,7 @@ export default function Home() {
           
           {/* 브랜드 및 서비스 소개 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>바이럴리 (viral_re)</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem' }}>바이럴리 (viral_re)</span>
             <span style={{ color: 'var(--border-color)' }}>|</span>
             <span style={{ color: 'var(--text-secondary)' }}>실시간 블로그 & 인스타그램 체험단 통합 애그리게이터</span>
           </div>
@@ -3837,7 +3837,7 @@ export default function Home() {
             <button 
               type="button" 
               onClick={() => setIsTermsModalOpen(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
             >
               서비스 이용약관
             </button>
@@ -3845,7 +3845,7 @@ export default function Home() {
             <button 
               type="button" 
               onClick={() => setIsPrivacyModalOpen(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-primary)', fontWeight: 800, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
             >
               개인정보처리방침
             </button>
@@ -3853,7 +3853,7 @@ export default function Home() {
             <button 
               type="button" 
               onClick={() => setIsDisclaimerModalOpen(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
             >
               책임의 한계 및 고지
             </button>
