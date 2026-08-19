@@ -1,3 +1,41 @@
+export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
+  'food': ['food', 'food-restaurant', 'food-cafe', 'food-pub', 'food-foreign', '맛집'],
+  'food-restaurant': ['food-restaurant', 'food-foreign', 'food', '맛집'],
+  'food-foreign': ['food-foreign', 'food-restaurant', 'food', '맛집'],
+  'food-cafe': ['food-cafe', 'food', '디저트'],
+  'food-pub': ['food-pub', 'food', '주점'],
+
+  'beauty': ['beauty', 'beauty-cosmetic', 'beauty-cosmetics', 'beauty-hair', 'beauty-salon', 'beauty-skin', 'beauty-spa', 'health-fitness', 'health-food'],
+  'beauty-cosmetics': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
+  'beauty-cosmetic': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
+  'beauty-salon': ['beauty-salon', 'beauty-hair', 'beauty-skin', 'beauty-spa', 'beauty'],
+  'beauty-hair': ['beauty-hair', 'beauty-salon', 'beauty'],
+  'beauty-skin': ['beauty-skin', 'beauty-spa', 'beauty-salon', 'beauty'],
+  'beauty-spa': ['beauty-spa', 'beauty-skin', 'beauty-salon', 'beauty'],
+  'health-fitness': ['health-fitness', 'beauty', 'health'],
+  'health-food': ['health-food', 'health-fresh', 'life', 'health'],
+
+  'travel': ['travel', 'travel-stay', 'accommodation', 'travel-leisure', 'culture'],
+  'accommodation': ['accommodation', 'travel-stay', 'travel'],
+  'travel-stay': ['travel-stay', 'accommodation', 'travel'],
+  'travel-leisure': ['travel-leisure', 'travel', 'culture'],
+  'culture': ['culture', 'travel-leisure', 'travel'],
+
+  'fashion': ['fashion', 'fashion-clothing', 'fashion-accessory'],
+  'fashion-clothing': ['fashion-clothing', 'fashion'],
+  'fashion-accessory': ['fashion-accessory', 'fashion'],
+
+  'life': ['life', 'life-goods', 'life-appliances', 'health-fresh', 'baby', 'pet', 'book', 'hobby'],
+  'life-goods': ['life-goods', 'life'],
+  'life-appliances': ['life-appliances', 'life'],
+  'health-fresh': ['health-fresh', 'life-goods', 'life'],
+  'baby': ['baby', 'life'],
+  'pet': ['pet', 'life'],
+  'book': ['book', 'life'],
+  'hobby': ['hobby', 'travel-leisure', 'life'],
+  'etc': ['etc']
+};
+
 import { open, Database } from 'sqlite';
 import path from 'path';
 import fs from 'fs';
@@ -248,40 +286,10 @@ export async function queryCampaigns(filters: {
         result = result.filter(c => c.platform === filters.platform);
       }
     }
-    // 3. 카테고리 필터 (기존의 대분류 데이터와 신규 상세분류 데이터의 호환을 모두 지원하도록 맵핑 보증)
+    // 3. 카테고리 필터 (그룹 맵핑 기반 멀티 매칭 보증)
     if (filters.category && filters.category !== 'all') {
-      const parentMap: Record<string, string> = {
-        'food-restaurant': 'food',
-        'food-foreign': 'food',
-        'food-cafe': 'food',
-        'food-pub': 'food',
-        'beauty-cosmetics': 'beauty',
-        'beauty-cosmetic': 'beauty',
-        'beauty-salon': 'beauty',
-        'beauty-hair': 'beauty',
-        'beauty-skin': 'beauty',
-        'beauty-spa': 'beauty',
-        'health-fitness': 'beauty',
-        'accommodation': 'travel',
-        'travel-stay': 'travel',
-        'travel-leisure': 'travel',
-        'travel': 'travel',
-        'culture': 'travel',
-        'fashion-clothing': 'fashion',
-        'fashion-accessory': 'fashion',
-        'fashion': 'fashion',
-        'life-goods': 'life',
-        'life-appliances': 'life',
-        'health-fresh': 'life',
-        'health-food': 'life',
-        'baby': 'life',
-        'pet': 'life',
-        'book': 'life',
-        'hobby': 'life',
-        'etc': 'etc'
-      };
-      const parent = parentMap[filters.category];
-      result = result.filter(c => c.category === filters.category || (parent && c.category === parent));
+      const targetMatches = CATEGORY_GROUP_MAP[filters.category] || [filters.category];
+      result = result.filter(c => targetMatches.includes(c.category));
     }
     // 4. 지역 필터 (구/군/시 접미사 생략 지명까지 유연 매칭 지원)
     if (filters.location && filters.location !== 'all') {
@@ -371,46 +379,12 @@ export async function queryCampaigns(filters: {
     }
   }
 
-  // 3. 카테고리 필터 (기존 대분류 데이터와 신규 상세 카테고리 데이터의 크로스 매칭 완벽 보증)
+  // 3. 카테고리 필터 (그룹 맵핑 기반 멀티 매칭 보증)
   if (filters.category && filters.category !== 'all') {
-    const parentMap: Record<string, string> = {
-      'food-restaurant': 'food',
-      'food-foreign': 'food',
-      'food-cafe': 'food',
-      'food-pub': 'food',
-      'beauty-cosmetics': 'beauty',
-      'beauty-cosmetic': 'beauty',
-      'beauty-salon': 'beauty',
-      'beauty-hair': 'beauty',
-      'beauty-skin': 'beauty',
-      'beauty-spa': 'beauty',
-      'health-fitness': 'beauty',
-      'accommodation': 'travel',
-      'travel-stay': 'travel',
-      'travel-leisure': 'travel',
-      'travel': 'travel',
-      'culture': 'travel',
-      'fashion-clothing': 'fashion',
-      'fashion-accessory': 'fashion',
-      'fashion': 'fashion',
-      'life-goods': 'life',
-      'life-appliances': 'life',
-      'health-fresh': 'life',
-      'health-food': 'life',
-      'baby': 'life',
-      'pet': 'life',
-      'book': 'life',
-      'hobby': 'life',
-      'etc': 'etc'
-    };
-    const parent = parentMap[filters.category];
-    if (parent) {
-      query += ' AND category IN (?, ?)';
-      params.push(filters.category, parent);
-    } else {
-      query += ' AND category = ?';
-      params.push(filters.category);
-    }
+    const targetMatches = CATEGORY_GROUP_MAP[filters.category] || [filters.category];
+    const placeholders = targetMatches.map(() => '?').join(', ');
+    query += " AND category IN (" + placeholders + ")";
+    params.push(...targetMatches);
   }
 
   // 4. 지역 필터 (구/군/시 접미사 생략 지명까지 유연 매칭 지원)

@@ -52,33 +52,26 @@ function parseCountText(text: string): { applyCount: number; limitCount: number 
 }
 
 // 카테고리 자동 판별
-function detectCategory(title: string, desc: string): 'food' | 'beauty' | 'fashion' | 'travel' | 'life' | 'etc' {
-  const t = (title + ' ' + desc).toLowerCase();
-  if (t.includes('삼겹살') || t.includes('고기') || t.includes('식사') || t.includes('레스토랑') || 
-      t.includes('이자카야') || t.includes('카페') || t.includes('디저트') || t.includes('맛집') || 
-      t.includes('한우') || t.includes('파스타') || t.includes('스시') || t.includes('뷔페') || 
-      t.includes('갈비') || t.includes('치킨') || t.includes('피자') || t.includes('돈까스') ||
-      t.includes('마라탕') || t.includes('양꼬치') || t.includes('횟집') || t.includes('곱창') || t.includes('통닭') || t.includes('닭발') || t.includes('식사권')) {
-    return 'food';
-  }
-  if (t.includes('크림') || t.includes('앰플') || t.includes('뷰티') || t.includes('화장품') || 
-      t.includes('에센스') || t.includes('세럼') || t.includes('선크림') || t.includes('마스크팩') ||
-      t.includes('피부') || t.includes('헤어') || t.includes('클리닉') || t.includes('네일') || t.includes('왁싱') || t.includes('속눈썹') || t.includes('미용')) {
-    return 'beauty';
-  }
-  if (t.includes('의류') || t.includes('패션') || t.includes('셔츠') || t.includes('가방') || 
-      t.includes('레깅스') || t.includes('티셔츠') || t.includes('원피스') || t.includes('신발') || t.includes('스니커즈')) {
-    return 'fashion';
-  }
-  if (t.includes('펜션') || t.includes('호텔') || t.includes('풀빌라') || t.includes('글램핑') || 
-      t.includes('숙박') || t.includes('렌트카') || t.includes('여행') || t.includes('제주도')) {
-    return 'travel';
-  }
-  if (t.includes('베개') || t.includes('밀키트') || t.includes('영양제') || t.includes('세제') || 
-      t.includes('샴푸') || t.includes('치약') || t.includes('텀블러') || t.includes('경추') ||
-      t.includes('청소기') || t.includes('물티슈') || t.includes('도서')) {
-    return 'life';
-  }
+function detectCategory(title: string, desc: string): string {
+  const text = (title + ' ' + desc).toLowerCase();
+  if (text.includes('카페') || text.includes('디저트') || text.includes('베이커리') || text.includes('빵') || text.includes('케이크') || text.includes('도넛') || text.includes('마카롱') || text.includes('음료') || text.includes('커피') || text.includes('빙수') || text.includes('에그타르트') || text.includes('화과자') || text.includes('아이스크림') || text.includes('티하우스')) return 'food-cafe';
+  if (text.includes('술집') || text.includes('주점') || text.includes('이자카야') || text.includes('포차') || text.includes('와인') || text.includes('맥주') || text.includes('칵테일') || text.includes('펍') || text.includes('하이볼')) return 'food-pub';
+  if (text.includes('삼겹살') || text.includes('고기') || text.includes('식사') || text.includes('레스토랑') || text.includes('맛집') || text.includes('한우') || text.includes('파스타') || text.includes('스시') || text.includes('뷔페') || text.includes('갈비') || text.includes('치킨') || text.includes('피자') || text.includes('돈까스') || text.includes('마라탕') || text.includes('양꼬치') || text.includes('횟집') || text.includes('곱창') || text.includes('통닭') || text.includes('닭발') || text.includes('식사권') || text.includes('족발') || text.includes('보쌈') || text.includes('초밥') || text.includes('샤브샤브') || text.includes('국밥') || text.includes('찌개') || text.includes('냉면') || text.includes('우동') || text.includes('라멘') || text.includes('떡볶이') || text.includes('대게') || text.includes('조개') || text.includes('한정식') || text.includes('정식') || text.includes('칼국수') || text.includes('전골') || text.includes('찜') || text.includes('분식') || text.includes('만두') || text.includes('해장국') || text.includes('곰탕') || text.includes('설렁탕') || text.includes('순대') || text.includes('아구찜') || text.includes('해신탕') || text.includes('갈치') || text.includes('조림') || text.includes('게장') || text.includes('삼계탕') || text.includes('오리') || text.includes('장어') || text.includes('페리카나') || text.includes('교촌') || text.includes('bhc') || text.includes('bbq') || text.includes('쿠우쿠우') || text.includes('애슐리') || text.includes('자유이용권') || text.includes('매장이용권') || text.includes('이용권') || text.includes('제공')) return 'food-restaurant';
+  if (text.includes('밀키트') || text.includes('신선식품') || text.includes('과일') || text.includes('복숭아') || text.includes('수박') || text.includes('두부') || text.includes('어묵') || text.includes('육수') || text.includes('반찬') || text.includes('간식') || text.includes('한우선물') || text.includes('수제') || text.includes('김치') || text.includes('사골')) return 'health-fresh';
+  if (text.includes('화장품') || text.includes('크림') || text.includes('앰플') || text.includes('에센스') || text.includes('세럼') || text.includes('선크림') || text.includes('마스크팩') || text.includes('쿠션') || text.includes('립스틱') || text.includes('뷰티') || text.includes('클렌징') || text.includes('토너') || text.includes('로션') || text.includes('메이크업')) return 'beauty-cosmetic';
+  if (text.includes('헤어') || text.includes('미용실') || text.includes('염색') || text.includes('펌') || text.includes('클리닉') || text.includes('커트') || text.includes('바버') || text.includes('두피')) return 'beauty-hair';
+  if (text.includes('피부') || text.includes('에스테틱') || text.includes('스파') || text.includes('마사지') || text.includes('속눈썹') || text.includes('네일') || text.includes('왁싱') || text.includes('체형') || text.includes('윤곽') || text.includes('리프팅')) return 'beauty-skin';
+  if (text.includes('헬스') || text.includes('피트니스') || text.includes('요가') || text.includes('필라테스') || text.includes('pt') || text.includes('헬스장') || text.includes('운동') || text.includes('골프') || text.includes('테니스') || text.includes('수영')) return 'health-fitness';
+  if (text.includes('영양제') || text.includes('건강식품') || text.includes('비타민') || text.includes('유산균') || text.includes('콜라겐') || text.includes('홍삼') || text.includes('프로틴') || text.includes('다이어트') || text.includes('즙')) return 'health-food';
+  if (text.includes('숙박') || text.includes('호텔') || text.includes('펜션') || text.includes('풀빌라') || text.includes('글램핑') || text.includes('리조트') || text.includes('게스트하우스') || text.includes('모텔') || text.includes('캠핑')) return 'travel-stay';
+  if (text.includes('여행') || text.includes('레저') || text.includes('관광') || text.includes('체험') || text.includes('방탈출') || text.includes('공연') || text.includes('전시') || text.includes('티켓') || text.includes('스튜디오') || text.includes('사진관') || text.includes('가족사진') || text.includes('웨딩') || text.includes('클래스') || text.includes('원데이클래스') || text.includes('아쿠아리움') || text.includes('키즈카페') || text.includes('노래방') || text.includes('렌트카') || text.includes('제주도') || text.includes('데이트')) return 'travel-leisure';
+  if (text.includes('의류') || text.includes('패션') || text.includes('셔츠') || text.includes('티셔츠') || text.includes('원피스') || text.includes('바지') || text.includes('아우터') || text.includes('자켓') || text.includes('코트') || text.includes('속옷') || text.includes('모자')) return 'fashion-clothing';
+  if (text.includes('가방') || text.includes('신발') || text.includes('스니커즈') || text.includes('뉴발란스') || text.includes('나이키') || text.includes('아디다스') || text.includes('구두') || text.includes('지갑') || text.includes('주얼리') || text.includes('목걸이') || text.includes('반지') || text.includes('귀걸이') || text.includes('시계') || text.includes('잡화')) return 'fashion-accessory';
+  if (text.includes('강아지') || text.includes('고양이') || text.includes('반려') || text.includes('애견') || text.includes('사료') || text.includes('애묘') || text.includes('펫')) return 'pet';
+  if (text.includes('육아') || text.includes('유아') || text.includes('아동') || text.includes('기저귀') || text.includes('분유') || text.includes('장난감') || text.includes('유모차') || text.includes('베이비')) return 'baby';
+  if (text.includes('가전') || text.includes('디지털') || text.includes('청소기') || text.includes('드라이기') || text.includes('헤드셋') || text.includes('이어폰') || text.includes('마우스') || text.includes('키보드') || text.includes('거치대') || text.includes('충전기') || text.includes('카메라') || text.includes('짐벌') || text.includes('스피커')) return 'life-appliances';
+  if (text.includes('도서') || text.includes('책') || text.includes('교육') || text.includes('교재') || text.includes('동화')) return 'book';
+  if (text.includes('베개') || text.includes('세제') || text.includes('샴푸') || text.includes('치약') || text.includes('텀블러') || text.includes('경추') || text.includes('물티슈') || text.includes('생활용품') || text.includes('주방용품') || text.includes('인테리어') || text.includes('매트') || text.includes('이불') || text.includes('타월') || text.includes('디퓨저') || text.includes('향수')) return 'life-goods';
   return 'etc';
 }
 
