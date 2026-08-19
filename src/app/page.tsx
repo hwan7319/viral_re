@@ -1954,17 +1954,7 @@ export default function Home() {
             }}
             onClick={() => window.location.reload()}
           />
-          <span className="integrator-badge" style={{
-            fontSize: '0.72rem',
-            padding: '4px 8px',
-            backgroundColor: '#334155',
-            color: '#ffffff',
-            borderRadius: 'var(--radius-sm)',
-            fontWeight: 800,
-            whiteSpace: 'nowrap'
-          }}>
-            INTEGRATOR v1.0
-          </span>
+
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
