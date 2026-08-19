@@ -3347,7 +3347,7 @@ export default function Home() {
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
                   <Icons.Refresh className="animate-spin" style={{ width: '32px', height: '32px', margin: '0 auto 16px auto', color: 'var(--accent)' }} />
                   <p style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)', margin: '0 0 6px 0' }}>
-                    네이버 공식 수치 & 연관검색어 100위 실시간 분석 중...
+                    네이버 공식 수치 & 실시간 연관검색어 정밀 분석 중...
                   </p>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', margin: 0 }}>
                     월간 검색량, 블로그 포스팅 수, 최근 발행일을 정밀 집계하고 있습니다.
@@ -3721,7 +3721,7 @@ export default function Home() {
                     분석하고 싶은 키워드를 입력해 주세요.
                   </p>
                   <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', margin: 0 }}>
-                    월간 검색량, 블로그 포스팅 수, 1~100위 연관 검색어 수치 및 최근 발행일을 한눈에 분석해 드립니다.
+                    월간 검색량, 블로그 포스팅 수, 공식 실시간 연관 검색어 수치 및 최근 발행일을 한눈에 분석해 드립니다.
                   </p>
                 </div>
               )}
