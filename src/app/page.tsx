@@ -1909,7 +1909,7 @@ export default function Home() {
       
       {/* 1. Header (글래스모피즘 헤더) */}
       <header className="glass-panel" style={{
-        position: 'sticky', top: 0, zIndex: 100,
+        position: 'sticky', top: 0, zIndex: 9999,
         padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
