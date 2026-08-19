@@ -1968,14 +1968,13 @@ export default function Home() {
               <span>🔑 키워드마스터</span>
             </button>
 
-            {/* ⚡ 키워드마스터 최상단 100% 선명 오버레이 스마트 툴팁 팝업 */}
+            {/* ⚡ 키워드마스터 전용 최상단 100% 선명 스마트 툴팁 팝업 (키워드마스터 버튼 호버 시에만 단독 동작) */}
             {isKeywordBtnHovered && (
               <div style={{
                 position: 'absolute',
                 top: 'calc(100% + 12px)',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '280px',
+                left: '0',
+                width: '270px',
                 padding: '16px 18px',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: '#0f172a',
@@ -1987,12 +1986,12 @@ export default function Home() {
                 animation: 'fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                 textAlign: 'left'
               }}>
-                {/* 툴팁 상단 선명한 화살표 */}
+                {/* 툴팁 상단 선명한 화살표 (버튼 왼쪽 영역 정렬) */}
                 <div style={{
                   position: 'absolute',
                   top: '-7px',
-                  left: '50%',
-                  transform: 'translateX(-50%) rotate(45deg)',
+                  left: '24px',
+                  transform: 'rotate(45deg)',
                   width: '12px',
                   height: '12px',
                   backgroundColor: '#0f172a',
@@ -2046,7 +2045,6 @@ export default function Home() {
                 userSelect: 'none',
                 transition: 'all 0.2s ease'
               }}
-              title="실시간 60초 자동 동기화 상태 표시 전용 뱃지 (스팸 클릭 서버 부하 방지)"
             >
               <span style={{
                 width: '8px',
