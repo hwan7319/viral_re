@@ -3827,7 +3827,7 @@ export default function Home() {
           
           {/* 브랜드 및 서비스 소개 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem' }}>바이럴리 (viral_re)</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>바이럴리 (viral_re)</span>
             <span style={{ color: 'var(--border-color)' }}>|</span>
             <span style={{ color: 'var(--text-secondary)' }}>실시간 블로그 & 인스타그램 체험단 통합 애그리게이터</span>
           </div>
