@@ -645,9 +645,31 @@ export async function toggleUserBookmark(userId: string, campaignId: string): Pr
 }
 
 // 🔑 검색 로그 기록 저장
-export async function logSearchQuery(keyword: string): Promise<void> {
+// 🔑 검색 유효성 검증 및 오타/어뷰징 방지 필터
+export function isValidSearchKeyword(keyword: string): boolean {
+  const trimmed = keyword.trim().toLowerCase();
+  if (trimmed.length < 2) return false;
+
+  // 완성되지 않은 개별 자음/모음 오타 포함 시 완전 차단 (예: 디ㅓㄴ의여왕, 강나ㅁ, ㄹㅂㄴㅌ)
+  if (/[ㄱ-ㅎㅏ-ㅣ]/.test(trimmed)) return false;
+
+  // 의미 없는 테스트/어뷰징 키워드 필터링
+  const junkList = ['test', 'dummy', 'mock', 'asdf', 'qwer', '1234', 'aaa', 'bbb', 'ccc', '테스트', '더미', '목업'];
+  if (junkList.includes(trimmed)) return false;
+
+  return true;
+}
+
+// 🔑 인기 검색어 포백 시드 목록 (유기적 검색 기록이 부족할 때 자연스럽게 보완해줄 검증된 인기 키워드 10종)
+const DEFAULT_TRENDING_SEED = [
+  '강남맛집', '홍대맛집', '성수카페', '제주도숙박', '밀키트',
+  '피부관리', '수원맛집', '속눈썹', '삼겹살', '스튜디오'
+];
+
+export async function logSearchQuery(keyword: string, hasResults: boolean = true): Promise<void> {
   const trimmed = keyword.trim();
-  if (!trimmed) return;
+  if (!trimmed || !hasResults || !isValidSearchKeyword(trimmed)) return;
+
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
 
   if (isServerless) {
@@ -655,6 +677,9 @@ export async function logSearchQuery(keyword: string): Promise<void> {
       keyword: trimmed,
       searchedAt: new Date().toISOString()
     });
+    if (globalRef.memoryLogs.length > 500) {
+      globalRef.memoryLogs = globalRef.memoryLogs.slice(-300);
+    }
     return;
   }
 
@@ -669,46 +694,49 @@ export async function logSearchQuery(keyword: string): Promise<void> {
   }
 }
 
-// 🔑 실시간 인기 검색어 랭킹 조회 (최근 24시간 내 가장 많이 검색된 상위 10개 키워드)
+// 🔑 실시간 인기 검색어 랭킹 조회 (오타/어뷰징 방지 필터링 + 디폴트 10종 보강)
 export async function getTrendingKeywords(): Promise<{ word: string; count: number }[]> {
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+  let organicList: { word: string; count: number }[] = [];
 
   if (isServerless) {
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    const activeLogs = globalRef.memoryLogs.filter((l: any) => Date.parse(l.searchedAt) >= oneDayAgo);
+    const activeLogs = globalRef.memoryLogs.filter((l: any) => Date.parse(l.searchedAt) >= oneDayAgo && isValidSearchKeyword(l.keyword));
     
     const countsMap = new Map<string, number>();
     activeLogs.forEach((l: any) => {
       countsMap.set(l.keyword, (countsMap.get(l.keyword) || 0) + 1);
     });
     
-    const sorted = Array.from(countsMap.entries())
+    organicList = Array.from(countsMap.entries())
       .map(([word, count]) => ({ word, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-      
-    return sorted;
+      .sort((a, b) => b.count - a.count);
+  } else {
+    try {
+      const db = await getDB();
+      const rows = await db.all<{ keyword: string; cnt: number }[]>(
+        "SELECT keyword, COUNT(*) as cnt FROM search_logs WHERE searchedAt >= datetime('now', '-1 day') GROUP BY keyword ORDER BY cnt DESC LIMIT 20"
+      );
+      organicList = rows
+        .filter(r => isValidSearchKeyword(r.keyword))
+        .map(r => ({ word: r.keyword, count: r.cnt }));
+    } catch (error) {
+      console.error('Failed to get trending keywords:', error);
+    }
   }
 
-  try {
-    const db = await getDB();
-    // 최근 24시간 내 통계 (SQLite의 datetime 비교)
-    const rows = await db.all<{ keyword: string; cnt: number }[]>(
-      `SELECT keyword, COUNT(*) as cnt 
-       FROM search_logs 
-       WHERE searchedAt >= datetime('now', '-1 day')
-       GROUP BY keyword 
-       ORDER BY cnt DESC 
-       LIMIT 10`
-    );
-    return rows.map(r => ({
-      word: r.keyword,
-      count: r.cnt
-    }));
-  } catch (error) {
-    console.error('Failed to get trending keywords:', error);
-    return [];
+  const existingSet = new Set(organicList.map(item => item.word));
+  const resultList = [...organicList];
+
+  for (const seed of DEFAULT_TRENDING_SEED) {
+    if (resultList.length >= 10) break;
+    if (!existingSet.has(seed)) {
+      resultList.push({ word: seed, count: 1 });
+      existingSet.add(seed);
+    }
   }
+
+  return resultList.slice(0, 10);
 }
 
 export async function getTotalCampaignCount(): Promise<number> {

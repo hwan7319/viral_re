@@ -24,8 +24,7 @@ export async function GET(request: NextRequest) {
     // 1. [하이브리드 수집] 검색어 캐시 및 쿨타임 최적화 (불필요한 무한 외부 네트워크 요청 방지)
     let isCrawlingTriggered = false;
     if (search) {
-      // 🔑 실시간 인기 검색어 집계를 위해 검색 로그를 DB에 비동기 기록
-      logSearchQuery(search).catch(err => console.error('Failed to log search:', err));
+
 
       const now = Date.now();
       const lastCrawl = lastCrawlTimeMap.get(search) || 0;
