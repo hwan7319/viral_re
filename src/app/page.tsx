@@ -3827,7 +3827,7 @@ export default function Home() {
           
           {/* 브랜드 및 서비스 소개 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>리뷰모아 (Review Moa)</span>
+            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>바이럴리 (viral_re)</span>
             <span style={{ color: 'var(--border-color)' }}>|</span>
             <span style={{ color: 'var(--text-secondary)' }}>실시간 블로그 & 인스타그램 체험단 통합 애그리게이터</span>
           </div>
@@ -3859,20 +3859,20 @@ export default function Home() {
             </button>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <a 
-              href="mailto:support@review-moa.com"
+              href="mailto:kusie@naver.com"
               style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}
             >
-              고객문의: support@review-moa.com
+              고객문의: kusie@naver.com
             </a>
           </div>
 
           {/* 정보제공 면책 & 저작권 고지 문구 */}
           <p style={{ margin: '8px 0 0 0', fontSize: '0.76rem', color: 'var(--text-tertiary)', maxWidth: '840px', lineHeight: 1.5 }}>
-            리뷰모아는 정보 제공 애그리게이터 플랫폼으로서 각 플랫폼의 공개 체험단 정보를 수집하여 제공합니다. 각 캠페인의 모집, 당첨자 선정, 제품/서비스 혜택 지급 및 가이드라인의 책임은 해당 출처 사이트에 있으며, 원본 정보 및 썸네일 이미지에 대한 상표권과 저작권은 각 원작성자 및 제휴 제공처에 있습니다.
+            바이럴리는 정보 제공 애그리게이터 플랫폼으로서 각 플랫폼의 공개 체험단 정보를 수집하여 제공합니다. 각 캠페인의 모집, 당첨자 선정, 제품/서비스 혜택 지급 및 가이드라인의 책임은 해당 출처 사이트에 있으며, 원본 정보 및 썸네일 이미지에 대한 상표권과 저작권은 각 원작성자 및 제휴 제공처에 있습니다.
           </p>
 
           <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
-            &copy; {new Date().getFullYear()} 리뷰모아 (Review Moa). All rights reserved.
+            &copy; {new Date().getFullYear()} 바이럴리 (viral_re). All rights reserved.
           </p>
         </div>
       </footer>
@@ -3894,7 +3894,7 @@ export default function Home() {
               <button onClick={() => setIsTermsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>✕</button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-secondary)', paddingRight: '6px' }}>
-              <p><strong>제1조 (목적)</strong><br />본 약관은 리뷰모아(이하 "서비스")가 제공하는 체험단 정보 통합 검색 및 정보 제공 서비스의 이용조건 및 절차, 이용자와 서비스 간의 권리와 의무를 규정함을 목적으로 합니다.</p>
+              <p><strong>제1조 (목적)</strong><br />본 약관은 바이럴리(이하 "서비스")가 제공하는 체험단 정보 통합 검색 및 정보 제공 서비스의 이용조건 및 절차, 이용자와 서비스 간의 권리와 의무를 규정함을 목적으로 합니다.</p>
               <p><strong>제2조 (서비스의 내용)</strong><br />1. 서비스는 블로그, 인스타그램 등 온라인 플랫폼의 공개 체험단 정보를 수집하여 모아보기 기능을 제공합니다.<br />2. 서비스에서 제공하는 캠페인 정보는 원본 수집처의 사정에 따라 실시간 정보와 차이가 발생할 수 있습니다.</p>
               <p><strong>제3조 (이용자의 의무)</strong><br />1. 이용자는 서비스를 이용함에 있어 관계 법령 및 본 약관의 규정을 준수하여야 합니다.<br />2. 이용자는 서비스를 통해 얻은 정보를 사전 승인 없이 무단 복제, 전재, 배포할 수 없습니다.</p>
               <p><strong>제4조 (서비스의 변경 및 중지)</strong><br />서비스는 컴퓨터 등 정보통신설비의 보수점검, 교체 및 고장, 통신의 두절 등의 사유가 발생한 경우에는 서비스의 제공을 일시적으로 중단할 수 있습니다.</p>
@@ -3920,7 +3920,7 @@ export default function Home() {
               <button onClick={() => setIsPrivacyModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>✕</button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-secondary)', paddingRight: '6px' }}>
-              <p>리뷰모아(이하 "서비스")는 이용자의 개인정보보호를 매우 중요시하며, 「개인정보 보호법」 등 관련 법령을 준수합니다.</p>
+              <p>바이럴리(이하 "서비스")는 이용자의 개인정보보호를 매우 중요시하며, 「개인정보 보호법」 등 관련 법령을 준수합니다.</p>
               <p><strong>1. 수집하는 개인정보 항목</strong><br />- 소셜 로그인 시: 닉네임, 이메일 주소, 프로필 이미지 URL<br />- 서비스 이용 시: 서비스 이용 기록, 접속 로그, 쿠키</p>
               <p><strong>2. 개인정보의 수집 및 이용 목적</strong><br />- 회원 식별 및 소셜 로그인 연동<br />- 관심 캠페인 찜하기(북마크) 개인화 서비스 제공<br />- 신규 기능 안내 및 서비스 품질 개선</p>
               <p><strong>3. 개인정보의 보유 및 파기 기간</strong><br />이용자의 개인정보는 회원 탈퇴 시 또는 수집 및 이용 목적이 달성되면 지체 없이 파기합니다.</p>
@@ -3947,8 +3947,8 @@ export default function Home() {
               <button onClick={() => setIsDisclaimerModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>✕</button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-secondary)', paddingRight: '6px' }}>
-              <p><strong>1. 정보 제공 애그리게이터 면책</strong><br />리뷰모아는 각 체험단 서비스의 공개 정보를 실시간 수집하여 모아보기 기능을 제공하는 애그리게이터 플랫폼입니다. 당사는 수집된 정보의 실시간 정확성이나 완전성을 보증하지 않습니다.</p>
-              <p><strong>2. 캠페인 관련 계약 및 당첨 책의 면책</strong><br />체험단 신청, 당첨자 선정, 상품 및 혜택 지급의 의무는 해당 출처 중개 사이트 및 광고주에 있습니다. 리뷰모아는 당사의 고의 또는 중과실이 없는 한 캠페인 신청 및 이용 과정에서 발생한 분쟁이나 손해에 대해 책임을 지지 않습니다.</p>
+              <p><strong>1. 정보 제공 애그리게이터 면책</strong><br />바이럴리는 각 체험단 서비스의 공개 정보를 실시간 수집하여 모아보기 기능을 제공하는 애그리게이터 플랫폼입니다. 당사는 수집된 정보의 실시간 정확성이나 완전성을 보증하지 않습니다.</p>
+              <p><strong>2. 캠페인 관련 계약 및 당첨 책의 면책</strong><br />체험단 신청, 당첨자 선정, 상품 및 혜택 지급의 의무는 해당 출처 중개 사이트 및 광고주에 있습니다. 바이럴리는 당사의 고의 또는 중과실이 없는 한 캠페인 신청 및 이용 과정에서 발생한 분쟁이나 손해에 대해 책임을 지지 않습니다.</p>
               <p><strong>3. 상표권 및 저작권 고지</strong><br />본 사이트에서 제공되는 원본 출처 사이트명, 로고, 썸네일 이미지 및 리뷰어 가이드라인에 대한 지적 재산권과 상표권은 해당 원출처 제공처 및 작성자에게 있습니다.</p>
             </div>
           </div>
