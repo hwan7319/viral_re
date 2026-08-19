@@ -924,10 +924,10 @@ export default function Home() {
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { key: 'food-korean', label: '한식/고기' },
-                    { key: 'food-western', label: '양식/파스타' },
-                    { key: 'food-japanese', label: '일식/초밥' },
-                    { key: 'food-chinese', label: '중식/마라탕' },
+                    { key: 'food-korean', label: '한식' },
+                    { key: 'food-western', label: '양식' },
+                    { key: 'food-japanese', label: '일식' },
+                    { key: 'food-chinese', label: '중식' },
                     { key: 'food-cafe', label: '카페/디저트' },
                     { key: 'food-pub', label: '술집/주점' },
                   ].map(c => (
