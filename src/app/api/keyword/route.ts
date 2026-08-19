@@ -178,8 +178,8 @@ export async function GET(request: Request) {
       });
     }
 
-    // 만약 네이버 자동완성 및 검색광고 결과가 20개 미만인 경우(예: '치킨' 등 단편 키워드),
-    // 네이버 상위 블로그 문서 제목에서 실제 가장 자주 쓰이는 순수 관련 단어 보충 추출
+    // 만약 네이버 자동완성 및 검색광고 결과가 20개 미만인 경우(예: '치킨', '하이닉스' 등 단편 키워드),
+    // 네이버 상위 블로그 문서 제목에서 한국어 조사(가/는/은/를/을/에/에서/도/로/의/이 등)를 정밀 제거한 순수 명사 키워드 추출
     if (wordSet.size < 20) {
       try {
         const blogUrl = `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(query)}&display=25&sort=sim`;
@@ -191,23 +191,39 @@ export async function GET(request: Request) {
           timeout: 2000,
         });
 
+        const particlesRegex = /(에서는|에서|으로|부터|까지|한테|라고|가|는|은|를|을|에|도|로|와|과|의|이)$/;
+
         if (blogRes.data && blogRes.data.items) {
           blogRes.data.items.forEach((item: any) => {
             if (item.title) {
-              const cleanTitle = item.title.replace(/<[^>]*>/g, '').replace(/[^\w\s가-힣]/g, ' ');
-              const words = cleanTitle.split(/\s+/);
-              words.forEach((w: string) => {
-                const trimmedWord = w.trim();
+              const cleanTitle = item.title
+                .replace(/<[^>]*>/g, '')
+                .replace(/&(quot|amp|lt|gt|nbsp);/gi, ' ')
+                .replace(/[^\w\s가-힣]/g, ' ');
+
+              const rawWords = cleanTitle.split(/\s+/);
+              const cleanWords = rawWords
+                .map((w: string) => w.trim().replace(particlesRegex, ''))
+                .filter((w: string) => w.length >= 2 && !/^(quot|amp|lt|gt|nbsp)$/i.test(w));
+
+              cleanWords.forEach((w: string) => {
                 if (
-                  trimmedWord.includes(query) &&
-                  trimmedWord !== query &&
-                  trimmedWord.length >= query.length + 1 &&
-                  trimmedWord.length <= 15 &&
-                  !/^[0-9]+$/.test(trimmedWord)
+                  w.includes(query) &&
+                  w !== query &&
+                  w.length >= query.length + 1 &&
+                  w.length <= 15 &&
+                  !/^[0-9]+$/.test(w)
                 ) {
-                  wordSet.add(trimmedWord);
+                  wordSet.add(w);
                 }
               });
+
+              for (let i = 0; i < cleanWords.length - 1; i++) {
+                const pair = `${cleanWords[i]} ${cleanWords[i + 1]}`.trim();
+                if (pair.includes(query) && pair !== query && pair.length >= query.length + 2 && pair.length <= 20) {
+                  wordSet.add(pair);
+                }
+              }
             }
           });
         }
