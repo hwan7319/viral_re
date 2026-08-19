@@ -1221,6 +1221,7 @@ export default function Home() {
 
   // 🔑 키워드마스터 모달 및 분석 데이터 상태
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
+  const [isKeywordBtnHovered, setIsKeywordBtnHovered] = useState(false);
   const [keywordQuery, setKeywordQuery] = useState('');
   const [keywordData, setKeywordData] = useState<any>(null);
   const [isKeywordLoading, setIsKeywordLoading] = useState(false);
@@ -1937,31 +1938,95 @@ export default function Home() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
-          <button
-            onClick={() => {
-              setKeywordQuery('');
-              setKeywordData(null);
-              setIsKeywordModalOpen(true);
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 14px',
-              fontSize: '0.82rem',
-              fontWeight: 800,
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: '#4f46e5',
-              color: '#ffffff',
-              border: '1.5px solid #4338ca',
-              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
-            }}
-            title="네이버 키워드 월간 검색량 & 블로그 경쟁도 실시간 분석"
-          >
-            <span>🔑 키워드마스터</span>
-          </button>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              onMouseEnter={() => setIsKeywordBtnHovered(true)}
+              onMouseLeave={() => setIsKeywordBtnHovered(false)}
+              onClick={() => {
+                setKeywordQuery('');
+                setKeywordData(null);
+                setIsKeywordModalOpen(true);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#4f46e5',
+                color: '#ffffff',
+                border: '1.5px solid #4338ca',
+                boxShadow: isKeywordBtnHovered ? '0 4px 14px rgba(79, 70, 229, 0.45)' : '0 2px 8px rgba(79, 70, 229, 0.25)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                transform: isKeywordBtnHovered ? 'translateY(-1px) scale(1.02)' : 'none'
+              }}
+            >
+              <span>🔑 키워드마스터</span>
+            </button>
+
+            {/* ⚡ 키워드마스터 호버 전용 스마트 툴팁 팝업 */}
+            {isKeywordBtnHovered && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 12px)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '270px',
+                padding: '14px 16px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'rgba(15, 23, 42, 0.96)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(99, 102, 241, 0.4)',
+                boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 0 15px rgba(79, 70, 229, 0.25)',
+                color: '#f8fafc',
+                zIndex: 9999,
+                pointerEvents: 'none',
+                animation: 'fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                textAlign: 'left'
+              }}>
+                {/* 툴팁 상단 화살표 */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  left: '50%',
+                  transform: 'translateX(-50%) rotate(45deg)',
+                  width: '10px',
+                  height: '10px',
+                  backgroundColor: 'rgba(15, 23, 42, 0.96)',
+                  borderLeft: '1px solid rgba(99, 102, 241, 0.4)',
+                  borderTop: '1px solid rgba(99, 102, 241, 0.4)',
+                }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.12)', paddingBottom: '6px' }}>
+                  <span style={{ fontSize: '0.95rem' }}>🔑</span>
+                  <span style={{ fontWeight: 800, fontSize: '0.84rem', color: '#818cf8', letterSpacing: '-0.01em' }}>키워드마스터 주요 기능</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.85rem' }}>🔍</span> <span><strong>월간 총 검색량</strong> (PC / 모바일 실시간)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.85rem' }}>⚖️</span> <span><strong>경쟁비율 & 등급</strong> (🟢황금/🟡보통/🔴포화)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.85rem' }}>🔗</span> <span><strong>네이버 공식 연관검색어</strong> 실데이터 수집</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.85rem' }}>🥇</span> <span><strong>상위 노출 블로그</strong> TOP 10 실시간 분석</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed rgba(255, 255, 255, 0.12)', fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>
+                  👉 클릭 시 세부 키워드 분석 모달 열기
+                </div>
+              </div>
+            )}
+          </div>
           <div style={{ position: 'relative' }}>
             <div 
               className="mobile-hide-sync-badge"
