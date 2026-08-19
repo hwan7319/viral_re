@@ -1974,7 +1974,7 @@ export default function Home() {
                 position: 'absolute',
                 top: 'calc(100% + 12px)',
                 left: '0',
-                width: '270px',
+                width: '335px',
                 padding: '16px 18px',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: '#0f172a',
@@ -3330,7 +3330,7 @@ export default function Home() {
           padding: '16px'
         }}>
           <div className="glass-panel" style={{
-            width: '95%', maxWidth: '1080px', maxHeight: '94vh',
+            width: '95%', maxWidth: '1280px', maxHeight: '94vh',
             backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
