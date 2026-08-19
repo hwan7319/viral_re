@@ -1909,7 +1909,7 @@ export default function Home() {
       
       {/* 1. Header (글래스모피즘 헤더) */}
       <header className="glass-panel" style={{
-        position: 'sticky', top: 0, zIndex: 50,
+        position: 'sticky', top: 0, zIndex: 100,
         padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1968,60 +1968,59 @@ export default function Home() {
               <span>🔑 키워드마스터</span>
             </button>
 
-            {/* ⚡ 키워드마스터 호버 전용 스마트 툴팁 팝업 */}
+            {/* ⚡ 키워드마스터 최상단 100% 선명 오버레이 스마트 툴팁 팝업 */}
             {isKeywordBtnHovered && (
               <div style={{
                 position: 'absolute',
                 top: 'calc(100% + 12px)',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                width: '270px',
-                padding: '14px 16px',
+                width: '280px',
+                padding: '16px 18px',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'rgba(15, 23, 42, 0.96)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(99, 102, 241, 0.4)',
-                boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 0 15px rgba(79, 70, 229, 0.25)',
-                color: '#f8fafc',
-                zIndex: 9999,
+                backgroundColor: '#0f172a',
+                border: '2px solid #6366f1',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(99, 102, 241, 0.4)',
+                color: '#ffffff',
+                zIndex: 999999,
                 pointerEvents: 'none',
                 animation: 'fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                 textAlign: 'left'
               }}>
-                {/* 툴팁 상단 화살표 */}
+                {/* 툴팁 상단 선명한 화살표 */}
                 <div style={{
                   position: 'absolute',
-                  top: '-6px',
+                  top: '-7px',
                   left: '50%',
                   transform: 'translateX(-50%) rotate(45deg)',
-                  width: '10px',
-                  height: '10px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.96)',
-                  borderLeft: '1px solid rgba(99, 102, 241, 0.4)',
-                  borderTop: '1px solid rgba(99, 102, 241, 0.4)',
+                  width: '12px',
+                  height: '12px',
+                  backgroundColor: '#0f172a',
+                  borderLeft: '2px solid #6366f1',
+                  borderTop: '2px solid #6366f1',
                 }} />
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.12)', paddingBottom: '6px' }}>
-                  <span style={{ fontSize: '0.95rem' }}>🔑</span>
-                  <span style={{ fontWeight: 800, fontSize: '0.84rem', color: '#818cf8', letterSpacing: '-0.01em' }}>키워드마스터 주요 기능</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
+                  <span style={{ fontSize: '1rem' }}>🔑</span>
+                  <span style={{ fontWeight: 900, fontSize: '0.88rem', color: '#a5b4fc', letterSpacing: '-0.01em' }}>키워드마스터 주요 기능</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.4 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.85rem' }}>🔍</span> <span><strong>월간 총 검색량</strong> (PC / 모바일 실시간)</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: '#f1f5f9', lineHeight: 1.45 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.9rem' }}>🔍</span> <span><strong style={{ color: '#38bdf8' }}>월간 총 검색량</strong> (PC / 모바일 실시간)</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.85rem' }}>⚖️</span> <span><strong>경쟁비율 & 등급</strong> (🟢황금/🟡보통/🔴포화)</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.9rem' }}>⚖️</span> <span><strong style={{ color: '#4ade80' }}>경쟁비율 & 등급</strong> (🟢황금 / 🟡보통 / 🔴포화)</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.85rem' }}>🔗</span> <span><strong>네이버 공식 연관검색어</strong> 실데이터 수집</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.9rem' }}>🔗</span> <span><strong style={{ color: '#fbbf24' }}>네이버 공식 연관검색어</strong> 실데이터 수집</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.85rem' }}>🥇</span> <span><strong>상위 노출 블로그</strong> TOP 10 실시간 분석</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.9rem' }}>🥇</span> <span><strong style={{ color: '#f472b6' }}>상위 노출 블로그</strong> TOP 10 실시간 분석</span>
                   </div>
                 </div>
 
-                <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed rgba(255, 255, 255, 0.12)', fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>
+                <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #334155', fontSize: '0.72rem', color: '#cbd5e1', textAlign: 'center', fontWeight: 700 }}>
                   👉 클릭 시 세부 키워드 분석 모달 열기
                 </div>
               </div>
