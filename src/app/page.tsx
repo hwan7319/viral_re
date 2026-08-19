@@ -828,7 +828,7 @@ export default function Home() {
         {/* 모집 유형 상세 패널 */}
         {isTypeOpen && (
           <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
-            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 📋 모집 유형 선택
               </h3>
@@ -883,7 +883,7 @@ export default function Home() {
         {/* 카테고리 상세 패널 */}
         {isCategoryOpen && (
           <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
-            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 🏷️ 카테고리 선택
               </h3>
@@ -892,7 +892,7 @@ export default function Home() {
             <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🍽️ 맛집 / 디저트 / 주점
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -911,7 +911,7 @@ export default function Home() {
               </div>
               {/* 뷰티/미용/헬스 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   ✨ 뷰티 / 미용 / 헬스
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -931,7 +931,7 @@ export default function Home() {
               </div>
               {/* 여행/숙박/문화 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🧭 여행 / 숙박 / 문화
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -949,7 +949,7 @@ export default function Home() {
               </div>
               {/* 패션/생활/디지털/기타 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🛍️ 패션 / 생활 / 디지털 / 펫 / 기타
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
@@ -979,7 +979,7 @@ export default function Home() {
         {/* 플랫폼 상세 패널 */}
         {isPlatformOpen && (
           <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column' }} onMouseEnter={handleFilterAreaEnter}>
-            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 🌐 플랫폼 선택
               </h3>
@@ -1058,7 +1058,7 @@ export default function Home() {
         {/* 지역 상세 패널 */}
         {isLocationOpen && (
           <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
-            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)', width: '100%' }}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 📍 지역 검색 선택
               </h3>
