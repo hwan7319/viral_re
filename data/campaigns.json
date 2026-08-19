@@ -333068,43 +333068,5 @@
     "updatedAt": "2026-08-18T05:00:27.824Z",
     "searchKeywords": ",골뱅이,",
     "mission": null
-  },
-  {
-    "id": "audit_sync_1787038728963",
-    "title": "[직접 검증] 동기화 엔진 정상 작동 테스트 (수정됨)",
-    "description": "10만원 무료 시식권 및 혜택 지원",
-    "platform": "blog",
-    "category": "etc",
-    "location": null,
-    "campaignUrl": "https://revu.net/campaign/audit-sync-test",
-    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
-    "targetSite": "레뷰",
-    "limitCount": 15,
-    "applyCount": 43,
-    "startDate": null,
-    "endDate": "2026-08-31",
-    "createdAt": "2026-08-18T07:38:48.963Z",
-    "updatedAt": "2026-08-18T07:38:49.118Z",
-    "searchKeywords": ",동기화,테스트,",
-    "mission": null
-  },
-  {
-    "id": "route_sync_test_1787038734654",
-    "title": "[API 핸들러] 실시간 라우터 동기화 검증",
-    "description": "3만원 시식권",
-    "platform": "blog",
-    "category": "etc",
-    "location": null,
-    "campaignUrl": "https://revu.net/campaign/route-sync-test",
-    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
-    "targetSite": "레뷰",
-    "limitCount": 5,
-    "applyCount": 12,
-    "startDate": null,
-    "endDate": "2026-08-31",
-    "createdAt": "2026-08-18T07:38:54.654Z",
-    "updatedAt": "2026-08-18T07:38:54.656Z",
-    "searchKeywords": null,
-    "mission": null
   }
 ]
