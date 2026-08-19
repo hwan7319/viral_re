@@ -99,6 +99,33 @@ const NaverClipIcon = ({ size = 16 }: { size?: number }) => (
 
 // 🎨 카테고리별 세련된 벡터 SVG 아이콘 매핑
 const CategorySvgIcons: Record<string, React.ReactNode> = {
+  'food-korean': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z" />
+      <line x1="6" y1="1" x2="6" y2="4" />
+      <line x1="10" y1="1" x2="10" y2="4" />
+      <line x1="14" y1="1" x2="14" y2="4" />
+    </svg>
+  ),
+  'food-western': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  ),
+  'food-japanese': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="4" fill="#ec4899" />
+    </svg>
+  ),
+  'food-chinese': (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 2 22 22 22 12 2" />
+      <line x1="12" y1="6" x2="12" y2="18" />
+    </svg>
+  ),
   'food-restaurant': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
@@ -897,8 +924,10 @@ export default function Home() {
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
-                    { key: 'food-restaurant', label: '한식/맛집' },
-                    { key: 'food-foreign', label: '양식/일식/중식' },
+                    { key: 'food-korean', label: '한식/고기' },
+                    { key: 'food-western', label: '양식/파스타' },
+                    { key: 'food-japanese', label: '일식/초밥' },
+                    { key: 'food-chinese', label: '중식/마라탕' },
                     { key: 'food-cafe', label: '카페/디저트' },
                     { key: 'food-pub', label: '술집/주점' },
                   ].map(c => (

@@ -1,7 +1,11 @@
 export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
-  'food': ['food', 'food-restaurant', 'food-cafe', 'food-pub', 'food-foreign', '맛집'],
-  'food-restaurant': ['food-restaurant', 'food-foreign', 'food', '맛집'],
-  'food-foreign': ['food-foreign', 'food-restaurant', 'food', '맛집'],
+  'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-foreign', '맛집'],
+  'food-korean': ['food-korean', 'food-restaurant', 'food', '맛집'],
+  'food-western': ['food-western', 'food-foreign', 'food', '맛집'],
+  'food-japanese': ['food-japanese', 'food-foreign', 'food', '맛집'],
+  'food-chinese': ['food-chinese', 'food-foreign', 'food', '맛집'],
+  'food-restaurant': ['food-restaurant', 'food-korean', 'food', '맛집'],
+  'food-foreign': ['food-foreign', 'food-western', 'food-japanese', 'food-chinese', 'food', '맛집'],
   'food-cafe': ['food-cafe', 'food', '디저트'],
   'food-pub': ['food-pub', 'food', '주점'],
 
