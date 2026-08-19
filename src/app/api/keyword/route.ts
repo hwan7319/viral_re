@@ -26,30 +26,38 @@ function parseSearchAdVolume(val: any): number {
   return 0;
 }
 
-// 🔑 네이버 블로그 검색 API로 포스팅 수 및 최근 발행일 단건 조회
-async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string) {
-  try {
-    const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
-      params: { query: keyword, display: 1, sort: 'date' },
-      headers: {
-        'X-Naver-Client-Id': clientId,
-        'X-Naver-Client-Secret': clientSecret,
-      },
-      timeout: 2500,
-      httpsAgent,
-    });
-    const totalPosts = res.data.total || 0;
-    let recentDate = '-';
-    if (res.data.items && res.data.items.length > 0) {
-      const rawDate = res.data.items[0].postdate; // YYYYMMDD
-      if (rawDate && rawDate.length === 8) {
-        recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
+// 🔑 네이버 블로그 검색 API로 포스팅 수 및 최근 발행일 단건 조회 (429 Rate Limit 재시도 및 백오프 적용)
+async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
+        params: { query: keyword, display: 1, sort: 'date' },
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        },
+        timeout: 2500,
+        httpsAgent,
+      });
+      const totalPosts = res.data.total || 0;
+      let recentDate = '-';
+      if (res.data.items && res.data.items.length > 0) {
+        const rawDate = res.data.items[0].postdate; // YYYYMMDD
+        if (rawDate && rawDate.length === 8) {
+          recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
+        }
+      }
+      return { totalPosts, recentDate };
+    } catch (e: any) {
+      if (e.response && e.response.status === 429 && i < retries - 1) {
+        await new Promise((r) => setTimeout(r, 120 * (i + 1)));
+      } else {
+        break;
       }
     }
-    return { totalPosts, recentDate };
-  } catch (e) {
-    return { totalPosts: 0, recentDate: '-' };
   }
+  return { totalPosts: 0, recentDate: '-' };
 }
 
 export async function GET(request: Request) {
@@ -209,9 +217,9 @@ export async function GET(request: Request) {
     // 네이버 공식 추천 연관어 상위 순위 실데이터만 최대 15~20개 수집
     const candidateKeywords = Array.from(wordSet).slice(0, 20);
 
-    // 4. 추출된 연관 검색어 병렬 정밀 분석
+    // 4. 추출된 연관 검색어 병렬 정밀 분석 (4개 단위 청크 슬라이싱 + 60ms 딜레이로 네이버 429 차단 완전 방지)
     const relatedListRaw: any[] = [];
-    const chunkSize = 20;
+    const chunkSize = 4;
 
     for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
       const chunk = candidateKeywords.slice(i, i + chunkSize);
@@ -281,6 +289,9 @@ export async function GET(request: Request) {
         })
       );
       relatedListRaw.push(...chunkResults);
+      if (i + chunkSize < candidateKeywords.length) {
+        await new Promise((r) => setTimeout(r, 60));
+      }
     }
 
     // 연관 검색어 순위 부여 (1위~100위)
