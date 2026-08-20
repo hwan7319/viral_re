@@ -540,7 +540,7 @@ export default function Home() {
         setIsMissionLoading(true);
       }
 
-      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}`)
+      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}&title=${encodeURIComponent(selectedCampaign.title)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {

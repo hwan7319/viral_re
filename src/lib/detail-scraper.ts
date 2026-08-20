@@ -82,30 +82,67 @@ export function formatMissionText(text: string): string {
 }
 
 // 🔑 원본 상세 페이지의 진짜 지원 현황(applyCount / limitCount) 스크레이퍼
-export async function scrapeDetailCounts(url: string, targetSite: string): Promise<{ applyCount?: number; limitCount?: number }> {
+export async function scrapeDetailCounts(url: string, targetSite: string, title?: string): Promise<{ applyCount?: number; limitCount?: number }> {
   if (!url) return {};
   try {
+    const siteLower = (targetSite || '').toLowerCase();
+
+    // 1. 리뷰노트 -> API 직접 호출 (CID 및 Title 키워드 2단계 검색)
+    if (siteLower.includes('리뷰노트') || url.includes('reviewnote.co.kr')) {
+      const cid = url.split('/').pop()?.replace(/[^0-9]/g, '');
+      const searchKeywords: string[] = [];
+      if (cid) searchKeywords.push(cid);
+      if (title) {
+        const cleanTitle = title.replace(/\[.*?\]/g, '').trim().split(' ')[0];
+        if (cleanTitle && cleanTitle.length >= 2) searchKeywords.push(cleanTitle);
+      }
+
+      for (const kw of searchKeywords) {
+        try {
+          const apiRes = await axios.get(`https://www.reviewnote.co.kr/api/v2/campaigns?search=${encodeURIComponent(kw)}&limit=30`, {
+            headers: {
+              ...HEADERS,
+              'Referer': 'https://www.reviewnote.co.kr/campaigns',
+              'Origin': 'https://www.reviewnote.co.kr'
+            },
+            timeout: 4000
+          });
+          const list = apiRes.data?.objects;
+          if (Array.isArray(list) && list.length > 0) {
+            const found = list.find((item: any) => String(item.id) === String(cid) || (title && item.title?.includes(title)));
+            if (found) {
+              return {
+                applyCount: found.applicantCount !== undefined ? Number(found.applicantCount) : 0,
+                limitCount: found.infNum !== undefined ? Number(found.infNum) : 5
+              };
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    // 2. 일반 사이트 HTML 스크레이핑
     const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
     const html = res.data;
     if (typeof html !== 'string') return {};
 
     const $ = cheerio.load(html);
-    const siteLower = (targetSite || '').toLowerCase();
 
-    // 1. 포블로그 -> .reviewerCnt 또는 .cat-right-cnt 또는 신청자(N)/선정자(N)
+    // 2-1. 포블로그 -> .reviewerCnt 또는 .cat-right-cnt 또는 신청자(N)/선정자(N)
     if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
       const cntText = $('.reviewerCnt, .cat-right-cnt, #requestsLegacy, .nav-tabs, body').text().replace(/\s+/g, ' ').trim();
-      const match = cntText.match(/신청\s*(\d+)\s*\/\s*(\d+)/i) || cntText.match(/신청자\s*\(\s*(\d+)\s*\).*?선정자\s*\(\s*(\d+)\s*\)/i);
+      const match = cntText.match(/신청\s*([\d,]+)\s*\/\s*([\d,]+)/i) || cntText.match(/신청자\s*\(\s*([\d,]+)\s*\).*?선정자\s*\(\s*([\d,]+)\s*\)/i);
       if (match) {
-        const applyCount = parseInt(match[1], 10);
-        const limitCount = match[2] ? parseInt(match[2], 10) : undefined;
+        const applyCount = parseInt(match[1].replace(/,/g, ''), 10);
+        const limitCount = match[2] ? parseInt(match[2].replace(/,/g, ''), 10) : undefined;
         if (!isNaN(applyCount)) {
           return { applyCount, limitCount: limitCount && !isNaN(limitCount) ? limitCount : undefined };
         }
       }
     }
-    // 2. 디너의여왕 -> 해당 campaign ID와 exact 매칭되는 apply_badge 정밀 조준
-    else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
+
+    // 2-2. 디너의여왕 -> apply_badge 또는 캡션 내 신청 N / 모집 N
+    if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
       const dqId = url.split('/').pop() || '';
       let targetBadgeText = '';
       
@@ -120,21 +157,42 @@ export async function scrapeDetailCounts(url: string, targetSite: string): Promi
         });
       }
       if (!targetBadgeText) {
-        targetBadgeText = $('.apply_badge').first().text().trim() || $('body').text();
+        targetBadgeText = $('.apply_badge').first().text().trim() || $('.qz-caption-kr').text() || $('body').text();
       }
       
-      const match = targetBadgeText.match(/신청\s*(\d+)\s*\/\s*모집\s*(\d+)/i);
+      const match = targetBadgeText.match(/신청\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
       if (match) {
-        return { applyCount: parseInt(match[1], 10), limitCount: parseInt(match[2], 10) };
+        return {
+          applyCount: parseInt(match[1].replace(/,/g, ''), 10),
+          limitCount: parseInt(match[2].replace(/,/g, ''), 10)
+        };
       }
     }
-    // 3. 강남맛집 -> .item_info .numb
-    else if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
-      const text = $('.item_info .numb').text().trim() || $('#cmp_guide').text();
-      const match = text.match(/신청\s*(\d+)\s*\/\s*모집\s*(\d+)/i);
+
+    // 2-3. 강남맛집 -> .item_info .numb, .c_tab, 또는 신청자 N/M, 신청 N / 모집 M
+    if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
+      const text = $('.c_tab').text().trim() || $('.item_info .numb').text().trim() || $('#cmp_guide').text() || $('body').text();
+      const match = text.match(/신청자?\s*([\d,]+)\s*[\/|모집]\s*([\d,]+)/i) || text.match(/신청자?\s*([\d,]+)\s*\/\s*([\d,]+)/i);
       if (match) {
-        return { applyCount: parseInt(match[1], 10), limitCount: parseInt(match[2], 10) };
+        return {
+          applyCount: parseInt(match[1].replace(/,/g, ''), 10),
+          limitCount: parseInt(match[2].replace(/,/g, ''), 10)
+        };
       }
+    }
+
+    // 2-4. 범용 매처 (레뷰, 체험뷰, 링블, 아싸뷰, 클라우드리뷰 등 17대 매체 공통 파서)
+    const fullText = $('body').text().replace(/\s+/g, ' ');
+    const generalMatch = 
+      fullText.match(/신청자?\s*([\d,]+)\s*[\/|명\s*모집|모집]\s*([\d,]+)/i) ||
+      fullText.match(/신청\s*([\d,]+)\s*명\s*\/\s*모집\s*([\d,]+)\s*명/i) ||
+      fullText.match(/지원자?\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
+
+    if (generalMatch) {
+      return {
+        applyCount: parseInt(generalMatch[1].replace(/,/g, ''), 10),
+        limitCount: parseInt(generalMatch[2].replace(/,/g, ''), 10)
+      };
     }
   } catch (err: any) {
     console.warn(`[Detail-Counts-Scraper] Failed for ${url}:`, err.message);

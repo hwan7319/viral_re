@@ -338,13 +338,17 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
     // 4. 리뷰노트
     (async () => {
       try {
-        const rnUrl = `https://www.reviewnote.co.kr/campaigns`;
-        const response = await axios.get(rnUrl, { headers: HEADERS, timeout: 5000 });
-        const html = response.data;
-        const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-        if (nextDataMatch) {
-          const nextData = JSON.parse(nextDataMatch[1]);
-          const campaignList = nextData.props?.pageProps?.data?.objects || nextData.props?.pageProps?.campaigns?.data || [];
+        const rnApiUrl = `https://www.reviewnote.co.kr/api/v2/campaigns?search=${encodedKeyword}&limit=96`;
+        const response = await axios.get(rnApiUrl, {
+          headers: {
+            ...HEADERS,
+            'Referer': 'https://www.reviewnote.co.kr/campaigns',
+            'Origin': 'https://www.reviewnote.co.kr'
+          },
+          timeout: 6000
+        });
+        const campaignList = response.data?.objects;
+        if (Array.isArray(campaignList)) {
           campaignList.forEach((c: any) => {
             const id = `rn-${c.id}`;
             const title = c.title || '';

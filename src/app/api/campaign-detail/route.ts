@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const url = searchParams.get('url');
     const targetSite = searchParams.get('targetSite') || '';
     const campaignId = searchParams.get('id');
+    const title = searchParams.get('title') || '';
 
     if (!url) {
       return NextResponse.json({ success: false, error: 'URL parameter is required' }, { status: 400 });
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     const [mission, realBenefit, counts] = await Promise.all([
       scrapeDetailMission(url, targetSite),
       scrapeDetailBenefit(url, targetSite),
-      scrapeDetailCounts(url, targetSite)
+      scrapeDetailCounts(url, targetSite, title)
     ]);
 
     // 🔑 DB 실시간 백그라운드 동기화 (Sync Back to DB - mission, description, applyCount, limitCount 전수 수복)
