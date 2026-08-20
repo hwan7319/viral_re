@@ -453,6 +453,16 @@ export default function Home() {
     return Math.max(0, diffSec);
   }, [setNextSyncTimestamp]);
 
+  // 🔑 사용자의 현재 검색 및 필터 상태를 실시간 참조하는 Ref (자동 동기화 시 검색 결과 보존용)
+  const filterRef = useRef({
+    search: '',
+    platform: 'all',
+    category: 'all',
+    location: 'all',
+    type: 'all',
+    sortBy: 'latest'
+  });
+
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
 
@@ -460,22 +470,37 @@ export default function Home() {
     setIsSyncingData(true);
     setNextSyncTimestamp();
     try {
-      const res = await fetch(`/api/campaigns?t=${Date.now()}`);
+      const currentFilters = filterRef.current;
+      const params = new URLSearchParams({
+        search: currentFilters.search,
+        platform: currentFilters.platform,
+        category: currentFilters.category,
+        location: currentFilters.location,
+        targetSite: 'all',
+        sortBy: currentFilters.sortBy,
+        type: currentFilters.type,
+        t: String(Date.now())
+      });
+
+      const res = await fetch(`/api/campaigns?${params.toString()}`);
       const data = await res.json();
       const fetchedList = (data && (data.data || data.campaigns)) || [];
 
       if (Array.isArray(fetchedList) && fetchedList.length > 0) {
         setCampaigns(prevList => {
-          // 🔑 스마트 인메모리 병합 (Smart Merge): 인플레이스 수치만 조용히 갱신
-          const prevMap = new Map(prevList.map(item => [item.id, item]));
-          return fetchedList.map(newItem => {
-            const existing = prevMap.get(newItem.id);
-            if (!existing) return newItem;
+          // 🔑 보고 있는 검색 결과 보존 (Strict In-Place Update):
+          // 현재 화면에 표시된 목록(prevList)의 순서와 항목을 100% 보존하면서
+          // 지원자 수(applyCount), 정원(limitCount), 미션, 혜택 수치만 조용히 갱신합니다.
+          const freshMap = new Map<string, Campaign>(fetchedList.map((item: Campaign) => [item.id, item]));
+          return prevList.map(existing => {
+            const fresh = freshMap.get(existing.id);
+            if (!fresh) return existing;
             return {
               ...existing,
-              ...newItem,
-              mission: newItem.mission || existing.mission,
-              description: newItem.description || existing.description
+              applyCount: fresh.applyCount !== undefined ? fresh.applyCount : existing.applyCount,
+              limitCount: fresh.limitCount !== undefined ? fresh.limitCount : existing.limitCount,
+              mission: fresh.mission || existing.mission,
+              description: fresh.description || existing.description
             };
           });
         });
@@ -1797,7 +1822,20 @@ export default function Home() {
               const resSilent = await fetch(`/api/campaigns?${params.toString()}`);
               const resultSilent = await resSilent.json();
               if (resultSilent.success) {
-                setCampaigns(resultSilent.data);
+                setCampaigns(prevList => {
+                  const freshMap = new Map<string, Campaign>((resultSilent.data || []).map((item: Campaign) => [item.id, item]));
+                  return prevList.map(existing => {
+                    const fresh = freshMap.get(existing.id);
+                    if (!fresh) return existing;
+                    return {
+                      ...existing,
+                      applyCount: fresh.applyCount !== undefined ? fresh.applyCount : existing.applyCount,
+                      limitCount: fresh.limitCount !== undefined ? fresh.limitCount : existing.limitCount,
+                      mission: fresh.mission || existing.mission,
+                      description: fresh.description || existing.description
+                    };
+                  });
+                });
                 showToast('실시간 신규 체험단 매칭이 완료되었습니다!', 'success');
               }
             } catch (err) {
@@ -1816,8 +1854,16 @@ export default function Home() {
     }
   };
 
-  // 검색 및 필터 파라미터가 변경될 때마다 자동 페칭
+  // 검색 및 필터 파라미터가 변경될 때마다 자동 페칭 및 filterRef 동기화
   useEffect(() => {
+    filterRef.current = {
+      search: searchTerm,
+      platform: activePlatform,
+      category: activeCategory,
+      location: activeLocation,
+      type: activeType,
+      sortBy: sortBy
+    };
     fetchCampaigns();
   }, [searchTerm, activePlatform, activeCategory, activeLocation, activeType, sortBy]);
 
