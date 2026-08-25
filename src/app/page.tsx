@@ -1365,15 +1365,15 @@ export default function Home() {
     };
   }, [isKeywordModalOpen, selectedCampaign]);
 
-  // 키워드 연관검색어 100위 더보기 상태 (기본 20개 노출)
-  const [relatedVisibleCount, setRelatedVisibleCount] = useState(20);
+  // 키워드 연관검색어 랭킹 더보기 상태 (기본 50개 이상 노출)
+  const [relatedVisibleCount, setRelatedVisibleCount] = useState(50);
 
   // 키워드 분석 실행 함수
   const analyzeKeyword = async (targetQuery: string) => {
     const q = targetQuery.trim();
     if (!q) return;
     setKeywordQuery(q);
-    setRelatedVisibleCount(20);
+    setRelatedVisibleCount(50);
     setIsKeywordLoading(true);
     setIsKeywordModalOpen(true);
 
@@ -3773,10 +3773,10 @@ export default function Home() {
                       </table>
                     </div>
 
-                    {/* 20개씩 더보기 버튼 */}
+                    {/* 연관검색어 더보기 버튼 */}
                     {relatedVisibleCount < (keywordData.relatedKeywords?.length || 0) && (
                       <button
-                        onClick={() => setRelatedVisibleCount((prev) => Math.min(prev + 20, 100))}
+                        onClick={() => setRelatedVisibleCount((prev) => Math.min(prev + 25, 100))}
                         className="premium-button-secondary"
                         style={{
                           width: '100%', padding: '10px', fontSize: '0.85rem', fontWeight: 700,

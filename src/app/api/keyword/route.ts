@@ -180,27 +180,31 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.72);
     }
 
-    // 3. 네이버 공식 실시간 자동완성 API 및 검색광고 API 100% 순수 공식 연관검색어만 수집 (블로그 임의 마이닝 완전 제거)
+    // 3. 네이버 공식 실시간 자동완성 API 및 검색광고 API 100% 순수 공식 연관검색어 다각화 수집
     const wordSet = new Set<string>();
 
-    try {
-      const acUrl = `https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(query)}`;
-      const acRes = await axios.get(acUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
-        timeout: 1500,
-        httpsAgent,
-      });
-      if (acRes.data && acRes.data.items && acRes.data.items[0]) {
-        acRes.data.items[0].forEach((item: any) => {
-          if (item[0] && typeof item[0] === 'string') {
-            const kwStr = item[0].trim();
-            if (kwStr && kwStr !== query && kwStr.toLowerCase() !== query.toLowerCase()) {
-              wordSet.add(kwStr);
-            }
-          }
+    const fetchAC = async (qStr: string) => {
+      try {
+        const acUrl = `https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(qStr)}`;
+        const acRes = await axios.get(acUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
+          timeout: 1500,
+          httpsAgent,
         });
-      }
-    } catch (e) {}
+        if (acRes.data && acRes.data.items && acRes.data.items[0]) {
+          acRes.data.items[0].forEach((item: any) => {
+            if (item[0] && typeof item[0] === 'string') {
+              const kwStr = item[0].trim();
+              if (kwStr && kwStr !== query && kwStr.toLowerCase() !== query.toLowerCase()) {
+                wordSet.add(kwStr);
+              }
+            }
+          });
+        }
+      } catch (e) {}
+    };
+
+    await fetchAC(query);
 
     if (adRelatedItems.length > 0) {
       adRelatedItems.forEach((k: any) => {
@@ -213,12 +217,18 @@ export async function GET(request: Request) {
       });
     }
 
-    // 네이버 공식 엔진이 보낸 100% 실데이터 연관어만 구성
-    const candidateKeywords = Array.from(wordSet).slice(0, 50);
+    // 🔑 수집된 연관어가 60개 미만인 경우, 1차 연관어 상위 15개의 자동완성 서브 쿼리를 확장하여 최소 50~75개 이상 확보
+    if (wordSet.size < 60) {
+      const firstPass = Array.from(wordSet).slice(0, 15);
+      await Promise.all(firstPass.map(subKw => fetchAC(subKw)));
+    }
 
-    // 4. 네이버 공식 연관 검색어 병렬 청크 분석 (4개 단위 청크 슬라이싱 + 60ms 딜레이로 네이버 429 차단 완전 방지)
+    // 🔑 적어도 50~75개 이상의 실데이터 연관검색어를 분석하도록 한도 확장 (최대 75개)
+    const candidateKeywords = Array.from(wordSet).slice(0, 75);
+
+    // 4. 네이버 공식 연관 검색어 병렬 청크 분석 (5개 단위 청크 슬라이싱 + 50ms 딜레이)
     const relatedListRaw: any[] = [];
-    const chunkSize = 4;
+    const chunkSize = 5;
 
     for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
       const chunk = candidateKeywords.slice(i, i + chunkSize);
