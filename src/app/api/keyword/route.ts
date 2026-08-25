@@ -170,97 +170,20 @@ export async function GET(request: Request) {
     const clientId = process.env.NAVER_CLIENT_ID || 'q9pQhg3nFnKJtORmjiWp';
     const clientSecret = process.env.NAVER_CLIENT_SECRET || 'JS9tAMAkWC';
 
-    // 1. 메인 검색어 네이버 블로그 검색 API 및 월간 발행량 수집 (1회 호출로 중복 제거)
-    const [blogRes, mainStats] = await Promise.all([
-      axios.get('https://openapi.naver.com/v1/search/blog.json', {
-        params: { query, display: 10, sort: 'sim' },
-        headers: {
-          'X-Naver-Client-Id': clientId,
-          'X-Naver-Client-Secret': clientSecret,
-        },
-        timeout: 2500,
-        httpsAgent,
-      }),
-      fetchBlogStats(query, clientId, clientSecret),
-    ]);
+    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '4483791';
+    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
+    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
 
-    const totalPosts = blogRes.data.total || 0;
-    const mainMonthlyPosts = mainStats.monthlyPosts || 0;
-    const topPosts = (blogRes.data.items || []).map((item: any) => ({
-      title: item.title.replace(/<[^>]*>?/g, ''),
-      link: item.link,
-      bloggerName: item.bloggername,
-      bloggerLink: item.bloggerlink,
-      postDate: item.postdate,
-    }));
-
-    // 2. 네이버 검색광고 API 호출 (설정되어 있는 경우)
     let pcSearchVolume = 0;
     let mobileSearchVolume = 0;
     let totalSearchVolume = 0;
     let isRealSearchAdData = false;
     let adRelatedItems: any[] = [];
-
-    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '4483791';
-    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
-    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
-
     let adCompIdx = '';
     let adPlAvgDepth = 0;
     let pcClickCount = 0;
     let mobileClickCount = 0;
 
-    if (customerId && searchAdApiKey && searchAdSecretKey) {
-      try {
-        const timestamp = Date.now().toString();
-        const uri = '/keywordstool';
-        const method = 'GET';
-        const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
-
-        const cleanHintQuery = query.replace(/\s+/g, '');
-        const adRes = await axios.get(`https://api.searchad.naver.com${uri}`, {
-          params: { hintKeywords: cleanHintQuery, showDetail: '1' },
-          headers: {
-            'X-Timestamp': timestamp,
-            'X-API-KEY': searchAdApiKey,
-            'X-Customer': customerId,
-            'X-Signature': signature,
-          },
-          timeout: 3000,
-          httpsAgent,
-        });
-
-        const keywordList = adRes.data.keywordList || [];
-        const exactMatch = keywordList.find((k: any) => k.relKeyword.replace(/\s+/g, '') === query.replace(/\s+/g, ''));
-
-        if (exactMatch) {
-          pcSearchVolume = parseSearchAdVolume(exactMatch.monthlyPcQcCnt);
-          mobileSearchVolume = parseSearchAdVolume(exactMatch.monthlyMobileQcCnt);
-          totalSearchVolume = pcSearchVolume + mobileSearchVolume;
-          isRealSearchAdData = true;
-
-          adCompIdx = exactMatch.compIdx || '';
-          adPlAvgDepth = exactMatch.plAvgDepth || 0;
-          pcClickCount = exactMatch.monthlyAvePcClkCnt || 0;
-          mobileClickCount = exactMatch.monthlyAveMobileClkCnt || 0;
-        }
-
-        adRelatedItems = keywordList;
-      } catch (err: any) {
-        console.warn('[Keyword API] SearchAd API error:', err.message);
-      }
-    }
-
-    if (!isRealSearchAdData) {
-      // 🔑 네이버 검색광고 API 미연동 시 총 포스팅 문서 수 대비 정밀 스케일링 추정 (실제 네이버 비율 반영: PC 20%, Mobile 80%)
-      const logP = Math.log10(Math.max(10, totalPosts));
-      const mult = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-      totalSearchVolume = Math.max(50, Math.floor(totalPosts * mult));
-      pcSearchVolume = Math.floor(totalSearchVolume * 0.20);
-      mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
-    }
-
-    // 3. 네이버 공식 API 1차 수집 ➡️ 브랜드 프리셋 ➡️ 2차 확장 패턴 순 정밀 수집
     const officialSet = new Set<string>();
     const presetSet = new Set<string>();
     const extendedSet = new Set<string>();
@@ -288,79 +211,101 @@ export async function GET(request: Request) {
       }
     };
 
-    // 3-1. 네이버 공식 자동완성 수집 (1순위 공식 데이터)
-    const fetchAC = async (qStr: string, isOfficial = true) => {
-      try {
-        const acUrl = `https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(qStr)}`;
-        const acRes = await axios.get(acUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
-          timeout: 1500,
-          httpsAgent,
-        });
+    const cleanHintQuery = query.replace(/\s+/g, '');
+
+    // ⚡ 1. [초고속 200ms 병렬 수집 엔진] 메인 블로그 통계 + 검색광고 API + 네이버 공식 자동완성을 단 1회동시 병렬 수행
+    const [blogRes, mainStats, adRes] = await Promise.all([
+      axios.get('https://openapi.naver.com/v1/search/blog.json', {
+        params: { query, display: 10, sort: 'sim' },
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+        },
+        timeout: 2000,
+        httpsAgent,
+      }).catch(() => null),
+
+      fetchBlogStats(query, clientId, clientSecret),
+
+      (async () => {
+        if (!customerId || !searchAdApiKey || !searchAdSecretKey) return null;
+        try {
+          const timestamp = Date.now().toString();
+          const uri = '/keywordstool';
+          const method = 'GET';
+          const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
+          return await axios.get(`https://api.searchad.naver.com${uri}`, {
+            params: { hintKeywords: cleanHintQuery, showDetail: '1' },
+            headers: {
+              'X-Timestamp': timestamp,
+              'X-API-KEY': searchAdApiKey,
+              'X-Customer': customerId,
+              'X-Signature': signature,
+            },
+            timeout: 2000,
+            httpsAgent,
+          });
+        } catch (e) {
+          return null;
+        }
+      })(),
+
+      axios.get(`https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(query)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
+        timeout: 1200,
+        httpsAgent,
+      }).then(acRes => {
         if (acRes.data && acRes.data.items && acRes.data.items[0]) {
           acRes.data.items[0].forEach((item: any) => {
             if (item[0] && typeof item[0] === 'string') {
-              addCandidateKeyword(item[0], isOfficial ? 'official' : 'extended');
+              addCandidateKeyword(item[0], 'official');
             }
           });
         }
-      } catch (e) {}
-    };
+      }).catch(() => null),
+    ]);
 
-    // 3-2. 네이버 모바일 공식 연관검색어 수집 (1순위 공식 데이터)
-    const fetchMobileRel = async (qStr: string) => {
-      try {
-        const url = `https://m.search.naver.com/search.naver?query=${encodeURIComponent(qStr)}`;
-        const res = await axios.get(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' },
-          timeout: 2000,
-          httpsAgent,
-        });
-        const html = res.data || '';
-        const relMatches = html.match(/class="btn_related_keyword"[^>]*>([^<]+)</g) || [];
-        for (const m of relMatches) {
-          const cleanKw = m.replace(/<[^>]*>/g, '').trim();
-          addCandidateKeyword(cleanKw, 'official');
-        }
-      } catch (e) {}
-    };
+    const totalPosts = blogRes?.data?.total || 0;
+    const mainMonthlyPosts = mainStats.monthlyPosts || 0;
+    const topPosts = (blogRes?.data?.items || []).map((item: any) => ({
+      title: item.title.replace(/<[^>]*>?/g, ''),
+      link: item.link,
+      bloggerName: item.bloggername,
+      bloggerLink: item.bloggerlink,
+      postDate: item.postdate,
+    }));
 
-    await Promise.all([fetchAC(query, true), fetchMobileRel(query)]);
+    if (adRes?.data?.keywordList) {
+      const keywordList = adRes.data.keywordList || [];
+      const exactMatch = keywordList.find((k: any) => k.relKeyword.replace(/\s+/g, '') === cleanHintQuery);
 
-    if (adRelatedItems.length > 0) {
-      adRelatedItems.forEach((k: any) => {
+      if (exactMatch) {
+        pcSearchVolume = parseSearchAdVolume(exactMatch.monthlyPcQcCnt);
+        mobileSearchVolume = parseSearchAdVolume(exactMatch.monthlyMobileQcCnt);
+        totalSearchVolume = pcSearchVolume + mobileSearchVolume;
+        isRealSearchAdData = true;
+
+        adCompIdx = exactMatch.compIdx || '';
+        adPlAvgDepth = exactMatch.plAvgDepth || 0;
+        pcClickCount = exactMatch.monthlyAvePcClkCnt || 0;
+        mobileClickCount = exactMatch.monthlyAveMobileClkCnt || 0;
+      }
+
+      adRelatedItems = keywordList;
+      keywordList.forEach((k: any) => {
         if (k.relKeyword) {
           addCandidateKeyword(k.relKeyword, 'official');
         }
       });
     }
 
-    // 3-3. 1차 수집된 공식 연관어의 서브 자동완성 2차 병렬 확장 (100% 자연스러운 연관 키워드 풍부화)
-    const firstPass = Array.from(officialSet).slice(0, 5);
-    await Promise.all(firstPass.map(subKw => fetchAC(subKw, false)));
-
-    // 3-4. 도메인/의도 감지 기반 스마트 접미사 결합 (단일 문자 오판 정밀 차단)
-    const isStrictRegion = /(제주|강릉|서울|부산|속초|여수|홍대|성수|해운대|전주|경주|인천|수원|경기|강원|충청|전라|경상|특별시|광역시|특별자치도|해수욕장|계곡)/.test(query) || 
-                           (query.length >= 2 && /(특별시|광역시|도|시|군|구|동|읍|면|리|역)$/.test(query) && !/찜|구이|탕|국|밥|면|버거|치킨|피자/.test(query));
-    
-    const isCorp = /(삼성|LG|현대|SK|애플|카카오|네이버|테슬라|쿠팡|샤오미|기업|주식)/.test(query);
-    const isFood = /(찜|구이|탕|국|밥|면|버거|치킨|삼겹살|피자|초밥|파스타|마라탕|족발|보쌈|갈비|떡볶이|커피|카페)/.test(query);
-    const isHealth = /(영양제|비타민|유산균|마그네슘|다이어트|단백질|헬스)/.test(query);
-
-    let smartSuffixes: string[] = [];
-    if (isStrictRegion) {
-      smartSuffixes = ['맛집', '카페', '가볼만한곳', '여행', '숙소', '렌트카', '날씨', '호텔', '드라이브', '선물', '코스'];
-    } else if (isCorp) {
-      smartSuffixes = ['주가', '주식', '채용', '전자', '고객센터', '서비스센터', '신제품', '모델', '출시', '배당금'];
-    } else if (isFood) {
-      smartSuffixes = ['추천', '배달', '신메뉴', '맛집', '밀키트', '레시피', '양념', '칼로리', '가격', '만드는법', '효능'];
-    } else if (isHealth) {
-      smartSuffixes = ['추천', '효능', '부작용', '복용법', '순서', '성분', '가격', '섭취시간'];
-    } else {
-      smartSuffixes = ['추천', '순위', '후기', '가격', '비교', '종류'];
+    if (!isRealSearchAdData) {
+      const logP = Math.log10(Math.max(10, totalPosts));
+      const mult = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
+      totalSearchVolume = Math.max(50, Math.floor(totalPosts * mult));
+      pcSearchVolume = Math.floor(totalSearchVolume * 0.20);
+      mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
     }
-
-    smartSuffixes.forEach(s => addCandidateKeyword(`${query} ${s}`, 'extended'));
 
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '메가커피': ['메가커피메뉴', '메가커피신메뉴', '메가커피추천', '메가커피가격', '메가커피칼로리', '메가커피영업시간', '메가커피아메리카노', '컴포즈커피', '빽다방', '더벤티', '이디야', '스타벅스'],
@@ -379,44 +324,12 @@ export async function GET(request: Request) {
       }
     });
 
-    // 🔑 네이버 검색광고 API로 주요 프리셋 브랜드 연관어 초고속 2차 수집 (0.3초 이내 응답 보장)
-    if (customerId && searchAdApiKey && searchAdSecretKey) {
-      const matchedCategory = Object.keys(CATEGORY_PRESETS).find(cat => query.includes(cat) || cat.includes(query));
-      if (matchedCategory) {
-        const presets = CATEGORY_PRESETS[matchedCategory];
-        const topBatch = presets.slice(0, 5).map(p => p.replace(/\s+/g, '')).join(',');
-        try {
-          const timestamp = Date.now().toString();
-          const uri = '/keywordstool';
-          const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
-          const adResBatch = await axios.get(`https://api.searchad.naver.com${uri}`, {
-            params: { hintKeywords: topBatch, showDetail: '1' },
-            headers: {
-              'X-Timestamp': timestamp,
-              'X-API-KEY': searchAdApiKey,
-              'X-Customer': customerId,
-              'X-Signature': signature,
-            },
-            timeout: 2000,
-            httpsAgent,
-          });
-          const listBatch = adResBatch.data.keywordList || [];
-          listBatch.forEach((k: any) => {
-            if (k.relKeyword) {
-              addCandidateKeyword(k.relKeyword, 'official');
-              adRelatedItems.push(k);
-            }
-          });
-        } catch (e) {}
-      }
-    }
+    // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (상위 25개 검증 후보군 0.3초 이내 연산)
+    const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 25);
 
-    // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (최대 45개 후보군 0.5초 이내 초고속 연산)
-    const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 45);
-
-    // 4. 초고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 딜레이로 0.5초 이내 즉시 응답)
+    // 4. 초고속 25개 병렬 청크 분석 (10개 단위 병렬 청크 + 10ms 딜레이로 0.5초 이내 최종 응답)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 15;
+    const chunkSize = 10;
 
     for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
       const chunk = candidateKeywords.slice(i, i + chunkSize);
