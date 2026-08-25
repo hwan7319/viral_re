@@ -47,13 +47,23 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
 
       if (res.data.items && res.data.items.length > 0) {
         const items = res.data.items;
+        const now = new Date();
+        const todayStr = now.toISOString().replace(/-/g, '').slice(0, 8);
+        const yesterdayObj = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const yesterdayStr = yesterdayObj.toISOString().replace(/-/g, '').slice(0, 8);
+
         const rawDate = items[0].postdate; // YYYYMMDD
         if (rawDate && rawDate.length === 8) {
-          recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
+          if (rawDate === todayStr) {
+            recentDate = '오늘';
+          } else if (rawDate === yesterdayStr) {
+            recentDate = '어제';
+          } else {
+            recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
+          }
         }
 
         // 🔑 최근 30일(월간) 실발행 포스팅 수 연속 밀리초 경과시간 기반 정밀 산출
-        const now = new Date();
         const thirtyDaysAgoStr = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().replace(/-/g, '').slice(0, 8);
 
         let postsIn30Days = 0;
