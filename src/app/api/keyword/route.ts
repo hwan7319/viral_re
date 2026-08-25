@@ -174,11 +174,10 @@ export async function GET(request: Request) {
 
         const keywordList = adRes.data.keywordList || [];
         const exactMatch = keywordList.find((k: any) => k.relKeyword.replace(/\s+/g, '') === query.replace(/\s+/g, ''));
-        const targetObj = exactMatch || keywordList[0];
 
-        if (targetObj) {
-          pcSearchVolume = parseSearchAdVolume(targetObj.monthlyPcQcCnt);
-          mobileSearchVolume = parseSearchAdVolume(targetObj.monthlyMobileQcCnt);
+        if (exactMatch) {
+          pcSearchVolume = parseSearchAdVolume(exactMatch.monthlyPcQcCnt);
+          mobileSearchVolume = parseSearchAdVolume(exactMatch.monthlyMobileQcCnt);
           totalSearchVolume = pcSearchVolume + mobileSearchVolume;
           isRealSearchAdData = true;
         }
