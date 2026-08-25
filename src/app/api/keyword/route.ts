@@ -206,8 +206,9 @@ export async function GET(request: Request) {
         const method = 'GET';
         const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
 
+        const cleanHintQuery = query.replace(/\s+/g, '');
         const adRes = await axios.get(`https://api.searchad.naver.com${uri}`, {
-          params: { hintKeywords: query, showDetail: '1' },
+          params: { hintKeywords: cleanHintQuery, showDetail: '1' },
           headers: {
             'X-Timestamp': timestamp,
             'X-API-KEY': searchAdApiKey,
@@ -367,7 +368,7 @@ export async function GET(request: Request) {
       const matchedCategory = Object.keys(CATEGORY_PRESETS).find(cat => query.includes(cat) || cat.includes(query));
       if (matchedCategory) {
         const presets = CATEGORY_PRESETS[matchedCategory];
-        const topBatch = presets.slice(0, 5).join(',');
+        const topBatch = presets.slice(0, 5).map(p => p.replace(/\s+/g, '')).join(',');
         try {
           const timestamp = Date.now().toString();
           const uri = '/keywordstool';
@@ -419,14 +420,15 @@ export async function GET(request: Request) {
 
             const stats = await fetchBlogStatsFast(kw, clientId, clientSecret);
 
+            // 🔑 블로그 포스팅 조회가 0건이거나 실패한 깡통 더미 아이템은 즉시 제외
+            if (stats.totalPosts === 0) {
+              return null;
+            }
+
             if (kwTotalVol === 0) {
-              if (stats.totalPosts > 0) {
-                const logP = Math.log10(stats.totalPosts);
-                const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-                kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
-              } else {
-                kwTotalVol = 10;
-              }
+              const logP = Math.log10(stats.totalPosts);
+              const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
+              kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
             }
 
             // 🔑 [수학적 1:1 완벽 일치 경쟁비율 공식] 누적 포스팅 총 문서 수 / 월간 총 검색량
@@ -471,8 +473,8 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 제거 및 유효 키워드)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 검색량 0건 깡통 더미 완전 제거)
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts > 0 && item.totalSearchVolume >= 10 && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
     // 🔑 2. 조건 1: 월간 총 검색량이 20건 이상인 연관검색어 1차 엄격 필터링
     const listGte20 = validListRaw.filter((item: any) => item.totalSearchVolume >= 20);
