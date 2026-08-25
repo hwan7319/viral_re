@@ -180,10 +180,30 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.72);
     }
 
-    // 3. 네이버 공식 실시간 자동완성 API, 모바일 검색 연관어 및 주요 브랜드 키워드 다각화 수집
-    const wordSet = new Set<string>();
+    // 3. 네이버 공식 API 1차 수집 ➡️ 2차 확장 패턴 순으로 정밀 수집 및 띄어쓰기 중복(normKey) 완전 제거
+    const officialSet = new Set<string>();
+    const extendedSet = new Set<string>();
+    const normalizedSeen = new Set<string>();
 
-    // 3-1. 네이버 자동완성 수집
+    const addCandidateKeyword = (kwStr: string, isOfficial: boolean) => {
+      if (!kwStr) return;
+      const cleanKw = kwStr.trim();
+      if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
+      if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
+
+      // 🔑 공백 제거 정규화 키로 "제주도 추천" vs "제주도추천" 띄어쓰기 중복 완전 제거
+      const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
+      if (normalizedSeen.has(normKey)) return;
+      normalizedSeen.add(normKey);
+
+      if (isOfficial) {
+        officialSet.add(cleanKw);
+      } else {
+        extendedSet.add(cleanKw);
+      }
+    };
+
+    // 3-1. 네이버 공식 자동완성 수집 (1순위 공식 데이터)
     const fetchAC = async (qStr: string) => {
       try {
         const acUrl = `https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(qStr)}`;
@@ -195,17 +215,14 @@ export async function GET(request: Request) {
         if (acRes.data && acRes.data.items && acRes.data.items[0]) {
           acRes.data.items[0].forEach((item: any) => {
             if (item[0] && typeof item[0] === 'string') {
-              const kwStr = item[0].trim();
-              if (kwStr && kwStr !== query && kwStr.toLowerCase() !== query.toLowerCase()) {
-                wordSet.add(kwStr);
-              }
+              addCandidateKeyword(item[0], true);
             }
           });
         }
       } catch (e) {}
     };
 
-    // 3-2. 네이버 모바일 공식 연관검색어 정밀 수집 (HTML 노이즈 차단)
+    // 3-2. 네이버 모바일 공식 연관검색어 수집 (1순위 공식 데이터)
     const fetchMobileRel = async (qStr: string) => {
       try {
         const url = `https://m.search.naver.com/search.naver?query=${encodeURIComponent(qStr)}`;
@@ -218,18 +235,7 @@ export async function GET(request: Request) {
         const relMatches = html.match(/class="btn_related_keyword"[^>]*>([^<]+)</g) || [];
         for (const m of relMatches) {
           const cleanKw = m.replace(/<[^>]*>/g, '').trim();
-          if (
-            cleanKw && 
-            cleanKw !== query && 
-            !cleanKw.includes('class=') && 
-            !cleanKw.includes('<') && 
-            !cleanKw.includes('>') && 
-            !cleanKw.includes('APP') && 
-            cleanKw.length >= 2 && 
-            cleanKw.length <= 25
-          ) {
-            wordSet.add(cleanKw);
-          }
+          addCandidateKeyword(cleanKw, true);
         }
       } catch (e) {}
     };
@@ -239,19 +245,15 @@ export async function GET(request: Request) {
     if (adRelatedItems.length > 0) {
       adRelatedItems.forEach((k: any) => {
         if (k.relKeyword) {
-          const kwStr = k.relKeyword.trim();
-          if (kwStr && kwStr !== query && kwStr.toLowerCase() !== query.toLowerCase() && !kwStr.includes('<') && !kwStr.includes('>')) {
-            wordSet.add(kwStr);
-          }
+          addCandidateKeyword(k.relKeyword, true);
         }
       });
     }
 
-    // 3-3. 지역/여행/음식/카테고리별 연관 키워드 패턴 및 프리셋 자동 확장
+    // 3-3. 우리가 만든 확장 패턴 & 카테고리 프리셋 (공식 키워드 후순위에 덧붙임)
     const regionalSuffixes = ['맛집', '카페', '가볼만한곳', '여행', '숙소', '렌트카', '날씨', '호텔', '코스', '추천', '드라이브', '선물', '특산물'];
     regionalSuffixes.forEach(s => {
-      wordSet.add(`${query} ${s}`);
-      wordSet.add(`${query}${s}`);
+      addCandidateKeyword(`${query} ${s}`, false);
     });
 
     const CATEGORY_PRESETS: Record<string, string[]> = {
@@ -265,14 +267,12 @@ export async function GET(request: Request) {
 
     Object.keys(CATEGORY_PRESETS).forEach(cat => {
       if (query.includes(cat) || cat.includes(query)) {
-        CATEGORY_PRESETS[cat].forEach(bp => {
-          if (bp !== query) wordSet.add(bp);
-        });
+        CATEGORY_PRESETS[cat].forEach(bp => addCandidateKeyword(bp, false));
       }
     });
 
-    // 🔑 속도와 정확도의 최적 밸런스: 상위 35개 엄선 후보 키워드 즉시 분석
-    const candidateKeywords = Array.from(wordSet).slice(0, 35);
+    // 🔑 네이버 공식 제공 키워드 1순위 배치 + 우리가 만든 확장 키워드 2순위 배치
+    const candidateKeywords = [...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 35);
 
     // 4. 초고속 100% 동시 병렬 분석 (0.5초 이내 즉시 리턴)
     const chunkResults = await Promise.all(
