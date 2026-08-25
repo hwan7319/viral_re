@@ -473,8 +473,8 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 검색량 0건 깡통 더미 완전 제거)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts > 0 && item.totalSearchVolume >= 10 && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 10건 이하 깡통 더미 완전 제거)
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts > 0 && item.totalSearchVolume > 10 && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
     // 🔑 2. 조건 1: 월간 총 검색량이 20건 이상인 연관검색어 1차 엄격 필터링
     const listGte20 = validListRaw.filter((item: any) => item.totalSearchVolume >= 20);
