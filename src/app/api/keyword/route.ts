@@ -321,71 +321,117 @@ export async function GET(request: Request) {
       }
     });
 
+    // 🔑 네이버 검색광고 API로 주요 프리셋 브랜드 연관어 5개 단위 2차 추가 수집 (네네치킨, BHC 등 대형 브랜드 검색량 100% 보장)
+    if (customerId && searchAdApiKey && searchAdSecretKey) {
+      const matchedCategory = Object.keys(CATEGORY_PRESETS).find(cat => query.includes(cat) || cat.includes(query));
+      if (matchedCategory) {
+        const presets = CATEGORY_PRESETS[matchedCategory];
+        for (let i = 0; i < presets.length; i += 5) {
+          const batch = presets.slice(i, i + 5).join(',');
+          try {
+            const timestamp = Date.now().toString();
+            const uri = '/keywordstool';
+            const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
+            const adResBatch = await axios.get(`https://api.searchad.naver.com${uri}`, {
+              params: { hintKeywords: batch, showDetail: '1' },
+              headers: {
+                'X-Timestamp': timestamp,
+                'X-API-KEY': searchAdApiKey,
+                'X-Customer': customerId,
+                'X-Signature': signature,
+              },
+              timeout: 2500,
+              httpsAgent,
+            });
+            const listBatch = adResBatch.data.keywordList || [];
+            listBatch.forEach((k: any) => {
+              if (k.relKeyword) {
+                addCandidateKeyword(k.relKeyword, 'official');
+                adRelatedItems.push(k);
+              }
+            });
+          } catch (e) {}
+        }
+      }
+    }
+
     // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (최대 100개 후적합 후보군 확보)
     const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 100);
 
-    // 4. 초고속 100% 동시 병렬 분석 (0.5초 이내 즉시 리턴)
-    const chunkResults = await Promise.all(
-      candidateKeywords.map(async (kw) => {
-        try {
-          let kwPc = 0;
-          let kwMobile = 0;
-          let kwTotalVol = 0;
+    // 4. 네이버 OpenAPI 429 차단 완전 방지 (5개 단위 청크 슬라이싱 + 50ms 딜레이)
+    const chunkResultsRaw: any[] = [];
+    const chunkSize = 5;
 
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '') === kw.replace(/\s+/g, ''));
-          if (adMatch) {
-            kwPc = parseSearchAdVolume(adMatch.monthlyPcQcCnt);
-            kwMobile = parseSearchAdVolume(adMatch.monthlyMobileQcCnt);
-            kwTotalVol = kwPc + kwMobile;
-          }
+    for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
+      const chunk = candidateKeywords.slice(i, i + chunkSize);
+      const chunkRes = await Promise.all(
+        chunk.map(async (kw) => {
+          try {
+            let kwPc = 0;
+            let kwMobile = 0;
+            let kwTotalVol = 0;
 
-          const stats = await fetchBlogStats(kw, clientId, clientSecret);
-
-          if (kwTotalVol === 0) {
-            if (stats.totalPosts > 0) {
-              const logP = Math.log10(stats.totalPosts);
-              const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-              kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
-            } else {
-              kwTotalVol = 5;
+            const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '') === kw.replace(/\s+/g, ''));
+            if (adMatch) {
+              kwPc = parseSearchAdVolume(adMatch.monthlyPcQcCnt);
+              kwMobile = parseSearchAdVolume(adMatch.monthlyMobileQcCnt);
+              kwTotalVol = kwPc + kwMobile;
             }
+
+            const stats = await fetchBlogStats(kw, clientId, clientSecret);
+
+            if (kwTotalVol === 0) {
+              if (stats.totalPosts > 0) {
+                const logP = Math.log10(stats.totalPosts);
+                const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
+                kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
+              } else {
+                kwTotalVol = 10;
+              }
+            }
+
+            // 🔑 [수학적 1:1 완벽 일치 경쟁비율 공식] 누적 포스팅 총 문서 수 / 월간 총 검색량
+            const compRatio = kwTotalVol > 0 ? parseFloat((stats.totalPosts / kwTotalVol).toFixed(2)) : 0;
+
+            let grade: 'GOLD' | 'NORMAL' | 'HARD';
+            let gradeLabel: string;
+
+            if (compRatio < 0.5) {
+              grade = 'GOLD';
+              gradeLabel = '🟢 황금';
+            } else if (compRatio <= 2.0) {
+              grade = 'NORMAL';
+              gradeLabel = '🟡 보통';
+            } else {
+              grade = 'HARD';
+              gradeLabel = '🔴 포화';
+            }
+
+            return {
+              keyword: kw,
+              isOfficial: officialSet.has(kw),
+              pcSearchVolume: kwPc,
+              mobileSearchVolume: kwMobile,
+              totalSearchVolume: kwTotalVol,
+              totalPosts: stats.totalPosts,
+              monthlyPosts: stats.monthlyPosts,
+              competitionRatio: compRatio,
+              grade,
+              gradeLabel,
+              recentDate: stats.recentDate,
+            };
+          } catch (e) {
+            return null;
           }
+        })
+      );
+      chunkResultsRaw.push(...chunkRes);
+      if (i + chunkSize < candidateKeywords.length) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+    }
 
-          // 🔑 [수학적 1:1 완벽 일치 경쟁비율 공식] 누적 포스팅 총 문서 수 / 월간 총 검색량
-          const compRatio = kwTotalVol > 0 ? parseFloat((stats.totalPosts / kwTotalVol).toFixed(2)) : 0;
-
-          let grade: 'GOLD' | 'NORMAL' | 'HARD';
-          let gradeLabel: string;
-
-          if (compRatio < 0.5) {
-            grade = 'GOLD';
-            gradeLabel = '🟢 황금';
-          } else if (compRatio <= 2.0) {
-            grade = 'NORMAL';
-            gradeLabel = '🟡 보통';
-          } else {
-            grade = 'HARD';
-            gradeLabel = '🔴 포화';
-          }
-
-          return {
-            keyword: kw,
-            isOfficial: officialSet.has(kw),
-            totalSearchVolume: kwTotalVol,
-            totalPosts: stats.totalPosts,
-            monthlyPosts: stats.monthlyPosts,
-            competitionRatio: compRatio,
-            grade,
-            gradeLabel,
-            recentDate: stats.recentDate,
-          };
-        } catch (e) {
-          return null;
-        }
-      })
-    );
-
-    const relatedListRaw = chunkResults.filter(Boolean);
+    const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
     // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 제거 및 유효 키워드)
     const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
