@@ -1365,15 +1365,15 @@ export default function Home() {
     };
   }, [isKeywordModalOpen, selectedCampaign]);
 
-  // 키워드 연관검색어 랭킹 더보기 상태 (기본 50개 이상 노출)
-  const [relatedVisibleCount, setRelatedVisibleCount] = useState(50);
+  // 키워드 연관검색어 랭킹 더보기 상태 (기본 20개 노출, 더보기 클릭 시 +20개씩 증단)
+  const [relatedVisibleCount, setRelatedVisibleCount] = useState(20);
 
   // 키워드 분석 실행 함수
   const analyzeKeyword = async (targetQuery: string) => {
     const q = targetQuery.trim();
     if (!q) return;
     setKeywordQuery(q);
-    setRelatedVisibleCount(50);
+    setRelatedVisibleCount(20);
     setIsKeywordLoading(true);
     setIsKeywordModalOpen(true);
 
@@ -3773,10 +3773,10 @@ export default function Home() {
                       </table>
                     </div>
 
-                    {/* 연관검색어 더보기 버튼 */}
+                    {/* 20개씩 끊어서 더보기 버튼 (20개 -> 40개 -> 60개 -> 80개 ...) */}
                     {relatedVisibleCount < (keywordData.relatedKeywords?.length || 0) && (
                       <button
-                        onClick={() => setRelatedVisibleCount((prev) => Math.min(prev + 25, 100))}
+                        onClick={() => setRelatedVisibleCount((prev) => Math.min(prev + 20, 100))}
                         className="premium-button-secondary"
                         style={{
                           width: '100%', padding: '10px', fontSize: '0.85rem', fontWeight: 700,
@@ -3786,7 +3786,7 @@ export default function Home() {
                           marginTop: '10px'
                         }}
                       >
-                        <span>연관 검색어 더보기 ➕</span>
+                        <span>연관 검색어 더보기 ➕ (+20개)</span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
                           (현재 {Math.min(relatedVisibleCount, keywordData.relatedKeywords.length)} / {keywordData.relatedKeywords.length}개 표시 중)
                         </span>
