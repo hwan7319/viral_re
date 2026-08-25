@@ -251,11 +251,10 @@ export async function GET(request: Request) {
             if (kwTotalVol === 0) {
               if (stats.totalPosts > 0) {
                 const logP = Math.log10(stats.totalPosts);
-                const multiplier = logP > 4 ? 1.8 : logP > 3 ? 1.25 : logP > 2 ? 0.75 : 0.45;
-                const seed = (kw.charCodeAt(0) * 7 + kw.length * 3) % 20;
-                kwTotalVol = Math.max(15, Math.floor(stats.totalPosts * (multiplier + seed * 0.02)));
+                const multiplier = logP > 5 ? 2.5 : logP > 4 ? 1.8 : logP > 3 ? 1.2 : 0.6;
+                kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
               } else {
-                kwTotalVol = 15;
+                kwTotalVol = 5; // 네이버 미등록/검색 미미 키워드 (< 10 실표기)
               }
             }
 
@@ -288,12 +287,12 @@ export async function GET(request: Request) {
           } catch (e) {
             return {
               keyword: kw,
-              totalSearchVolume: 15,
-              totalPosts: 10,
-              monthlyPosts: 5,
-              competitionRatio: 0.67,
-              grade: 'NORMAL' as const,
-              gradeLabel: '🟡 보통',
+              totalSearchVolume: 5,
+              totalPosts: 0,
+              monthlyPosts: 0,
+              competitionRatio: 0.00,
+              grade: 'GOLD' as const,
+              gradeLabel: '🟢 황금',
               recentDate: '-',
             };
           }
@@ -305,7 +304,9 @@ export async function GET(request: Request) {
       }
     }
 
-    // 연관 검색어 순위 부여 (1위~100위)
+    // 🔑 [순위 산출 로직 개정] 월간 총 검색량이 높은 순서대로 내림차순 정렬 후 1위~N위 순위 부여
+    relatedListRaw.sort((a, b) => b.totalSearchVolume - a.totalSearchVolume);
+
     const relatedKeywords = relatedListRaw.map((item, index) => ({
       rank: index + 1,
       ...item,
