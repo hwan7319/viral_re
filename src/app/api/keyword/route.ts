@@ -326,6 +326,7 @@ export async function GET(request: Request) {
 
           return {
             keyword: kw,
+            isOfficial: officialSet.has(kw),
             totalSearchVolume: kwTotalVol,
             totalPosts: stats.totalPosts,
             monthlyPosts: stats.monthlyPosts,
