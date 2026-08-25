@@ -222,7 +222,7 @@ export async function GET(request: Request) {
     };
 
     // 3-1. 네이버 공식 자동완성 수집 (1순위 공식 데이터)
-    const fetchAC = async (qStr: string) => {
+    const fetchAC = async (qStr: string, isOfficial = true) => {
       try {
         const acUrl = `https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(qStr)}`;
         const acRes = await axios.get(acUrl, {
@@ -233,7 +233,7 @@ export async function GET(request: Request) {
         if (acRes.data && acRes.data.items && acRes.data.items[0]) {
           acRes.data.items[0].forEach((item: any) => {
             if (item[0] && typeof item[0] === 'string') {
-              addCandidateKeyword(item[0], true);
+              addCandidateKeyword(item[0], isOfficial);
             }
           });
         }
@@ -268,19 +268,25 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3-3. 도메인/의도 감지 기반 스마트 접미사 결합 (어색한 조합 100% 방지)
-    const isRegion = /(제주|강릉|서울|부산|속초|여수|홍대|성수|해운대|전주|경주|인천|수원|경기|강원|충청|전라|경상|도|시|구|동|역|해수욕장|계곡|가볼만한곳|여행)/.test(query);
+    // 3-3. 1차 수집된 공식 연관어의 서브 자동완성 2차 병렬 확장 (100% 자연스러운 연관 키워드 풍부화)
+    const firstPass = Array.from(officialSet).slice(0, 5);
+    await Promise.all(firstPass.map(subKw => fetchAC(subKw, false)));
+
+    // 3-4. 도메인/의도 감지 기반 스마트 접미사 결합 (단일 문자 오판 정밀 차단)
+    const isStrictRegion = /(제주|강릉|서울|부산|속초|여수|홍대|성수|해운대|전주|경주|인천|수원|경기|강원|충청|전라|경상|특별시|광역시|특별자치도|해수욕장|계곡)/.test(query) || 
+                           (query.length >= 2 && /(특별시|광역시|도|시|군|구|동|읍|면|리|역)$/.test(query) && !/찜|구이|탕|국|밥|면|버거|치킨|피자/.test(query));
+    
     const isCorp = /(삼성|LG|현대|SK|애플|카카오|네이버|테슬라|쿠팡|샤오미|기업|주식)/.test(query);
-    const isFood = /(치킨|삼겹살|피자|초밥|파스타|마라탕|족발|보쌈|갈비|떡볶이|햄버거|커피|카페)/.test(query);
+    const isFood = /(찜|구이|탕|국|밥|면|버거|치킨|삼겹살|피자|초밥|파스타|마라탕|족발|보쌈|갈비|떡볶이|커피|카페)/.test(query);
     const isHealth = /(영양제|비타민|유산균|마그네슘|다이어트|단백질|헬스)/.test(query);
 
     let smartSuffixes: string[] = [];
-    if (isRegion) {
+    if (isStrictRegion) {
       smartSuffixes = ['맛집', '카페', '가볼만한곳', '여행', '숙소', '렌트카', '날씨', '호텔', '드라이브', '선물', '코스'];
     } else if (isCorp) {
       smartSuffixes = ['주가', '주식', '채용', '전자', '고객센터', '서비스센터', '신제품', '모델', '출시', '배당금'];
     } else if (isFood) {
-      smartSuffixes = ['추천', '배달', '신메뉴', '맛집', '브랜드순위', '칼로리', '가격', '양념', '순살'];
+      smartSuffixes = ['추천', '배달', '신메뉴', '맛집', '밀키트', '레시피', '양념', '칼로리', '가격', '만드는법', '효능'];
     } else if (isHealth) {
       smartSuffixes = ['추천', '효능', '부작용', '복용법', '순서', '성분', '가격', '섭취시간'];
     } else {
