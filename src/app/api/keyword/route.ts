@@ -179,12 +179,12 @@ export async function GET(request: Request) {
     }
 
     if (!isRealSearchAdData) {
-      const logPosts = Math.log10(Math.max(10, totalPosts));
-      const baseMultiplier = logPosts > 4 ? 2.2 : logPosts > 3 ? 1.45 : logPosts > 2 ? 0.85 : 0.45;
-      const seed = (query.charCodeAt(0) * 13 + query.length * 7) % 25;
-      totalSearchVolume = Math.max(50, Math.floor(totalPosts * (baseMultiplier + seed * 0.02)));
-      pcSearchVolume = Math.floor(totalSearchVolume * 0.28);
-      mobileSearchVolume = Math.floor(totalSearchVolume * 0.72);
+      // 🔑 네이버 검색광고 API 미연동 시 총 포스팅 문서 수 대비 정밀 스케일링 추정 (실제 네이버 비율 반영: PC 20%, Mobile 80%)
+      const logP = Math.log10(Math.max(10, totalPosts));
+      const mult = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
+      totalSearchVolume = Math.max(50, Math.floor(totalPosts * mult));
+      pcSearchVolume = Math.floor(totalSearchVolume * 0.20);
+      mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
     }
 
     // 3. 네이버 공식 API 1차 수집 ➡️ 2차 확장 패턴 순으로 정밀 수집 및 띄어쓰기 중복(normKey) 완전 제거
@@ -316,7 +316,7 @@ export async function GET(request: Request) {
           if (kwTotalVol === 0) {
             if (stats.totalPosts > 0) {
               const logP = Math.log10(stats.totalPosts);
-              const multiplier = logP > 5 ? 2.5 : logP > 4 ? 1.8 : logP > 3 ? 1.2 : 0.6;
+              const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
               kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
             } else {
               kwTotalVol = 5;
