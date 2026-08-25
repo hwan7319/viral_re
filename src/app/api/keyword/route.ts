@@ -180,9 +180,10 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.72);
     }
 
-    // 3. 네이버 공식 실시간 자동완성 API 및 검색광고 API 100% 순수 공식 연관검색어 다각화 수집
+    // 3. 네이버 공식 실시간 자동완성 API, 모바일 검색 연관어 및 주요 브랜드 키워드 다각화 수집
     const wordSet = new Set<string>();
 
+    // 3-1. 네이버 자동완성 수집
     const fetchAC = async (qStr: string) => {
       try {
         const acUrl = `https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(qStr)}`;
@@ -204,7 +205,28 @@ export async function GET(request: Request) {
       } catch (e) {}
     };
 
-    await fetchAC(query);
+    // 3-2. 네이버 모바일 공식 연관검색어 수집
+    const fetchMobileRel = async (qStr: string) => {
+      try {
+        const url = `https://m.search.naver.com/search.naver?query=${encodeURIComponent(qStr)}`;
+        const res = await axios.get(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' },
+          timeout: 2000,
+          httpsAgent,
+        });
+        const html = res.data || '';
+        const relMatches = html.match(/class="btn_related_keyword"[^>]*>([^<]+)</g) || 
+                           html.match(/class="tit"[^>]*>([^<]+)</g) || [];
+        for (const m of relMatches) {
+          const cleanKw = m.replace(/<[^>]*>/g, '').trim();
+          if (cleanKw && cleanKw !== query && cleanKw.length >= 2 && cleanKw.length <= 25) {
+            wordSet.add(cleanKw);
+          }
+        }
+      } catch (e) {}
+    };
+
+    await Promise.all([fetchAC(query), fetchMobileRel(query)]);
 
     if (adRelatedItems.length > 0) {
       adRelatedItems.forEach((k: any) => {
@@ -217,13 +239,30 @@ export async function GET(request: Request) {
       });
     }
 
-    // 🔑 수집된 연관어가 60개 미만인 경우, 1차 연관어 상위 15개의 자동완성 서브 쿼리를 확장하여 최소 50~75개 이상 확보
+    // 3-3. 업계 대표 카테고리별 브랜드 & 메뉴 프리셋 자동 확장
+    const CATEGORY_PRESETS: Record<string, string[]> = {
+      '치킨': ['교촌치킨', 'BHC치킨', 'BBQ치킨', '굽네치킨', '60계치킨', '푸라닭', '자담치킨', '노랑통닭', '처갓집양념치킨', '네네치킨', '페리카나', '호식이두마리치킨', '당당치킨', '가마치통닭', '순살만공격', '양념치킨', '후라이드치킨', '간장치킨', '숯불치킨', '순살치킨', '치킨배달', '치킨추천', '치킨신메뉴', '치킨브랜드순위', '치킨칼로리'],
+      '삼겹살': ['냉동삼겹살', '대패삼겹살', '숙성삼겹살', '솥뚜껑삼겹살', '벌집삼겹살', '지리산흑돼지', '제주흑돼지', '삼겹살무한리필', '미나리삼겹살', '하남돼지집', '맛찬들', '삼겹살맛집'],
+      '피자': ['도미노피자', '피자헛', '파파존스', '알볼로피자', '청년피자', '반올림피자', '피자스쿨', '고르곤졸라피자', '페퍼로니피자', '화덕피자', '피자추천'],
+      '카페': ['성수동카페', '연남동카페', '한옥카페', '대형카페', '루프탑카페', '디저트카페', '베이커리카페', '뷰맛집카페', '스페셜티커피'],
+      '영양제': ['비타민C', '오메가3', '유산균', '마그네슘', '밀크씨슬', '루테인', '코엔자임Q10', '비타민D', '멀티비타민', '관절영양제', '눈영양제', '간영양제', '임산부영양제']
+    };
+
+    Object.keys(CATEGORY_PRESETS).forEach(cat => {
+      if (query.includes(cat) || cat.includes(query)) {
+        CATEGORY_PRESETS[cat].forEach(bp => {
+          if (bp !== query) wordSet.add(bp);
+        });
+      }
+    });
+
+    // 🔑 1차 연관어 상위 15개의 자동완성 서브 쿼리 병렬 확장
     if (wordSet.size < 60) {
       const firstPass = Array.from(wordSet).slice(0, 15);
       await Promise.all(firstPass.map(subKw => fetchAC(subKw)));
     }
 
-    // 🔑 적어도 50~75개 이상의 실데이터 연관검색어를 분석하도록 한도 확장 (최대 75개)
+    // 🔑 실데이터 연관검색어 최대 75개 수집 및 정밀 분석
     const candidateKeywords = Array.from(wordSet).slice(0, 75);
 
     // 4. 네이버 공식 연관 검색어 병렬 청크 분석 (5개 단위 청크 슬라이싱 + 50ms 딜레이)
