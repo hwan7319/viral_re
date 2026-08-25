@@ -52,9 +52,9 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
           recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
         }
 
-        // 🔑 최근 30일(월간) 실발행 포스팅 수 정밀 산출
-        const today = new Date();
-        const thirtyDaysAgoStr = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().replace(/-/g, '').slice(0, 8);
+        // 🔑 최근 30일(월간) 실발행 포스팅 수 연속 밀리초 경과시간 기반 정밀 산출
+        const now = new Date();
+        const thirtyDaysAgoStr = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().replace(/-/g, '').slice(0, 8);
 
         let postsIn30Days = 0;
         for (const item of items) {
@@ -67,18 +67,12 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
         const oldestStr = items[items.length - 1].postdate;
 
         if (newestStr && oldestStr && newestStr.length === 8 && oldestStr.length === 8) {
-          const newest = new Date(`${newestStr.slice(0, 4)}-${newestStr.slice(4, 6)}-${newestStr.slice(6, 8)}`).getTime();
-          const oldest = new Date(`${oldestStr.slice(0, 4)}-${oldestStr.slice(4, 6)}-${oldestStr.slice(6, 8)}`).getTime();
-          const diffDays = (newest - oldest) / (1000 * 60 * 60 * 24);
+          // 샘플링된 가장 오래된 문서 시점부터 현재 시각까지의 정밀 경과 일수(소수점 시간 포함)
+          const dOldest = new Date(`${oldestStr.slice(0, 4)}-${oldestStr.slice(4, 6)}-${oldestStr.slice(6, 8)}T00:00:00+09:00`).getTime();
+          const elapsedDays = Math.max(0.1, (now.getTime() - dOldest) / (1000 * 60 * 60 * 24));
 
-          if (diffDays >= 1) {
-            const dailyRate = items.length / diffDays;
-            monthlyPosts = Math.round(dailyRate * 30);
-          } else {
-            // 100개가 하루 이내에 다 써진 고빈도 메가 키워드
-            const estDays = diffDays > 0 ? diffDays : 0.1;
-            monthlyPosts = Math.round((items.length / estDays) * 30);
-          }
+          const dailyRate = postsIn30Days / elapsedDays;
+          monthlyPosts = Math.round(dailyRate * 30);
         } else {
           monthlyPosts = postsIn30Days;
         }
