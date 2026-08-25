@@ -205,7 +205,7 @@ export async function GET(request: Request) {
       } catch (e) {}
     };
 
-    // 3-2. 네이버 모바일 공식 연관검색어 수집
+    // 3-2. 네이버 모바일 공식 연관검색어 정밀 수집 (HTML 노이즈 차단)
     const fetchMobileRel = async (qStr: string) => {
       try {
         const url = `https://m.search.naver.com/search.naver?query=${encodeURIComponent(qStr)}`;
@@ -215,11 +215,19 @@ export async function GET(request: Request) {
           httpsAgent,
         });
         const html = res.data || '';
-        const relMatches = html.match(/class="btn_related_keyword"[^>]*>([^<]+)</g) || 
-                           html.match(/class="tit"[^>]*>([^<]+)</g) || [];
+        const relMatches = html.match(/class="btn_related_keyword"[^>]*>([^<]+)</g) || [];
         for (const m of relMatches) {
           const cleanKw = m.replace(/<[^>]*>/g, '').trim();
-          if (cleanKw && cleanKw !== query && cleanKw.length >= 2 && cleanKw.length <= 25) {
+          if (
+            cleanKw && 
+            cleanKw !== query && 
+            !cleanKw.includes('class=') && 
+            !cleanKw.includes('<') && 
+            !cleanKw.includes('>') && 
+            !cleanKw.includes('APP') && 
+            cleanKw.length >= 2 && 
+            cleanKw.length <= 25
+          ) {
             wordSet.add(cleanKw);
           }
         }
@@ -232,7 +240,7 @@ export async function GET(request: Request) {
       adRelatedItems.forEach((k: any) => {
         if (k.relKeyword) {
           const kwStr = k.relKeyword.trim();
-          if (kwStr && kwStr !== query && kwStr.toLowerCase() !== query.toLowerCase()) {
+          if (kwStr && kwStr !== query && kwStr.toLowerCase() !== query.toLowerCase() && !kwStr.includes('<') && !kwStr.includes('>')) {
             wordSet.add(kwStr);
           }
         }
@@ -293,7 +301,7 @@ export async function GET(request: Request) {
                 const multiplier = logP > 5 ? 2.5 : logP > 4 ? 1.8 : logP > 3 ? 1.2 : 0.6;
                 kwTotalVol = Math.max(10, Math.floor(stats.totalPosts * multiplier));
               } else {
-                kwTotalVol = 5; // 네이버 미등록/검색 미미 키워드 (< 10 실표기)
+                kwTotalVol = 5;
               }
             }
 
@@ -324,29 +332,23 @@ export async function GET(request: Request) {
               recentDate: stats.recentDate,
             };
           } catch (e) {
-            return {
-              keyword: kw,
-              totalSearchVolume: 5,
-              totalPosts: 0,
-              monthlyPosts: 0,
-              competitionRatio: 0.00,
-              grade: 'GOLD' as const,
-              gradeLabel: '🟢 황금',
-              recentDate: '-',
-            };
+            return null;
           }
         })
       );
-      relatedListRaw.push(...chunkResults);
+      relatedListRaw.push(...chunkResults.filter(Boolean));
       if (i + chunkSize < candidateKeywords.length) {
         await new Promise((r) => setTimeout(r, 60));
       }
     }
 
-    // 🔑 [순위 산출 로직 개정] 월간 총 검색량이 높은 순서대로 내림차순 정렬 후 1위~N위 순위 부여
-    relatedListRaw.sort((a, b) => b.totalSearchVolume - a.totalSearchVolume);
+    // 🔑 1. 월간 총 검색량이 10건 이상이고 HTML 노이즈가 없는 실데이터 연관검색어만 엄격 필터링
+    const validList = relatedListRaw.filter((item: any) => item && item.totalSearchVolume >= 10 && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    const relatedKeywords = relatedListRaw.map((item, index) => ({
+    // 🔑 2. 월간 총 검색량이 높은 순서대로 내림차순 정렬 후 순위 부여
+    validList.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
+
+    const relatedKeywords = validList.map((item: any, index: number) => ({
       rank: index + 1,
       ...item,
     }));
