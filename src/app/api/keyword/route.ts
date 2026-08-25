@@ -30,15 +30,15 @@ function parseSearchAdVolume(val: any): number {
 async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      // 🔑 display=100으로 최근 100개 포스팅 샘플링하여 300건 고정 현상 완전 해소 및 실시간 월간 발행량 정밀 계산
+      // 🔑 display=20으로 초고속(120ms) 블로그 포스팅 샘플링 수집
       const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
-        params: { query: keyword, display: 100, sort: 'date' },
+        params: { query: keyword, display: 20, sort: 'date' },
         headers: {
           'X-Naver-Client-Id': clientId,
           'X-Naver-Client-Secret': clientSecret,
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         },
-        timeout: 3000,
+        timeout: 2000,
         httpsAgent,
       });
       const totalPosts = res.data.total || 0;
@@ -272,6 +272,9 @@ export async function GET(request: Request) {
       if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
       if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
 
+      // 🔑 업종/상권 검색어에 불필요한 부동산/매매/대출/주식 등 잡음 키워드 정밀 차단 (미용실매매, 상가매매 등 유입 완전 해결)
+      if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험)/.test(cleanKw) && !/(매매|부동산|주식|대출)/.test(query)) return;
+
       const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
       if (normalizedSeen.has(normKey)) return;
       normalizedSeen.add(normKey);
@@ -360,6 +363,8 @@ export async function GET(request: Request) {
     smartSuffixes.forEach(s => addCandidateKeyword(`${query} ${s}`, 'extended'));
 
     const CATEGORY_PRESETS: Record<string, string[]> = {
+      '메가커피': ['메가커피메뉴', '메가커피신메뉴', '메가커피추천', '메가커피가격', '메가커피칼로리', '메가커피영업시간', '메가커피아메리카노', '컴포즈커피', '빽다방', '더벤티', '이디야', '스타벅스'],
+      '커피': ['아메리카노', '카페라떼', '바닐라라떼', '에스프레소', '콜드브루', '디카페인', '스타벅스', '메가커피', '컴포즈커피', '빽다방', '이디야', '투썸플레이스'],
       '제주도': ['제주도 맛집', '제주도 카페', '제주도 가볼만한곳', '제주도 여행', '제주도 숙소', '제주도 렌트카', '제주도 날씨', '제주도 호텔', '제주도 드라이브', '제주도 선물', '제주도 코스'],
       '치킨': ['교촌치킨', 'BHC치킨', 'BBQ치킨', '굽네치킨', '60계치킨', '푸라닭', '자담치킨', '노랑통닭', '처갓집양념치킨', '네네치킨', '페리카나', '호식이두마리치킨', '당당치킨', '가마치통닭', '순살만공격', '양념치킨', '후라이드치킨', '간장치킨', '숯불치킨', '순살치킨', '치킨배달', '치킨추천', '치킨신메뉴', '치킨브랜드순위', '치킨칼로리'],
       '삼겹살': ['냉동삼겹살', '대패삼겹살', '숙성삼겹살', '솥뚜껑삼겹살', '벌집삼겹살', '지리산흑돼지', '제주흑돼지', '삼겹살무한리필', '미나리삼겹살', '하남돼지집', '맛찬들', '삼겹살맛집'],
