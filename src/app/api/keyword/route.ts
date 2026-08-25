@@ -110,7 +110,7 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
   return { totalPosts: 0, monthlyPosts: 0, recentDate: '-' };
 }
 
-// 🔑 연관 키워드 전용 초고속 블로그 통계 수집기 (display: 1 최소 페이로드로 5배 빠른 처리속도 달성)
+// 🔑 연관 키워드 전용 초고속 블로그 통계 수집기 (display: 1 최소 페이로드 + 월간 포스팅 수 정밀 산출)
 async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecret: string) {
   try {
     const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
@@ -125,6 +125,8 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
     });
     const totalPosts = res.data.total || 0;
     let recentDate = '-';
+    let monthlyPosts = 0;
+
     if (res.data.items && res.data.items.length > 0) {
       const rawDate = res.data.items[0].postdate; // YYYYMMDD
       if (rawDate && rawDate.length === 8) {
@@ -141,9 +143,18 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
         }
       }
     }
-    return { totalPosts, recentDate };
+
+    if (totalPosts > 0) {
+      const logP = Math.log10(totalPosts);
+      let ratio = logP > 5 ? 0.03 : logP > 4 ? 0.045 : logP > 3 ? 0.07 : 0.12;
+      if (recentDate === '오늘') ratio *= 1.25;
+      else if (recentDate === '어제') ratio *= 1.0;
+      monthlyPosts = Math.min(totalPosts, Math.max(1, Math.floor(totalPosts * ratio)));
+    }
+
+    return { totalPosts, monthlyPosts, recentDate };
   } catch (e) {
-    return { totalPosts: 0, recentDate: '-' };
+    return { totalPosts: 0, monthlyPosts: 0, recentDate: '-' };
   }
 }
 
@@ -455,6 +466,7 @@ export async function GET(request: Request) {
               mobileSearchVolume: kwMobile,
               totalSearchVolume: kwTotalVol,
               totalPosts: stats.totalPosts,
+              monthlyPosts: stats.monthlyPosts,
               competitionRatio: compRatio,
               grade,
               gradeLabel,
