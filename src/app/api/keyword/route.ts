@@ -257,11 +257,26 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3-3. 우리가 만든 확장 패턴 & 카테고리 프리셋 (공식 키워드 후순위에 덧붙임)
-    const regionalSuffixes = ['맛집', '카페', '가볼만한곳', '여행', '숙소', '렌트카', '날씨', '호텔', '코스', '추천', '드라이브', '선물', '특산물'];
-    regionalSuffixes.forEach(s => {
-      addCandidateKeyword(`${query} ${s}`, false);
-    });
+    // 3-3. 도메인/의도 감지 기반 스마트 접미사 결합 (어색한 조합 100% 방지)
+    const isRegion = /(제주|강릉|서울|부산|속초|여수|홍대|성수|해운대|전주|경주|인천|수원|경기|강원|충청|전라|경상|도|시|구|동|역|해수욕장|계곡|가볼만한곳|여행)/.test(query);
+    const isCorp = /(삼성|LG|현대|SK|애플|카카오|네이버|테슬라|쿠팡|샤오미|기업|주식)/.test(query);
+    const isFood = /(치킨|삼겹살|피자|초밥|파스타|마라탕|족발|보쌈|갈비|떡볶이|햄버거|커피|카페)/.test(query);
+    const isHealth = /(영양제|비타민|유산균|마그네슘|다이어트|단백질|헬스)/.test(query);
+
+    let smartSuffixes: string[] = [];
+    if (isRegion) {
+      smartSuffixes = ['맛집', '카페', '가볼만한곳', '여행', '숙소', '렌트카', '날씨', '호텔', '드라이브', '선물', '코스'];
+    } else if (isCorp) {
+      smartSuffixes = ['주가', '주식', '채용', '전자', '고객센터', '서비스센터', '신제품', '모델', '출시', '배당금'];
+    } else if (isFood) {
+      smartSuffixes = ['추천', '배달', '신메뉴', '맛집', '브랜드순위', '칼로리', '가격', '양념', '순살'];
+    } else if (isHealth) {
+      smartSuffixes = ['추천', '효능', '부작용', '복용법', '순서', '성분', '가격', '섭취시간'];
+    } else {
+      smartSuffixes = ['추천', '순위', '후기', '가격', '비교', '종류'];
+    }
+
+    smartSuffixes.forEach(s => addCandidateKeyword(`${query} ${s}`, false));
 
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '제주도': ['제주도 맛집', '제주도 카페', '제주도 가볼만한곳', '제주도 여행', '제주도 숙소', '제주도 렌트카', '제주도 날씨', '제주도 호텔', '제주도 드라이브', '제주도 선물', '제주도 코스'],
@@ -278,7 +293,7 @@ export async function GET(request: Request) {
       }
     });
 
-    // 🔑 네이버 공식 제공 키워드 1순위 배치 + 우리가 만든 확장 키워드 2순위 배치
+    // 🔑 네이버 공식 제공 키워드 1순위 배치 + 우리가 만든 의도 맞춤 확장 키워드 2순위 배치
     const candidateKeywords = [...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 35);
 
     // 4. 초고속 100% 동시 병렬 분석 (0.5초 이내 즉시 리턴)
