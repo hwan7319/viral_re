@@ -334,16 +334,22 @@ export async function GET(request: Request) {
             }
           }
 
-          // 🔑 [경쟁비율 공식 개정] 월간 포스팅 실발행량 / 월간 총 검색량 (이번 달 공급 대 수요 비율)
-          const ratio = kwTotalVol > 0 ? (stats.monthlyPosts / kwTotalVol).toFixed(2) : '0.00';
-          const compRatio = parseFloat(ratio);
+          // 🔑 [Dual-Factor SEO 난이도 지수] 월간 공급비율 + 누적 포스팅 총 문서 수 가중치 결합
+          const rawRatio = kwTotalVol > 0 ? stats.monthlyPosts / kwTotalVol : 0;
+          const saturationFactor = Math.max(1, Math.log10(Math.max(1000, stats.totalPosts) / 1000));
+          const seoScore = rawRatio * saturationFactor;
+          const compRatio = parseFloat(rawRatio.toFixed(2));
 
           let grade: 'GOLD' | 'NORMAL' | 'HARD';
           let gradeLabel: string;
-          if (compRatio < 0.5) {
+
+          if (stats.totalPosts > 500000 && kwTotalVol > 30000) {
+            grade = 'HARD';
+            gradeLabel = '🔴 포화';
+          } else if (seoScore < 0.35) {
             grade = 'GOLD';
             gradeLabel = '🟢 황금';
-          } else if (compRatio <= 2.0) {
+          } else if (seoScore <= 1.2) {
             grade = 'NORMAL';
             gradeLabel = '🟡 보통';
           } else {
@@ -381,24 +387,30 @@ export async function GET(request: Request) {
       ...item,
     }));
 
-    // 5. 메인 검색어 경쟁비율 및 등급 계산 (월간 실발행량 / 월간 총 검색량)
+    // 5. 메인 검색어 경쟁비율 및 등급 계산 (Dual-Factor SEO 난이도 지수 적용)
     const mainStats = await fetchBlogStats(query, clientId, clientSecret);
     const mainMonthlyPosts = mainStats.monthlyPosts || 0;
 
-    const ratio = totalSearchVolume > 0 ? (mainMonthlyPosts / totalSearchVolume).toFixed(2) : '0.00';
-    const competitionRatio = parseFloat(ratio);
+    const rawRatio = totalSearchVolume > 0 ? mainMonthlyPosts / totalSearchVolume : 0;
+    const mainSaturationFactor = Math.max(1, Math.log10(Math.max(1000, totalPosts) / 1000));
+    const mainSeoScore = rawRatio * mainSaturationFactor;
+    const competitionRatio = parseFloat(rawRatio.toFixed(2));
 
     let grade: 'GOLD' | 'NORMAL' | 'HARD';
     let statusText: string;
-    if (competitionRatio < 0.5) {
+
+    if (totalPosts > 500000 && totalSearchVolume > 30000) {
+      grade = 'HARD';
+      statusText = '🔴 포화 키워드 (대형 메가 키워드, 상위 노출 경쟁 매우 치열)';
+    } else if (mainSeoScore < 0.35) {
       grade = 'GOLD';
       statusText = '🟢 황금키워드 (상위 노출 매우 유리)';
-    } else if (competitionRatio <= 2.0) {
+    } else if (mainSeoScore <= 1.2) {
       grade = 'NORMAL';
       statusText = '🟡 보통 키워드 (적정 난이도)';
     } else {
       grade = 'HARD';
-      statusText = '🔴 포화 키워드 (경쟁 매우 치열)';
+      statusText = '🔴 포화 키워드 (상위 노출 경쟁 치열)';
     }
 
     return NextResponse.json({
