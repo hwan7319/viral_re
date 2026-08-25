@@ -26,18 +26,19 @@ function parseSearchAdVolume(val: any): number {
   return 0;
 }
 
-// 🔑 네이버 블로그 검색 API로 포스팅 수, 월간 발행량 및 최근 발행일 조회 (429 Rate Limit 재시도 및 백오프 적용)
+// 🔑 네이버 블로그 검색 API로 포스팅 수, 월간 실발행량 및 최근 발행일 조회 (429 Rate Limit 재시도 및 백오프 적용)
 async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
+      // 🔑 display=100으로 최근 100개 포스팅 샘플링하여 300건 고정 현상 완전 해소 및 실시간 월간 발행량 정밀 계산
       const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
-        params: { query: keyword, display: 10, sort: 'date' },
+        params: { query: keyword, display: 100, sort: 'date' },
         headers: {
           'X-Naver-Client-Id': clientId,
           'X-Naver-Client-Secret': clientSecret,
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         },
-        timeout: 2500,
+        timeout: 3000,
         httpsAgent,
       });
       const totalPosts = res.data.total || 0;
@@ -51,7 +52,7 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
           recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
         }
 
-        // 🔑 월 블로그 포스팅 수 (최근 30일 발행량) 정밀 산출
+        // 🔑 최근 30일(월간) 실발행 포스팅 수 정밀 산출
         const today = new Date();
         const thirtyDaysAgoStr = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().replace(/-/g, '').slice(0, 8);
 
@@ -68,14 +69,15 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
         if (newestStr && oldestStr && newestStr.length === 8 && oldestStr.length === 8) {
           const newest = new Date(`${newestStr.slice(0, 4)}-${newestStr.slice(4, 6)}-${newestStr.slice(6, 8)}`).getTime();
           const oldest = new Date(`${oldestStr.slice(0, 4)}-${oldestStr.slice(4, 6)}-${oldestStr.slice(6, 8)}`).getTime();
-          const diffDays = Math.max(0.1, (newest - oldest) / (1000 * 60 * 60 * 24));
-          
+          const diffDays = (newest - oldest) / (1000 * 60 * 60 * 24);
+
           if (diffDays >= 1) {
             const dailyRate = items.length / diffDays;
             monthlyPosts = Math.round(dailyRate * 30);
           } else {
-            // 하루 안에 10개 이상 작성된 고빈도 키워드
-            monthlyPosts = items.length * 30;
+            // 100개가 하루 이내에 다 써진 고빈도 메가 키워드
+            const estDays = diffDays > 0 ? diffDays : 0.1;
+            monthlyPosts = Math.round((items.length / estDays) * 30);
           }
         } else {
           monthlyPosts = postsIn30Days;
