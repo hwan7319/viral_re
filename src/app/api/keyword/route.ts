@@ -159,18 +159,22 @@ export async function GET(request: Request) {
     const clientId = process.env.NAVER_CLIENT_ID || 'q9pQhg3nFnKJtORmjiWp';
     const clientSecret = process.env.NAVER_CLIENT_SECRET || 'JS9tAMAkWC';
 
-    // 1. 메인 검색어 네이버 블로그 검색 API 호출 (상위 블로그 포스팅 10개)
-    const blogRes = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
-      params: { query, display: 10, sort: 'sim' },
-      headers: {
-        'X-Naver-Client-Id': clientId,
-        'X-Naver-Client-Secret': clientSecret,
-      },
-      timeout: 3000,
-      httpsAgent,
-    });
+    // 1. 메인 검색어 네이버 블로그 검색 API 및 월간 발행량 수집 (1회 호출로 중복 제거)
+    const [blogRes, mainStats] = await Promise.all([
+      axios.get('https://openapi.naver.com/v1/search/blog.json', {
+        params: { query, display: 10, sort: 'sim' },
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+        },
+        timeout: 2500,
+        httpsAgent,
+      }),
+      fetchBlogStats(query, clientId, clientSecret),
+    ]);
 
     const totalPosts = blogRes.data.total || 0;
+    const mainMonthlyPosts = mainStats.monthlyPosts || 0;
     const topPosts = (blogRes.data.items || []).map((item: any) => ({
       title: item.title.replace(/<[^>]*>?/g, ''),
       link: item.link,
@@ -491,9 +495,6 @@ export async function GET(request: Request) {
     }));
 
     // 5. 메인 검색어 경쟁비율 및 등급 정밀 계산 (누적 총 포스팅 수 / 월간 총 검색량)
-    const mainStats = await fetchBlogStats(query, clientId, clientSecret);
-    const mainMonthlyPosts = mainStats.monthlyPosts || 0;
-
     const competitionRatio = totalSearchVolume > 0 ? parseFloat((totalPosts / totalSearchVolume).toFixed(2)) : 0;
 
     let grade: 'GOLD' | 'NORMAL' | 'HARD';
