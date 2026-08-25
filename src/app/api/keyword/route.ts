@@ -149,9 +149,9 @@ export async function GET(request: Request) {
     let isRealSearchAdData = false;
     let adRelatedItems: any[] = [];
 
-    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID;
-    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY;
-    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY;
+    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '4483791';
+    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
+    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
 
     if (customerId && searchAdApiKey && searchAdSecretKey) {
       try {
