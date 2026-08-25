@@ -309,8 +309,8 @@ export async function GET(request: Request) {
       }
     });
 
-    // 🔑 네이버 공식 제공 키워드 1순위 배치 + 우리가 만든 의도 맞춤 확장 키워드 2순위 배치
-    const candidateKeywords = [...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 35);
+    // 🔑 네이버 공식 제공 키워드 1순위 배치 + 우리가 만든 의도 맞춤 확장 키워드 2순위 배치 (최대 75개 후적합 후보군 확보)
+    const candidateKeywords = [...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 75);
 
     // 4. 초고속 100% 동시 병렬 분석 (0.5초 이내 즉시 리턴)
     const chunkResults = await Promise.all(
@@ -375,13 +375,25 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResults.filter(Boolean);
 
-    // 🔑 1. 월간 총 검색량이 10건 이상이고 HTML 노이즈가 없는 실데이터 연관검색어만 엄격 필터링
-    const validList = relatedListRaw.filter((item: any) => item && item.totalSearchVolume >= 10 && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 제거 및 유효 키워드)
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 월간 총 검색량이 높은 순서대로 내림차순 정렬 후 순위 부여
-    validList.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
+    // 🔑 2. 조건 1: 월간 총 검색량이 20건 이상인 연관검색어 1차 엄격 필터링
+    const listGte20 = validListRaw.filter((item: any) => item.totalSearchVolume >= 20);
+    listGte20.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
 
-    const relatedKeywords = validList.map((item: any, index: number) => ({
+    let finalValidList: any[] = [];
+    if (listGte20.length >= 50) {
+      // 20건 이상인 항목이 50개 이상이면: 20건 이상 항목들로만 구성
+      finalValidList = listGte20;
+    } else {
+      // 20건 이상인 항목이 50개 미만이면: 조건 완화 (20건 미만 항목도 순서대로 최대한 채워서 50개 이상 확보)
+      const listLt20 = validListRaw.filter((item: any) => item.totalSearchVolume < 20 && item.totalSearchVolume >= 5);
+      listLt20.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
+      finalValidList = [...listGte20, ...listLt20].slice(0, 60);
+    }
+
+    const relatedKeywords = finalValidList.map((item: any, index: number) => ({
       rank: index + 1,
       ...item,
     }));
