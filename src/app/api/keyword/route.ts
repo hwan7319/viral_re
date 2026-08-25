@@ -272,8 +272,8 @@ export async function GET(request: Request) {
       if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
       if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
 
-      // 🔑 업종/상권 검색어에 불필요한 부동산/매매/대출/주식 등 잡음 키워드 정밀 차단 (미용실매매, 상가매매 등 유입 완전 해결)
-      if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험)/.test(cleanKw) && !/(매매|부동산|주식|대출)/.test(query)) return;
+      // 🔑 업종/상권 검색어에 불필요한 부동산/매매/대출/주식/취업 등 잡음 키워드 정밀 차단 (미용실매매, 50대취업 등 유입 완전 해결)
+      if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험|취업|채용)/.test(cleanKw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
 
       const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
       if (normalizedSeen.has(normKey)) return;
