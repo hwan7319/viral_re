@@ -264,18 +264,18 @@ export async function GET(request: Request) {
       }
     });
 
-    // 🔑 1차 연관어 상위 15개의 자동완성 서브 쿼리 병렬 확장
-    if (wordSet.size < 60) {
-      const firstPass = Array.from(wordSet).slice(0, 15);
+    // 🔑 1차 수집량이 부족할 때만 상위 5개 서브쿼리 병렬 1회 확장 (최소화로 속도 최적화)
+    if (wordSet.size < 25) {
+      const firstPass = Array.from(wordSet).slice(0, 5);
       await Promise.all(firstPass.map(subKw => fetchAC(subKw)));
     }
 
-    // 🔑 실데이터 연관검색어 최대 75개 수집 및 정밀 분석
-    const candidateKeywords = Array.from(wordSet).slice(0, 75);
+    // 🔑 속도와 정확도의 최적 밸런스: 상위 40개 엄선 후보 키워드 즉시 분석
+    const candidateKeywords = Array.from(wordSet).slice(0, 40);
 
-    // 4. 네이버 공식 연관 검색어 병렬 청크 분석 (5개 단위 청크 슬라이싱 + 50ms 딜레이)
+    // 4. 고성능 병렬 배치 처리 (12개 단위 대용량 일괄 병렬 처리, 지연시간 최소화)
     const relatedListRaw: any[] = [];
-    const chunkSize = 5;
+    const chunkSize = 12;
 
     for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
       const chunk = candidateKeywords.slice(i, i + chunkSize);
@@ -337,9 +337,6 @@ export async function GET(request: Request) {
         })
       );
       relatedListRaw.push(...chunkResults.filter(Boolean));
-      if (i + chunkSize < candidateKeywords.length) {
-        await new Promise((r) => setTimeout(r, 60));
-      }
     }
 
     // 🔑 1. 월간 총 검색량이 10건 이상이고 HTML 노이즈가 없는 실데이터 연관검색어만 엄격 필터링
