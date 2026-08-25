@@ -324,7 +324,8 @@ export async function GET(request: Request) {
             }
           }
 
-          const ratio = kwTotalVol > 0 ? (stats.totalPosts / kwTotalVol).toFixed(2) : '0.00';
+          // 🔑 [경쟁비율 공식 개정] 월간 포스팅 실발행량 / 월간 총 검색량 (이번 달 공급 대 수요 비율)
+          const ratio = kwTotalVol > 0 ? (stats.monthlyPosts / kwTotalVol).toFixed(2) : '0.00';
           const compRatio = parseFloat(ratio);
 
           let grade: 'GOLD' | 'NORMAL' | 'HARD';
@@ -370,11 +371,11 @@ export async function GET(request: Request) {
       ...item,
     }));
 
-    // 5. 메인 검색어 경쟁비율 및 등급 계산 (메인 검색어 월간 블로그 발행량 추정 포함)
+    // 5. 메인 검색어 경쟁비율 및 등급 계산 (월간 실발행량 / 월간 총 검색량)
     const mainStats = await fetchBlogStats(query, clientId, clientSecret);
     const mainMonthlyPosts = mainStats.monthlyPosts || 0;
 
-    const ratio = totalSearchVolume > 0 ? (totalPosts / totalSearchVolume).toFixed(2) : '0.00';
+    const ratio = totalSearchVolume > 0 ? (mainMonthlyPosts / totalSearchVolume).toFixed(2) : '0.00';
     const competitionRatio = parseFloat(ratio);
 
     let grade: 'GOLD' | 'NORMAL' | 'HARD';
