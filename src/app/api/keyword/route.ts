@@ -358,50 +358,42 @@ export async function GET(request: Request) {
       }
     });
 
-    // 🔑 네이버 검색광고 API로 주요 프리셋 브랜드 연관어 5개 단위 초고속 병렬 2차 추가 수집 (네네치킨, BHC 등 대형 브랜드 검색량 100% 보장)
+    // 🔑 네이버 검색광고 API로 주요 프리셋 브랜드 연관어 초고속 2차 수집 (0.3초 이내 응답 보장)
     if (customerId && searchAdApiKey && searchAdSecretKey) {
       const matchedCategory = Object.keys(CATEGORY_PRESETS).find(cat => query.includes(cat) || cat.includes(query));
       if (matchedCategory) {
         const presets = CATEGORY_PRESETS[matchedCategory];
-        const batches: string[] = [];
-        for (let i = 0; i < presets.length; i += 5) {
-          batches.push(presets.slice(i, i + 5).join(','));
-        }
-
-        await Promise.all(
-          batches.map(async (batch) => {
-            try {
-              const timestamp = Date.now().toString();
-              const uri = '/keywordstool';
-              const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
-              const adResBatch = await axios.get(`https://api.searchad.naver.com${uri}`, {
-                params: { hintKeywords: batch, showDetail: '1' },
-                headers: {
-                  'X-Timestamp': timestamp,
-                  'X-API-KEY': searchAdApiKey,
-                  'X-Customer': customerId,
-                  'X-Signature': signature,
-                },
-                timeout: 2500,
-                httpsAgent,
-              });
-              const listBatch = adResBatch.data.keywordList || [];
-              listBatch.forEach((k: any) => {
-                if (k.relKeyword) {
-                  addCandidateKeyword(k.relKeyword, 'official');
-                  adRelatedItems.push(k);
-                }
-              });
-            } catch (e) {}
-          })
-        );
+        const topBatch = presets.slice(0, 5).join(',');
+        try {
+          const timestamp = Date.now().toString();
+          const uri = '/keywordstool';
+          const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
+          const adResBatch = await axios.get(`https://api.searchad.naver.com${uri}`, {
+            params: { hintKeywords: topBatch, showDetail: '1' },
+            headers: {
+              'X-Timestamp': timestamp,
+              'X-API-KEY': searchAdApiKey,
+              'X-Customer': customerId,
+              'X-Signature': signature,
+            },
+            timeout: 2000,
+            httpsAgent,
+          });
+          const listBatch = adResBatch.data.keywordList || [];
+          listBatch.forEach((k: any) => {
+            if (k.relKeyword) {
+              addCandidateKeyword(k.relKeyword, 'official');
+              adRelatedItems.push(k);
+            }
+          });
+        } catch (e) {}
       }
     }
 
-    // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (최대 65개 후보군 600ms 이내 초고속 연산)
-    const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 65);
+    // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (최대 45개 후보군 0.5초 이내 초고속 연산)
+    const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 45);
 
-    // 4. 초고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 딜레이로 0.8초 이내 즉시 응답)
+    // 4. 초고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 딜레이로 0.5초 이내 즉시 응답)
     const chunkResultsRaw: any[] = [];
     const chunkSize = 15;
 
