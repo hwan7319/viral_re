@@ -26,12 +26,12 @@ function parseSearchAdVolume(val: any): number {
   return 0;
 }
 
-// 🔑 네이버 블로그 검색 API로 포스팅 수 및 최근 발행일 단건 조회 (429 Rate Limit 재시도 및 백오프 적용)
+// 🔑 네이버 블로그 검색 API로 포스팅 수, 월간 발행량 및 최근 발행일 조회 (429 Rate Limit 재시도 및 백오프 적용)
 async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
-        params: { query: keyword, display: 1, sort: 'date' },
+        params: { query: keyword, display: 10, sort: 'date' },
         headers: {
           'X-Naver-Client-Id': clientId,
           'X-Naver-Client-Secret': clientSecret,
@@ -42,13 +42,49 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
       });
       const totalPosts = res.data.total || 0;
       let recentDate = '-';
+      let monthlyPosts = 0;
+
       if (res.data.items && res.data.items.length > 0) {
-        const rawDate = res.data.items[0].postdate; // YYYYMMDD
+        const items = res.data.items;
+        const rawDate = items[0].postdate; // YYYYMMDD
         if (rawDate && rawDate.length === 8) {
           recentDate = `${rawDate.substring(0, 4)}.${rawDate.substring(4, 6)}.${rawDate.substring(6, 8)}`;
         }
+
+        // 🔑 월 블로그 포스팅 수 (최근 30일 발행량) 정밀 산출
+        const today = new Date();
+        const thirtyDaysAgoStr = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().replace(/-/g, '').slice(0, 8);
+
+        let postsIn30Days = 0;
+        for (const item of items) {
+          if (item.postdate && item.postdate >= thirtyDaysAgoStr) {
+            postsIn30Days++;
+          }
+        }
+
+        const newestStr = items[0].postdate;
+        const oldestStr = items[items.length - 1].postdate;
+
+        if (newestStr && oldestStr && newestStr.length === 8 && oldestStr.length === 8) {
+          const newest = new Date(`${newestStr.slice(0, 4)}-${newestStr.slice(4, 6)}-${newestStr.slice(6, 8)}`).getTime();
+          const oldest = new Date(`${oldestStr.slice(0, 4)}-${oldestStr.slice(4, 6)}-${oldestStr.slice(6, 8)}`).getTime();
+          const diffDays = Math.max(0.1, (newest - oldest) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays >= 1) {
+            const dailyRate = items.length / diffDays;
+            monthlyPosts = Math.round(dailyRate * 30);
+          } else {
+            // 하루 안에 10개 이상 작성된 고빈도 키워드
+            monthlyPosts = items.length * 30;
+          }
+        } else {
+          monthlyPosts = postsIn30Days;
+        }
+
+        monthlyPosts = Math.min(totalPosts, Math.max(postsIn30Days, monthlyPosts));
       }
-      return { totalPosts, recentDate };
+
+      return { totalPosts, monthlyPosts, recentDate };
     } catch (e: any) {
       if (e.response && e.response.status === 429 && i < retries - 1) {
         await new Promise((r) => setTimeout(r, 120 * (i + 1)));
@@ -57,7 +93,7 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
       }
     }
   }
-  return { totalPosts: 0, recentDate: '-' };
+  return { totalPosts: 0, monthlyPosts: 0, recentDate: '-' };
 }
 
 export async function GET(request: Request) {
@@ -237,6 +273,7 @@ export async function GET(request: Request) {
               keyword: kw,
               totalSearchVolume: kwTotalVol,
               totalPosts: stats.totalPosts,
+              monthlyPosts: stats.monthlyPosts,
               competitionRatio: compRatio,
               grade,
               gradeLabel,
@@ -247,6 +284,7 @@ export async function GET(request: Request) {
               keyword: kw,
               totalSearchVolume: 15,
               totalPosts: 10,
+              monthlyPosts: 5,
               competitionRatio: 0.67,
               grade: 'NORMAL' as const,
               gradeLabel: '🟡 보통',
@@ -267,7 +305,10 @@ export async function GET(request: Request) {
       ...item,
     }));
 
-    // 5. 메인 검색어 경쟁비율 및 등급 계산
+    // 5. 메인 검색어 경쟁비율 및 등급 계산 (메인 검색어 월간 블로그 발행량 추정 포함)
+    const mainStats = await fetchBlogStats(query, clientId, clientSecret);
+    const mainMonthlyPosts = mainStats.monthlyPosts || 0;
+
     const ratio = totalSearchVolume > 0 ? (totalPosts / totalSearchVolume).toFixed(2) : '0.00';
     const competitionRatio = parseFloat(ratio);
 
@@ -292,6 +333,7 @@ export async function GET(request: Request) {
         mobileSearchVolume,
         totalSearchVolume,
         totalPosts,
+        monthlyPosts: mainMonthlyPosts,
         competitionRatio,
         grade,
         statusText,

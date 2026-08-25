@@ -1283,10 +1283,10 @@ export default function Home() {
   const [keywordQuery, setKeywordQuery] = useState('');
   const [keywordData, setKeywordData] = useState<any>(null);
   const [isKeywordLoading, setIsKeywordLoading] = useState(false);
-  const [keywordSortField, setKeywordSortField] = useState<'rank' | 'keyword' | 'volume' | 'posts' | 'ratio' | 'date'>('rank');
+  const [keywordSortField, setKeywordSortField] = useState<'rank' | 'keyword' | 'volume' | 'posts' | 'monthlyPosts' | 'ratio' | 'date'>('rank');
   const [keywordSortOrder, setKeywordSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // 🔑 키워드마스터 결과 동적 정렬 (검색량순, 포스팅순, 황금키워드순, 기본순위순)
+  // 🔑 키워드마스터 결과 동적 정렬 (검색량순, 포스팅순, 월발행량순, 황금키워드순, 기본순위순)
   const processedRelatedKeywords = useMemo(() => {
     if (!keywordData || !keywordData.relatedKeywords) return [];
     const list = [...keywordData.relatedKeywords];
@@ -1306,6 +1306,9 @@ export default function Home() {
       } else if (keywordSortField === 'posts') {
         valA = a.totalPosts;
         valB = b.totalPosts;
+      } else if (keywordSortField === 'monthlyPosts') {
+        valA = a.monthlyPosts || 0;
+        valB = b.monthlyPosts || 0;
       } else if (keywordSortField === 'ratio') {
         valA = a.competitionRatio;
         valB = b.competitionRatio;
@@ -3486,9 +3489,9 @@ export default function Home() {
                 </div>
               ) : keywordData ? (
                 <>
-                  {/* 📊 지표 카운트 3컬럼 가로 1행 카드 레이아웃 (상단 카드와 하단 표 100% 라인 대칭) */}
+                  {/* 📊 지표 카운트 4컬럼 가로 1행 카드 레이아웃 (월간 발행량 카드 포함) */}
                   <div>
-                    <div className="keyword-master-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                    <div className="keyword-master-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
                       {/* 1. 월간 총 검색량 카드 */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
@@ -3524,10 +3527,26 @@ export default function Home() {
                         )}
                       </div>
 
-                      {/* 2. 총 블로그 포스팅 수 카드 */}
+                      {/* 2. 월 블로그 포스팅 수 카드 (신규 추가) */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>총 블로그 포스팅 수</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월 블로그 포스팅 수</span>
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+                          (최근 30일 신규 발행량)
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10b981', fontVariantNumeric: 'tabular-nums' }}>
+                            {(keywordData.monthlyPosts || 0).toLocaleString()}
+                          </span>
+                          <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10b981' }}>건/월</span>
+                        </div>
+                      </div>
+
+                      {/* 3. 누적 블로그 포스팅 수 카드 */}
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>누적 블로그 포스팅 수</span>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
                           (네이버 누적 등록 문서)
@@ -3538,7 +3557,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* 3. 경쟁비율 카드 */}
+                      {/* 4. 경쟁비율 카드 */}
                       <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>경쟁비율 (문서 ÷ 검색량)</span>
@@ -3623,7 +3642,7 @@ export default function Home() {
                       border: '1px solid var(--border-color)',
                       backgroundColor: 'var(--bg-tertiary)'
                     }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '600px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '700px' }}>
                         <thead>
                           <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', userSelect: 'none' }}>
                             <th 
@@ -3655,12 +3674,21 @@ export default function Home() {
                             </th>
                             <th 
                               onClick={() => {
+                                if (keywordSortField === 'monthlyPosts') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                                else { setKeywordSortField('monthlyPosts'); setKeywordSortOrder('desc'); }
+                              }}
+                              style={{ padding: '12px 14px', width: '125px', textAlign: 'right', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                            >
+                              월 블로그 포스팅 수 {keywordSortField === 'monthlyPosts' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                            </th>
+                            <th 
+                              onClick={() => {
                                 if (keywordSortField === 'posts') setKeywordSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
                                 else { setKeywordSortField('posts'); setKeywordSortOrder('asc'); }
                               }}
-                              style={{ padding: '12px 14px', width: '120px', textAlign: 'right', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                              style={{ padding: '12px 14px', width: '125px', textAlign: 'right', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
                             >
-                              블로그 포스팅 수 {keywordSortField === 'posts' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                              누적 포스팅 수 {keywordSortField === 'posts' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
                             </th>
                             <th 
                               onClick={() => {
@@ -3719,6 +3747,9 @@ export default function Home() {
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {item.totalSearchVolume.toLocaleString()}회
+                              </td>
+                              <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
+                                {(item.monthlyPosts || 0).toLocaleString()}건/월
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: 'var(--text-secondary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {item.totalPosts.toLocaleString()}건
