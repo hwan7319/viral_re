@@ -153,6 +153,11 @@ export async function GET(request: Request) {
     const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
     const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
 
+    let adCompIdx = '';
+    let adPlAvgDepth = 0;
+    let pcClickCount = 0;
+    let mobileClickCount = 0;
+
     if (customerId && searchAdApiKey && searchAdSecretKey) {
       try {
         const timestamp = Date.now().toString();
@@ -180,6 +185,11 @@ export async function GET(request: Request) {
           mobileSearchVolume = parseSearchAdVolume(exactMatch.monthlyMobileQcCnt);
           totalSearchVolume = pcSearchVolume + mobileSearchVolume;
           isRealSearchAdData = true;
+
+          adCompIdx = exactMatch.compIdx || '';
+          adPlAvgDepth = exactMatch.plAvgDepth || 0;
+          pcClickCount = exactMatch.monthlyAvePcClkCnt || 0;
+          mobileClickCount = exactMatch.monthlyAveMobileClkCnt || 0;
         }
 
         adRelatedItems = keywordList;
@@ -427,6 +437,13 @@ export async function GET(request: Request) {
         pcSearchVolume,
         mobileSearchVolume,
         totalSearchVolume,
+        pcRatio: totalSearchVolume > 0 ? parseFloat(((pcSearchVolume / totalSearchVolume) * 100).toFixed(1)) : 0,
+        mobileRatio: totalSearchVolume > 0 ? parseFloat(((mobileSearchVolume / totalSearchVolume) * 100).toFixed(1)) : 0,
+        adCompIdx,
+        adPlAvgDepth,
+        pcClickCount,
+        mobileClickCount,
+        totalClickCount: parseFloat((pcClickCount + mobileClickCount).toFixed(1)),
         totalPosts,
         monthlyPosts: mainMonthlyPosts,
         competitionRatio,
