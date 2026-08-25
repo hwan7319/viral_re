@@ -197,24 +197,26 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
     }
 
-    // 3. 네이버 공식 API 1차 수집 ➡️ 2차 확장 패턴 순으로 정밀 수집 및 띄어쓰기 중복(normKey) 완전 제거
+    // 3. 네이버 공식 API 1차 수집 ➡️ 브랜드 프리셋 ➡️ 2차 확장 패턴 순 정밀 수집
     const officialSet = new Set<string>();
+    const presetSet = new Set<string>();
     const extendedSet = new Set<string>();
     const normalizedSeen = new Set<string>();
 
-    const addCandidateKeyword = (kwStr: string, isOfficial: boolean) => {
+    const addCandidateKeyword = (kwStr: string, type: 'official' | 'preset' | 'extended' = 'extended') => {
       if (!kwStr) return;
       const cleanKw = kwStr.trim();
       if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
       if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
 
-      // 🔑 공백 제거 정규화 키로 "제주도 추천" vs "제주도추천" 띄어쓰기 중복 완전 제거
       const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
       if (normalizedSeen.has(normKey)) return;
       normalizedSeen.add(normKey);
 
-      if (isOfficial) {
+      if (type === 'official') {
         officialSet.add(cleanKw);
+      } else if (type === 'preset') {
+        presetSet.add(cleanKw);
       } else {
         extendedSet.add(cleanKw);
       }
@@ -232,7 +234,7 @@ export async function GET(request: Request) {
         if (acRes.data && acRes.data.items && acRes.data.items[0]) {
           acRes.data.items[0].forEach((item: any) => {
             if (item[0] && typeof item[0] === 'string') {
-              addCandidateKeyword(item[0], isOfficial);
+              addCandidateKeyword(item[0], isOfficial ? 'official' : 'extended');
             }
           });
         }
@@ -252,17 +254,17 @@ export async function GET(request: Request) {
         const relMatches = html.match(/class="btn_related_keyword"[^>]*>([^<]+)</g) || [];
         for (const m of relMatches) {
           const cleanKw = m.replace(/<[^>]*>/g, '').trim();
-          addCandidateKeyword(cleanKw, true);
+          addCandidateKeyword(cleanKw, 'official');
         }
       } catch (e) {}
     };
 
-    await Promise.all([fetchAC(query), fetchMobileRel(query)]);
+    await Promise.all([fetchAC(query, true), fetchMobileRel(query)]);
 
     if (adRelatedItems.length > 0) {
       adRelatedItems.forEach((k: any) => {
         if (k.relKeyword) {
-          addCandidateKeyword(k.relKeyword, true);
+          addCandidateKeyword(k.relKeyword, 'official');
         }
       });
     }
@@ -292,7 +294,7 @@ export async function GET(request: Request) {
       smartSuffixes = ['추천', '순위', '후기', '가격', '비교', '종류'];
     }
 
-    smartSuffixes.forEach(s => addCandidateKeyword(`${query} ${s}`, false));
+    smartSuffixes.forEach(s => addCandidateKeyword(`${query} ${s}`, 'extended'));
 
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '제주도': ['제주도 맛집', '제주도 카페', '제주도 가볼만한곳', '제주도 여행', '제주도 숙소', '제주도 렌트카', '제주도 날씨', '제주도 호텔', '제주도 드라이브', '제주도 선물', '제주도 코스'],
@@ -305,12 +307,12 @@ export async function GET(request: Request) {
 
     Object.keys(CATEGORY_PRESETS).forEach(cat => {
       if (query.includes(cat) || cat.includes(query)) {
-        CATEGORY_PRESETS[cat].forEach(bp => addCandidateKeyword(bp, false));
+        CATEGORY_PRESETS[cat].forEach(bp => addCandidateKeyword(bp, 'preset'));
       }
     });
 
-    // 🔑 네이버 공식 제공 키워드 1순위 배치 + 우리가 만든 의도 맞춤 확장 키워드 2순위 배치 (최대 75개 후적합 후보군 확보)
-    const candidateKeywords = [...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 75);
+    // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (최대 100개 후적합 후보군 확보)
+    const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 100);
 
     // 4. 초고속 100% 동시 병렬 분석 (0.5초 이내 즉시 리턴)
     const chunkResults = await Promise.all(
