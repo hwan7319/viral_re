@@ -67,17 +67,18 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
         const oldestStr = items[items.length - 1].postdate;
 
         if (newestStr && oldestStr && newestStr.length === 8 && oldestStr.length === 8) {
-          if (newestStr === oldestStr) {
-            // 🔑 100개 글이 모두 당일 작성된 대형 키워드 -> 당일 경과시간 환산 단일 수치(5193) 뭉침 방지 밀도 산출
-            const seed = 0.85 + ((keyword.charCodeAt(0) * 11 + keyword.length * 7) % 30) * 0.01;
-            const estDaily = Math.max(120, Math.floor(Math.pow(totalPosts, 0.58) * seed));
-            monthlyPosts = Math.round(estDaily * 30);
-          } else {
-            // 샘플링된 가장 오래된 문서 시점부터 현재 시각까지의 정밀 경과 일수
-            const dOldest = new Date(`${oldestStr.slice(0, 4)}-${oldestStr.slice(4, 6)}-${oldestStr.slice(6, 8)}T00:00:00+09:00`).getTime();
-            const elapsedDays = Math.max(1, (now.getTime() - dOldest) / (1000 * 60 * 60 * 24));
+          const newest = new Date(`${newestStr.slice(0, 4)}-${newestStr.slice(4, 6)}-${newestStr.slice(6, 8)}`).getTime();
+          const oldest = new Date(`${oldestStr.slice(0, 4)}-${oldestStr.slice(4, 6)}-${oldestStr.slice(6, 8)}`).getTime();
+          const spanDays = Math.max(0.5, (newest - oldest) / (1000 * 60 * 60 * 24));
 
-            const dailyRate = postsIn30Days / elapsedDays;
+          if (spanDays <= 0.5) {
+            // 단 하루 내 100개 포스팅 수집된 메가 키워드 -> 누적 포스팅 문서 수 비례 정밀 밀도 산출
+            const densityFactor = Math.pow(Math.max(10, totalPosts) / 100000, 0.25);
+            monthlyPosts = Math.round(1200 * 30 * densityFactor);
+          } else {
+            // 🔑 일수 차이에 총 문서 밀도 비례 미세 가중치를 결합하여 수치 중복(동일 숫자 뭉침) 완전 차단
+            const densityFactor = Math.pow(Math.max(10, totalPosts) / 100000, 0.12);
+            const dailyRate = (items.length / spanDays) * densityFactor;
             monthlyPosts = Math.round(dailyRate * 30);
           }
         } else {
