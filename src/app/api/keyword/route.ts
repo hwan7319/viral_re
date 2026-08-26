@@ -202,8 +202,8 @@ export async function GET(request: Request) {
       if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
       if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
 
-      // 🔑 업종/상권 검색어에 불필요한 부동산/매매/대출/주식/취업 등 잡음 키워드 정밀 차단 (미용실매매, 50대취업 등 유입 완전 해결)
-      if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험|취업|채용)/.test(cleanKw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
+      // 🔑 업종/상권 검색어에 불필요한 부동산/매매/대출/주식/취업 등 잡음 키워드 정밀 차단 (단, 검색어 자체를 포함하는 연관어는 유지)
+      if (!cleanKw.includes(query) && /(매매|부동산|원룸|투룸|빌라|주식|대출|보험|취업|채용)/.test(cleanKw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
 
       const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
       if (normalizedSeen.has(normKey)) return;
@@ -309,7 +309,7 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
     }
 
-    // 🔑 3. 스마트 후보 키워드 선별 알고리즘 (프리셋 + 자동완성 + 검색광고 관련도/검색량 순 정밀 추출)
+    // 🔑 3. 스마트 후보 키워드 선별 알고리즘 (프리셋 + 자동완성 + 스마트 지역/동 연관어 서픽스 + 검색광고)
     const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
 
     // 3-1. 카테고리 프리셋 추가 (최우선 순위 1)
@@ -348,6 +348,36 @@ export async function GET(request: Request) {
         candidateMap.set(key, { keyword: kw, pc, mobile, total: pc + mobile, priority: 1 });
       }
     });
+
+    // 3-2-B. 지역/상권/동 키워드 스마트 연관어 서픽스 자동 확장 (대치동, 역삼동, 성수동 등 수집 0건 완벽 방지)
+    const LOCAL_SUFFIXES = [
+      '맛집', '학원', '카페', '병원', '미용실', '피부과', '스터디카페', '헬스장',
+      '필라테스', '치과', '술집', '고기집', '밥집', '베이커리', '빵집', '가볼만한곳',
+      '핫플', '데이트', '네일', '학원가', '독서실', '음식점', '횟집', '점심', '회식',
+      '마사지', '안과', '한의원', '정형외과', '이비인후과', '내과', '성형외과'
+    ];
+
+    if (candidateMap.size < 20) {
+      LOCAL_SUFFIXES.forEach(suf => {
+        const expKw = `${query} ${suf}`;
+        const expKwNoSpace = `${query}${suf}`;
+        const key1 = expKw.replace(/\s+/g, '').toLowerCase();
+        const key2 = expKwNoSpace.replace(/\s+/g, '').toLowerCase();
+
+        if (!candidateMap.has(key1) && !candidateMap.has(key2)) {
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && (k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1 || k.relKeyword.replace(/\s+/g, '').toLowerCase() === key2));
+          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+          candidateMap.set(key1, {
+            keyword: expKw,
+            pc,
+            mobile,
+            total: pc + mobile,
+            priority: 2,
+          });
+        }
+      });
+    }
 
     // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 2, 3)
     const queryCore = cleanHintQuery.length >= 2 ? cleanHintQuery.slice(0, 2).toLowerCase() : cleanHintQuery.toLowerCase();
