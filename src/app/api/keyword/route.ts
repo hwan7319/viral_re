@@ -284,7 +284,7 @@ export async function GET(request: Request) {
 
     if (adRes?.data?.keywordList) {
       const keywordList = adRes.data.keywordList || [];
-      const exactMatch = keywordList.find((k: any) => k.relKeyword.replace(/\s+/g, '') === cleanHintQuery);
+      const exactMatch = keywordList.find((k: any) => k.relKeyword.replace(/\s+/g, '').toLowerCase() === cleanHintQuery.toLowerCase());
 
       if (exactMatch) {
         pcSearchVolume = parseSearchAdVolume(exactMatch.monthlyPcQcCnt);
@@ -299,11 +299,6 @@ export async function GET(request: Request) {
       }
 
       adRelatedItems = keywordList;
-      keywordList.forEach((k: any) => {
-        if (k.relKeyword) {
-          addCandidateKeyword(k.relKeyword, 'official');
-        }
-      });
     }
 
     if (!isRealSearchAdData) {
@@ -317,7 +312,7 @@ export async function GET(request: Request) {
     // 🔑 3. 스마트 후보 키워드 선별 알고리즘 (프리셋 + 자동완성 + 검색광고 관련도/검색량 순 정밀 추출)
     const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
 
-    // 3-1. 카테고리 프리셋 추가 (최우선 순위)
+    // 3-1. 카테고리 프리셋 추가 (최우선 순위 1)
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '메가커피': ['메가커피메뉴', '메가커피신메뉴', '메가커피추천', '메가커피가격', '메가커피칼로리', '메가커피영업시간', '메가커피아메리카노', '컴포즈커피', '빽다방', '더벤티', '이디야', '스타벅스'],
       '커피': ['아메리카노', '카페라떼', '바닐라라떼', '에스프레소', '콜드브루', '디카페인', '스타벅스', '메가커피', '컴포즈커피', '빽다방', '이디야', '투썸플레이스'],
@@ -343,18 +338,18 @@ export async function GET(request: Request) {
       }
     });
 
-    // 3-2. 네이버 공식 연관/자동완성 키워드 추가 (우선순위 2)
+    // 3-2. 네이버 공식 연관/자동완성 키워드 추가 (우선순위 1)
     officialSet.forEach(kw => {
       const key = kw.replace(/\s+/g, '').toLowerCase();
-      if (kw !== query && !candidateMap.has(key)) {
+      if (kw !== query && key !== cleanHintQuery.toLowerCase() && !candidateMap.has(key)) {
         const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
         const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
         const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-        candidateMap.set(key, { keyword: kw, pc, mobile, total: pc + mobile, priority: 2 });
+        candidateMap.set(key, { keyword: kw, pc, mobile, total: pc + mobile, priority: 1 });
       }
     });
 
-    // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 3, 4)
+    // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 2, 3)
     const queryCore = cleanHintQuery.length >= 2 ? cleanHintQuery.slice(0, 2).toLowerCase() : cleanHintQuery.toLowerCase();
     const queryWords = query.toLowerCase().split(' ');
 
@@ -370,7 +365,6 @@ export async function GET(request: Request) {
       const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
       const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
       const total = pc + mobile;
-      if (total < 20) return; // 월간 20건 미만 저품질 노이즈 제외
 
       const isRelevant = kw.toLowerCase().includes(queryCore) || queryWords.some(w => kw.toLowerCase().includes(w));
       candidateMap.set(key, {
@@ -378,7 +372,7 @@ export async function GET(request: Request) {
         pc,
         mobile,
         total,
-        priority: isRelevant ? 3 : 4,
+        priority: isRelevant ? 2 : 3,
       });
     });
 
@@ -388,12 +382,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 상위 60개 검증 후보군 확정 (1.0초 이내 고속 병렬 연산)
-    const candidateKeywordsList = allCandidatesList.slice(0, 60);
+    // 상위 50개 검증 후보군 확정 (1.0초 이내 고속 병렬 연산)
+    const candidateKeywordsList = allCandidatesList.slice(0, 50);
 
-    // 4. 고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 방지 및 50개 고품질 수집)
+    // 4. 고속 병렬 청크 분석 (10개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 방지 및 50개 고품질 수집)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 15;
+    const chunkSize = 10;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
@@ -413,19 +407,19 @@ export async function GET(request: Request) {
             if (totalPosts === 0 && kwTotalVol > 0) {
               const logV = Math.log10(kwTotalVol);
               const ratio = logV > 5 ? 0.8 : logV > 4 ? 1.2 : logV > 3 ? 1.8 : 2.5;
-              totalPosts = Math.max(25, Math.floor(kwTotalVol * ratio));
-              monthlyPosts = Math.max(2, Math.floor(totalPosts * 0.05));
+              totalPosts = Math.max(15, Math.floor(kwTotalVol * ratio));
+              monthlyPosts = Math.max(1, Math.floor(totalPosts * 0.05));
               recentDate = '오늘';
             }
 
             if (kwTotalVol === 0 && totalPosts > 0) {
               const logP = Math.log10(totalPosts);
               const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-              kwTotalVol = Math.max(20, Math.floor(totalPosts * multiplier));
+              kwTotalVol = Math.max(10, Math.floor(totalPosts * multiplier));
             }
 
-            // 🔑 3대 데이터 품질 필터링 (월간 총 검색량 20건 이상, 누적 포스팅 수 10건 이상 유의미한 키워드만 엄선)
-            if (kwTotalVol < 20 || totalPosts < 10) {
+            // 🔑 둘 다 데이터가 아예 없는 완전 깡통 키워드만 유일하게 제거
+            if (kwTotalVol === 0 && totalPosts === 0) {
               return null;
             }
 
@@ -472,10 +466,10 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 10건 이하 깡통 더미 완전 제거)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts >= 10 && item.totalSearchVolume >= 20 && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 검색량 0건 완전 깡통 더미 제거)
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0) && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 월간 총 검색량 순으로 정렬 후 상위 50개 고품질 연관 검색어 목록 확정
+    // 🔑 2. 월간 총 검색량 순으로 정렬 후 상위 50개 연관 검색어 목록 확정
     validListRaw.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
 
     const final50List = validListRaw.slice(0, 50);
