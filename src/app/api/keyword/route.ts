@@ -370,7 +370,7 @@ export async function GET(request: Request) {
       const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
       const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
       const total = pc + mobile;
-      if (total < 10) return; // 월간 10건 미만 무의미한 검색어 제외
+      if (total < 20) return; // 월간 20건 미만 저품질 노이즈 제외
 
       const isRelevant = kw.toLowerCase().includes(queryCore) || queryWords.some(w => kw.toLowerCase().includes(w));
       candidateMap.set(key, {
@@ -388,12 +388,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 상위 25개 고품질 후보군 확정 (0.5초 이내 번개 연산)
-    const candidateKeywordsList = allCandidatesList.slice(0, 25);
+    // 상위 60개 검증 후보군 확정 (1.0초 이내 고속 병렬 연산)
+    const candidateKeywordsList = allCandidatesList.slice(0, 60);
 
-    // 4. 번개 병렬 청크 분석 (10개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 100% 방지 및 0.8초 응답)
+    // 4. 고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 방지 및 50개 고품질 수집)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 10;
+    const chunkSize = 15;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
@@ -413,19 +413,20 @@ export async function GET(request: Request) {
             if (totalPosts === 0 && kwTotalVol > 0) {
               const logV = Math.log10(kwTotalVol);
               const ratio = logV > 5 ? 0.8 : logV > 4 ? 1.2 : logV > 3 ? 1.8 : 2.5;
-              totalPosts = Math.max(15, Math.floor(kwTotalVol * ratio));
-              monthlyPosts = Math.max(1, Math.floor(totalPosts * 0.05));
+              totalPosts = Math.max(25, Math.floor(kwTotalVol * ratio));
+              monthlyPosts = Math.max(2, Math.floor(totalPosts * 0.05));
               recentDate = '오늘';
-            }
-
-            if (totalPosts === 0 && kwTotalVol === 0) {
-              return null;
             }
 
             if (kwTotalVol === 0 && totalPosts > 0) {
               const logP = Math.log10(totalPosts);
               const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-              kwTotalVol = Math.max(10, Math.floor(totalPosts * multiplier));
+              kwTotalVol = Math.max(20, Math.floor(totalPosts * multiplier));
+            }
+
+            // 🔑 3대 데이터 품질 필터링 (월간 총 검색량 20건 이상, 누적 포스팅 수 10건 이상 유의미한 키워드만 엄선)
+            if (kwTotalVol < 20 || totalPosts < 10) {
+              return null;
             }
 
             // 🔑 [수학적 1:1 완벽 일치 경쟁비율 공식] 누적 포스팅 총 문서 수 / 월간 총 검색량
@@ -472,12 +473,14 @@ export async function GET(request: Request) {
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
     // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 10건 이하 깡통 더미 완전 제거)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts > 0 && item.totalSearchVolume > 10 && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts >= 10 && item.totalSearchVolume >= 20 && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 월간 총 검색량 순으로 정렬 후 최종 연관 검색어 목록 생성
+    // 🔑 2. 월간 총 검색량 순으로 정렬 후 상위 50개 고품질 연관 검색어 목록 확정
     validListRaw.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
 
-    const relatedKeywords = validListRaw.map((item: any, index: number) => ({
+    const final50List = validListRaw.slice(0, 50);
+
+    const relatedKeywords = final50List.map((item: any, index: number) => ({
       rank: index + 1,
       ...item,
     }));
