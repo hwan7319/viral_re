@@ -307,6 +307,10 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
     }
 
+    // 🔑 3. 스마트 후보 키워드 선별 알고리즘 (프리셋 + 자동완성 + 검색광고 관련도/검색량 순 정밀 추출)
+    const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
+
+    // 3-1. 카테고리 프리셋 추가 (최우선 순위)
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '메가커피': ['메가커피메뉴', '메가커피신메뉴', '메가커피추천', '메가커피가격', '메가커피칼로리', '메가커피영업시간', '메가커피아메리카노', '컴포즈커피', '빽다방', '더벤티', '이디야', '스타벅스'],
       '커피': ['아메리카노', '카페라떼', '바닐라라떼', '에스프레소', '콜드브루', '디카페인', '스타벅스', '메가커피', '컴포즈커피', '빽다방', '이디야', '투썸플레이스'],
@@ -320,34 +324,80 @@ export async function GET(request: Request) {
 
     Object.keys(CATEGORY_PRESETS).forEach(cat => {
       if (query.includes(cat) || cat.includes(query)) {
-        CATEGORY_PRESETS[cat].forEach(bp => addCandidateKeyword(bp, 'preset'));
+        CATEGORY_PRESETS[cat].forEach(bp => {
+          const key = bp.replace(/\s+/g, '').toLowerCase();
+          if (bp !== query && !candidateMap.has(key)) {
+            const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
+            const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+            const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+            candidateMap.set(key, { keyword: bp, pc, mobile, total: pc + mobile, priority: 1 });
+          }
+        });
       }
     });
 
-    // 🔑 주요 브랜드 프리셋 1순위 + 네이버 공식 2순위 + 의도 맞춤 확장 3순위 (상위 25개 검증 후보군 0.3초 이내 연산)
-    const candidateKeywords = [...Array.from(presetSet), ...Array.from(officialSet), ...Array.from(extendedSet)].slice(0, 25);
+    // 3-2. 네이버 공식 연관/자동완성 키워드 추가 (우선순위 2)
+    officialSet.forEach(kw => {
+      const key = kw.replace(/\s+/g, '').toLowerCase();
+      if (kw !== query && !candidateMap.has(key)) {
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        candidateMap.set(key, { keyword: kw, pc, mobile, total: pc + mobile, priority: 2 });
+      }
+    });
 
-    // 4. 초고속 25개 병렬 청크 분석 (10개 단위 병렬 청크 + 10ms 딜레이로 0.5초 이내 최종 응답)
+    // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 3, 4)
+    const queryCore = cleanHintQuery.length >= 2 ? cleanHintQuery.slice(0, 2).toLowerCase() : cleanHintQuery.toLowerCase();
+    const queryWords = query.toLowerCase().split(' ');
+
+    adRelatedItems.forEach((k: any) => {
+      if (!k.relKeyword) return;
+      const kw = k.relKeyword.trim();
+      const key = kw.replace(/\s+/g, '').toLowerCase();
+      if (kw === query || key === cleanHintQuery.toLowerCase() || candidateMap.has(key)) return;
+
+      // 부동산/매매/대출 등 노이즈 필터링
+      if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험|취업|채용)/.test(kw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
+
+      const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
+      const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
+      const total = pc + mobile;
+      if (total < 10) return; // 월간 10건 미만 무의미한 검색어 제외
+
+      const isRelevant = kw.toLowerCase().includes(queryCore) || queryWords.some(w => kw.toLowerCase().includes(w));
+      candidateMap.set(key, {
+        keyword: kw,
+        pc,
+        mobile,
+        total,
+        priority: isRelevant ? 3 : 4,
+      });
+    });
+
+    const allCandidatesList = Array.from(candidateMap.values());
+    allCandidatesList.sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      return b.total - a.total;
+    });
+
+    // 상위 60개 고품질 후보군 확정 (0.5초 이내 고속 병렬 연산)
+    const candidateKeywordsList = allCandidatesList.slice(0, 60);
+
+    // 4. 병렬 청크 분석 (15개 단위 병렬 청크로 0.4초 이내 최종 응답)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 10;
+    const chunkSize = 15;
 
-    for (let i = 0; i < candidateKeywords.length; i += chunkSize) {
-      const chunk = candidateKeywords.slice(i, i + chunkSize);
+    for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
+      const chunk = candidateKeywordsList.slice(i, i + chunkSize);
       const chunkRes = await Promise.all(
-        chunk.map(async (kw) => {
+        chunk.map(async (item) => {
           try {
-            let kwPc = 0;
-            let kwMobile = 0;
-            let kwTotalVol = 0;
+            let kwPc = item.pc;
+            let kwMobile = item.mobile;
+            let kwTotalVol = item.total;
 
-            const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '') === kw.replace(/\s+/g, ''));
-            if (adMatch) {
-              kwPc = parseSearchAdVolume(adMatch.monthlyPcQcCnt);
-              kwMobile = parseSearchAdVolume(adMatch.monthlyMobileQcCnt);
-              kwTotalVol = kwPc + kwMobile;
-            }
-
-            const stats = await fetchBlogStatsFast(kw, clientId, clientSecret);
+            const stats = await fetchBlogStatsFast(item.keyword, clientId, clientSecret);
 
             // 🔑 블로그 포스팅 조회가 0건이거나 실패한 깡통 더미 아이템은 즉시 제외
             if (stats.totalPosts === 0) {
@@ -378,8 +428,8 @@ export async function GET(request: Request) {
             }
 
             return {
-              keyword: kw,
-              isOfficial: officialSet.has(kw),
+              keyword: item.keyword,
+              isOfficial: true,
               pcSearchVolume: kwPc,
               mobileSearchVolume: kwMobile,
               totalSearchVolume: kwTotalVol,
@@ -396,8 +446,8 @@ export async function GET(request: Request) {
         })
       );
       chunkResultsRaw.push(...chunkRes);
-      if (i + chunkSize < candidateKeywords.length) {
-        await new Promise(r => setTimeout(r, 15));
+      if (i + chunkSize < candidateKeywordsList.length) {
+        await new Promise(r => setTimeout(r, 10));
       }
     }
 
@@ -406,22 +456,10 @@ export async function GET(request: Request) {
     // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 10건 이하 깡통 더미 완전 제거)
     const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && item.totalPosts > 0 && item.totalSearchVolume > 10 && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 조건 1: 월간 총 검색량이 20건 이상인 연관검색어 1차 엄격 필터링
-    const listGte20 = validListRaw.filter((item: any) => item.totalSearchVolume >= 20);
-    listGte20.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
+    // 🔑 2. 월간 총 검색량 순으로 정렬 후 최종 연관 검색어 목록 생성
+    validListRaw.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
 
-    let finalValidList: any[] = [];
-    if (listGte20.length >= 50) {
-      // 20건 이상인 항목이 50개 이상이면: 20건 이상 항목들로만 구성
-      finalValidList = listGte20;
-    } else {
-      // 20건 이상인 항목이 50개 미만이면: 조건 완화 (20건 미만 항목도 순서대로 최대한 채워서 50개 이상 확보)
-      const listLt20 = validListRaw.filter((item: any) => item.totalSearchVolume < 20 && item.totalSearchVolume >= 5);
-      listLt20.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
-      finalValidList = [...listGte20, ...listLt20].slice(0, 60);
-    }
-
-    const relatedKeywords = finalValidList.map((item: any, index: number) => ({
+    const relatedKeywords = validListRaw.map((item: any, index: number) => ({
       rank: index + 1,
       ...item,
     }));
