@@ -165,6 +165,19 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
   return { totalPosts: 0, monthlyPosts: 0, recentDate: '오늘' };
 }
 
+// 🔑 4대 엔티티 정밀 분류 엔진 (LOCATION, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
+function classifyQueryEntityType(query: string): 'LOCATION' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
+  const cleanQ = query.replace(/\s+/g, '');
+  const seasonalRegex = /(말복|초복|중복|복날|입추|입동|동지|단오|추석|설날|명절|어버이날|스승의날|어린이날|크리스마스|발렌타인|화이트데이|빼빼로데이|할로윈|정월대보름|새해|신정|구정)/i;
+  if (seasonalRegex.test(cleanQ)) return 'SEASONAL_EVENT';
+  const locationSuffixRegex = /([가-힣]{2,}(동|역|구|시|도|길|로|리|면|읍|군|해수욕장|공항|산|계곡))$/;
+  const knownLocations = ['제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면', '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담'];
+  if (locationSuffixRegex.test(cleanQ) || knownLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
+  const brandKeywords = ['메가커피', '컴포즈', '빽다방', '스타벅스', '투썸', '이디야', '교촌치킨', 'bhc', 'bbq', '굽네', '아이폰', '갤럭시', '다이슨', '올리브영', '오케스트로', '쿠팡', '네이버'];
+  if (brandKeywords.some(b => cleanQ.toLowerCase().includes(b))) return 'BRAND_PRODUCT';
+  return 'GENERAL_CATEGORY';
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -173,6 +186,8 @@ export async function GET(request: Request) {
     if (!query) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
+
+    const entityType = classifyQueryEntityType(query);
 
     const clientId = process.env.NAVER_CLIENT_ID || 'q9pQhg3nFnKJtORmjiWp';
     const clientSecret = process.env.NAVER_CLIENT_SECRET || 'JS9tAMAkWC';
@@ -202,8 +217,10 @@ export async function GET(request: Request) {
       if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
       if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
 
-      // 🔑 업종/상권 검색어에 불필요한 부동산/매매/대출/주식/취업 등 잡음 키워드 정밀 차단 (단, 검색어 자체를 포함하는 연관어는 유지)
       if (!cleanKw.includes(query) && /(매매|부동산|원룸|투룸|빌라|주식|대출|보험|취업|채용)/.test(cleanKw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
+      if (entityType !== 'LOCATION') {
+        if (/(병원|학원|필라테스|네일|안과|이비인후과|정형외과|한의원)/.test(cleanKw) && !/(병원|학원|필라테스|네일)/.test(query)) return;
+      }
 
       const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
       if (normalizedSeen.has(normKey)) return;
@@ -220,7 +237,6 @@ export async function GET(request: Request) {
 
     const cleanHintQuery = query.replace(/\s+/g, '');
 
-    // ⚡ 1. [초고속 200ms 병렬 수집 엔진] 메인 블로그 통계 + 검색광고 API + 네이버 공식 자동완성을 단 1회동시 병렬 수행
     const [blogRes, mainStats, adRes] = await Promise.all([
       axios.get('https://openapi.naver.com/v1/search/blog.json', {
         params: { query, display: 10, sort: 'sim' },
@@ -309,10 +325,9 @@ export async function GET(request: Request) {
       mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
     }
 
-    // 🔑 3. 스마트 후보 키워드 선별 알고리즘 (프리셋 + 자동완성 + 스마트 지역/동 연관어 서픽스 + 검색광고)
+    // 🔑 3. 스마트 4대 엔티티 분류 기반 후보 키워드 추출 알고리즘
     const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
 
-    // 3-1. 카테고리 프리셋 추가 (최우선 순위 1)
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '메가커피': ['메가커피메뉴', '메가커피신메뉴', '메가커피추천', '메가커피가격', '메가커피칼로리', '메가커피영업시간', '메가커피아메리카노', '컴포즈커피', '빽다방', '더벤티', '이디야', '스타벅스'],
       '커피': ['아메리카노', '카페라떼', '바닐라라떼', '에스프레소', '콜드브루', '디카페인', '스타벅스', '메가커피', '컴포즈커피', '빽다방', '이디야', '투썸플레이스'],
@@ -338,7 +353,6 @@ export async function GET(request: Request) {
       }
     });
 
-    // 3-2. 네이버 공식 연관/자동완성 키워드 추가 (우선순위 1)
     officialSet.forEach(kw => {
       const key = kw.replace(/\s+/g, '').toLowerCase();
       if (kw !== query && key !== cleanHintQuery.toLowerCase() && !candidateMap.has(key)) {
@@ -349,32 +363,48 @@ export async function GET(request: Request) {
       }
     });
 
-    // 3-2-B. 지역/상권/동 키워드 스마트 연관어 서픽스 자동 확장 (대치동, 역삼동, 성수동 등 수집 0건 완벽 방지)
-    const LOCAL_SUFFIXES = [
-      '맛집', '학원', '카페', '병원', '미용실', '피부과', '스터디카페', '헬스장',
-      '필라테스', '치과', '술집', '고기집', '밥집', '베이커리', '빵집', '가볼만한곳',
-      '핫플', '데이트', '네일', '학원가', '독서실', '음식점', '횟집', '점심', '회식',
-      '마사지', '안과', '한의원', '정형외과', '이비인후과', '내과', '성형외과'
-    ];
-
-    if (candidateMap.size < 20) {
+    // 3-2-B. 🔑 엔티티 유형별 정밀 연관어 문맥 서픽스 확장 Engine
+    if (entityType === 'LOCATION') {
+      const LOCAL_SUFFIXES = [
+        '맛집', '학원', '카페', '병원', '미용실', '피부과', '스터디카페', '헬스장',
+        '필라테스', '치과', '술집', '고기집', '밥집', '베이커리', '빵집', '가볼만한곳',
+        '핫플', '데이트', '네일', '학원가', '독서실', '음식점', '점심', '회식'
+      ];
       LOCAL_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
-        const expKwNoSpace = `${query}${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
-        const key2 = expKwNoSpace.replace(/\s+/g, '').toLowerCase();
-
-        if (!candidateMap.has(key1) && !candidateMap.has(key2)) {
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && (k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1 || k.relKeyword.replace(/\s+/g, '').toLowerCase() === key2));
+        if (!candidateMap.has(key1)) {
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
           const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
           const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          candidateMap.set(key1, {
-            keyword: expKw,
-            pc,
-            mobile,
-            total: pc + mobile,
-            priority: 2,
-          });
+          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
+        }
+      });
+    } else if (entityType === 'SEASONAL_EVENT') {
+      const SEASONAL_ASSOCIATIONS = [
+        '삼계탕', '치킨', '삼겹살', '장어', '백숙', '전복', '보양식', '음식', '요리',
+        '날짜', '인사말', '선물', '의미', '유래', '초복', '중복', '복날', '메뉴', '추천'
+      ];
+      SEASONAL_ASSOCIATIONS.forEach(suf => {
+        const expKw = suf.startsWith(query) || query.startsWith(suf) ? suf : `${query} ${suf}`;
+        const key1 = expKw.replace(/\s+/g, '').toLowerCase();
+        if (!candidateMap.has(key1)) {
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
+        }
+      });
+    } else if (entityType === 'BRAND_PRODUCT') {
+      const BRAND_SUFFIXES = ['메뉴', '신메뉴', '추천', '가격', '칼로리', '영업시간', '매장', '이벤트', '할인', '후기'];
+      BRAND_SUFFIXES.forEach(suf => {
+        const expKw = `${query} ${suf}`;
+        const key1 = expKw.replace(/\s+/g, '').toLowerCase();
+        if (!candidateMap.has(key1)) {
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
         }
       });
     }
