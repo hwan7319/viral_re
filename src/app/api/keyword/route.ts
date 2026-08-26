@@ -165,16 +165,28 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
   return { totalPosts: 0, monthlyPosts: 0, recentDate: '오늘' };
 }
 
-// 🔑 4대 엔티티 정밀 분류 엔진 (LOCATION, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
-function classifyQueryEntityType(query: string): 'LOCATION' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
+// 🔑 5대 엔티티 정밀 분류 엔진 (LOCATION, VENUE, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
+function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
   const cleanQ = query.replace(/\s+/g, '');
+
+  // 1. VENUE (백화점, 팝업, 쇼핑몰, 멀티플렉스 건물)
+  const venueRegex = /(더현대|백화점|아울렛|스타필드|코엑스|타임스퀘어|롯데몰|아이파크몰|센텀시티)/i;
+  if (venueRegex.test(cleanQ)) return 'VENUE';
+
+  // 2. SEASONAL / EVENT (절기, 명절, 이벤트)
   const seasonalRegex = /(말복|초복|중복|복날|입추|입동|동지|단오|추석|설날|명절|어버이날|스승의날|어린이날|크리스마스|발렌타인|화이트데이|빼빼로데이|할로윈|정월대보름|새해|신정|구정)/i;
   if (seasonalRegex.test(cleanQ)) return 'SEASONAL_EVENT';
+
+  // 3. LOCATION / REGION (행정동, 역, 상권, 지역)
   const locationSuffixRegex = /([가-힣]{2,}(동|역|구|시|도|길|로|리|면|읍|군|해수욕장|공항|산|계곡))$/;
   const knownLocations = ['제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면', '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담'];
   if (locationSuffixRegex.test(cleanQ) || knownLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
+
+  // 4. BRAND / PRODUCT (기업, 브랜드, IT/가전 제품)
   const brandKeywords = ['메가커피', '컴포즈', '빽다방', '스타벅스', '투썸', '이디야', '교촌치킨', 'bhc', 'bbq', '굽네', '아이폰', '갤럭시', '다이슨', '올리브영', '오케스트로', '쿠팡', '네이버'];
   if (brandKeywords.some(b => cleanQ.toLowerCase().includes(b))) return 'BRAND_PRODUCT';
+
+  // 5. GENERAL CATEGORY (일반 범용 카테고리)
   return 'GENERAL_CATEGORY';
 }
 
@@ -395,6 +407,18 @@ export async function GET(request: Request) {
           candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
         }
       });
+    } else if (entityType === 'VENUE') {
+      const VENUE_SUFFIXES = ['맛집', '카페', '팝업', '전시', '놀거리', '디저트', '식당', '음식점', '빵집', '가볼만한곳', '주차비', '주차', '영업시간', '행사', '핫플', '데이트', '쇼핑'];
+      VENUE_SUFFIXES.forEach(suf => {
+        const expKw = `${query} ${suf}`;
+        const key1 = expKw.replace(/\s+/g, '').toLowerCase();
+        if (!candidateMap.has(key1)) {
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
+        }
+      });
     } else if (entityType === 'BRAND_PRODUCT') {
       const BRAND_SUFFIXES = ['메뉴', '신메뉴', '추천', '가격', '칼로리', '영업시간', '매장', '이벤트', '할인', '후기'];
       BRAND_SUFFIXES.forEach(suf => {
@@ -475,7 +499,9 @@ export async function GET(request: Request) {
             if (kwTotalVol === 0 && totalPosts > 0) {
               const logP = Math.log10(totalPosts);
               const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-              kwTotalVol = Math.max(10, Math.floor(totalPosts * multiplier));
+              const calcVol = Math.floor(totalPosts * multiplier);
+              if (calcVol < 10) return null; // 더미 느낌 유발하는 10건 미만 저품질 키워드는 깔끔하게 차단
+              kwTotalVol = calcVol;
             }
 
             // 🔑 둘 다 데이터가 아예 없는 완전 깡통 키워드만 유일하게 제거
