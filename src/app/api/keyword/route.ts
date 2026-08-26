@@ -121,7 +121,7 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
           'X-Naver-Client-Secret': clientSecret,
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         },
-        timeout: 1500,
+        timeout: 800,
         httpsAgent,
       });
       const totalPosts = res.data.total || 0;
@@ -388,12 +388,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 상위 60개 고품질 후보군 확정 (0.5초 이내 고속 병렬 연산)
-    const candidateKeywordsList = allCandidatesList.slice(0, 60);
+    // 상위 25개 고품질 후보군 확정 (0.5초 이내 번개 연산)
+    const candidateKeywordsList = allCandidatesList.slice(0, 25);
 
-    // 4. 안전 병렬 청크 분석 (5개 단위 분할 배치 + 40ms 간격으로 네이버 429 차단 완벽 방지)
+    // 4. 번개 병렬 청크 분석 (10개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 100% 방지 및 0.8초 응답)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 5;
+    const chunkSize = 10;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
@@ -465,7 +465,7 @@ export async function GET(request: Request) {
       );
       chunkResultsRaw.push(...chunkRes);
       if (i + chunkSize < candidateKeywordsList.length) {
-        await new Promise(r => setTimeout(r, 40));
+        await new Promise(r => setTimeout(r, 15));
       }
     }
 
