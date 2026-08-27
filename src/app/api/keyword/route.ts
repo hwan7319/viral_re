@@ -243,7 +243,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = query.toLowerCase();
+    const cacheKey = `v100_${query.toLowerCase()}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
