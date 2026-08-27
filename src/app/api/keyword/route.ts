@@ -241,7 +241,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = `v102_${query.toLowerCase()}`;
+    const cacheKey = `v105_${query.toLowerCase()}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
@@ -490,6 +490,10 @@ export async function GET(request: Request) {
       const kw = k.relKeyword.trim();
       const key = kw.replace(/\s+/g, '').toLowerCase();
       if (kw === query || key === cleanHintQuery.toLowerCase() || candidateMap.has(key)) return;
+
+      // 🔑 무관한 대형 절기/명절 노이즈 필터링 (양꼬치 검색 시 말복, 추석, 설날 등 엉뚱한 대형 키워드 1~2위 점령 100% 차단)
+      const seasonalNoise = /(말복|초복|중복|복날|추석|설날|명절|입추|입동|동지|단오|어버이날|스승의날|어린이날|크리스마스)/i;
+      if (seasonalNoise.test(kw) && !seasonalNoise.test(query)) return;
 
       // 부동산/매매/대출 등 노이즈 필터링
       if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험|취업|채용)/.test(kw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
