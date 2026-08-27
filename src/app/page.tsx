@@ -2813,7 +2813,7 @@ export default function Home() {
                         loading="lazy"
                         referrerPolicy="no-referrer"
                         style={{
-                          width: '100%', height: '100%', objectFit: 'cover',
+                          width: '100%', height: '170px', objectFit: 'cover',
                           transition: 'transform 0.4s ease'
                         }}
                         className="card-image-hover"
