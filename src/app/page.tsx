@@ -2940,9 +2940,7 @@ export default function Home() {
             )}
 
             {/* 💻📱 쿠팡 파트너스 수익형 실시간 특가 배너 */}
-            {displayedCampaigns.length > 8 && (
-              <CoupangBanner />
-            )}
+            <CoupangBanner />
 
             {/* 2. 하단 3번째 라인 이후 (카드 9번째부터 끝까지) */}
             {visibleCount > 8 && displayedCampaigns.length > 8 && (

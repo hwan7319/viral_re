@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 
 interface CoupangBannerProps {
   id?: number;
@@ -8,7 +8,6 @@ interface CoupangBannerProps {
   trackingCode?: string;
   width?: string | number;
   height?: string | number;
-  bannerUrl?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -19,75 +18,37 @@ export default function CoupangBanner({
   trackingCode = 'AF5060942',
   width = '680',
   height = '140',
-  bannerUrl,
   className = '',
   style,
 }: CoupangBannerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    if (bannerUrl && bannerUrl.includes('<script')) {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = bannerUrl;
-        const scripts = containerRef.current.querySelectorAll('script');
-        scripts.forEach((oldScript) => {
-          const newScript = document.createElement('script');
-          Array.from(oldScript.attributes).forEach((attr) => {
-            newScript.setAttribute(attr.name, attr.value);
-          });
-          newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-          oldScript.parentNode?.replaceChild(newScript, oldScript);
-        });
-      }
-      return;
-    }
-
-    const loadCoupangWidget = () => {
-      try {
-        // @ts-ignore
-        if (window.PartnersCoupang && window.PartnersCoupang.G) {
-          if (containerRef.current) {
-            containerRef.current.innerHTML = '';
-          }
-          // @ts-ignore
-          new window.PartnersCoupang.G({
-            id,
-            template,
-            trackingCode,
-            width: String(width),
-            height: String(height),
-            tsource: '',
-          });
-        }
-      } catch (err) {
-        console.error('Coupang Partners widget init error:', err);
-      }
-    };
-
-    const scriptId = 'coupang-partners-g-script';
-    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-
-    if (!script) {
-      script = document.createElement('script');
-      script.id = scriptId;
-      script.src = 'https://ads-partners.coupang.com/g.js';
-      script.async = true;
-      script.onload = loadCoupangWidget;
-      document.head.appendChild(script);
-    } else {
-      // If script is already loaded
-      loadCoupangWidget();
-    }
-  }, [id, template, trackingCode, width, height, bannerUrl]);
+  const iframeSrcDoc = useMemo(() => {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; display: flex; justify-content: center; align-items: center; }
+  </style>
+</head>
+<body>
+  <script src="https://ads-partners.coupang.com/g.js"></script>
+  <script>
+    try {
+      new PartnersCoupang.G({"id":${id},"template":"${template}","trackingCode":"${trackingCode}","width":"${width}","height":"${height}","tsource":""});
+    } catch(e) {}
+  </script>
+</body>
+</html>`;
+  }, [id, template, trackingCode, width, height]);
 
   return (
     <div
       className={`coupang-banner-wrapper ${className}`}
       style={{
         width: '100%',
-        margin: '24px 0',
+        margin: '28px 0',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -96,35 +57,27 @@ export default function CoupangBanner({
         ...style,
       }}
     >
-      {bannerUrl && bannerUrl.startsWith('http') ? (
-        <iframe
-          src={bannerUrl}
-          width={width}
-          height={height}
-          frameBorder="0"
-          scrolling="no"
-          referrerPolicy="unsafe-url"
-          style={{ border: 'none', borderRadius: '8px', maxWidth: '100%' }}
-        />
-      ) : (
-        <div
-          ref={containerRef}
-          style={{
-            width: '100%',
-            maxWidth: '100%',
-            minHeight: typeof height === 'number' ? `${height}px` : `${height}px`,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
-          }}
-        />
-      )}
+      <iframe
+        srcDoc={iframeSrcDoc}
+        width={typeof width === 'number' ? `${width}px` : width === '680' ? '680' : '100%'}
+        height={typeof height === 'number' ? `${height}px` : height === '140' ? '140' : height}
+        frameBorder="0"
+        scrolling="no"
+        referrerPolicy="unsafe-url"
+        style={{
+          border: 'none',
+          borderRadius: '8px',
+          maxWidth: '100%',
+          width: '680px',
+          height: '140px',
+          backgroundColor: 'transparent',
+        }}
+      />
 
       {/* 공정위 문구 준수 (Fair Trade Commission Compliance) */}
       <span
         style={{
-          marginTop: '8px',
+          marginTop: '6px',
           fontSize: '0.72rem',
           color: 'var(--text-tertiary, #94a3b8)',
           textAlign: 'center',
