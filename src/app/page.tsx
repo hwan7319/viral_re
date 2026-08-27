@@ -3885,40 +3885,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* 📱 모바일 전용 하단 고정 플로팅 앵커 배너 (Bottom Sticky Anchor Ad) */}
-      {showStickyAd && (
-        <div 
-          className="mobile-only-ad-sticky" 
-          style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90,
-            height: '56px', backgroundColor: 'var(--bg-secondary)',
-            borderTop: '2px solid var(--accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 16px',
-            boxShadow: '0 -4px 16px rgba(0,0,0,0.12)',
-            animation: 'fadeIn 0.3s ease-out'
-          }}
-        >
-          {/* 닫기 버튼 */}
-          <button 
-            onClick={() => setShowStickyAd(false)} 
-            style={{
-              position: 'absolute', top: '-10px', right: '12px',
-              width: '20px', height: '20px', borderRadius: '50%',
-              backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-              fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: 'var(--shadow-sm)', cursor: 'pointer', zIndex: 10,
-              color: 'var(--text-secondary)'
-            }}
-          >
-            ✕
-          </button>
-          
-          {/* 모바일 하단 실시간 쿠팡 파트너스 수익형 앵커 배너 */}
-          <CoupangBanner id={1023026} trackingCode="AF5060942" height={100} style={{ margin: 0 }} />
-        </div>
-      )}
-
 
 
       {/* 💻📱 우측 하단 최상단 탑 버튼 (Scroll to Top) */}
