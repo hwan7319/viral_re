@@ -157,9 +157,7 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
 
       if (totalPosts > 0) {
         const logP = Math.log10(totalPosts);
-        let ratio = logP > 5 ? 0.03 : logP > 4 ? 0.045 : logP > 3 ? 0.07 : 0.12;
-        if (recentDate === '오늘') ratio *= 1.25;
-        else if (recentDate === '어제') ratio *= 1.0;
+        const ratio = logP > 5 ? 0.03 : logP > 4 ? 0.045 : logP > 3 ? 0.07 : 0.10;
         monthlyPosts = Math.min(totalPosts, Math.max(1, Math.floor(totalPosts * ratio)));
       }
 
@@ -243,7 +241,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = `v100_${query.toLowerCase()}`;
+    const cacheKey = `v101_${query.toLowerCase()}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
