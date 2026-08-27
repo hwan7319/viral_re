@@ -207,6 +207,32 @@ async function fetchSearchAdBatch(keywords: string[], customerId: string, search
   }
 }
 
+// 🔑 메인 키워드 상단 블로그 리스트 수집기 (자동 재시도 및 페일오버 보장)
+async function fetchBlogMain(query: string, clientId: string, clientSecret: string, retries = 2) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
+        params: { query, display: 10, sort: 'sim' },
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        },
+        timeout: 1500,
+        httpsAgent,
+      });
+      if (res.data && res.data.total !== undefined) {
+        return res.data;
+      }
+    } catch (e: any) {
+      if (i < retries - 1) {
+        await new Promise(r => setTimeout(r, 60));
+      }
+    }
+  }
+  return null;
+}
+
 // 🔑 5대 엔티티 정밀 분류 엔진 (LOCATION, VENUE, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
 function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
   const cleanQ = query.replace(/\s+/g, '');
@@ -241,7 +267,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = `v105_${query.toLowerCase()}`;
+    const cacheKey = `v106_${query.toLowerCase()}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
@@ -298,16 +324,7 @@ export async function GET(request: Request) {
     const cleanHintQuery = query.replace(/\s+/g, '');
 
     const [blogRes, mainStats, adRes] = await Promise.all([
-      axios.get('https://openapi.naver.com/v1/search/blog.json', {
-        params: { query, display: 10, sort: 'sim' },
-        headers: {
-          'X-Naver-Client-Id': clientId,
-          'X-Naver-Client-Secret': clientSecret,
-        },
-        timeout: 2000,
-        httpsAgent,
-      }).catch(() => null),
-
+      fetchBlogMain(query, clientId, clientSecret),
       fetchBlogStats(query, clientId, clientSecret),
 
       (async () => {
@@ -348,9 +365,15 @@ export async function GET(request: Request) {
       }).catch(() => null),
     ]);
 
-    const totalPosts = blogRes?.data?.total || 0;
-    const mainMonthlyPosts = mainStats.monthlyPosts || 0;
-    const topPosts = (blogRes?.data?.items || []).map((item: any) => ({
+    const totalPosts = blogRes?.total ?? mainStats?.totalPosts ?? 0;
+    let mainMonthlyPosts = mainStats.monthlyPosts || 0;
+    if (mainMonthlyPosts === 0 && totalPosts > 0) {
+      const logP = Math.log10(totalPosts);
+      const ratio = logP > 5 ? 0.03 : logP > 4 ? 0.045 : logP > 3 ? 0.07 : 0.10;
+      mainMonthlyPosts = Math.min(totalPosts, Math.max(1, Math.floor(totalPosts * ratio)));
+    }
+
+    const topPosts = (blogRes?.items || []).map((item: any) => ({
       title: item.title.replace(/<[^>]*>?/g, ''),
       link: item.link,
       bloggerName: item.bloggername,
