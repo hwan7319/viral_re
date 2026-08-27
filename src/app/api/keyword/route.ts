@@ -267,7 +267,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = `v106_${query.toLowerCase()}`;
+    const cacheKey = `v107_${query.toLowerCase()}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
@@ -493,6 +493,21 @@ export async function GET(request: Request) {
     } else if (entityType === 'BRAND_PRODUCT') {
       const BRAND_SUFFIXES = ['채용', '대표', '매출', '투자', '상장', '사옥', '주가', '기업정보', '연봉', '복지', '메뉴', '신메뉴', '추천', '가격', '칼로리', '영업시간', '매장', '이벤트', '할인', '후기'];
       BRAND_SUFFIXES.forEach(suf => {
+        const expKw = `${query} ${suf}`;
+        const key1 = expKw.replace(/\s+/g, '').toLowerCase();
+        if (!candidateMap.has(key1)) {
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
+        }
+      });
+    }
+
+    // 🔑 펜션/숙박 개별 상호명 전용 서픽스 확장 (예: 장곡펜션 -> 장곡펜션 수영장, 장곡펜션 위치, 장곡펜션 후기, 장곡펜션 예약 등)
+    if (/(펜션|숙소|호텔|리조트|글램핑|민박|풀빌라)$/i.test(cleanHintQuery)) {
+      const STAY_SUFFIXES = ['예약', '가격', '후기', '수영장', '위치', '바베큐', '가족여행', '입실시간', '근처맛집', '주차', '할인'];
+      STAY_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
         if (!candidateMap.has(key1)) {
