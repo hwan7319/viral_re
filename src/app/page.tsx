@@ -2965,15 +2965,23 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* 💻📱 우측 여백 스카이스크래퍼 스티키 배너 (Right Outer Wing Ad: Coupang Partners) */}
-      <aside className="right-wing-ad">
-        <div className="glass-panel" style={{ padding: '14px 10px', borderRadius: '16px', textAlign: 'center' }}>
+      {/* 💻📱 우측 여백 스카이스크래퍼 스티키 배너 (Right Outer Wing Ad: Coupang Partners 1 & 2) */}
+      <aside className="right-wing-ad" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="glass-panel" style={{ padding: '16px 14px', borderRadius: '16px', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.55rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '1px 4px', borderRadius: '3px' }}>쿠팡</span>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>로켓배송</span>
+            <span style={{ fontSize: '0.6rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '2px 5px', borderRadius: '4px' }}>쿠팡 파트너스</span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>특가 1</span>
           </div>
-          <h6 style={{ fontSize: '0.78rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-primary)' }}>오늘의 특가</h6>
-          <CoupangBanner height={140} style={{ margin: 0 }} />
+          <h6 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: '12px', color: 'var(--text-primary)' }}>오늘의 추천 특가</h6>
+          <CoupangBanner id={1023017} trackingCode="AF5060942" height={140} style={{ margin: 0 }} />
+        </div>
+        <div className="glass-panel" style={{ padding: '16px 14px', borderRadius: '16px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.6rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '2px 5px', borderRadius: '4px' }}>쿠팡 파트너스</span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>특가 2</span>
+          </div>
+          <h6 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: '12px', color: 'var(--text-primary)' }}>실시간 타임딜 특가</h6>
+          <CoupangBanner id={1023026} trackingCode="AF5060942" height={140} style={{ margin: 0 }} />
         </div>
       </aside>
       </main>
