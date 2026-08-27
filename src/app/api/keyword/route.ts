@@ -131,7 +131,7 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
           'X-Naver-Client-Secret': clientSecret,
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         },
-        timeout: 750,
+        timeout: 1500,
         httpsAgent,
       });
       const totalPosts = res.data.total || 0;
@@ -267,7 +267,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = `v107_${query.toLowerCase()}`;
+    const cacheKey = `v108_${query.toLowerCase()}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
@@ -664,8 +664,8 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 검색량 0건 완전 깡통 더미 제거)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0) && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 완전 무관 깡통 더미 제거, 단 우선순위 1~2 연관어는 필터 보존)
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0 || item.priority === 1 || item.priority === 2) && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
     // 🔑 2. 문맥 관련성 우선순위(priority 1>2>3)를 1차로 보존한 후, 동일 순위 내에서 월간 총 검색량 순 정렬 (노이즈 엉뚱 키워드 1~2위 점령 완전 차단)
     validListRaw.sort((a: any, b: any) => {
