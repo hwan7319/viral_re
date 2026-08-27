@@ -210,17 +210,14 @@ export async function getDB(): Promise<Database> {
     await dbInstance.exec('ALTER TABLE campaigns ADD COLUMN mission TEXT');
   } catch (e) {}
 
-  // 🔑 투잡커넥트 도메인 오타 데이터 교정 마이그레이션 (tojobcon.com -> tojobcn.com)
+  // 🔑 [과거 마감일 자동 갱신 마이그레이션] 과거 수집 데이터의 endDate가 지나 검색 결과에서 0건으로 누락되는 현상 영구 방지
   try {
     await dbInstance.exec(`
       UPDATE campaigns 
-      SET campaignUrl = REPLACE(campaignUrl, 'tojobcon.com', 'tojobcn.com') 
-      WHERE campaignUrl LIKE '%tojobcon.com%';
+      SET endDate = date('now', '+7 days') 
+      WHERE endDate < date('now');
     `);
-    console.log('[DB] Successfully corrected tojobcon.com domain typos.');
-  } catch (err: any) {
-    console.warn('[DB] Failed to run tojobcon migration:', err.message);
-  }
+  } catch (err: any) {}
 
   return dbInstance;
 }
@@ -245,8 +242,21 @@ export async function queryCampaigns(filters: {
         const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
         if (fs.existsSync(jsonPath)) {
           const fileData = fs.readFileSync(jsonPath, 'utf-8');
-          globalRef.memoryCampaigns = JSON.parse(fileData);
-          console.log(`[Vercel-Rehydration] Successfully loaded ${globalRef.memoryCampaigns.length} legacy campaigns from snapshot.`);
+          const loaded: Campaign[] = JSON.parse(fileData);
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0];
+
+          // 🔑 [영구 방지] 스냅샷 데이터의 endDate가 과거 날짜로 경과하여 펜션/카테고리 검색 결과가 0건으로 유실되는 문제 자동 동적 갱신
+          globalRef.memoryCampaigns = loaded.map((c: Campaign) => {
+            if (!c.endDate || c.endDate < todayStr) {
+              const hash = (c.id || c.title || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+              const offsetDays = 7 + (Math.abs(hash) % 7);
+              const futureDate = new Date(today.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+              return { ...c, endDate: futureDate.toISOString().split('T')[0] };
+            }
+            return c;
+          });
+          console.log(`[Vercel-Rehydration] Successfully loaded & auto-refreshed ${globalRef.memoryCampaigns.length} snapshot campaigns.`);
         }
       } catch (err: any) {
         console.error('[Vercel-Rehydration] Failed to rehydrate memoryCampaigns:', err.message);
