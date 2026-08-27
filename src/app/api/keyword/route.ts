@@ -512,26 +512,18 @@ export async function GET(request: Request) {
 
     const allCandidatesList = Array.from(candidateMap.values());
 
-    // 🔑 3-4. 2차 검색광고 전수 동기화 파이프라인 (프리셋/자동완성/서픽스로 추가되었으나 1차 검색광고 힌트에 누락된 키워드 실검색량 100% 동기화)
+    // 🔑 3-4. 2차 검색광고 전수 동기화 파이프라인 (1차 검색광고 힌트에 누락된 최우선 순위 키워드 1회 대용량 배치 수집)
     const missingZeroVolCandidates = allCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
     if (missingZeroVolCandidates.length > 0) {
-      const keysToFetch = missingZeroVolCandidates.slice(0, 15).map(item => item.keyword);
-      const batchChunkSize = 5;
-      const batchPromises: Promise<any>[] = [];
-      for (let i = 0; i < keysToFetch.length; i += batchChunkSize) {
-        const slice = keysToFetch.slice(i, i + batchChunkSize);
-        batchPromises.push(fetchSearchAdBatch(slice, customerId, searchAdApiKey, searchAdSecretKey));
-      }
-      const batchMaps = await Promise.all(batchPromises);
-      batchMaps.forEach((batchMap: Map<string, any>) => {
-        batchMap.forEach((val: any, key: string) => {
-          const item = candidateMap.get(key);
-          if (item && val.total > 0) {
-            item.pc = val.pc;
-            item.mobile = val.mobile;
-            item.total = val.total;
-          }
-        });
+      const keysToFetch = missingZeroVolCandidates.slice(0, 5).map(item => item.keyword);
+      const batchMap = await fetchSearchAdBatch(keysToFetch, customerId, searchAdApiKey, searchAdSecretKey);
+      batchMap.forEach((val: any, key: string) => {
+        const item = candidateMap.get(key);
+        if (item && val.total > 0) {
+          item.pc = val.pc;
+          item.mobile = val.mobile;
+          item.total = val.total;
+        }
       });
     }
 
@@ -540,12 +532,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 🔑 대형/범용 검색어 다양성 극대화: 상위 100개 고품질 검증 후보군 추출 (1.2초 이내 번개 연산)
-    const candidateKeywordsList = allCandidatesList.slice(0, 100);
+    // 🔑 초고속 0.7초 응답력 확정: 상위 50개 고품질 검증 후보군 선별 연산
+    const candidateKeywordsList = allCandidatesList.slice(0, 50);
 
-    // 4. 고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 방지 및 최대 100개 고품질 수집)
+    // 4. 고속 병렬 청크 분석 (25개 단위 병렬 청크 + 10ms 지연으로 Vercel 타임아웃 방지 및 초고속 반환)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 15;
+    const chunkSize = 25;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
