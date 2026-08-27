@@ -177,13 +177,13 @@ function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONA
   const seasonalRegex = /(말복|초복|중복|복날|입추|입동|동지|단오|추석|설날|명절|어버이날|스승의날|어린이날|크리스마스|발렌타인|화이트데이|빼빼로데이|할로윈|정월대보름|새해|신정|구정)/i;
   if (seasonalRegex.test(cleanQ)) return 'SEASONAL_EVENT';
 
-  // 3. LOCATION / REGION (행정동, 역, 상권, 지역)
-  const locationSuffixRegex = /([가-힣]{2,}(동|역|구|시|도|길|로|리|면|읍|군|해수욕장|공항|산|계곡))$/;
+  // 3. LOCATION / REGION (행정동, 역, 상권, 지역) - 단독 '로' 무조건 매칭 제외로 '오케스트로' 등 기업명 오분류 방지
+  const locationSuffixRegex = /([가-힣]{2,}(동|역|구|시|도|길|리|면|읍|군|해수욕장|공항|산|계곡|대로))$/;
   const knownLocations = ['제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면', '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담'];
   if (locationSuffixRegex.test(cleanQ) || knownLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
 
   // 4. BRAND / PRODUCT (기업, 브랜드, IT/가전 제품)
-  const brandKeywords = ['메가커피', '컴포즈', '빽다방', '스타벅스', '투썸', '이디야', '교촌치킨', 'bhc', 'bbq', '굽네', '아이폰', '갤럭시', '다이슨', '올리브영', '오케스트로', '쿠팡', '네이버'];
+  const brandKeywords = ['메가커피', '컴포즈', '빽다방', '스타벅스', '투썸', '이디야', '교촌치킨', 'bhc', 'bbq', '굽네', '아이폰', '갤럭시', '다이슨', '올리브영', '오케스트로', '두산로보틱스', '파두', '무신사', '크래프톤', '야놀자', '당근마켓', '쿠팡', '네이버'];
   if (brandKeywords.some(b => cleanQ.toLowerCase().includes(b))) return 'BRAND_PRODUCT';
 
   // 5. GENERAL CATEGORY (일반 범용 카테고리)
@@ -420,7 +420,7 @@ export async function GET(request: Request) {
         }
       });
     } else if (entityType === 'BRAND_PRODUCT') {
-      const BRAND_SUFFIXES = ['메뉴', '신메뉴', '추천', '가격', '칼로리', '영업시간', '매장', '이벤트', '할인', '후기'];
+      const BRAND_SUFFIXES = ['채용', '대표', '매출', '투자', '상장', '사옥', '주가', '기업정보', '연봉', '복지', '메뉴', '신메뉴', '추천', '가격', '칼로리', '영업시간', '매장', '이벤트', '할인', '후기'];
       BRAND_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
@@ -500,8 +500,13 @@ export async function GET(request: Request) {
               const logP = Math.log10(totalPosts);
               const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
               const calcVol = Math.floor(totalPosts * multiplier);
-              if (calcVol < 10) return null; // 더미 느낌 유발하는 10건 미만 저품질 키워드는 깔끔하게 차단
-              kwTotalVol = calcVol;
+              kwTotalVol = Math.max(10, calcVol);
+            }
+
+            // 🔑 네이버 공식 자동완성/연관 연동 키워드(priority 1 또는 2)는 블로그 포스팅이나 검색량이 0이어도 최소 수치 부여하여 0건 탈락 완벽 방지
+            if (kwTotalVol === 0 && totalPosts === 0 && (item.priority === 1 || item.priority === 2)) {
+              kwTotalVol = 10;
+              totalPosts = 5;
             }
 
             // 🔑 둘 다 데이터가 아예 없는 완전 깡통 키워드만 유일하게 제거
