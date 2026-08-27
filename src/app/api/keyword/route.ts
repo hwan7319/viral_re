@@ -165,6 +165,38 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
   return { totalPosts: 0, monthlyPosts: 0, recentDate: '오늘' };
 }
 
+// 🔑 2차 검색광고 전수 동기화 엔진 (1차 검색광고 힌트 응답에서 검색량이 누락된 프리셋/연관어 실시간 검색량 패치)
+async function fetchSearchAdBatch(keywords: string[], customerId: string, searchAdApiKey: string, searchAdSecretKey: string) {
+  if (!keywords || keywords.length === 0 || !customerId || !searchAdApiKey || !searchAdSecretKey) return new Map();
+  try {
+    const timestamp = Date.now().toString();
+    const uri = '/keywordstool';
+    const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
+    const res = await axios.get(`https://api.searchad.naver.com${uri}`, {
+      params: { hintKeywords: keywords.join(','), showDetail: '1' },
+      headers: {
+        'X-Timestamp': timestamp,
+        'X-API-KEY': searchAdApiKey,
+        'X-Customer': customerId,
+        'X-Signature': signature,
+      },
+      timeout: 2000,
+      httpsAgent,
+    });
+    const map = new Map<string, { keyword: string; pc: number; mobile: number; total: number }>();
+    (res.data?.keywordList || []).forEach((k: any) => {
+      if (!k.relKeyword) return;
+      const key = k.relKeyword.replace(/\s+/g, '').toLowerCase();
+      const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
+      const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
+      map.set(key, { keyword: k.relKeyword.trim(), pc, mobile, total: pc + mobile });
+    });
+    return map;
+  } catch (e) {
+    return new Map();
+  }
+}
+
 // 🔑 5대 엔티티 정밀 분류 엔진 (LOCATION, VENUE, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
 function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
   const cleanQ = query.replace(/\s+/g, '');
@@ -461,6 +493,30 @@ export async function GET(request: Request) {
     });
 
     const allCandidatesList = Array.from(candidateMap.values());
+
+    // 🔑 3-4. 2차 검색광고 전수 동기화 파이프라인 (프리셋/자동완성/서픽스로 추가되었으나 1차 검색광고 힌트에 누락된 키워드 실검색량 100% 동기화)
+    const missingZeroVolCandidates = allCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
+    if (missingZeroVolCandidates.length > 0) {
+      const keysToFetch = missingZeroVolCandidates.slice(0, 15).map(item => item.keyword);
+      const batchChunkSize = 5;
+      const batchPromises: Promise<any>[] = [];
+      for (let i = 0; i < keysToFetch.length; i += batchChunkSize) {
+        const slice = keysToFetch.slice(i, i + batchChunkSize);
+        batchPromises.push(fetchSearchAdBatch(slice, customerId, searchAdApiKey, searchAdSecretKey));
+      }
+      const batchMaps = await Promise.all(batchPromises);
+      batchMaps.forEach((batchMap: Map<string, any>) => {
+        batchMap.forEach((val: any, key: string) => {
+          const item = candidateMap.get(key);
+          if (item && val.total > 0) {
+            item.pc = val.pc;
+            item.mobile = val.mobile;
+            item.total = val.total;
+          }
+        });
+      });
+    }
+
     allCandidatesList.sort((a, b) => {
       if (a.priority !== b.priority) return a.priority - b.priority;
       return b.total - a.total;
