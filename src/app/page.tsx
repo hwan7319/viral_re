@@ -2707,11 +2707,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 💻📱 2컬럼 레이아웃: 메인 카드리스트 & 우측 스티키 고정 광고 사이드바 */}
-        <div className="main-content-layout" style={{ display: 'flex', gap: '32px', width: '100%', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
-            {/* 로딩 스켈레톤 상태 */}
-            {loading ? (
+        {/* 로딩 스켈레톤 상태 */}
+        {loading ? (
           <div className="campaign-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -3106,41 +3103,30 @@ export default function Home() {
           )}
           </>
         )}
+
+      {/* 💻📱 좌측 여백 스카이스크래퍼 스티키 배너 (Left Outer Wing Ad: Google AdSense) */}
+      <aside className="left-wing-ad">
+        <div className="glass-panel" style={{ padding: '14px 10px', borderRadius: '16px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-tertiary)', border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px' }}>AD</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>구글 광고</span>
           </div>
-
-          {/* 💻 데스크톱 우측 스티키 고정 사이드바 광고 (Desktop Sticky Sidebar Ad Slot) */}
-          <aside 
-            className="desktop-sticky-sidebar"
-            style={{
-              width: '280px',
-              position: 'sticky',
-              top: '90px',
-              flexShrink: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '20px',
-            }}
-          >
-            {/* 1. 구글 애드센스 실시간 추천 광고 전용 공간 */}
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 900, color: 'var(--text-tertiary)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px' }}>ADVERTISING</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>구글 추천 광고</span>
-              </div>
-              <h5 style={{ fontSize: '0.95rem', fontWeight: 800, marginTop: '4px', marginBottom: '12px', color: 'var(--text-primary)' }}>실시간 추천 광고</h5>
-              <AdSenseSlot client="ca-pub-7845901609549313" format="rectangle" style={{ minHeight: '250px', width: '100%' }} />
-            </div>
-
-            {/* 2. 쿠팡 파트너스 로켓배송 특가 배너 위젯 */}
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '2px 6px', borderRadius: '4px' }}>쿠팡 파트너스</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>로켓배송 특가</span>
-              </div>
-              <CoupangBanner height={140} style={{ margin: 0 }} />
-            </div>
-          </aside>
+          <h6 style={{ fontSize: '0.78rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-primary)' }}>실시간 추천 광고</h6>
+          <AdSenseSlot client="ca-pub-7845901609549313" format="vertical" style={{ minHeight: '400px', width: '100%' }} />
         </div>
+      </aside>
+
+      {/* 💻📱 우측 여백 스카이스크래퍼 스티키 배너 (Right Outer Wing Ad: Coupang Partners) */}
+      <aside className="right-wing-ad">
+        <div className="glass-panel" style={{ padding: '14px 10px', borderRadius: '16px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.55rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '1px 4px', borderRadius: '3px' }}>쿠팡</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>로켓배송</span>
+          </div>
+          <h6 style={{ fontSize: '0.78rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-primary)' }}>오늘의 특가</h6>
+          <CoupangBanner height={140} style={{ margin: 0 }} />
+        </div>
+      </aside>
       </main>
 
       {/* 5. Campaign Detail Modal (캠페인 상세 모달 - 최상단 겹침 방지 zIndex 99999) */}

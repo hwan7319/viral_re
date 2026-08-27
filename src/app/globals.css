@@ -1348,16 +1348,29 @@ input, select {
   }
 }
 
-/* 💻📱 스티키 반응형 광고 사이드바 스타일 */
-@media (max-width: 1100px) {
-  .desktop-sticky-sidebar {
+/* 💻📱 좌/우 양옆 여백 스카이스크래퍼 스티키 배너 스타일 (Left & Right Outer Wing Banners) */
+@media (max-width: 1519px) {
+  .left-wing-ad,
+  .right-wing-ad {
     display: none !important;
   }
 }
 
-@media (min-width: 1101px) {
-  .mobile-only-ad-sticky {
-    display: none !important;
+@media (min-width: 1520px) {
+  .left-wing-ad {
+    position: fixed;
+    top: 170px;
+    left: calc(50% - 600px - 165px);
+    width: 150px;
+    z-index: 80;
+  }
+
+  .right-wing-ad {
+    position: fixed;
+    top: 170px;
+    right: calc(50% - 600px - 165px);
+    width: 150px;
+    z-index: 80;
   }
 }
 
