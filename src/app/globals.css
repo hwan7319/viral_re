@@ -1392,6 +1392,13 @@ input, select {
   }
 }
 
+/* 📱 모바일 화면 탑 버튼 숨김 (하단 고정 광고와 겹침 방지) */
+@media (max-width: 768px) {
+  .scroll-to-top-btn {
+    display: none !important;
+  }
+}
+
 .campaign-card {
   background: var(--bg-secondary);
   border: none !important;

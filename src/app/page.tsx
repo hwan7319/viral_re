@@ -3914,6 +3914,7 @@ export default function Home() {
       {showScrollTop && (
         <button
           type="button"
+          className="scroll-to-top-btn"
           onClick={scrollToTop}
           style={{
             position: 'fixed',
