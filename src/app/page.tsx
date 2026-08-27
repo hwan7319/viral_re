@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Campaign } from '@/lib/db';
 import AdSenseSlot from '@/components/AdSenseSlot';
+import CoupangBanner from '@/components/CoupangBanner';
 
 interface IconProps {
   className?: string;
@@ -2938,57 +2939,9 @@ export default function Home() {
               </div>
             )}
 
-            {/* 💻📱 인피드 가로형 띠 배너 광고 (3라인 통째로 100% 너비로 삽입) */}
+            {/* 💻📱 쿠팡 파트너스 수익형 실시간 특가 배너 */}
             {displayedCampaigns.length > 8 && (
-              <div 
-                className="glass-panel" 
-                onClick={() => window.open('https://viral-re.vercel.app', '_blank')}
-                style={{
-                  margin: '32px 0',
-                  width: '100%',
-                  minHeight: '220px',
-                  borderRadius: 'var(--radius-md)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  backgroundImage: `url(https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&h=200&q=80)`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  border: '1px dashed var(--accent)',
-                }}
-              >
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                  zIndex: 1
-                }} />
-                
-                <div style={{
-                  position: 'relative', zIndex: 2, padding: '36px 48px',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  width: '100%', color: '#ffffff', flexWrap: 'wrap', gap: '16px',
-                  minHeight: '220px'
-                }}>
-                  <div>
-                    <span style={{
-                      fontSize: '0.65rem', fontWeight: 900, color: '#ffffff',
-                      backgroundColor: 'var(--accent)', padding: '3px 8px', borderRadius: '4px',
-                      marginRight: '10px', verticalAlign: 'middle'
-                    }}>IN-FEED AD</span>
-                    <h4 style={{ fontSize: '1.45rem', fontWeight: 800, display: 'inline-block', margin: 0, verticalAlign: 'middle', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                      내 블로그 노출 순위 수직 상승 비법서 무상 배포!
-                    </h4>
-                    <p style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '8px', marginBottom: 0, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                      최신 C-Rank 로직 분석 및 상위 노출에 최적화된 소제목/키워드 배치 가이드를 단독 공개합니다.
-                    </p>
-                  </div>
-                  <div className="premium-button-primary" style={{ fontSize: '0.85rem', padding: '12px 24px', borderRadius: 'var(--radius-sm)' }}>
-                    비법서 다운로드하기
-                  </div>
-                </div>
-              </div>
+              <CoupangBanner />
             )}
 
             {/* 2. 하단 3번째 라인 이후 (카드 9번째부터 끝까지) */}
