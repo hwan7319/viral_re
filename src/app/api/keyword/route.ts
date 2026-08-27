@@ -466,12 +466,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 상위 50개 검증 후보군 확정 (1.0초 이내 고속 병렬 연산)
-    const candidateKeywordsList = allCandidatesList.slice(0, 50);
+    // 🔑 대형/범용 검색어 다양성 극대화: 상위 100개 고품질 검증 후보군 추출 (1.2초 이내 번개 연산)
+    const candidateKeywordsList = allCandidatesList.slice(0, 100);
 
-    // 4. 고속 병렬 청크 분석 (10개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 방지 및 50개 고품질 수집)
+    // 4. 고속 병렬 청크 분석 (15개 단위 병렬 청크 + 15ms 지연으로 Vercel 타임아웃 방지 및 최대 100개 고품질 수집)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 10;
+    const chunkSize = 15;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
@@ -555,12 +555,12 @@ export async function GET(request: Request) {
     // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 포스팅 0건 / 검색량 0건 완전 깡통 더미 제거)
     const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0) && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 월간 총 검색량 순으로 정렬 후 상위 50개 연관 검색어 목록 확정
+    // 🔑 2. 월간 총 검색량 순으로 정렬 후 상위 100개 연관 검색어 목록 확정
     validListRaw.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume);
 
-    const final50List = validListRaw.slice(0, 50);
+    const final100List = validListRaw.slice(0, 100);
 
-    const relatedKeywords = final50List.map((item: any, index: number) => ({
+    const relatedKeywords = final100List.map((item: any, index: number) => ({
       rank: index + 1,
       ...item,
     }));
