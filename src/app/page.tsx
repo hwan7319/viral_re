@@ -2935,15 +2935,8 @@ export default function Home() {
               })}
             </div>
 
-            {/* 💻📱 구글 애드센스 인피드 반응형 띠 배너 광고 */}
-            {displayedCampaigns.length > 6 && (
-              <div style={{ margin: '32px 0', width: '100%' }}>
-                <AdSenseSlot client="ca-pub-7845901609549313" style={{ minHeight: '120px' }} />
-              </div>
-            )}
-
-            {/* 💻📱 쿠팡 파트너스 수익형 실시간 특가 배너 */}
-            <CoupangBanner />
+            {/* 💻📱 쿠팡 파트너스 수익형 실시간 특가 배너 (그리드 간격 20px과 100% 일치 정렬) */}
+            <CoupangBanner style={{ margin: '20px 0' }} />
 
             {/* 2. 하단 3번째 라인 이후 (카드 9번째부터 끝까지) */}
             {visibleCount > 8 && displayedCampaigns.length > 8 && (
