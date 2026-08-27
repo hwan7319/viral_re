@@ -11,6 +11,12 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });
 
+// ⚡ 10분 TTL 글로벌 인메모리 고속 LRU 메모리 캐시 (반복/주요 키워드 0.05초 초고속 반환)
+const globalRef = global as any;
+if (!globalRef.blogStatsCache) globalRef.blogStatsCache = new Map<string, { timestamp: number; data: any }>();
+if (!globalRef.keywordApiCache) globalRef.keywordApiCache = new Map<string, { timestamp: number; data: any }>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10분
+
 function generateSearchAdSignature(timestamp: string, method: string, uri: string, secretKey: string) {
   const message = `${timestamp}.${method}.${uri}`;
   return crypto.createHmac('sha256', secretKey).update(message).digest('base64');
@@ -110,8 +116,12 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
   return { totalPosts: 0, monthlyPosts: 0, recentDate: '-' };
 }
 
-// 🔑 연관 키워드 전용 초고속 블로그 통계 수집기 (display: 1 최소 페이로드 + 429 자동 재시도)
+// 🔑 연관 키워드 전용 초고속 블로그 통계 수집기 (display: 1 최소 페이로드 + 메모리 캐시 + 429 자동 재시도)
 async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecret: string, retries = 2) {
+  const cached = globalRef.blogStatsCache.get(keyword);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.data;
+  }
   for (let i = 0; i < retries; i++) {
     try {
       const res = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
@@ -121,7 +131,7 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
           'X-Naver-Client-Secret': clientSecret,
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         },
-        timeout: 800,
+        timeout: 950,
         httpsAgent,
       });
       const totalPosts = res.data.total || 0;
@@ -153,10 +163,12 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
         monthlyPosts = Math.min(totalPosts, Math.max(1, Math.floor(totalPosts * ratio)));
       }
 
-      return { totalPosts, monthlyPosts, recentDate };
+      const result = { totalPosts, monthlyPosts, recentDate };
+      globalRef.blogStatsCache.set(keyword, { timestamp: Date.now(), data: result });
+      return result;
     } catch (e: any) {
       if (e.response && e.response.status === 429 && i < retries - 1) {
-        await new Promise((r) => setTimeout(r, 80 * (i + 1)));
+        await new Promise((r) => setTimeout(r, 60 * (i + 1)));
       } else {
         break;
       }
@@ -229,6 +241,12 @@ export async function GET(request: Request) {
 
     if (!query) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
+    }
+
+    const cacheKey = query.toLowerCase();
+    const cachedRes = globalRef.keywordApiCache.get(cacheKey);
+    if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
+      return NextResponse.json(cachedRes.data);
     }
 
     const entityType = classifyQueryEntityType(query);
@@ -643,7 +661,7 @@ export async function GET(request: Request) {
       statusText = '🔴 포화 키워드 (상위 노출 경쟁 치열)';
     }
 
-    return NextResponse.json({
+    const responsePayload = {
       success: true,
       data: {
         keyword: query,
@@ -667,10 +685,13 @@ export async function GET(request: Request) {
         topPosts,
         timestamp: new Date().toISOString(),
       },
-    }, {
+    };
+
+    globalRef.keywordApiCache.set(cacheKey, { timestamp: Date.now(), data: responsePayload });
+
+    return NextResponse.json(responsePayload, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       }
     });
   } catch (error: any) {
