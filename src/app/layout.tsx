@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Noto_Sans_KR } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({
@@ -35,6 +36,12 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${inter.variable} ${notoSansKr.variable}`} data-theme="light">
       <head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7845901609549313"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

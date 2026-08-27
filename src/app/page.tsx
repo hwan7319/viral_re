@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Campaign } from '@/lib/db';
+import AdSenseSlot from '@/components/AdSenseSlot';
 
 interface IconProps {
   className?: string;
@@ -2568,6 +2569,11 @@ export default function Home() {
       {/* 3. Main Dashboard Body */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
         
+        {/* 💻📱 구글 애드센스 실시간 대형 상단 배너 (Google AdSense Header Banner) */}
+        <div style={{ margin: '0 auto 24px auto', width: '100%' }}>
+          <AdSenseSlot client="ca-pub-7845901609549313" style={{ minHeight: '100px' }} />
+        </div>
+
         {/* 💻📱 상단 가로형 반응형 배너 광고 (Auto-rolling Carousel Ad Slot) */}
         <div 
           className="glass-panel ad-header-banner" 
@@ -2924,6 +2930,13 @@ export default function Home() {
                 );
               })}
             </div>
+
+            {/* 💻📱 구글 애드센스 인피드 반응형 띠 배너 광고 */}
+            {displayedCampaigns.length > 6 && (
+              <div style={{ margin: '32px 0', width: '100%' }}>
+                <AdSenseSlot client="ca-pub-7845901609549313" style={{ minHeight: '120px' }} />
+              </div>
+            )}
 
             {/* 💻📱 인피드 가로형 띠 배너 광고 (3라인 통째로 100% 너비로 삽입) */}
             {displayedCampaigns.length > 8 && (
