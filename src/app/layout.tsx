@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   description: '레뷰, 디너의여왕, 강남맛집 등 40여 개 체험단 플랫폼의 모든 정보를 한 곳에서! 카테고리별, 지역별, 플랫폼별 실시간 스마트 통합 필터로 나에게 딱 맞는 체험단을 찾아보세요.',
   keywords: ['체험단', '블로그체험단', '인스타그램체험단', '체험단모아보기', '인플렉서', '다나와체험단', '마케팅', 'viral_re', '바이럴리'],
   authors: [{ name: 'viral_re Team' }],
+  other: {
+    'google-adsense-account': 'ca-pub-7845901609549313',
+  },
 };
 
 export default function RootLayout({
@@ -36,11 +39,11 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${inter.variable} ${notoSansKr.variable}`} data-theme="light">
       <head>
-        <Script
+        <meta name="google-adsense-account" content="ca-pub-7845901609549313" />
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7845901609549313"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
         <script
           dangerouslySetInnerHTML={{
