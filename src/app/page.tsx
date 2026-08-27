@@ -2707,8 +2707,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 로딩 스켈레톤 상태 */}
-        {loading ? (
+        {/* 💻📱 2컬럼 레이아웃: 메인 카드리스트 & 우측 스티키 고정 광고 사이드바 */}
+        <div className="main-content-layout" style={{ display: 'flex', gap: '32px', width: '100%', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+            {/* 로딩 스켈레톤 상태 */}
+            {loading ? (
           <div className="campaign-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -3110,6 +3113,34 @@ export default function Home() {
           )}
           </>
         )}
+          </div>
+
+          {/* 💻 데스크톱 우측 스티키 고정 사이드바 광고 (Desktop Sticky Sidebar Ad Slot) */}
+          <aside 
+            className="desktop-sticky-sidebar"
+            style={{
+              width: '280px',
+              position: 'sticky',
+              top: '90px',
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+            }}
+          >
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: 900, color: 'var(--text-tertiary)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px' }}>ADVERTISING</span>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 800, marginTop: '8px', marginBottom: '12px', color: 'var(--text-primary)' }}>실시간 추천 광고</h5>
+              <AdSenseSlot client="ca-pub-7845901609549313" format="rectangle" style={{ minHeight: '250px' }} />
+            </div>
+
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '2px 6px', borderRadius: '4px' }}>쿠팡 파트너스</span>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 800, marginTop: '8px', marginBottom: '12px', color: 'var(--text-primary)' }}>오늘의 로켓배송 특가</h5>
+              <CoupangBanner height={140} />
+            </div>
+          </aside>
+        </div>
       </main>
 
       {/* 5. Campaign Detail Modal (캠페인 상세 모달 - 최상단 겹침 방지 zIndex 99999) */}
@@ -4029,22 +4060,7 @@ export default function Home() {
             ✕
           </button>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <span style={{ fontSize: '0.55rem', fontWeight: 900, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', color: 'var(--text-tertiary)' }}>AD</span>
-            <div style={{ textAlign: 'left', overflow: 'hidden' }}>
-              <p style={{ fontSize: '0.78rem', fontWeight: 800, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>인플루언서 제휴 문의 폭주! VIP 선착순 등록</p>
-              <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>조기 마감 임박! 지금 무료 프리패스 신청하기</p>
-            </div>
-          </div>
-          <a 
-            href="https://viral-re.vercel.app" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="premium-button-primary" 
-            style={{ padding: '6px 12px', fontSize: '0.72rem', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}
-          >
-            이동
-          </a>
+          <AdSenseSlot client="ca-pub-7845901609549313" format="horizontal" style={{ minHeight: '50px', width: '100%' }} />
         </div>
       )}
 

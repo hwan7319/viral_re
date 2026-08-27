@@ -16,7 +16,7 @@ export default function CoupangBanner({
   id = 1023017,
   template = 'carousel',
   trackingCode = 'AF5060942',
-  width = '680',
+  width = '100%',
   height = '140',
   className = '',
   style,
@@ -36,12 +36,12 @@ export default function CoupangBanner({
   <script src="https://ads-partners.coupang.com/g.js"></script>
   <script>
     try {
-      new PartnersCoupang.G({"id":${id},"template":"${template}","trackingCode":"${trackingCode}","width":"${width}","height":"${height}","tsource":""});
+      new PartnersCoupang.G({"id":${id},"template":"${template}","trackingCode":"${trackingCode}","width":"100%","height":"${height}","tsource":""});
     } catch(e) {}
   </script>
 </body>
 </html>`;
-  }, [id, template, trackingCode, width, height]);
+  }, [id, template, trackingCode, height]);
 
   return (
     <div
@@ -54,30 +54,37 @@ export default function CoupangBanner({
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
+        borderRadius: '16px',
+        backgroundColor: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        padding: '16px 12px 12px 12px',
+        boxShadow: 'var(--shadow-sm)',
         ...style,
       }}
     >
-      <iframe
-        srcDoc={iframeSrcDoc}
-        width={typeof width === 'number' ? `${width}px` : width === '680' ? '680' : '100%'}
-        height={typeof height === 'number' ? `${height}px` : height === '140' ? '140' : height}
-        frameBorder="0"
-        scrolling="no"
-        referrerPolicy="unsafe-url"
-        style={{
-          border: 'none',
-          borderRadius: '8px',
-          maxWidth: '100%',
-          width: '680px',
-          height: '140px',
-          backgroundColor: 'transparent',
-        }}
-      />
+      <div style={{ width: '100%', maxWidth: '100%', display: 'flex', justifyContent: 'center' }}>
+        <iframe
+          srcDoc={iframeSrcDoc}
+          width="100%"
+          height={typeof height === 'number' ? `${height}px` : height === '140' ? '140' : height}
+          frameBorder="0"
+          scrolling="no"
+          referrerPolicy="unsafe-url"
+          style={{
+            border: 'none',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '100%',
+            height: '140px',
+            backgroundColor: 'transparent',
+          }}
+        />
+      </div>
 
       {/* 공정위 문구 준수 (Fair Trade Commission Compliance) */}
       <span
         style={{
-          marginTop: '6px',
+          marginTop: '8px',
           fontSize: '0.72rem',
           color: 'var(--text-tertiary, #94a3b8)',
           textAlign: 'center',
