@@ -3903,7 +3903,8 @@ export default function Home() {
             ✕
           </button>
           
-          <AdSenseSlot client="ca-pub-7845901609549313" format="horizontal" style={{ minHeight: '50px', width: '100%' }} />
+          {/* 모바일 하단 실시간 쿠팡 파트너스 수익형 앵커 배너 */}
+          <CoupangBanner id={1023026} trackingCode="AF5060942" height={100} style={{ margin: 0 }} />
         </div>
       )}
 
