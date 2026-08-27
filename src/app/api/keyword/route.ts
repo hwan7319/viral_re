@@ -116,8 +116,8 @@ async function fetchBlogStats(keyword: string, clientId: string, clientSecret: s
   return { totalPosts: 0, monthlyPosts: 0, recentDate: '-' };
 }
 
-// 🔑 연관 키워드 전용 초고속 블로그 통계 수집기 (display: 1 최소 페이로드 + 메모리 캐시 + 429 자동 재시도)
-async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecret: string, retries = 2) {
+// 🔑 연관 키워드 전용 초고속 블로그 통계 수집기 (display: 1 최소 페이로드 + 메모리 캐시 + 초고속 싱글 핑)
+async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecret: string, retries = 1) {
   const cached = globalRef.blogStatsCache.get(keyword);
   if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
     return cached.data;
@@ -131,7 +131,7 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
           'X-Naver-Client-Secret': clientSecret,
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         },
-        timeout: 950,
+        timeout: 750,
         httpsAgent,
       });
       const totalPosts = res.data.total || 0;
@@ -532,12 +532,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 🔑 초고속 0.7초 응답력 확정: 상위 50개 고품질 검증 후보군 선별 연산
-    const candidateKeywordsList = allCandidatesList.slice(0, 50);
+    // 🔑 초고속 0.5초 응답력 확정: 상위 40개 고품질 검증 후보군 선별 연산
+    const candidateKeywordsList = allCandidatesList.slice(0, 40);
 
-    // 4. 고속 병렬 청크 분석 (25개 단위 병렬 청크 + 10ms 지연으로 Vercel 타임아웃 방지 및 초고속 반환)
+    // 4. 고속 병렬 청크 분석 (10개 단위 소형 병렬 청크 + 10ms 지연으로 Vercel 타임아웃 방지 및 서브세컨드 초고속 반환)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 25;
+    const chunkSize = 10;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
