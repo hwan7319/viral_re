@@ -3121,7 +3121,17 @@ export default function Home() {
               gap: '20px',
             }}
           >
-            {/* 1. 쿠팡 파트너스 로켓배송 특가 배너 위젯 */}
+            {/* 1. 구글 애드센스 실시간 추천 광고 전용 공간 */}
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 900, color: 'var(--text-tertiary)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px' }}>ADVERTISING</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>구글 추천 광고</span>
+              </div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 800, marginTop: '4px', marginBottom: '12px', color: 'var(--text-primary)' }}>실시간 추천 광고</h5>
+              <AdSenseSlot client="ca-pub-7845901609549313" format="rectangle" style={{ minHeight: '250px', width: '100%' }} />
+            </div>
+
+            {/* 2. 쿠팡 파트너스 로켓배송 특가 배너 위젯 */}
             <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 900, color: '#ca1b21', border: '1px solid #ca1b21', padding: '2px 6px', borderRadius: '4px' }}>쿠팡 파트너스</span>
@@ -3129,38 +3139,6 @@ export default function Home() {
               </div>
               <CoupangBanner height={140} style={{ margin: 0 }} />
             </div>
-
-            {/* 2. 🔥 실시간 인기 탐색 키워드 Quick Tag Widget */}
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 900, color: 'var(--accent)', border: '1px solid var(--accent)', padding: '2px 6px', borderRadius: '4px' }}>POPULAR</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>🔥 인기 탐색어</span>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['펜션', '양꼬치', '제주도 맛집', '삼겹살', '성수동 카페', '피트니스', '화장실청소솔', '오케스트로'].map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => { setSearchInput(tag); setSearchTerm(tag); }}
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      borderRadius: '20px',
-                      backgroundColor: 'var(--bg-tertiary)',
-                      color: 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    #{tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 3. 구글 애드센스 슬롯 (승인 후 자동 표출) */}
-            <AdSenseSlot client="ca-pub-7845901609549313" format="rectangle" style={{ width: '100%' }} />
           </aside>
         </div>
       </main>
