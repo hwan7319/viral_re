@@ -1397,6 +1397,15 @@ input, select {
   .scroll-to-top-btn {
     display: none !important;
   }
+
+  .mobile-header-coupang-banner {
+    position: sticky !important;
+    top: 60px !important;
+    z-index: 85 !important;
+    background-color: var(--bg-secondary) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+  }
 }
 
 .campaign-card {
