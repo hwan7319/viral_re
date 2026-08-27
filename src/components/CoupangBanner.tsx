@@ -3,26 +3,31 @@
 import { useEffect, useRef } from 'react';
 
 interface CoupangBannerProps {
-  bannerUrl?: string;
+  id?: number;
+  template?: string;
   trackingCode?: string;
   width?: string | number;
   height?: string | number;
+  bannerUrl?: string;
   className?: string;
   style?: React.CSSProperties;
 }
 
 export default function CoupangBanner({
+  id = 1023017,
+  template = 'carousel',
+  trackingCode = 'AF5060942',
+  width = '680',
+  height = '140',
   bannerUrl,
-  trackingCode = 'AF1234567',
-  width = '100%',
-  height = '140px',
   className = '',
   style,
 }: CoupangBannerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Inject Coupang script if dynamic script HTML is provided
+    if (typeof window === 'undefined') return;
+
     if (bannerUrl && bannerUrl.includes('<script')) {
       if (containerRef.current) {
         containerRef.current.innerHTML = bannerUrl;
@@ -36,8 +41,46 @@ export default function CoupangBanner({
           oldScript.parentNode?.replaceChild(newScript, oldScript);
         });
       }
+      return;
     }
-  }, [bannerUrl]);
+
+    const loadCoupangWidget = () => {
+      try {
+        // @ts-ignore
+        if (window.PartnersCoupang && window.PartnersCoupang.G) {
+          if (containerRef.current) {
+            containerRef.current.innerHTML = '';
+          }
+          // @ts-ignore
+          new window.PartnersCoupang.G({
+            id,
+            template,
+            trackingCode,
+            width: String(width),
+            height: String(height),
+            tsource: '',
+          });
+        }
+      } catch (err) {
+        console.error('Coupang Partners widget init error:', err);
+      }
+    };
+
+    const scriptId = 'coupang-partners-g-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://ads-partners.coupang.com/g.js';
+      script.async = true;
+      script.onload = loadCoupangWidget;
+      document.head.appendChild(script);
+    } else {
+      // If script is already loaded
+      loadCoupangWidget();
+    }
+  }, [id, template, trackingCode, width, height, bannerUrl]);
 
   return (
     <div
@@ -49,6 +92,7 @@ export default function CoupangBanner({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
         ...style,
       }}
     >
@@ -62,81 +106,26 @@ export default function CoupangBanner({
           referrerPolicy="unsafe-url"
           style={{ border: 'none', borderRadius: '8px', maxWidth: '100%' }}
         />
-      ) : bannerUrl && bannerUrl.includes('<script') ? (
-        <div ref={containerRef} style={{ width: '100%', minHeight: typeof height === 'number' ? `${height}px` : height }} />
       ) : (
-        /* 기본 쿠팡 파트너스 추천 배너 위젯 (Coupang Partners Default Banner) */
         <div
-          onClick={() =>
-            window.open(
-              `https://link.coupang.com/a/bCoupangSearch?trackingCode=${trackingCode}`,
-              '_blank',
-              'noopener,noreferrer'
-            )
-          }
+          ref={containerRef}
           style={{
             width: '100%',
-            padding: '20px 24px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #e62329 0%, #ca1b21 100%)',
-            color: '#ffffff',
+            maxWidth: '100%',
+            minHeight: typeof height === 'number' ? `${height}px` : `${height}px`,
             display: 'flex',
+            justifyContent: 'center',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(230, 35, 41, 0.25)',
-            flexWrap: 'wrap',
+            overflow: 'hidden',
           }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '50%',
-                backgroundColor: '#ffffff',
-                color: '#e62329',
-                fontWeight: 900,
-                fontSize: '1.2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              C
-            </div>
-            <div>
-              <h5 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
-                쿠팡 로켓배송 최저가 특가전
-              </h5>
-              <p style={{ fontSize: '0.82rem', margin: '4px 0 0 0', color: 'rgba(255, 255, 255, 0.9)' }}>
-                오늘의 추천 상품 & 타임딜 혜택을 확인해보세요!
-              </p>
-            </div>
-          </div>
-          <button
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#ffffff',
-              color: '#ca1b21',
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            특가 상품 보기 →
-          </button>
-        </div>
+        />
       )}
 
       {/* 공정위 문구 준수 (Fair Trade Commission Compliance) */}
       <span
         style={{
-          marginTop: '6px',
-          fontSize: '0.7rem',
+          marginTop: '8px',
+          fontSize: '0.72rem',
           color: 'var(--text-tertiary, #94a3b8)',
           textAlign: 'center',
         }}
