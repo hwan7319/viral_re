@@ -532,12 +532,12 @@ export async function GET(request: Request) {
       return b.total - a.total;
     });
 
-    // 🔑 초고속 0.5초 응답력 확정: 상위 40개 고품질 검증 후보군 선별 연산
-    const candidateKeywordsList = allCandidatesList.slice(0, 40);
+    // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
+    const candidateKeywordsList = allCandidatesList.slice(0, 100);
 
-    // 4. 고속 병렬 청크 분석 (10개 단위 소형 병렬 청크 + 10ms 지연으로 Vercel 타임아웃 방지 및 서브세컨드 초고속 반환)
+    // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 10;
+    const chunkSize = 20;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
