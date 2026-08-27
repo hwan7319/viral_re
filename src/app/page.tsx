@@ -761,6 +761,10 @@ export default function Home() {
               </span>
               <span>
                 {activeCategory === 'all' ? '카테고리' :
+                  activeCategory === 'food-korean' ? '한식' :
+                  activeCategory === 'food-western' ? '양식' :
+                  activeCategory === 'food-japanese' ? '일식' :
+                  activeCategory === 'food-chinese' ? '중식' :
                   activeCategory === 'food-restaurant' ? '한식/맛집' :
                   activeCategory === 'food-foreign' ? '양식/일식/중식' :
                   activeCategory === 'food-cafe' ? '카페/디저트' :
