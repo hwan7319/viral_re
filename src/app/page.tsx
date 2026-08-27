@@ -2785,11 +2785,10 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          /* 실제 리스트 카드 렌더링 */
           <>
-            {/* 1. 상단 2개 라인 (카드 8개) */}
+            {/* 실제 리스트 카드 렌더링 (단일 통합 4열 그리드) */}
             <div className="campaign-grid">
-              {displayedCampaigns.slice(0, Math.min(8, visibleCount)).map((c) => {
+              {displayedCampaigns.slice(0, visibleCount).map((c) => {
                 const dday = calculateDday(c.endDate);
                 const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
                 const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
@@ -2931,156 +2930,6 @@ export default function Home() {
                 );
               })}
             </div>
-
-            {/* 💻📱 쿠팡 파트너스 수익형 실시간 특가 배너 (그리드 간격 20px과 100% 일치 정렬) */}
-            <CoupangBanner style={{ margin: '20px 0' }} />
-
-            {/* 2. 하단 3번째 라인 이후 (카드 9번째부터 끝까지) */}
-            {visibleCount > 8 && displayedCampaigns.length > 8 && (
-              <div className="campaign-grid" style={{ marginTop: '0' }}>
-                {displayedCampaigns.slice(8, visibleCount).map((c) => {
-                  const dday = calculateDday(c.endDate);
-                  const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
-                  const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
-
-                  let ddayColor = 'var(--success)';
-                  if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
-                  else if (dday.startsWith('D-') && parseInt(dday.substring(2)) <= 5) ddayColor = 'var(--warning)';
-                  else if (dday === '마감됨') ddayColor = 'var(--text-tertiary)';
-
-                  return (
-                    <article 
-                      key={c.id} 
-                      className="premium-card animate-fade-in"
-                      onClick={() => setSelectedCampaign(c)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {/* 카드 썸네일 영역 */}
-                      <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
-                        <img 
-                          src={c.imageUrl} 
-                          alt={c.title}
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          style={{
-                            width: '100%', height: '100%', objectFit: 'cover',
-                            transition: 'transform 0.4s ease'
-                          }}
-                          className="card-image-hover"
-                        />
-                        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
-                          {c.platform === 'blog' ? (
-                            <span className="badge badge-blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <NaverBlogIcon size={13} />
-                              <span>블로그</span>
-                            </span>
-                          ) : c.platform === 'clip' ? (
-                            <span className="badge badge-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
-                              <NaverClipIcon size={13} />
-                              <span>클립</span>
-                            </span>
-                          ) : c.platform === 'blog+clip' ? (
-                            <span className="badge badge-blog-clip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#03C75A', color: '#ffffff' }}>
-                              <NaverBlogIcon size={13} />
-                              <NaverClipIcon size={13} />
-                              <span>블로그·클립</span>
-                            </span>
-                          ) : c.platform === 'instagram' ? (
-                            <span className="badge badge-instagram" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <span>📸</span>
-                              <span>Insta</span>
-                            </span>
-                          ) : c.platform === 'youtube' ? (
-                            <span className="badge badge-youtube" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <span>▶️</span>
-                              <span>YouTube</span>
-                            </span>
-                          ) : (
-                            <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <span>🌐</span>
-                              <span>Etc</span>
-                            </span>
-                          )}
-                        </div>
-                        <div style={{
-                          position: 'absolute', top: '12px', right: '12px',
-                          backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
-                          fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
-                        }}>
-                          {c.targetSite}
-                        </div>
-                        <div style={{
-                          position: 'absolute', bottom: '12px', left: '12px',
-                          backgroundColor: ddayColor, color: '#ffffff',
-                          fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
-                        }}>
-                          {dday}
-                        </div>
-                      </div>
-
-                      {/* 카드 내용 영역 */}
-                      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                        <div>
-                          {c.location && (
-                            <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, marginBottom: '6px' }}>
-                              <Icons.MapPin /> {c.location}
-                            </div>
-                          )}
-                          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {sanitizeCampaignText(c.title)}
-                          </h3>
-                        <div style={{
-                          padding: '10px 12px',
-                          borderRadius: 'var(--radius-sm)',
-                          marginBottom: '14px',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '8px',
-                          border: '1px solid rgba(99, 102, 241, 0.22)',
-                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
-                        }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
-                              제공 혜택
-                            </span>
-                            <span style={{ 
-                              fontSize: '0.85rem',
-                              fontWeight: 700,
-                              color: 'var(--text-primary)',
-                              display: '-webkit-box', 
-                              WebkitLineClamp: 3, 
-                              WebkitBoxOrient: 'vertical', 
-                              overflow: 'hidden', 
-                              lineHeight: 1.4,
-                              wordBreak: 'keep-all'
-                            }} title={sanitizeOfferDescription(c.description, c.title)}>
-                              {sanitizeOfferDescription(c.description, c.title)}
-                            </span>
-                          </div>
-                        </div>
-                        </div>
-                        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                            <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
-                            <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
-                              경쟁률 {competitionRate}:1
-                            </span>
-                          </div>
-                          <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                            <div style={{
-                              width: `${ratePercent}%`, height: '100%',
-                              backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
-                              borderRadius: 'var(--radius-full)',
-                              transition: 'width 0.4s ease'
-                            }} />
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
 
           {/* 🔑 무한 스크롤(Infinite Scroll) 스크롤 감지 센티널 바 */}
           {displayedCampaigns.length > visibleCount && (

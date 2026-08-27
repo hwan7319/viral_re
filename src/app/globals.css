@@ -1349,27 +1349,45 @@ input, select {
 }
 
 /* 💻📱 좌/우 양옆 여백 스카이스크래퍼 스티키 배너 스타일 (Left & Right Outer Wing Banners) */
-@media (max-width: 1519px) {
+@media (max-width: 1199px) {
   .left-wing-ad,
   .right-wing-ad {
     display: none !important;
   }
 }
 
-@media (min-width: 1520px) {
+@media (min-width: 1200px) and (max-width: 1519px) {
   .left-wing-ad {
     position: fixed;
-    top: 170px;
-    left: calc(50% - 600px - 165px);
-    width: 150px;
+    top: 90px;
+    left: 12px;
+    width: 140px;
     z-index: 80;
   }
 
   .right-wing-ad {
     position: fixed;
-    top: 170px;
-    right: calc(50% - 600px - 165px);
-    width: 150px;
+    top: 90px;
+    right: 12px;
+    width: 140px;
+    z-index: 80;
+  }
+}
+
+@media (min-width: 1520px) {
+  .left-wing-ad {
+    position: fixed;
+    top: 90px;
+    left: calc(50% - 600px - 160px);
+    width: 145px;
+    z-index: 80;
+  }
+
+  .right-wing-ad {
+    position: fixed;
+    top: 90px;
+    right: calc(50% - 600px - 160px);
+    width: 145px;
     z-index: 80;
   }
 }
