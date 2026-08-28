@@ -2677,7 +2677,7 @@ export default function Home() {
             width: '100%',
           }}
         >
-          <CoupangBanner id={1023026} trackingCode="AF5060942" height={110} style={{ margin: 0 }} />
+          <CoupangBanner id={1023026} trackingCode="AF5060942" height={85} style={{ margin: 0 }} />
         </div>
         
 
