@@ -15,6 +15,7 @@ const httpsAgent = new https.Agent({
 const globalRef = global as any;
 if (!globalRef.blogStatsCache) globalRef.blogStatsCache = new Map<string, { timestamp: number; data: any }>();
 if (!globalRef.keywordApiCache) globalRef.keywordApiCache = new Map<string, { timestamp: number; data: any }>();
+if (!globalRef.singleAdCache) globalRef.singleAdCache = new Map<string, { timestamp: number; data: any }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10분
 
 function generateSearchAdSignature(timestamp: string, method: string, uri: string, secretKey: string) {
@@ -205,6 +206,49 @@ async function fetchSearchAdBatch(keywords: string[], customerId: string, search
   } catch (e) {
     return new Map();
   }
+}
+
+// 🔑 개별 키워드 네이버 검색광고 실시간 수치 단일 조회기 (메모리 캐시 + 429 백오프 재시도 보장)
+async function fetchSingleKeywordAd(keyword: string, customerId: string, searchAdApiKey: string, searchAdSecretKey: string, retries = 2) {
+  if (!keyword || !customerId || !searchAdApiKey || !searchAdSecretKey) return null;
+  const cleanKey = keyword.trim().toLowerCase().replace(/\s+/g, '');
+  const cached = globalRef.singleAdCache?.get(cleanKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.data;
+  }
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      const timestamp = Date.now().toString();
+      const uri = '/keywordstool';
+      const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
+      const res = await axios.get(`https://api.searchad.naver.com${uri}`, {
+        params: { hintKeywords: keyword.trim(), showDetail: '1' },
+        headers: {
+          'X-Timestamp': timestamp,
+          'X-API-KEY': searchAdApiKey,
+          'X-Customer': customerId,
+          'X-Signature': signature,
+        },
+        timeout: 2500,
+        httpsAgent,
+      });
+      const list = res.data?.keywordList || [];
+      const exact = list.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === cleanKey);
+      if (exact) {
+        const pc = parseSearchAdVolume(exact.monthlyPcQcCnt);
+        const mobile = parseSearchAdVolume(exact.monthlyMobileQcCnt);
+        const data = { keyword: keyword.trim(), pc, mobile, total: pc + mobile };
+        globalRef.singleAdCache?.set(cleanKey, { timestamp: Date.now(), data });
+        return data;
+      }
+    } catch (e: any) {
+      if (e.response?.status === 429 && i < retries - 1) {
+        await new Promise(r => setTimeout(r, 100 * (i + 1)));
+      }
+    }
+  }
+  return null;
 }
 
 // 🔑 메인 키워드 상단 블로그 리스트 수집기 (자동 재시도 및 페일오버 보장)
@@ -552,19 +596,31 @@ export async function GET(request: Request) {
 
     const allCandidatesList = Array.from(candidateMap.values());
 
-    // 🔑 3-4. 2차 검색광고 전수 동기화 파이프라인 (1차 검색광고 힌트에 누락된 최우선 순위 키워드 1회 대용량 배치 수집)
+    // 🔑 3-4. 2차 검색광고 전수 동기화 파이프라인 (1차 검색광고 힌트에 누락된 최우선 순위 키워드 실시간 전수 패치)
     const missingZeroVolCandidates = allCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
     if (missingZeroVolCandidates.length > 0) {
-      const keysToFetch = missingZeroVolCandidates.slice(0, 5).map(item => item.keyword);
-      const batchMap = await fetchSearchAdBatch(keysToFetch, customerId, searchAdApiKey, searchAdSecretKey);
-      batchMap.forEach((val: any, key: string) => {
-        const item = candidateMap.get(key);
-        if (item && val.total > 0) {
-          item.pc = val.pc;
-          item.mobile = val.mobile;
-          item.total = val.total;
+      const targets = missingZeroVolCandidates.slice(0, 30);
+      const chunkSize = 3;
+      for (let i = 0; i < targets.length; i += chunkSize) {
+        const chunk = targets.slice(i, i + chunkSize);
+        await Promise.all(
+          chunk.map(async (item) => {
+            const adData = await fetchSingleKeywordAd(item.keyword, customerId, searchAdApiKey, searchAdSecretKey);
+            if (adData && adData.total > 0) {
+              const key = item.keyword.replace(/\s+/g, '').toLowerCase();
+              const cand = candidateMap.get(key);
+              if (cand) {
+                cand.pc = adData.pc;
+                cand.mobile = adData.mobile;
+                cand.total = adData.total;
+              }
+            }
+          })
+        );
+        if (i + chunkSize < targets.length) {
+          await new Promise(r => setTimeout(r, 35));
         }
-      });
+      }
     }
 
     allCandidatesList.sort((a, b) => {
@@ -588,6 +644,16 @@ export async function GET(request: Request) {
             let kwMobile = item.mobile;
             let kwTotalVol = item.total;
 
+            // 🔑 2차 실시간 전수 검증: 상위 연관어 후보에 올라왔으나 여전히 검색량이 0인 키워드는 단일 검색광고 실데이터 100% 동기화
+            if (kwTotalVol === 0) {
+              const adData = await fetchSingleKeywordAd(item.keyword, customerId, searchAdApiKey, searchAdSecretKey);
+              if (adData && adData.total > 0) {
+                kwPc = adData.pc;
+                kwMobile = adData.mobile;
+                kwTotalVol = adData.total;
+              }
+            }
+
             const stats = await fetchBlogStatsFast(item.keyword, clientId, clientSecret);
             let totalPosts = stats.totalPosts;
             let monthlyPosts = stats.monthlyPosts;
@@ -606,13 +672,7 @@ export async function GET(request: Request) {
               const logP = Math.log10(totalPosts);
               const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
               const calcVol = Math.floor(totalPosts * multiplier);
-              kwTotalVol = Math.max(10, calcVol);
-            }
-
-            // 🔑 네이버 공식 자동완성/연관 연동 키워드(priority 1 또는 2)는 블로그 포스팅이나 검색량이 0이어도 최소 수치 부여하여 0건 탈락 완벽 방지
-            if (kwTotalVol === 0 && totalPosts === 0 && (item.priority === 1 || item.priority === 2)) {
-              kwTotalVol = 10;
-              totalPosts = 5;
+              kwTotalVol = Math.max(5, calcVol);
             }
 
             // 🔑 둘 다 데이터가 아예 없는 완전 깡통 키워드만 유일하게 제거
