@@ -44,7 +44,7 @@ async function pushCloudReview() {
   console.log(`Prepared ${collected.length} CloudReview items to push...`);
 
   const endpoints = [
-    'http://54.180.169.99/api/sync',
+    'https://viral-re.co.kr/api/sync',
     'https://viral-re.vercel.app/api/sync'
   ];
 

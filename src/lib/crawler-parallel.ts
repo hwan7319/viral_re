@@ -593,6 +593,102 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
       } catch (err: any) {
         console.warn('[Parallel-Crawl] 미블 (Mible) failed:', err.message);
       }
+    })(),
+
+    // 11. 링블 (Ringble)
+    (async () => {
+      try {
+        const res = await axios.get('https://www.ringble.co.kr', { headers: HEADERS, timeout: 6000 });
+        const $ = cheerio.load(res.data);
+        $('a[href*="detail.php"]').each((i, el) => {
+          const href = $(el).attr('href') || '';
+          const parent = $(el).closest('div, li');
+          let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+          if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+
+          let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          if (img && img.startsWith('//')) img = 'https:' + img;
+          if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+          const numMatch = href.match(/number=(\d+)/);
+          const cpId = numMatch ? numMatch[1] : `${i}`;
+
+          if (rawTitle && rawTitle.length > 3) {
+            collected.push({
+              id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+              category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
+              imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블', limitCount: 5, applyCount: 0,
+              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+            });
+          }
+        });
+      } catch (err: any) {
+        console.warn('[Parallel-Crawl] 링블 failed:', err.message);
+      }
+    })(),
+
+    // 12. 놀러와체험단
+    (async () => {
+      try {
+        const res = await axios.get('https://www.cometoplay.kr', { headers: HEADERS, timeout: 6000 });
+        const $ = cheerio.load(res.data);
+        $('a[href*="item.php"]').each((i, el) => {
+          const href = $(el).attr('href') || '';
+          const parent = $(el).closest('div, li');
+          let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+          if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+
+          let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          if (img && img.startsWith('//')) img = 'https:' + img;
+          if (img && !img.startsWith('http')) img = `https://www.cometoplay.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+          const numMatch = href.match(/it_id=(\d+)/);
+          const cpId = numMatch ? numMatch[1] : `${i}`;
+
+          if (rawTitle && rawTitle.length > 3) {
+            collected.push({
+              id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+              category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
+              imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
+              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+            });
+          }
+        });
+      } catch (err: any) {
+        console.warn('[Parallel-Crawl] 놀러와체험단 failed:', err.message);
+      }
+    })(),
+
+    // 13. 모블 (모두의블로그)
+    (async () => {
+      try {
+        const res = await axios.get('https://www.modublog.co.kr', { headers: HEADERS, timeout: 6000 });
+        const $ = cheerio.load(res.data);
+        $('a[href*="/product/"]').each((i, el) => {
+          const href = $(el).attr('href') || '';
+          const parent = $(el).closest('div, li');
+          let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+          if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+
+          let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          if (img && img.startsWith('//')) img = 'https:' + img;
+          if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+          const numMatch = href.match(/\/product\/(\d+)/);
+          const cpId = numMatch ? numMatch[1] : `${i}`;
+
+          if (rawTitle && rawTitle.length > 3) {
+            collected.push({
+              id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+              category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
+              imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블', limitCount: 5, applyCount: 0,
+              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+            });
+          }
+        });
+      } catch (err: any) {
+        console.warn('[Parallel-Crawl] 모블 (모두의블로그) failed:', err.message);
+      }
     })()
   ]);
 

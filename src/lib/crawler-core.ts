@@ -496,6 +496,108 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
     console.error('[OnDemand] CloudReview crawl failed:', err.message);
   }
 
+  // ==================== 7. 링블 (Ringble) ====================
+  try {
+    const ringRes = await axios.get('https://www.ringble.co.kr', { headers: HEADERS, timeout: 6000 });
+    const $ring = cheerio.load(ringRes.data);
+    let ringCount = 0;
+
+    $ring('a[href*="detail.php"]').each((i, el) => {
+      const href = $ring(el).attr('href') || '';
+      const parent = $ring(el).closest('div, li');
+      let rawTitle = $ring(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+
+      let img = $ring(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+      if (img && img.startsWith('//')) img = 'https:' + img;
+      if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+      const numMatch = href.match(/number=(\d+)/);
+      const cpId = numMatch ? numMatch[1] : `${i}`;
+
+      if (rawTitle && rawTitle.length > 3) {
+        collected.push({
+          id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+          category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
+          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블', limitCount: 5, applyCount: 0,
+          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+        });
+        ringCount++;
+      }
+    });
+    console.log(`[OnDemand] Ringble parsed total ${ringCount} items`);
+  } catch (err: any) {
+    console.error('[OnDemand] Ringble crawl failed:', err.message);
+  }
+
+  // ==================== 8. 놀러와체험단 ====================
+  try {
+    const playRes = await axios.get('https://www.cometoplay.kr', { headers: HEADERS, timeout: 6000 });
+    const $play = cheerio.load(playRes.data);
+    let playCount = 0;
+
+    $play('a[href*="item.php"]').each((i, el) => {
+      const href = $play(el).attr('href') || '';
+      const parent = $play(el).closest('div, li');
+      let rawTitle = $play(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+
+      let img = $play(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+      if (img && img.startsWith('//')) img = 'https:' + img;
+      if (img && !img.startsWith('http')) img = `https://www.cometoplay.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+      const numMatch = href.match(/it_id=(\d+)/);
+      const cpId = numMatch ? numMatch[1] : `${i}`;
+
+      if (rawTitle && rawTitle.length > 3) {
+        collected.push({
+          id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+          category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
+          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
+          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+        });
+        playCount++;
+      }
+    });
+    console.log(`[OnDemand] ComeToPlay parsed total ${playCount} items`);
+  } catch (err: any) {
+    console.error('[OnDemand] ComeToPlay crawl failed:', err.message);
+  }
+
+  // ==================== 9. 모블 (모두의블로그) ====================
+  try {
+    const moblRes = await axios.get('https://www.modublog.co.kr', { headers: HEADERS, timeout: 6000 });
+    const $mobl = cheerio.load(moblRes.data);
+    let moblCount = 0;
+
+    $mobl('a[href*="/product/"]').each((i, el) => {
+      const href = $mobl(el).attr('href') || '';
+      const parent = $mobl(el).closest('div, li');
+      let rawTitle = $mobl(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+
+      let img = $mobl(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+      if (img && img.startsWith('//')) img = 'https:' + img;
+      if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+      const numMatch = href.match(/\/product\/(\d+)/);
+      const cpId = numMatch ? numMatch[1] : `${i}`;
+
+      if (rawTitle && rawTitle.length > 3) {
+        collected.push({
+          id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+          category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
+          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블', limitCount: 5, applyCount: 0,
+          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+        });
+        moblCount++;
+      }
+    });
+    console.log(`[OnDemand] ModuBlog parsed total ${moblCount} items`);
+  } catch (err: any) {
+    console.error('[OnDemand] ModuBlog crawl failed:', err.message);
+  }
+
   // 수집한 모든 데이터 SQLite DB에 저장
   if (collected.length > 0) {
     const result = await insertOrUpdateCampaigns(collected);
