@@ -386,42 +386,42 @@ const SIDO_QUICK_TABS = [
   { key: '제주', label: '제주' }
 ];
 
-// 💻📱 상단 가로 롤링 배너 광고 샘플 슬라이드 데이터
+// 💻📱 상단 가로 롤링 배너 광고 스폰서 슬라이드 데이터
 const AD_SLIDES = [
   {
     id: 1,
     image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '화장품 & 에스테틱 프리미엄 뷰티 체험단 모집',
-    desc: '신상 크림부터 유명 네일숍 왁싱케어권까지 무상 혜택 대모집!',
-    link: 'https://viral-re.vercel.app'
+    title: '바이럴리 공식 스폰서 & 배너 광고 제휴 모집',
+    desc: '광고문의 official@viral-re.com',
+    link: 'mailto:official@viral-re.com'
   },
   {
     id: 2,
     image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '동네 한우 & 삼겹살 맛집 탐방단 모집',
-    desc: '푸짐한 고기 식사권과 디저트 혜택! 맛집 블로거라면 지금 신청하세요.',
-    link: 'https://viral-re.vercel.app'
+    title: '맞춤형 브랜딩 & 인플루언서 타겟 마케팅 제휴',
+    desc: '광고문의 official@viral-re.com',
+    link: 'mailto:official@viral-re.com'
   },
   {
     id: 3,
     image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '럭셔리 독채 풀빌라 무료 숙박권 찬스',
-    desc: '이번 주말은 오션뷰 힐링! SNS 전용 여행 크리에이터 선착순 매칭 중입니다.',
-    link: 'https://viral-re.vercel.app'
+    title: '바이럴리 프리미엄 스폰서십 & 배너 구좌 입점',
+    desc: '광고문의 official@viral-re.com',
+    link: 'mailto:official@viral-re.com'
   },
   {
     id: 4,
     image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '최신 IT 기기 / 이어폰 리뷰 원정대',
-    desc: '아이패드 및 스마트폰 주변기기 무상 대여 체험 및 우수자 경품 증정!',
-    link: 'https://viral-re.vercel.app'
+    title: '전국 체험단 마케팅 배너 입점 & 제휴 안내',
+    desc: '광고문의 official@viral-re.com',
+    link: 'mailto:official@viral-re.com'
   },
   {
     id: 5,
     image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&h=240&q=80',
-    title: '가을 신상 데일리 캐주얼 패션 협찬',
-    desc: '스타일리시한 니트와 아우터 무상 제공! 블로그 & 인스타 마케터 선착순 마감.',
-    link: 'https://viral-re.vercel.app'
+    title: '바이럴리 광고 구좌 신청 및 파트너십 문의',
+    desc: '광고문의 official@viral-re.com',
+    link: 'mailto:official@viral-re.com'
   }
 ];
 

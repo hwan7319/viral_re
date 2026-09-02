@@ -79,19 +79,21 @@ export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' 
   const p = (rawPlatformText || '').toLowerCase();
   const t = title.toLowerCase();
 
+  const isInsta = p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels') || t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels');
+  const isYoutube = p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts') || t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠') || t.includes('shorts');
+  
+  // Title-level explicit badges take highest priority
+  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) return 'instagram';
+  if (t.includes('쇼츠') || t.includes('유튜브') || t.includes('youtube') || t.includes('shorts')) return 'youtube';
+
   const hasBlog = p.includes('blog') || p.includes('블로그') || t.includes('블로그');
   const hasClip = p.includes('clip') || p.includes('클립') || t.includes('클립');
 
   if (hasBlog && hasClip) return 'blog+clip';
   if (hasClip) return 'clip';
   if (hasBlog) return 'blog';
-
-  if (p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels') || t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) {
-    return 'instagram';
-  }
-  if (p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts') || t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠') || t.includes('shorts')) {
-    return 'youtube';
-  }
+  if (isInsta) return 'instagram';
+  if (isYoutube) return 'youtube';
 
   return 'blog';
 };

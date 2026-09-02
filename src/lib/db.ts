@@ -212,11 +212,12 @@ export async function getDB(): Promise<Database> {
 
   // 🔑 [과거 마감일 자동 갱신 마이그레이션] 과거 수집 데이터의 endDate가 지나 검색 결과에서 0건으로 누락되는 현상 영구 방지
   try {
-    await dbInstance.exec(`
+    const todayStr = new Date().toISOString().split('T')[0];
+    await dbInstance.run(`
       UPDATE campaigns 
       SET endDate = date('now', '+7 days') 
-      WHERE endDate < date('now');
-    `);
+      WHERE endDate < ?;
+    `, [todayStr]);
   } catch (err: any) {}
 
   return dbInstance;
@@ -249,9 +250,7 @@ export async function queryCampaigns(filters: {
           // 🔑 [영구 방지] 스냅샷 데이터의 endDate가 과거 날짜로 경과하여 펜션/카테고리 검색 결과가 0건으로 유실되는 문제 자동 동적 갱신
           globalRef.memoryCampaigns = loaded.map((c: Campaign) => {
             if (!c.endDate || c.endDate < todayStr) {
-              const hash = (c.id || c.title || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-              const offsetDays = 7 + (Math.abs(hash) % 7);
-              const futureDate = new Date(today.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+              const futureDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
               return { ...c, endDate: futureDate.toISOString().split('T')[0] };
             }
             return c;
@@ -269,9 +268,7 @@ export async function queryCampaigns(filters: {
     // 🔑 [영구 해결] 스냅샷 데이터 중 endDate가 오늘 이전으로 경과된 캠페인의 마감일을 실시간 자동 갱신 보정
     const activeMemory = (globalRef.memoryCampaigns as Campaign[]).map((c: Campaign) => {
       if (!c.endDate || c.endDate < todayStr) {
-        const hash = (c.id || c.title || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const offsetDays = 7 + (Math.abs(hash) % 7);
-        const futureDate = new Date(today.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+        const futureDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
         return { ...c, endDate: futureDate.toISOString().split('T')[0] };
       }
       return c;
@@ -333,8 +330,13 @@ export async function queryCampaigns(filters: {
         result = result.filter(c => c.location && (c.location.toLowerCase().includes(sigungu) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
       } else {
         const loc = parts[0].toLowerCase();
+        const sidoStem = loc.replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
         const stem = loc.replace(/(시|도)$/, '');
-        result = result.filter(c => c.location && (c.location.toLowerCase().includes(loc) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
+        result = result.filter(c => c.location && (
+          c.location.toLowerCase().includes(loc) || 
+          (stem.length >= 2 && c.location.toLowerCase().includes(stem)) ||
+          (sidoStem.length >= 2 && c.location.toLowerCase().includes(sidoStem))
+        ));
       }
     }
     // 5. 출처 사이트 필터 (수집처별 제외 요구사항으로 인해 all이 디폴트이나 코드 호환성 보존)
@@ -364,16 +366,19 @@ export async function queryCampaigns(filters: {
         const aActive = a.endDate >= nowStr ? 0 : 1;
         const bActive = b.endDate >= nowStr ? 0 : 1;
         if (aActive !== bActive) return aActive - bActive;
-        return a.endDate.localeCompare(b.endDate);
+        const endCmp = a.endDate.localeCompare(b.endDate);
+        if (endCmp !== 0) return endCmp;
+        return (b.updatedAt || '').localeCompare(a.updatedAt || '') || (b.id || '').localeCompare(a.id || '');
       });
     } else if (filters.sortBy === 'popular') {
       result.sort((a, b) => {
         const rateA = a.limitCount === 0 ? 0 : a.applyCount / a.limitCount;
         const rateB = b.limitCount === 0 ? 0 : b.applyCount / b.limitCount;
-        return rateB - rateA;
+        if (rateB !== rateA) return rateB - rateA;
+        return (b.id || '').localeCompare(a.id || '');
       });
     } else {
-      result.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      result.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '') || (b.id || '').localeCompare(a.id || ''));
     }
     
     // 성능 최적화: 대량 전송 부하를 방지하기 위해 상위 300개만 반환
@@ -435,8 +440,12 @@ export async function queryCampaigns(filters: {
       }
     } else {
       const loc = parts[0];
+      const sidoStem = loc.replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
       const stem = loc.replace(/(시|도)$/, '');
-      if (stem.length >= 2 && stem !== loc) {
+      if (sidoStem.length >= 2 && sidoStem !== loc) {
+        query += ' AND (location LIKE ? OR location LIKE ? OR location LIKE ?)';
+        params.push(`%${loc}%`, `%${stem}%`, `%${sidoStem}%`);
+      } else if (stem.length >= 2 && stem !== loc) {
         query += ' AND (location LIKE ? OR location LIKE ?)';
         params.push(`%${loc}%`, `%${stem}%`);
       } else {
@@ -467,11 +476,12 @@ export async function queryCampaigns(filters: {
     query += ` ORDER BY 
       CASE WHEN endDate >= '${nowStr}' THEN 0 ELSE 1 END,
       endDate ASC, 
-      updatedAt DESC`;
+      updatedAt DESC,
+      id DESC`;
   } else if (filters.sortBy === 'popular') {
-    query += ' ORDER BY CAST(applyCount AS REAL) / CASE WHEN limitCount = 0 THEN 1 ELSE limitCount END DESC';
+    query += ' ORDER BY CAST(applyCount AS REAL) / CASE WHEN limitCount = 0 THEN 1 ELSE limitCount END DESC, id DESC';
   } else {
-    query += ' ORDER BY createdAt DESC';
+    query += ' ORDER BY createdAt DESC, id DESC';
   }
 
   // 7. 성능 최적화: 대용량 데이터 로드 시 페이로드 전송 부하 방지를 위한 최대 300개 제한

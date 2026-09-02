@@ -23,7 +23,7 @@ function generateSearchAdSignature(timestamp: string, method: string, uri: strin
   return crypto.createHmac('sha256', secretKey).update(message).digest('base64');
 }
 
-function parseSearchAdVolume(val: any): number {
+export function parseSearchAdVolume(val: any): number {
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
     if (val.includes('<')) return 5;
@@ -177,7 +177,7 @@ async function fetchBlogStatsFast(keyword: string, clientId: string, clientSecre
 }
 
 // 🔑 2차 검색광고 전수 동기화 엔진 (1차 검색광고 힌트 응답에서 검색량이 누락된 프리셋/연관어 실시간 검색량 패치)
-async function fetchSearchAdBatch(keywords: string[], customerId: string, searchAdApiKey: string, searchAdSecretKey: string) {
+export async function fetchSearchAdBatch(keywords: string[], customerId: string, searchAdApiKey: string, searchAdSecretKey: string) {
   if (!keywords || keywords.length === 0 || !customerId || !searchAdApiKey || !searchAdSecretKey) return new Map();
   try {
     const timestamp = Date.now().toString();
@@ -201,7 +201,11 @@ async function fetchSearchAdBatch(keywords: string[], customerId: string, search
       const key = k.relKeyword.replace(/\s+/g, '').toLowerCase();
       const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
       const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
-      map.set(key, { keyword: k.relKeyword.trim(), pc, mobile, total: pc + mobile });
+      const itemData = { keyword: k.relKeyword.trim(), pc, mobile, total: pc + mobile };
+      map.set(key, itemData);
+      if (globalRef.singleAdCache) {
+        globalRef.singleAdCache.set(key, { timestamp: Date.now(), data: itemData });
+      }
     });
     return map;
   } catch (e) {
@@ -210,7 +214,7 @@ async function fetchSearchAdBatch(keywords: string[], customerId: string, search
 }
 
 // 🔑 개별 키워드 네이버 검색광고 실시간 수치 단일 조회기 (메모리 캐시 + 429 백오프 재시도 보장)
-async function fetchSingleKeywordAd(keyword: string, customerId: string, searchAdApiKey: string, searchAdSecretKey: string, retries = 2) {
+export async function fetchSingleKeywordAd(keyword: string, customerId: string, searchAdApiKey: string, searchAdSecretKey: string, retries = 3) {
   if (!keyword || !customerId || !searchAdApiKey || !searchAdSecretKey) return null;
   const cleanKey = keyword.trim().toLowerCase().replace(/\s+/g, '');
   const cached = globalRef.singleAdCache?.get(cleanKey);
@@ -231,10 +235,20 @@ async function fetchSingleKeywordAd(keyword: string, customerId: string, searchA
           'X-Customer': customerId,
           'X-Signature': signature,
         },
-        timeout: 2500,
+        timeout: 3000,
         httpsAgent,
       });
       const list = res.data?.keywordList || [];
+      list.forEach((k: any) => {
+        if (!k.relKeyword) return;
+        const key = k.relKeyword.replace(/\s+/g, '').toLowerCase();
+        const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
+        const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
+        const itemData = { keyword: k.relKeyword.trim(), pc, mobile, total: pc + mobile };
+        if (globalRef.singleAdCache) {
+          globalRef.singleAdCache.set(key, { timestamp: Date.now(), data: itemData });
+        }
+      });
       const exact = list.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === cleanKey);
       if (exact) {
         const pc = parseSearchAdVolume(exact.monthlyPcQcCnt);
@@ -245,7 +259,7 @@ async function fetchSingleKeywordAd(keyword: string, customerId: string, searchA
       }
     } catch (e: any) {
       if (e.response?.status === 429 && i < retries - 1) {
-        await new Promise(r => setTimeout(r, 100 * (i + 1)));
+        await new Promise(r => setTimeout(r, 300 * (i + 1)));
       }
     }
   }
@@ -279,7 +293,7 @@ async function fetchBlogMain(query: string, clientId: string, clientSecret: stri
 }
 
 // 🔑 5대 엔티티 정밀 분류 엔진 (LOCATION, VENUE, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
-function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
+export function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
   const cleanQ = query.replace(/\s+/g, '');
 
   // 1. VENUE (백화점, 팝업, 쇼핑몰, 멀티플렉스 건물)
@@ -290,14 +304,14 @@ function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONA
   const seasonalRegex = /(말복|초복|중복|복날|입추|입동|동지|단오|추석|설날|명절|어버이날|스승의날|어린이날|크리스마스|발렌타인|화이트데이|빼빼로데이|할로윈|정월대보름|새해|신정|구정)/i;
   if (seasonalRegex.test(cleanQ)) return 'SEASONAL_EVENT';
 
-  // 3. LOCATION / REGION (행정동, 역, 상권, 지역) - 단독 '로' 무조건 매칭 제외로 '오케스트로' 등 기업명 오분류 방지
-  const locationSuffixRegex = /([가-힣]{2,}(동|역|구|시|도|길|리|면|읍|군|해수욕장|공항|산|계곡|대로))$/;
-  const knownLocations = ['제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면', '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담'];
-  if (locationSuffixRegex.test(cleanQ) || knownLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
-
-  // 4. BRAND / PRODUCT (기업, 브랜드, IT/가전 제품)
+  // 3. BRAND / PRODUCT (기업, 브랜드, IT/가전 제품) - LOCATION 앞단에 위치하여 '갤럭시'('시' 접미사) 오분류 원천 방지
   const brandKeywords = ['메가커피', '컴포즈', '빽다방', '스타벅스', '투썸', '이디야', '교촌치킨', 'bhc', 'bbq', '굽네', '아이폰', '갤럭시', '다이슨', '올리브영', '오케스트로', '두산로보틱스', '파두', '무신사', '크래프톤', '야놀자', '당근마켓', '쿠팡', '네이버'];
   if (brandKeywords.some(b => cleanQ.toLowerCase().includes(b))) return 'BRAND_PRODUCT';
+
+  // 4. LOCATION / REGION (행정동, 역, 상권, 지역) - 종로3가역 등 숫자 포함 역명 및 테헤란로 등 도로명 지원
+  const locationSuffixRegex = /([가-힣0-9]{2,}(동|역|구|시|도|길|로|리|면|읍|군|해수욕장|공항|산|계곡|대로))$/;
+  const knownLocations = ['제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면', '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담'];
+  if (locationSuffixRegex.test(cleanQ) || knownLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
 
   // 5. GENERAL CATEGORY (일반 범용 카테고리)
   return 'GENERAL_CATEGORY';
@@ -374,25 +388,32 @@ export async function GET(request: Request) {
 
       (async () => {
         if (!customerId || !searchAdApiKey || !searchAdSecretKey) return null;
-        try {
-          const timestamp = Date.now().toString();
-          const uri = '/keywordstool';
-          const method = 'GET';
-          const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
-          return await axios.get(`https://api.searchad.naver.com${uri}`, {
-            params: { hintKeywords: cleanHintQuery, showDetail: '1' },
-            headers: {
-              'X-Timestamp': timestamp,
-              'X-API-KEY': searchAdApiKey,
-              'X-Customer': customerId,
-              'X-Signature': signature,
-            },
-            timeout: 2000,
-            httpsAgent,
-          });
-        } catch (e) {
-          return null;
+        for (let i = 0; i < 2; i++) {
+          try {
+            const timestamp = Date.now().toString();
+            const uri = '/keywordstool';
+            const method = 'GET';
+            const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
+            return await axios.get(`https://api.searchad.naver.com${uri}`, {
+              params: { hintKeywords: cleanHintQuery, showDetail: '1' },
+              headers: {
+                'X-Timestamp': timestamp,
+                'X-API-KEY': searchAdApiKey,
+                'X-Customer': customerId,
+                'X-Signature': signature,
+              },
+              timeout: 2500,
+              httpsAgent,
+            });
+          } catch (e: any) {
+            if (e.response?.status === 429 && i === 0) {
+              await new Promise(r => setTimeout(r, 120));
+            } else {
+              return null;
+            }
+          }
         }
+        return null;
       })(),
 
       axios.get(`https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(query)}`, {
@@ -410,7 +431,7 @@ export async function GET(request: Request) {
       }).catch(() => null),
     ]);
 
-    const totalPosts = blogRes?.total ?? mainStats?.totalPosts ?? 0;
+    let totalPosts = blogRes?.total ?? mainStats?.totalPosts ?? 0;
     let mainMonthlyPosts = mainStats.monthlyPosts || 0;
     if (mainMonthlyPosts === 0 && totalPosts > 0) {
       const logP = Math.log10(totalPosts);
@@ -428,6 +449,17 @@ export async function GET(request: Request) {
 
     if (adRes?.data?.keywordList) {
       const keywordList = adRes.data.keywordList || [];
+      keywordList.forEach((k: any) => {
+        if (!k.relKeyword) return;
+        const key = k.relKeyword.replace(/\s+/g, '').toLowerCase();
+        const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
+        const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
+        const itemData = { keyword: k.relKeyword.trim(), pc, mobile, total: pc + mobile };
+        if (globalRef.singleAdCache) {
+          globalRef.singleAdCache.set(key, { timestamp: Date.now(), data: itemData });
+        }
+      });
+
       const exactMatch = keywordList.find((k: any) => k.relKeyword.replace(/\s+/g, '').toLowerCase() === cleanHintQuery.toLowerCase());
 
       if (exactMatch) {
@@ -446,11 +478,28 @@ export async function GET(request: Request) {
     }
 
     if (!isRealSearchAdData) {
-      const logP = Math.log10(Math.max(10, totalPosts));
-      const mult = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
-      totalSearchVolume = Math.max(50, Math.floor(totalPosts * mult));
-      pcSearchVolume = Math.floor(totalSearchVolume * 0.20);
-      mobileSearchVolume = Math.floor(totalSearchVolume * 0.80);
+      const cachedExact = globalRef.singleAdCache?.get(cleanHintQuery.toLowerCase())?.data;
+      if (cachedExact) {
+        pcSearchVolume = cachedExact.pc;
+        mobileSearchVolume = cachedExact.mobile;
+        totalSearchVolume = cachedExact.total;
+        isRealSearchAdData = true;
+      } else {
+        const logP = Math.log10(Math.max(10, totalPosts));
+        const mult = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
+        totalSearchVolume = Math.max(50, Math.floor(totalPosts * mult));
+        pcSearchVolume = Math.floor(totalSearchVolume * 0.20);
+        mobileSearchVolume = totalSearchVolume - pcSearchVolume;
+      }
+    }
+
+    if (totalPosts === 0 && totalSearchVolume > 0) {
+      const logV = Math.log10(totalSearchVolume);
+      const ratio = logV > 5 ? 0.8 : logV > 4 ? 1.2 : logV > 3 ? 1.8 : 2.5;
+      totalPosts = Math.max(15, Math.floor(totalSearchVolume * ratio));
+      if (mainMonthlyPosts === 0) {
+        mainMonthlyPosts = Math.max(1, Math.floor(totalPosts * 0.05));
+      }
     }
 
     // 🔑 3. 스마트 4대 엔티티 분류 기반 후보 키워드 추출 알고리즘
@@ -671,6 +720,17 @@ export async function GET(request: Request) {
               const multiplier = logP > 6 ? 0.021 : logP > 5 ? 0.035 : logP > 4 ? 0.06 : logP > 3 ? 0.12 : 0.25;
               const calcVol = Math.floor(totalPosts * multiplier);
               kwTotalVol = Math.max(5, calcVol);
+              kwPc = Math.floor(kwTotalVol * 0.20);
+              kwMobile = kwTotalVol - kwPc;
+            }
+
+            if (kwTotalVol === 0 && totalPosts === 0 && (item.priority === 1 || item.priority === 2)) {
+              kwTotalVol = 10;
+              kwPc = 2;
+              kwMobile = 8;
+              totalPosts = 25;
+              monthlyPosts = 1;
+              recentDate = '오늘';
             }
 
             // 🔑 둘 다 데이터가 아예 없는 완전 깡통 키워드만 유일하게 제거
@@ -761,6 +821,8 @@ export async function GET(request: Request) {
       success: true,
       data: {
         keyword: query,
+        mainKeyword: query,
+        entityType,
         pcSearchVolume,
         mobileSearchVolume,
         totalSearchVolume,
