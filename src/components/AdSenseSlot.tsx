@@ -38,7 +38,7 @@ export default function AdSenseSlot({
     <div className={`adsense-wrapper ${className}`} style={{ width: '100%', overflow: 'hidden', ...style }}>
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', width: '100%', minHeight: '90px' }}
+        style={{ display: 'block', width: '100%', minHeight: '0px' }}
         data-ad-client={client}
         {...(slot ? { 'data-ad-slot': slot } : {})}
         data-ad-format={format}

@@ -2591,8 +2591,8 @@ export default function Home() {
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
         
         {/* 💻📱 구글 애드센스 실시간 대형 상단 배너 (Google AdSense Header Banner) */}
-        <div style={{ margin: '0 auto 24px auto', width: '100%' }}>
-          <AdSenseSlot client="ca-pub-7845901609549313" style={{ minHeight: '100px' }} />
+        <div style={{ margin: '0 auto', width: '100%' }}>
+          <AdSenseSlot client="ca-pub-7845901609549313" style={{ minHeight: '0px' }} />
         </div>
 
         {/* 💻📱 상단 가로형 반응형 배너 광고 (Auto-rolling Carousel Ad Slot) */}
@@ -2992,7 +2992,7 @@ export default function Home() {
             <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>구글 광고</span>
           </div>
           <h6 style={{ fontSize: '0.78rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-primary)' }}>실시간 추천 광고</h6>
-          <AdSenseSlot client="ca-pub-7845901609549313" format="vertical" style={{ minHeight: '400px', width: '100%' }} />
+          <AdSenseSlot client="ca-pub-7845901609549313" format="vertical" style={{ minHeight: '0px', width: '100%' }} />
         </div>
       </aside>
 
