@@ -466,7 +466,11 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const href = $(el).attr('href') || '';
           const parent = $(el).closest('div.relative, article, div.campaign-image').parent();
           
-          const rawTitle = parent.find('.text-sm.px-3, div[class*="truncate"]').first().text().trim().replace(/\s+/g, ' ') || $(el).text().trim().replace(/\s+/g, ' ');
+          let rawTitle = parent.find('div.text-sm.px-3.pt-3 a').text().trim() || 
+                         parent.find('div.truncate.pl-1').text().trim() || 
+                         $(el).text().trim();
+          rawTitle = rawTitle.replace(/\s+/g, ' ');
+
           const img = parent.find('img').attr('data-original') || parent.find('img').attr('data-src') || parent.find('img').attr('src') || '';
           
           const cpIdMatch = href.match(/\/detail\/(\d+)/);
