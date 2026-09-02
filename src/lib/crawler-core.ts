@@ -445,6 +445,57 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
     console.error('[OnDemand] Mible crawl failed:', err.message);
   }
 
+  // ==================== 6. 클라우드리뷰 (CloudReview) 수집 ====================
+  try {
+    const crRes = await axios.get('https://cloudreview.co.kr', { headers: HEADERS, timeout: 6000 });
+    const $cr = cheerio.load(crRes.data);
+    let crCount = 0;
+
+    $cr('a[href*="/campaign/detail/"]').each((index, element) => {
+      const href = $cr(element).attr('href') || '';
+      const parent = $cr(element).closest('div.relative, article, div.campaign-image').parent();
+      
+      let rawTitle = parent.find('div.text-sm.px-3.pt-3 a').text().trim() || 
+                     parent.find('div.truncate.pl-1').text().trim() || 
+                     $cr(element).text().trim();
+      rawTitle = rawTitle.replace(/\s+/g, ' ');
+
+      const img = parent.find('img').attr('data-original') || parent.find('img').attr('data-src') || parent.find('img').attr('src') || '';
+      const cpIdMatch = href.match(/\/detail\/(\d+)/);
+      const cpId = cpIdMatch ? cpIdMatch[1] : '';
+
+      if (rawTitle && rawTitle.length > 3 && cpId) {
+        if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) {
+          return;
+        }
+
+        const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
+        const category = detectCategory(rawTitle, rawTitle);
+
+        collected.push({
+          id: `cr-${cpId}`,
+          title: rawTitle,
+          description: rawTitle,
+          platform: 'blog',
+          category,
+          campaignUrl: fullUrl,
+          imageUrl: img || 'https://picsum.photos/600/400',
+          targetSite: '클라우드리뷰',
+          limitCount: 10,
+          applyCount: 0,
+          startDate: now.toISOString().split('T')[0],
+          endDate: parseRemainDaysToDate(7),
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        });
+        crCount++;
+      }
+    });
+    console.log(`[OnDemand] CloudReview parsed total ${crCount} items`);
+  } catch (err: any) {
+    console.error('[OnDemand] CloudReview crawl failed:', err.message);
+  }
+
   // 수집한 모든 데이터 SQLite DB에 저장
   if (collected.length > 0) {
     const result = await insertOrUpdateCampaigns(collected);
