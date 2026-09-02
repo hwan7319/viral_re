@@ -1,0 +1,40 @@
+# Site Audit Document: 06. 미블 (Mible)
+
+## 1. 개요 (Overview)
+- **사이트명**: 미블 (Mible / 미스터블로그)
+- **공식 도메인**: `https://www.mrblog.net`
+- **주요 수집 대상**: 블로그 체험단, 인스타그램 릴스 체험단, 지역 맛집, 뷰티, 배송형 혜택
+- **연동 파이프라인**:
+  - `src/lib/crawler-core.ts` (`crawlKeywordOnDemand`)
+  - `src/lib/crawler-parallel.ts` (`crawlKeywordOnDemandParallel`)
+
+## 2. 수집 사양 및 파서 구조 (Crawler Spec)
+- **Target URL**: `https://www.mrblog.net`
+- **HTTP Header 필수 조건**:
+  - `User-Agent`: `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ...`
+  - `Referer`: `https://www.mrblog.net/`
+- **DOM Selector**:
+  - 캠페인 카드 요소: `a[href*="/campaigns/"]`
+  - 제목 파싱: `$(el).text().trim().replace(/\s+/g, ' ')`
+  - 이미지 파싱: `$(el).find('img').attr('src')`
+  - 고유 ID 파싱: `mb-${cpId}` (`/campaigns/1128617` -> `mb-1128617`)
+
+## 3. 검증 결과 및 이슈 해결 트러블슈팅 (Troubleshooting)
+
+### 이슈 1: 도메인 변경 호환성 (`mible.co.kr` -> `mrblog.net`)
+- **현상**: `mible.co.kr` 접속 시 `ENOTFOUND` 에러 발생.
+- **원인**: 미블 서비스의 공식 도메인이 `www.mrblog.net`으로 이전되었음.
+- **조치**: 크롤러 타겟 URL을 `https://www.mrblog.net`으로 100% 최신화.
+
+### 이슈 2: UI 검색 시 미블 공고 미출력 현상
+- **현상**: 웹 UI에서 검색 시 리뷰노트 공고만 표시되고 미블 공고가 누락됨.
+- **원인**: 웹 UI API (`/api/campaigns/route.ts`)가 호출하는 병렬 수집 파일 (`src/lib/crawler-parallel.ts`)에 미블 파서 모듈이 등록되지 않아 `crawler-core.ts`만 갱신되었던 현상.
+- **조치**: `src/lib/crawler-parallel.ts` 내 병렬 실행 배열(Promise.all)에 미블 수집 모듈을 100% 동기화 등록 완료.
+
+## 4. 라이브 검증 데이터 샘플 (Live Audit Verification)
+- **성남 분당 미와담 2인 코스요리 제공 (8~10만원 상당)** -> `mb-1128639`
+- **구로디지털단지역 오대양참치 하이스페셜 2인 제공 (약 10만원 상당)** -> `mb-1128617`
+- **일산 장항동 상무초밥 일산라페스타점 3만 5천원 식사권** -> `mb-1127561`
+
+## 5. 상태 (Status)
+- **상태**: 🟢 PERFECT (실시간 크롤링 & 병렬 검색 엔진 연동 100% 정상 가동)

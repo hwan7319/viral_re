@@ -530,6 +530,37 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
       } catch (err: any) {
         console.warn('[Parallel-Crawl] 레뷰 (REVU) live scraper:', err.message);
       }
+    })(),
+
+    // 10. 미블 (Mible - mrblog.net)
+    (async () => {
+      try {
+        const res = await axios.get('https://www.mrblog.net', { headers: HEADERS, timeout: 6000 });
+        const $ = cheerio.load(res.data);
+        $('a').each((i, el) => {
+          const href = $(el).attr('href') || '';
+          const rawTitle = $(el).text().trim().replace(/\s+/g, ' ');
+          const img = $(el).find('img').attr('src') || $(el).parent().find('img').attr('src') || '';
+
+          if (href.includes('/campaigns/') && rawTitle.length > 5) {
+            const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
+            const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
+            const id = `mb-${cpId}`;
+            const category = detectCategory(rawTitle, rawTitle);
+            const locMatch = rawTitle.match(/\[([^\]]+)\]/) || rawTitle.match(/^([가-힣]+\s+[가-힣]+)/);
+            const location = locMatch ? locMatch[1] : undefined;
+
+            collected.push({
+              id, title: rawTitle, description: rawTitle, platform: 'blog', category, location, campaignUrl: fullUrl,
+              imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
+              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
+              createdAt: now.toISOString(), updatedAt: now.toISOString(), searchKeywords: `,${keyword},`
+            });
+          }
+        });
+      } catch (err: any) {
+        console.warn('[Parallel-Crawl] 미블 (Mible) failed:', err.message);
+      }
     })()
   ]);
 
