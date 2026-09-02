@@ -82,16 +82,20 @@ Every feature from the survey and requirements is assigned to a milestone:
     }
   }
   ```
-- **Invariants**:
+- **Invariants & Anti-Regression Directives**:
   - `totalSearchVolume === pcSearchVolume + mobileSearchVolume`
   - Related keyword volumes must exactly match single keyword detail queries
-  - No dummy or hardcoded random data
+  - **No Dummy / Fallback Data**: `kwTotalVol = 10, totalPosts = 25, monthlyPosts = 1` or any fake fallback values are strictly forbidden. Zero-data keywords must be filtered out (`return null`).
+  - **Strict Search Volume Descending Order**: `relatedKeywords` MUST ALWAYS be sorted strictly by `totalSearchVolume` descending (`b.totalSearchVolume - a.totalSearchVolume`), guaranteeing major search keywords (e.g. `김밥` 25만건, `떡볶이` 50만건) rank at the top.
+  - **EC2 Snapshot & Fail-Safe Protection**: SQLite DB auto-seeding falls back to in-memory `data/campaigns.json` snapshot when native C++ modules fail, and `campaigns.json` MUST NEVER be overwritten with < 1000 records.
 
 ## Code Layout
 - Test Scripts: `tests/` and `src/lib/`
   - `tests/e2e_search_filter.test.ts`: Search filter combination precision test suite
   - `tests/e2e_keyword_master.test.ts`: Keyword Master accuracy, ranking, and volume sync test suite
-  - `tests/e2e_full_suite.ts`: Unified test runner aggregating all tiers
+  - `tests/e2e_crawl_and_sync.test.ts`: Live crawler & auto-sync data integrity suite
+  - `tests/adversarial_challenge.test.ts`: Adversarial stress test suite
 - Reports:
   - `FINAL_TEST_REPORT.md` (or `REPORTS.md`): Quantitative report with tables, pass rates, and metrics
   - `TROUBLESHOOTING.md`: Documented exceptions adhering to the 4-section standard
+
