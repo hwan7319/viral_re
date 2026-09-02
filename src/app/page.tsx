@@ -2689,16 +2689,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 📱 모바일 전용 Coupang 배너 (더미 광고 바로 아래 위치, 동일 가로폭 & 반 높이 110px) */}
-        <div 
-          className="mobile-header-coupang-banner"
-          style={{
-            margin: '0 auto 24px auto',
-            width: '100%',
-          }}
-        >
-          <CoupangBanner id={1023026} trackingCode="AF5060942" height={85} style={{ margin: 0 }} />
-        </div>
+
         
 
 
