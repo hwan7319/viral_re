@@ -95,7 +95,9 @@ Every feature from the survey and requirements is assigned to a milestone:
   - `tests/e2e_keyword_master.test.ts`: Keyword Master accuracy, ranking, and volume sync test suite
   - `tests/e2e_crawl_and_sync.test.ts`: Live crawler & auto-sync data integrity suite
   - `tests/adversarial_challenge.test.ts`: Adversarial stress test suite
-- Reports:
-  - `FINAL_TEST_REPORT.md` (or `REPORTS.md`): Quantitative report with tables, pass rates, and metrics
+- Reports & Technical Docs:
+  - `docs/CRAWLING_ARCHITECTURE.md`: Comprehensive crawling engine, dual-pipeline, and 3-step Upsert sync specification
+  - `docs/sites/*.md`: Individual site-by-site live parser audit & troubleshooting specification documents
+  - `FINAL_TEST_REPORT.md`: Quantitative report with tables, pass rates, and metrics
   - `TROUBLESHOOTING.md`: Documented exceptions adhering to the 4-section standard
 
