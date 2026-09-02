@@ -183,8 +183,9 @@ async function fetchSearchAdBatch(keywords: string[], customerId: string, search
     const timestamp = Date.now().toString();
     const uri = '/keywordstool';
     const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
+    const cleanKws = keywords.map(k => k.replace(/\s+/g, '')).filter(Boolean);
     const res = await axios.get(`https://api.searchad.naver.com${uri}`, {
-      params: { hintKeywords: keywords.join(','), showDetail: '1' },
+      params: { hintKeywords: cleanKws.join(','), showDetail: '1' },
       headers: {
         'X-Timestamp': timestamp,
         'X-API-KEY': searchAdApiKey,
@@ -223,7 +224,7 @@ async function fetchSingleKeywordAd(keyword: string, customerId: string, searchA
       const uri = '/keywordstool';
       const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
       const res = await axios.get(`https://api.searchad.naver.com${uri}`, {
-        params: { hintKeywords: keyword.trim(), showDetail: '1' },
+        params: { hintKeywords: cleanKey, showDetail: '1' },
         headers: {
           'X-Timestamp': timestamp,
           'X-API-KEY': searchAdApiKey,
@@ -463,7 +464,8 @@ export async function GET(request: Request) {
       '삼겹살': ['냉동삼겹살', '대패삼겹살', '숙성삼겹살', '솥뚜껑삼겹살', '벌집삼겹살', '지리산흑돼지', '제주흑돼지', '삼겹살무한리필', '미나리삼겹살', '하남돼지집', '맛찬들', '삼겹살맛집'],
       '피자': ['도미노피자', '피자헛', '파파존스', '알볼로피자', '청년피자', '반올림피자', '피자스쿨', '고르곤졸라피자', '페퍼로니피자', '화덕피자', '피자추천'],
       '카페': ['성수동카페', '연남동카페', '한옥카페', '대형카페', '루프탑카페', '디저트카페', '베이커리카페', '뷰맛집카페', '스페셜티커피'],
-      '영양제': ['비타민C', '오메가3', '유산균', '마그네슘', '밀크씨슬', '루테인', '코엔자임Q10', '비타민D', '멀티비타민', '관절영양제', '눈영양제', '간영양제', '임산부영양제']
+      '영양제': ['비타민C', '오메가3', '유산균', '마그네슘', '밀크씨슬', '루테인', '코엔자임Q10', '비타민D', '멀티비타민', '관절영양제', '눈영양제', '간영양제', '임산부영양제'],
+      '시장': ['광장시장', '남대문시장', '벼룩시장', '서문시장', '강릉중앙시장', '가락시장', '속초중앙시장', '부전시장', '제주동문시장', '서울시장', '충주시장', '대구시장', '부산시장', '통영시장', '성남시장', '울산시장', '용인시장', '소상공인시장진흥공단', '시장바구니', '시장조사', '시장경제', '시장금리', '시장실패', '시장이반찬이다', '시장놀이', '시장영어로', '시장선거', '시장하다', '시장가현재가차이', '시장을여는사람들', '시장놀이게임', '시장뜻', '시장경제신문']
     };
 
     Object.keys(CATEGORY_PRESETS).forEach(cat => {
@@ -600,25 +602,21 @@ export async function GET(request: Request) {
     const missingZeroVolCandidates = allCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
     if (missingZeroVolCandidates.length > 0) {
       const targets = missingZeroVolCandidates.slice(0, 30);
-      const chunkSize = 3;
+      const chunkSize = 5;
       for (let i = 0; i < targets.length; i += chunkSize) {
         const chunk = targets.slice(i, i + chunkSize);
-        await Promise.all(
-          chunk.map(async (item) => {
-            const adData = await fetchSingleKeywordAd(item.keyword, customerId, searchAdApiKey, searchAdSecretKey);
-            if (adData && adData.total > 0) {
-              const key = item.keyword.replace(/\s+/g, '').toLowerCase();
-              const cand = candidateMap.get(key);
-              if (cand) {
-                cand.pc = adData.pc;
-                cand.mobile = adData.mobile;
-                cand.total = adData.total;
-              }
-            }
-          })
-        );
+        const batchMap = await fetchSearchAdBatch(chunk.map(c => c.keyword), customerId, searchAdApiKey, searchAdSecretKey);
+        chunk.forEach(item => {
+          const key = item.keyword.replace(/\s+/g, '').toLowerCase();
+          const adData = batchMap.get(key);
+          if (adData && adData.total > 0) {
+            item.pc = adData.pc;
+            item.mobile = adData.mobile;
+            item.total = adData.total;
+          }
+        });
         if (i + chunkSize < targets.length) {
-          await new Promise(r => setTimeout(r, 35));
+          await new Promise(r => setTimeout(r, 40));
         }
       }
     }
