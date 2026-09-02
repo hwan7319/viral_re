@@ -112,6 +112,7 @@ export async function getDB(): Promise<Database> {
     });
   } catch (err: any) {
     console.warn('[DB] Failed to load sqlite3 native binary. Falling back to memory mock database for build safety:', err.message);
+    globalRef.isMockDb = true;
     
     // Vercel 환경에서 빌드 성공을 보장하기 위한 Mock 인스턴스 반환
     dbInstance = {
@@ -247,7 +248,7 @@ export async function queryCampaigns(filters: {
   sortBy?: string;
   type?: string; // 'all' | 'visit' | 'delivery'
 }): Promise<Campaign[]> {
-  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER || globalRef.isMockDb);
 
   // 🔑 Vercel/서버리스 환경인 경우: DB를 통하지 않고 인메모리 버퍼에서 직접 JS 쿼리 필터링 및 정렬 반환
   if (isServerless) {
@@ -521,7 +522,7 @@ export async function queryCampaigns(filters: {
 
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
 export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
-  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER || globalRef.isMockDb);
 
   // 🔑 Vercel/서버리스 환경인 경우: DB 쓰기가 금지되므로 글로벌 메모리 변수에 데이터를 업서트하여 실시간 수집 보장
   if (isServerless) {
@@ -620,17 +621,19 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
 
   // 🔑 로컬 맥북 환경일 때만: SQLite 데이터를 JSON 스냅샷 파일로도 즉시 동시성 백업 쓰기!
   // 이렇게 하면 Git 커밋/푸시 시 항상 전체 데이터베이스의 최신 스냅샷이 Vercel 서버로 함께 배포됩니다.
-  if (!isServerless) {
+  if (!isServerless && !globalRef.isMockDb) {
     try {
       const allCampaigns = await db.all('SELECT * FROM campaigns');
-      fs.writeFileSync(
-        path.join(process.cwd(), 'data', 'campaigns.json'),
-        JSON.stringify(allCampaigns, null, 2),
-        'utf-8'
-      );
-      console.log(`[DB-Backup] Successfully wrote ${allCampaigns.length} campaigns snapshot to campaigns.json`);
+      if (allCampaigns && allCampaigns.length > 0) {
+        fs.writeFileSync(
+          path.join(process.cwd(), 'data', 'campaigns.json'),
+          JSON.stringify(allCampaigns, null, 2),
+          'utf-8'
+        );
+        console.log(`[DB-Backup] Successfully wrote ${allCampaigns.length} campaigns snapshot to campaigns.json`);
+      }
     } catch (err: any) {
-      console.error('[DB-Backup] Snapshot write failed:', err.message);
+      console.error('[DB-Backup] Failed to write campaigns snapshot:', err.message);
     }
   }
 
