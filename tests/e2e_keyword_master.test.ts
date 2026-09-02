@@ -380,21 +380,12 @@ async function runTier3() {
       const p1Items = related.filter((r: { priority?: number }) => r.priority === 1);
       assert(p1Items.length > 0, `Preset keyword "${pk}" must contain Priority 1 candidates`);
 
-      // Verify priority ordering: priority must be monotonic non-decreasing (1 <= 2 <= 3)
+      // Verify search volume ordering: totalSearchVolume must be monotonic non-increasing (descending)
       for (let i = 0; i < related.length - 1; i++) {
-        const currP = related[i].priority || 3;
-        const nextP = related[i + 1].priority || 3;
         assert(
-          currP <= nextP,
-          `Priority ordering violated at index ${i}: #${related[i].rank} (P${currP}) followed by #${related[i + 1].rank} (P${nextP})`
+          related[i].totalSearchVolume >= related[i + 1].totalSearchVolume,
+          `Volume ordering violated at index ${i}: ${related[i].keyword}(${related[i].totalSearchVolume}) < ${related[i + 1].keyword}(${related[i + 1].totalSearchVolume})`
         );
-        // If same priority, search volume should be descending
-        if (currP === nextP) {
-          assert(
-            related[i].totalSearchVolume >= related[i + 1].totalSearchVolume,
-            `Volume ordering violated at index ${i} within Priority ${currP}: ${related[i].keyword}(${related[i].totalSearchVolume}) < ${related[i + 1].keyword}(${related[i + 1].totalSearchVolume})`
-          );
-        }
       }
 
       recordPass(
