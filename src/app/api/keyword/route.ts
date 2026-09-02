@@ -746,13 +746,13 @@ export async function GET(request: Request) {
 
             if (compRatio < 0.5) {
               grade = 'GOLD';
-              gradeLabel = '🟢 황금';
+              gradeLabel = '🟢';
             } else if (compRatio <= 2.0) {
               grade = 'NORMAL';
-              gradeLabel = '🟡 보통';
+              gradeLabel = '🟡';
             } else {
               grade = 'HARD';
-              gradeLabel = '🔴 포화';
+              gradeLabel = '🔴';
             }
 
             return {
