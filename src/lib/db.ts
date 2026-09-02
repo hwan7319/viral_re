@@ -294,7 +294,7 @@ export async function queryCampaigns(filters: {
     // 당일 기준 마감된 건 검색 목록에서 제외 필터링 기본 탑재
     let result: Campaign[] = activeMemory.filter((c: Campaign) => c.endDate >= todayStr);
     
-    // 1. 검색어 정밀 필터 (제목, 제공혜택, 위치, 수집 키워드 태그, 미션, 출처 사이트명에서 매칭)
+    // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치, 미션, 출처 사이트명에서 직접 연관 매칭)
     if (filters.search) {
       const s = filters.search.trim().toLowerCase();
       if (s) {
@@ -302,7 +302,6 @@ export async function queryCampaigns(filters: {
           const titleLower = c.title.toLowerCase();
           const descLower = c.description.toLowerCase();
           const locLower = (c.location || '').toLowerCase();
-          const kwLower = (c.searchKeywords || '').toLowerCase();
           const missionLower = (c.mission || '').toLowerCase();
           const siteLower = (c.targetSite || '').toLowerCase();
 
@@ -313,11 +312,10 @@ export async function queryCampaigns(filters: {
                             !descLower.includes(`${s} 제외`) && 
                             !descLower.includes(`${s} 불가`);
           const locMatch = locLower.includes(s);
-          const kwMatch = kwLower.includes(s);
           const missionMatch = missionLower.includes(s);
           const siteMatch = siteLower.includes(s);
 
-          return titleMatch || descMatch || locMatch || kwMatch || missionMatch || siteMatch;
+          return titleMatch || descMatch || locMatch || missionMatch || siteMatch;
         });
       }
     }
@@ -408,15 +406,15 @@ export async function queryCampaigns(filters: {
   let query = 'SELECT * FROM campaigns WHERE endDate >= ?';
   const params: any[] = [todayStr];
 
-  // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치, 수집 키워드 태그, 미션, 출처 사이트명에서 매칭 + 부정어 제외)
+  // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치, 미션, 출처 사이트명에서 직접 연관 매칭 + 부정어 제외)
   if (filters.search) {
     const s = filters.search.trim();
     if (s) {
-      query += ' AND (title LIKE ? OR (description LIKE ? AND description NOT LIKE ? AND description NOT LIKE ?) OR location LIKE ? OR searchKeywords LIKE ? OR mission LIKE ? OR targetSite LIKE ?)';
+      query += ' AND (title LIKE ? OR (description LIKE ? AND description NOT LIKE ? AND description NOT LIKE ?) OR location LIKE ? OR mission LIKE ? OR targetSite LIKE ?)';
       const searchParam = `%${s}%`;
       const noParam1 = `%${s} 제공불가%`;
       const noParam2 = `%${s} 제공 불가%`;
-      params.push(searchParam, searchParam, noParam1, noParam2, searchParam, searchParam, searchParam, searchParam);
+      params.push(searchParam, searchParam, noParam1, noParam2, searchParam, searchParam, searchParam);
     }
   }
 
