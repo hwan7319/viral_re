@@ -724,15 +724,6 @@ export async function GET(request: Request) {
               kwMobile = kwTotalVol - kwPc;
             }
 
-            if (kwTotalVol === 0 && totalPosts === 0 && (item.priority === 1 || item.priority === 2)) {
-              kwTotalVol = 10;
-              kwPc = 2;
-              kwMobile = 8;
-              totalPosts = 25;
-              monthlyPosts = 1;
-              recentDate = '오늘';
-            }
-
             // 🔑 둘 다 데이터가 아예 없는 완전 깡통 키워드만 유일하게 제거
             if (kwTotalVol === 0 && totalPosts === 0) {
               return null;
@@ -782,15 +773,15 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 🔑 1. 기본 실데이터 검증 (HTML 노이즈 및 완전 무관 깡통 더미 제거, 단 우선순위 1~2 연관어는 필터 보존)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0 || item.priority === 1 || item.priority === 2) && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 🔑 1. 기본 실데이터 검증 (검색량 0 및 포스팅 0인 깡통 키워드 완전 제거)
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0) && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 문맥 관련성 우선순위(priority 1>2>3)를 1차로 보존한 후, 동일 순위 내에서 월간 총 검색량 순 정렬 (노이즈 엉뚱 키워드 1~2위 점령 완전 차단)
+    // 🔑 2. 월간 총 검색량 내림차순 100% 정렬 (25만건의 '김밥' 등이 항상 상위에 정확히 노출)
     validListRaw.sort((a: any, b: any) => {
-      const pA = a.priority || 3;
-      const pB = b.priority || 3;
-      if (pA !== pB) return pA - pB;
-      return b.totalSearchVolume - a.totalSearchVolume;
+      if (b.totalSearchVolume !== a.totalSearchVolume) {
+        return b.totalSearchVolume - a.totalSearchVolume;
+      }
+      return b.totalPosts - a.totalPosts;
     });
 
     const final100List = validListRaw.slice(0, 100);
