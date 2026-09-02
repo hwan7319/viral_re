@@ -2590,8 +2590,8 @@ export default function Home() {
       {/* 3. Main Dashboard Body */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
         
-        {/* 💻📱 구글 애드센스 실시간 대형 상단 배너 (Google AdSense Header Banner) */}
-        <div style={{ margin: '0 auto', width: '100%' }}>
+        {/* 💻📱 구글 애드센스 실시간 대형 상단 배너 (승인 전 임시 숨김 처리) */}
+        <div style={{ margin: '0 auto', width: '100%', display: 'none' }}>
           <AdSenseSlot client="ca-pub-7845901609549313" style={{ minHeight: '0px' }} />
         </div>
 
@@ -2984,8 +2984,8 @@ export default function Home() {
           </>
         )}
 
-      {/* 💻📱 좌측 여백 스카이스크래퍼 스티키 배너 (Left Outer Wing Ad: Google AdSense) */}
-      <aside className="left-wing-ad">
+      {/* 💻📱 좌측 여백 스카이스크래퍼 스티키 배너 (Left Outer Wing Ad: Google AdSense - 승인 전 임시 숨김) */}
+      <aside className="left-wing-ad" style={{ display: 'none' }}>
         <div className="glass-panel" style={{ padding: '14px 10px', borderRadius: '16px', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-tertiary)', border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px' }}>AD</span>
