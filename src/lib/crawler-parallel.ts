@@ -460,19 +460,42 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
     // 8. 클라우드리뷰 (Cloudreview)
     (async () => {
       try {
-        const url = `https://cloudreview.co.kr/campaign/list.php?search_word=${encodedKeyword}`;
-        const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+        const res = await axios.get('https://cloudreview.co.kr', { headers: HEADERS, timeout: 6000 });
         const $ = cheerio.load(res.data);
-        $('.c-box').each((i, el) => {
-          const title = $(el).find('.c-title').text().trim();
-          const campaignUrl = 'https://cloudreview.co.kr' + ($(el).find('a').attr('href') || '');
-          const imageUrl = $(el).find('img').attr('src') || '';
-          if (title) {
+        $('a[href*="/campaign/detail/"]').each((i, el) => {
+          const href = $(el).attr('href') || '';
+          const parent = $(el).closest('div.relative, article, div.campaign-image').parent();
+          
+          const rawTitle = parent.find('.text-sm.px-3, div[class*="truncate"]').first().text().trim().replace(/\s+/g, ' ') || $(el).text().trim().replace(/\s+/g, ' ');
+          const img = parent.find('img').attr('data-original') || parent.find('img').attr('data-src') || parent.find('img').attr('src') || '';
+          
+          const cpIdMatch = href.match(/\/detail\/(\d+)/);
+          const cpId = cpIdMatch ? cpIdMatch[1] : '';
+
+          if (rawTitle && rawTitle.length > 3 && cpId) {
+            // 🔑 [수치 정밀 매칭] 검색어가 지정된 경우, 제목에 검색어가 실제 포함된 공고만 엄격 수집
+            if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) {
+              return;
+            }
+
+            const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
+            const category = detectCategory(rawTitle, rawTitle);
+
             collected.push({
-              id: `cr-${i}`, title, description: '클라우드리뷰 상품 및 방문단', platform: 'blog',
-              category: detectCategory(title, ''), campaignUrl, imageUrl, targetSite: '클라우드리뷰',
-              limitCount: 8, applyCount: 0, endDate: now.toISOString().split('T')[0],
-              createdAt: now.toISOString(), updatedAt: now.toISOString(), searchKeywords: `,${keyword},`
+              id: `cr-${cpId}`,
+              title: rawTitle,
+              description: rawTitle,
+              platform: 'blog',
+              category,
+              campaignUrl: fullUrl,
+              imageUrl: img || 'https://picsum.photos/600/400',
+              targetSite: '클라우드리뷰',
+              limitCount: 10,
+              applyCount: 0,
+              startDate: now.toISOString().split('T')[0],
+              endDate: parseRemainDaysToDate(7),
+              createdAt: now.toISOString(),
+              updatedAt: now.toISOString()
             });
           }
         });
