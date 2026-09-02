@@ -3278,9 +3278,9 @@ export default function Home() {
           }}
         >
           <div 
-            className="glass-panel keyword-master-modal-container" 
+            className={`glass-panel keyword-master-modal-container ${keywordData ? 'has-data' : 'initial-state'}`} 
             style={{
-              width: '95%', maxWidth: '1280px', maxHeight: '94vh',
+              width: '95%', maxWidth: '1280px', maxHeight: keywordData ? '94vh' : 'fit-content',
               backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
               display: 'flex', flexDirection: 'column', overflow: 'hidden',
               boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
@@ -3832,7 +3832,7 @@ export default function Home() {
                   </div>
                 </>
               ) : (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-tertiary)' }}>
+                <div style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-tertiary)' }}>
                   <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>🔑</span>
                   <p style={{ fontSize: '0.9rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--text-secondary)' }}>
                     분석하고 싶은 키워드를 입력해 주세요.

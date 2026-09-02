@@ -1309,14 +1309,18 @@ input, select {
   }
 
   .keyword-master-modal-overlay {
-    padding: 8px !important;
+    padding: 10px !important;
     align-items: flex-start !important;
-    padding-top: max(12px, env(safe-area-inset-top)) !important;
+    padding-top: max(16px, env(safe-area-inset-top)) !important;
   }
   .keyword-master-modal-container {
     width: 100% !important;
-    max-height: calc(100dvh - 24px) !important;
-    border-radius: 14px !important;
+    max-height: calc(100dvh - 32px) !important;
+    border-radius: 16px !important;
+  }
+  .keyword-master-modal-container.initial-state {
+    max-height: 80dvh !important;
+    height: auto !important;
   }
   .keyword-master-summary-grid {
     grid-template-columns: 1fr !important;
