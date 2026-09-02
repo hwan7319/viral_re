@@ -3331,7 +3331,7 @@ export default function Home() {
                     border: '1px solid var(--border-color)',
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.88rem',
+                    fontSize: '16px',
                     fontWeight: 600
                   }}
                 />

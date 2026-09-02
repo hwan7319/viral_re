@@ -1310,11 +1310,13 @@ input, select {
 
   .keyword-master-modal-overlay {
     padding: 8px !important;
+    align-items: flex-start !important;
+    padding-top: max(12px, env(safe-area-inset-top)) !important;
   }
   .keyword-master-modal-container {
     width: 100% !important;
-    max-height: 98vh !important;
-    border-radius: 12px !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 14px !important;
   }
   .keyword-master-summary-grid {
     grid-template-columns: 1fr !important;
