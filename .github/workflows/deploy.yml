@@ -21,8 +21,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            source ~/.bashrc 2>/dev/null || true
-            export PATH=$PATH:/usr/bin:/usr/local/bin
+            export PATH=$PATH:/usr/bin:/usr/local/bin:/usr/local/node/bin:~/.nvm/versions/node/$(ls ~/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$(npm config get prefix 2>/dev/null)/bin
+            echo "NODE PATH: $(which node || echo 'not found')"
+            echo "NPM PATH: $(which npm || echo 'not found')"
+            echo "PM2 PATH: $(which pm2 || echo 'not found')"
             cd ~/viral_re
             git pull origin main
             npm run build
