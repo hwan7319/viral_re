@@ -417,6 +417,10 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
       const img = $mb(element).find('img').attr('src') || $mb(element).parent().find('img').attr('src') || '';
 
       if (href.includes('/campaigns/') && rawTitle.length > 5) {
+        // 🔑 [수치 정밀 매칭] 검색어가 지정된 경우, 제목에 검색어가 실제 포함된 공고만 엄격 수집
+        if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) {
+          return;
+        }
         const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
         const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
         const id = `mb-${cpId}`;
