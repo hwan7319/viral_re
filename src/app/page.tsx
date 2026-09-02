@@ -3891,10 +3891,10 @@ export default function Home() {
             </button>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <a 
-              href="mailto:kusie@naver.com"
+              href="mailto:official@viral-re.com"
               style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}
             >
-              고객문의: kusie@naver.com
+              고객문의: official@viral-re.com
             </a>
           </div>
 
