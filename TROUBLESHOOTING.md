@@ -2,6 +2,43 @@
 
 ---
 
+## 📌 이슈 [2026-09-02]: 모바일 환경에서 필터 탭(모집유형, 카테고리, 플랫폼, 지역검색) 터치 시 즉시 닫힘 장애
+
+### 1. 현상 (Symptom)
+* 모바일 기기(아이폰, 안드로이드 스마트폰, 터치 태블릿)에서 메인 페이지 상단 필터바의 `모집유형`, `카테고리`, `플랫폼`, `지역검색` 탭 버튼을 누르자마자 바텀시트/드롭다운 패널이 0.1초 만에 바로 닫혀버리는 현상 발생.
+
+---
+
+### 2. 원인 분석 (Root Cause Analysis)
+
+1. **모바일 터치 이벤트 시 `onMouseEnter` ➔ `onClick` 중복 간섭 버그**
+   * 모바일 웹 브라우저는 탭(터치) 시 `onMouseEnter` ➔ `onClick` 순서로 이벤트를 발생시킵니다.
+   * `onMouseEnter` 이벤트가 먼저 실행되어 `isOpen = true`로 상태가 변경된 직후, 바로 `onClick` 이벤트의 `handleTabClick` 핸들러가 실행되어 `!isOpen` (`!true` = `false`)을 적용함에 따라 탭이 열리자마자 바로 닫히게 되었습니다.
+
+2. **모바일 터치 해제 시 `onMouseLeave` 350ms 타이머 자동 실행**
+   * `.filter-container-wrap` 영역에 걸려있던 `onMouseLeave` 핸들러(`handleFilterAreaLeave`)가 터치 포커스가 이동/해제될 때 트리거되었습니다.
+   * 이로 인해 350ms 후 `setIsTypeOpen(false)`, `setIsCategoryOpen(false)` 등이 무조건 호출되어 모바일 화면에서 열린 패널이 350ms 만에 자동으로 닫혀버렸습니다.
+
+---
+
+### 3. 영구 수정 및 해결 조치 (Permanent Solution)
+
+1. **미디어 쿼리 기반 `window.matchMedia('(hover: hover)').matches` 환경 분리 (`src/app/page.tsx`)**
+   * 데스크톱(실제 마우스 포인터 디바이스)에서만 hover 이벤트(`onMouseEnter`, `onMouseLeave`, 350ms 타이머)가 동작하도록 가드 조건을 추가했습니다.
+   * 터치 전용 모바일 기기에서는 `onMouseEnter` 및 `onMouseLeave`에 의한 상태 변경이 일절 실행되지 않도록 차단하여, 탭 클릭(`onClick`) 시 정상적으로 탭이 열려 유지되도록 보장했습니다.
+
+2. **결과 검증 (Post-Fix Results)**
+   * **모바일 환경에서 `모집유형`, `카테고리`, `플랫폼`, `지역검색` 터치 시**: 패널(바텀시트)이 안정적으로 열린 상태로 유지됨 🟢
+   * **모바일 패널 닫기 동작**: 딤드 배경(`mobile-backdrop`) 터치, 우측 상단 `✕` 버튼, 또는 내부 필터 옵션 칩 선택 시에만 정상적으로 닫힘 🟢
+   * **데스크톱 환경**: 마우스 호버 시 자연스러운 드롭다운 열림/닫힘 기능 유지 🟢
+
+---
+
+### 4. 재발 방지 가이드라인 (Preventive Directive)
+* 모바일 터치 브라우저 특성상 hover 이벤트(`onMouseEnter`, `onMouseLeave`)가 click 이벤트와 연쇄적으로 반응하므로, UI 상태 변경 이벤트에는 반드시 `window.matchMedia('(hover: hover)').matches` 가드를 적용하여 터치 기기에서 패널이 무단으로 닫히는 일이 없도록 합니다.
+
+---
+
 ## 📌 이슈 [2026-09-01]: 키워드 마스터 연관검색어 수치와 상세 클릭 시 검색량 불일치 장애
 
 ### 1. 현상 (Symptom)

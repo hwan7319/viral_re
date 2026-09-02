@@ -627,7 +627,7 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 💻📱 필터 hover 딜레이 타이머 (탭→패널 갭 통과시 닫힘 방지)
+  // 💻📱 필터 hover 딜레이 타이머 (탭→패널 갭 통과시 닫힘 방지, 데스크톱 전용)
   const filterCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleFilterAreaEnter = () => {
@@ -638,29 +638,36 @@ export default function Home() {
   };
 
   const handleFilterAreaLeave = () => {
-    filterCloseTimer.current = setTimeout(() => {
-      setIsTypeOpen(false);
-      setIsCategoryOpen(false);
-      setIsPlatformOpen(false);
-      setIsLocationOpen(false);
-    }, 350);
+    // 💻📱 마우스(hover 지원) 디바이스에서만 hover leave시 딜레이 후 닫힘 적용 (터치 환경 무단 닫힘 방지)
+    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+      filterCloseTimer.current = setTimeout(() => {
+        setIsTypeOpen(false);
+        setIsCategoryOpen(false);
+        setIsPlatformOpen(false);
+        setIsLocationOpen(false);
+      }, 350);
+    }
   };
 
   // 💻📱 실시간 검색어 팝업 hover 딜레이 타이머
   const trendCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleTrendAreaEnter = () => {
-    if (trendCloseTimer.current) {
-      clearTimeout(trendCloseTimer.current);
-      trendCloseTimer.current = null;
+    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+      if (trendCloseTimer.current) {
+        clearTimeout(trendCloseTimer.current);
+        trendCloseTimer.current = null;
+      }
+      setIsTrendDropdownOpen(true);
     }
-    setIsTrendDropdownOpen(true);
   };
 
   const handleTrendAreaLeave = () => {
-    trendCloseTimer.current = setTimeout(() => {
-      setIsTrendDropdownOpen(false);
-    }, 250);
+    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+      trendCloseTimer.current = setTimeout(() => {
+        setIsTrendDropdownOpen(false);
+      }, 250);
+    }
   };
 
   // 💻📱 필터바 & 상세 패널 통합 렌더러 (얇은 알약 칩셋 + 1회 클릭 호출 바텀시트)
@@ -705,11 +712,13 @@ export default function Home() {
               type="button"
               className={`filter-tab ${isTypeOpen || activeType !== 'all' ? 'active' : ''}`}
               onMouseEnter={() => {
-                handleFilterAreaEnter();
-                setIsTypeOpen(true);
-                setIsCategoryOpen(false);
-                setIsPlatformOpen(false);
-                setIsLocationOpen(false);
+                if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                  handleFilterAreaEnter();
+                  setIsTypeOpen(true);
+                  setIsCategoryOpen(false);
+                  setIsPlatformOpen(false);
+                  setIsLocationOpen(false);
+                }
               }}
               onClick={() => handleTabClick('type')}
             >
@@ -739,11 +748,13 @@ export default function Home() {
               type="button"
               className={`filter-tab ${isCategoryOpen || activeCategory !== 'all' ? 'active' : ''}`}
               onMouseEnter={() => {
-                handleFilterAreaEnter();
-                setIsCategoryOpen(true);
-                setIsTypeOpen(false);
-                setIsPlatformOpen(false);
-                setIsLocationOpen(false);
+                if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                  handleFilterAreaEnter();
+                  setIsCategoryOpen(true);
+                  setIsTypeOpen(false);
+                  setIsPlatformOpen(false);
+                  setIsLocationOpen(false);
+                }
               }}
               onClick={() => handleTabClick('category')}
             >
@@ -799,11 +810,13 @@ export default function Home() {
               type="button"
               className={`filter-tab ${isPlatformOpen || activePlatform !== 'all' ? 'active' : ''}`}
               onMouseEnter={() => {
-                handleFilterAreaEnter();
-                setIsPlatformOpen(true);
-                setIsTypeOpen(false);
-                setIsCategoryOpen(false);
-                setIsLocationOpen(false);
+                if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                  handleFilterAreaEnter();
+                  setIsPlatformOpen(true);
+                  setIsTypeOpen(false);
+                  setIsCategoryOpen(false);
+                  setIsLocationOpen(false);
+                }
               }}
               onClick={() => handleTabClick('platform')}
             >
@@ -836,11 +849,13 @@ export default function Home() {
               type="button"
               className={`filter-tab ${isLocationOpen || activeLocation !== 'all' ? 'active' : ''}`}
               onMouseEnter={() => {
-                handleFilterAreaEnter();
-                setIsLocationOpen(true);
-                setIsTypeOpen(false);
-                setIsCategoryOpen(false);
-                setIsPlatformOpen(false);
+                if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                  handleFilterAreaEnter();
+                  setIsLocationOpen(true);
+                  setIsTypeOpen(false);
+                  setIsCategoryOpen(false);
+                  setIsPlatformOpen(false);
+                }
               }}
               onClick={() => handleTabClick('location')}
             >
@@ -1143,9 +1158,14 @@ export default function Home() {
                       type="button"
                       key={sido}
                       className={`region-sido-btn ${selectedSido === sido ? 'active' : ''}`}
-                      onMouseEnter={() => setHoveredSido(sido)}
+                      onMouseEnter={() => {
+                        if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                          setHoveredSido(sido);
+                        }
+                      }}
                       onClick={() => {
                         setSelectedSido(sido);
+                        setHoveredSido(sido);
                         setSelectedSigungu('all');
                         if (!LOCATIONS_MAP[sido] || LOCATIONS_MAP[sido].length === 0) {
                           setIsLocationOpen(false);
