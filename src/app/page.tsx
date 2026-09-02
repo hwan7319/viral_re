@@ -3322,7 +3322,8 @@ export default function Home() {
                   type="text"
                   value={keywordQuery}
                   onChange={(e) => setKeywordQuery(e.target.value)}
-                  placeholder="분석할 키워드를 입력하세요"
+                  placeholder=""
+                  className="keyword-master-input"
                   style={{
                     flex: 1,
                     minWidth: 0,

@@ -1467,6 +1467,11 @@ input, select {
   .mobile-header-coupang-banner iframe {
     height: 85px !important;
   }
+
+  .keyword-master-input::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+  }
   .coupang-banner-wrapper {
     margin: 10px 0 !important;
     padding: 8px !important;
