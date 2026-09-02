@@ -218,6 +218,20 @@ export async function getDB(): Promise<Database> {
       SET endDate = date('now', '+7 days') 
       WHERE endDate < ?;
     `, [todayStr]);
+
+    // 🔑 [EC2/서버리스 공통] DB가 비어있는 경우 data/campaigns.json 스냅샷 18,176건 자동 시딩
+    const rowCount = await dbInstance.get('SELECT COUNT(*) as cnt FROM campaigns');
+    if (!rowCount || rowCount.cnt === 0) {
+      const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+      if (fs.existsSync(jsonPath)) {
+        const fileData = fs.readFileSync(jsonPath, 'utf-8');
+        const loaded: Campaign[] = JSON.parse(fileData);
+        if (loaded.length > 0) {
+          console.log(`[DB-AutoSeed] Seeding ${loaded.length} snapshot campaigns into SQLite DB...`);
+          await insertOrUpdateCampaigns(loaded);
+        }
+      }
+    }
   } catch (err: any) {}
 
   return dbInstance;
@@ -486,7 +500,23 @@ export async function queryCampaigns(filters: {
 
   // 7. 성능 최적화: 대용량 데이터 로드 시 페이로드 전송 부하 방지를 위한 최대 300개 제한
   query += ' LIMIT 300';
-  return db.all<Campaign[]>(query, params);
+  const rows = await db.all<Campaign[]>(query, params);
+  if (rows.length === 0 && !filters.search && (!filters.category || filters.category === 'all')) {
+    const totalCount = await db.get('SELECT COUNT(*) as cnt FROM campaigns');
+    if (!totalCount || totalCount.cnt === 0) {
+      const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+      if (fs.existsSync(jsonPath)) {
+        const fileData = fs.readFileSync(jsonPath, 'utf-8');
+        const loaded: Campaign[] = JSON.parse(fileData);
+        if (loaded.length > 0) {
+          console.log(`[DB-QueryAutoSeed] Seeding ${loaded.length} snapshot campaigns into SQLite DB...`);
+          await insertOrUpdateCampaigns(loaded);
+          return db.all<Campaign[]>(query, params);
+        }
+      }
+    }
+  }
+  return rows;
 }
 
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
