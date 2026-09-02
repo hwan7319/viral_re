@@ -624,7 +624,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
   if (!isServerless && !globalRef.isMockDb) {
     try {
       const allCampaigns = await db.all('SELECT * FROM campaigns');
-      if (allCampaigns && allCampaigns.length > 0) {
+      if (allCampaigns && allCampaigns.length > 1000) {
         fs.writeFileSync(
           path.join(process.cwd(), 'data', 'campaigns.json'),
           JSON.stringify(allCampaigns, null, 2),
