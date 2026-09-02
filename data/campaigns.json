@@ -345325,25 +345325,6 @@
     "mission": null
   },
   {
-    "id": "test-qa-sync-1788319660228",
-    "title": "QA Auto-Sync Verification Test Campaign [UPDATED]",
-    "description": "Automated test campaign payload for sync pipeline verification",
-    "platform": "blog",
-    "category": "food-korean",
-    "location": "서울 강남구",
-    "campaignUrl": "https://example.com/qa-test-campaign",
-    "imageUrl": "https://example.com/qa-test.jpg",
-    "targetSite": "테스트사이트",
-    "limitCount": 10,
-    "applyCount": 15,
-    "startDate": "2026-09-02",
-    "endDate": "2026-09-09",
-    "createdAt": "2026-09-02T03:27:40.228Z",
-    "updatedAt": "2026-09-02T03:27:40.455Z",
-    "searchKeywords": ",삼겹살,강남,",
-    "mission": null
-  },
-  {
     "id": "rn-1414044",
     "title": "돈막 신정네거리 본점",
     "description": "돈막세트 소 (삼겹살 목살400그램 * 된장찌개 김치찌개 껍데기 중 선택1)",
@@ -345360,25 +345341,6 @@
     "createdAt": "2026-09-02T03:36:16.734Z",
     "updatedAt": "2026-09-02T03:36:16.734Z",
     "searchKeywords": ",삼겹살,삼겹살,",
-    "mission": null
-  },
-  {
-    "id": "test-qa-sync-1788320181097",
-    "title": "QA Auto-Sync Verification Test Campaign [UPDATED]",
-    "description": "Automated test campaign payload for sync pipeline verification",
-    "platform": "blog",
-    "category": "food-korean",
-    "location": "서울 강남구",
-    "campaignUrl": "https://example.com/qa-test-campaign",
-    "imageUrl": "https://example.com/qa-test.jpg",
-    "targetSite": "테스트사이트",
-    "limitCount": 10,
-    "applyCount": 15,
-    "startDate": "2026-09-02",
-    "endDate": "2026-09-09",
-    "createdAt": "2026-09-02T03:36:21.097Z",
-    "updatedAt": "2026-09-02T03:36:21.269Z",
-    "searchKeywords": ",삼겹살,강남,",
     "mission": null
   }
 ]

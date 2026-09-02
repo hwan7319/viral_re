@@ -167,7 +167,17 @@ async function runCrawlAndSyncTests() {
   try {
     const db = await getDB();
     await db.run('DELETE FROM campaigns WHERE id = ?', testId);
-    logPass('QA Cleanup', `Removed temporary test record ${testId}`);
+    
+    // 글로벌 메모리 버퍼 및 JSON 스냅샷에서도 테스트 레코드 완전 제거
+    const globalRef = global as any;
+    if (globalRef.memoryCampaigns) {
+      globalRef.memoryCampaigns = globalRef.memoryCampaigns.filter((c: any) => c.id !== testId);
+    }
+    const cleanRows = await db.all('SELECT * FROM campaigns');
+    const jsonPath = require('path').join(process.cwd(), 'data', 'campaigns.json');
+    require('fs').writeFileSync(jsonPath, JSON.stringify(cleanRows, null, 2));
+
+    logPass('QA Cleanup', `Removed temporary test record ${testId} from DB & JSON snapshot`);
   } catch (e: any) {
     logFail('QA Cleanup', e);
   }
