@@ -3268,19 +3268,25 @@ export default function Home() {
 
       {/* 🔑 7. Keyword Master Modal (키워드마스터 SEO 분석 모달) */}
       {isKeywordModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 999999,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          padding: '16px'
-        }}>
-          <div className="glass-panel" style={{
-            width: '95%', maxWidth: '1280px', maxHeight: '94vh',
-            backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
-            display: 'flex', flexDirection: 'column', overflow: 'hidden',
-            boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
-            position: 'relative'
-          }}>
+        <div 
+          className="keyword-master-modal-overlay"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 999999,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            padding: '16px'
+          }}
+        >
+          <div 
+            className="glass-panel keyword-master-modal-container" 
+            style={{
+              width: '95%', maxWidth: '1280px', maxHeight: '94vh',
+              backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
+              display: 'flex', flexDirection: 'column', overflow: 'hidden',
+              boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-color)',
+              position: 'relative'
+            }}
+          >
             {/* 헤더 */}
             <div style={{
               padding: '14px 16px', borderBottom: '1px solid var(--border-color)',
@@ -3507,14 +3513,17 @@ export default function Home() {
                       </button>
                     </div>
 
-                    {/* 💻📱 상단 카드와 좌우 경계 100% 완전 일치하는 테이블 박스 */}
-                    <div style={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-color)',
-                      backgroundColor: 'var(--bg-tertiary)'
-                    }}>
+                    {/* 💻📱 상단 카드와 좌우 경계 100% 완전 일치하는 테이블 박스 (데스크톱 전용) */}
+                    <div 
+                      className="desktop-keyword-table-wrap"
+                      style={{
+                        width: '100%',
+                        overflowX: 'auto',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-tertiary)'
+                      }}
+                    >
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left', minWidth: '700px' }}>
                         <thead>
                           <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', userSelect: 'none' }}>
@@ -3646,6 +3655,79 @@ export default function Home() {
                       </table>
                     </div>
 
+                    {/* 💻📱 모바일 전용 반응형 컴팩트 랭킹 카드리스트 (좌우 슬라이드 없이 한눈에 표출) */}
+                    <div className="mobile-keyword-card-list" style={{ display: 'none', flexDirection: 'column', gap: '10px' }}>
+                      {(processedRelatedKeywords || []).slice(0, relatedVisibleCount).map((item: any) => (
+                        <div 
+                          key={item.rank}
+                          style={{
+                            padding: '12px 14px',
+                            borderRadius: 'var(--radius-md)',
+                            backgroundColor: 'var(--bg-tertiary)',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{
+                                fontSize: '0.74rem', fontWeight: 800, padding: '3px 8px', borderRadius: '4px',
+                                backgroundColor: item.rank <= 3 ? '#4f46e5' : 'var(--bg-secondary)',
+                                color: item.rank <= 3 ? '#ffffff' : 'var(--text-primary)',
+                                border: item.rank <= 3 ? 'none' : '1px solid var(--border-color)'
+                              }}>
+                                {item.rank}위
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => analyzeKeyword(item.keyword)}
+                                style={{
+                                  background: 'none', border: 'none', padding: 0,
+                                  color: 'var(--accent)', fontWeight: 800, cursor: 'pointer',
+                                  fontSize: '0.94rem', textDecoration: 'underline', textAlign: 'left'
+                                }}
+                                title="클릭 시 이 연관검색어로 분석"
+                              >
+                                {item.keyword}
+                              </button>
+                            </div>
+                            <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>
+                              {item.recentDate || '오늘'}
+                            </span>
+                          </div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '6px 12px',
+                            fontSize: '0.78rem',
+                            paddingTop: '8px',
+                            borderTop: '1px solid var(--border-color)'
+                          }}>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)' }}>월간 검색량: </span>
+                              <strong style={{ color: 'var(--accent)' }}>{item.totalSearchVolume.toLocaleString()}회</strong>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)' }}>월 포스팅: </span>
+                              <strong style={{ color: '#10b981' }}>{(item.monthlyPosts || 0).toLocaleString()}건</strong>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)' }}>누적 포스팅: </span>
+                              <strong style={{ color: 'var(--text-primary)' }}>{(item.totalPosts || 0).toLocaleString()}건</strong>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)' }}>경쟁비율: </span>
+                              <strong style={{ color: item.grade === 'GOLD' ? '#10b981' : item.grade === 'NORMAL' ? '#d97706' : '#ef4444' }}>
+                                {item.competitionRatio} ({item.gradeLabel})
+                              </strong>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
                     {/* 20개씩 끊어서 더보기 버튼 (20개 -> 40개 -> 60개 -> 80개 ...) */}
                     {relatedVisibleCount < (keywordData.relatedKeywords?.length || 0) && (
                       <button
@@ -3673,7 +3755,7 @@ export default function Home() {
                       🏆 네이버 블로그 상위 노출 랭킹
                     </h4>
                     <div style={{ width: '100%', overflowX: 'auto', padding: '2px 0' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', minWidth: '580px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                       {keywordData.topPosts.map((post: any, idx: number) => (
                         <a 
                           key={idx}

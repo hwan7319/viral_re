@@ -1308,8 +1308,23 @@ input, select {
     z-index: 3000 !important;
   }
 
+  .keyword-master-modal-overlay {
+    padding: 8px !important;
+  }
+  .keyword-master-modal-container {
+    width: 100% !important;
+    max-height: 98vh !important;
+    border-radius: 12px !important;
+  }
   .keyword-master-summary-grid {
     grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .desktop-keyword-table-wrap {
+    display: none !important;
+  }
+  .mobile-keyword-card-list {
+    display: flex !important;
   }
 }
 
