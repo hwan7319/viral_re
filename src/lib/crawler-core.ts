@@ -405,6 +405,42 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
     console.error('[OnDemand] ReviewNote crawl failed:', err.message);
   }
 
+  // ==================== 5. 미블 (mrblog.net) 수집 ====================
+  try {
+    const mbRes = await axios.get('https://www.mrblog.net', { headers: HEADERS, timeout: 6000 });
+    const $mb = cheerio.load(mbRes.data);
+    let mbCount = 0;
+
+    $mb('a').each((index, element) => {
+      const href = $mb(element).attr('href') || '';
+      const rawTitle = $mb(element).text().trim().replace(/\s+/g, ' ');
+      const img = $mb(element).find('img').attr('src') || $mb(element).parent().find('img').attr('src') || '';
+
+      if (href.includes('/campaigns/') && rawTitle.length > 5) {
+        const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
+        const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
+        const id = `mb-${cpId}`;
+        const category = detectCategory(rawTitle, rawTitle);
+        const locMatch = rawTitle.match(/\[([^\]]+)\]/) || rawTitle.match(/^([가-힣]+\s+[가-힣]+)/);
+        const location = locMatch ? locMatch[1] : undefined;
+        const autoKws = buildAutoKeywords(rawTitle, rawTitle);
+        const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+
+        collected.push({
+          id, title: rawTitle, description: rawTitle, platform: 'blog', category, location, campaignUrl: fullUrl,
+          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
+          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
+          createdAt: now.toISOString(), updatedAt: now.toISOString(),
+          searchKeywords
+        });
+        mbCount++;
+      }
+    });
+    console.log(`[OnDemand] Mible parsed total ${mbCount} items`);
+  } catch (err: any) {
+    console.error('[OnDemand] Mible crawl failed:', err.message);
+  }
+
   // 수집한 모든 데이터 SQLite DB에 저장
   if (collected.length > 0) {
     const result = await insertOrUpdateCampaigns(collected);
