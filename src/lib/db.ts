@@ -354,9 +354,12 @@ export async function queryCampaigns(filters: {
         ));
       }
     }
-    // 5. 출처 사이트 필터 (수집처별 제외 요구사항으로 인해 all이 디폴트이나 코드 호환성 보존)
+    // 5. 출처 사이트 필터 (유연한 상호 매칭 지원)
     if (filters.targetSite && filters.targetSite !== 'all') {
-      result = result.filter(c => c.targetSite === filters.targetSite);
+      const ts = filters.targetSite.trim();
+      result = result.filter(c => c.targetSite && (
+        c.targetSite.includes(ts) || ts.includes(c.targetSite)
+      ));
     }
     // 5-1. 방문/배송 구분 필터
     if (filters.type && filters.type !== 'all') {
@@ -470,10 +473,11 @@ export async function queryCampaigns(filters: {
     }
   }
 
-  // 5. 출처 사이트 필터
+  // 5. 출처 사이트 필터 (유연한 상호 매칭 지원)
   if (filters.targetSite && filters.targetSite !== 'all') {
-    query += ' AND targetSite = ?';
-    params.push(filters.targetSite);
+    const ts = filters.targetSite.trim();
+    query += ' AND (targetSite LIKE ? OR ? LIKE "%" || targetSite || "%")';
+    params.push(`%${ts}%`, ts);
   }
 
   // 5-1. 방문/배송 구분 필터
