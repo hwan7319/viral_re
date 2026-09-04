@@ -1448,6 +1448,8 @@ input, select {
     width: 260px;
     z-index: 80;
   }
+.mobile-only-coupang-slot {
+  display: none !important;
 }
 
 /* 📱 모바일 화면 광고 영역 높이 및 가로세로 밸런스 조정 (Compact Mobile Ad Ratio) */
@@ -1500,8 +1502,9 @@ input, select {
     height: 85px !important;
   }
 
-  .mobile-coupang-banner {
+  .mobile-only-coupang-slot {
     display: flex !important;
+    width: 100% !important;
     margin-bottom: 16px !important;
   }
 
@@ -1513,10 +1516,6 @@ input, select {
     margin: 10px 0 !important;
     padding: 8px !important;
   }
-}
-
-.mobile-coupang-banner {
-  display: none;
 }
 
 .campaign-card {

@@ -2838,13 +2838,14 @@ export default function Home() {
         </div>
 
         {/* 📱 모바일 전용 쿠팡 파트너스 배너 광고 (Mobile-Only Coupang Partners Live Widget) */}
-        <CoupangBanner 
-          id={1023017} 
-          trackingCode="AF5060942" 
-          height={140} 
-          className="mobile-coupang-banner" 
-          style={{ margin: '0 0 16px 0', width: '100%' }} 
-        />
+        <div className="mobile-only-coupang-slot">
+          <CoupangBanner 
+            id={1023017} 
+            trackingCode="AF5060942" 
+            height={140} 
+            style={{ margin: '0 0 16px 0', width: '100%' }} 
+          />
+        </div>
 
 
         
