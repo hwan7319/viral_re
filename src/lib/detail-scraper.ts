@@ -413,10 +413,32 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
           const apiRes = await axios.get(`https://ohmyblog.co.kr/api/web/campaign/detail?app_seq=${appSeq}`, { headers: HEADERS, timeout: 4000 });
           const d = apiRes.data?.data;
           if (d) {
+            const detail = d.detail || d;
+            let kwParts: string[] = [];
+
+            const guide = detail.keywordGuide || d.appDe_keywordGuide;
+            if (guide) kwParts.push(guide);
+
+            const reqKw = detail.requiredKeywords || d.appDe_requiredKeywords;
+            if (reqKw) {
+              kwParts.push(`\n📌 [필수 키워드]\n${reqKw}\n(제목에 1회, 내용에 3회 이상 포함 필수)`);
+            }
+
+            const optKw = detail.optionalKeywords || d.appDe_optionalKeywords;
+            if (optKw) {
+              kwParts.push(`\n📌 [서브 키워드]\n${optKw}`);
+            }
+
+            const hash = detail.hashtags || d.appDe_hashtags;
+            if (hash) {
+              kwParts.push(`\n📌 [해시태그]\n${hash}`);
+            }
+
             let parts: string[] = [];
-            const kw = [d.appDe_keywordGuide, d.appDe_hashtags].filter(Boolean).join('\n');
-            if (kw) parts.push(`📌 [지정 필수 키워드]\n${kw}`);
-            if (d.appDe_additionalMission) parts.push(`📌 [업체 상세 미션 & 가이드라인]\n${d.appDe_additionalMission}`);
+            if (kwParts.length > 0) parts.push(kwParts.join('\n'));
+            const mission = detail.additionalMission || d.appDe_additionalMission;
+            if (mission) parts.push(`📌 [업체 상세 미션 & 가이드라인]\n${mission}`);
+
             if (parts.length > 0) extractedRaw = parts.join('\n\n');
           }
         } catch (e) {}
