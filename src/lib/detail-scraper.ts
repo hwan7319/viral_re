@@ -452,9 +452,9 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
             if (venue && (venue.name || venue.addressFirst)) {
               parts.push(`📍 [체험 장소 및 방문 주소]\n• 매장명: ${venue.name || '상세 주소 참고'}\n• 주소: ${venue.addressFirst || '예약 시 개별 안내'}\n• 연락처: ${venue.tel || '예약 시 개별 안내'}`);
             }
-            const mediaStr = foundItem.media === 'instagram' ? '인스타그램 (릴스/피드)' : foundItem.media === 'youtube' ? '유튜브 (쇼츠/동영상)' : '네이버 블로그';
-            parts.push(`📋 [포스팅 가이드 조건]\n• 리뷰 매체: ${mediaStr}\n• 모집 정원: 총 ${foundItem.reviewerLimit || 5}명 모집 (현재 ${foundItem.campaignStats?.requestCount || 0}명 신청 완료)`);
-            parts.push(`※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 레뷰 공식 원본 화면에서 바로 지원 가능합니다.`);
+            const mediaStr = foundItem.media === 'instagram' ? '인스타그램 (릴스 30초 이상 / 피드 등록)' : foundItem.media === 'youtube' ? '유튜브 (쇼츠 / 영상)' : '네이버 블로그 (사진 15장 이상 / 1,000자 이상)';
+            parts.push(`📋 [포스팅 미션 & 가이드라인]\n• 리뷰 매체: ${mediaStr}\n• 필수 태그: 최상단 맨 앞줄에 #협찬 해시태그 반드시 표기\n• 작성 조건: 텍스트 30자 이상, 이미지/영상 3장 이상 등록\n• 모집 정원: 총 ${foundItem.reviewerLimit || 5}명 모집 (현재 ${foundItem.campaignStats?.requestCount || 0}명 신청 완료)`);
+            parts.push(`※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 레뷰 원본 신청 화면으로 바로 연결됩니다.`);
             formattedMission = parts.join('\n\n');
           }
         } catch (e) {}
