@@ -38,11 +38,7 @@ export const SITE_OFFICIAL_URLS: Record<string, string> = {
   '놀러와체험단': 'https://www.cometoplay.kr',
   '모블': 'https://www.modublog.co.kr',
   '체험단모아': 'https://www.moaview.co.kr',
-  '어블로그': 'https://www.ablog.kr',
   '오마이블로그': 'https://ohmyblog.co.kr/user/search',
-  '에코블로그': 'https://www.ecoblog.co.kr',
-  '원더블로그': 'https://wonderblog.co.kr',
-  '체험단천국': 'http://blog-cheonguk.co.kr',
   '리뷰플레이스': 'https://www.reviewplace.co.kr/pr/',
   '강남맛집': 'https://xn--939au0g4vj8sq.net/cp/',
   '디너의여왕': 'https://dinnerqueen.net/taste',
@@ -397,11 +393,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     { site: '클라우드리뷰', prefix: 'cr-ext', count: 40 },
     { site: '링블', prefix: 'ring-ext', count: 40 },
     { site: '놀러와체험단', prefix: 'play-ext', count: 40 },
-    { site: '모블', prefix: 'modu-ext', count: 40 },
-    { site: '어블로그', prefix: 'ablog', count: 35 },
-    { site: '에코블로그', prefix: 'eco', count: 35 },
-    { site: '원더블로그', prefix: 'wonder', count: 35 },
-    { site: '체험단천국', prefix: 'cheonguk', count: 35 }
+    { site: '모블', prefix: 'modu-ext', count: 40 }
   ];
 
   const regionList = ['서울 강남', '서울 홍대', '서울 성수', '서울 마포', '서울 건대', '경기 수원', '경기 성남', '경기 분당', '인천 송도', '부산 해운대', '대구 동성로', '대전 둔산', '광주 상무', '제주 서귀포', '전국 배송'];
@@ -456,8 +448,10 @@ export async function runUpdateDeep() {
     } catch (e) {}
   }
 
-  // 🔑 오마이블로그 / 체험단모아 등 실데이터 전환 사이트의 더미 시드 데이터 전량 정제
+  // 🔑 오마이블로그 / 체험단모아 등 실데이터 전환 사이트의 더미 시드 데이터 및 폐업/미운영 4개 매체(에코/원더/체험단천국/어블로그) 전량 정제
+  const DEAD_OR_IRRELEVANT = ['에코블로그', '원더블로그', '체험단천국', '어블로그'];
   existing = existing.filter(item => {
+    if (DEAD_OR_IRRELEVANT.includes(item.targetSite)) return false;
     if (item.targetSite === '오마이블로그' && !item.id.startsWith('ohmy-')) return false;
     if (item.targetSite === '오마이블로그' && (item.id.includes('seed') || item.id.includes('expanded'))) return false;
     if (item.targetSite === '체험단모아' && (item.id.includes('seed') || item.id.includes('expanded') || item.id.startsWith('moa-'))) return false;

@@ -108,11 +108,7 @@ const SITE_OFFICIAL_URLS: Record<string, string> = {
   '놀러와체험단': 'https://www.cometoplay.kr',
   '모블': 'https://www.modublog.co.kr',
   '체험단모아': 'https://www.moaview.co.kr',
-  '어블로그': 'https://www.ablog.kr',
   '오마이블로그': 'https://ohmyblog.co.kr/user/search',
-  '에코블로그': 'https://www.ecoblog.co.kr',
-  '원더블로그': 'https://wonderblog.co.kr',
-  '체험단천국': 'http://blog-cheonguk.co.kr',
   '리뷰플레이스': 'https://www.reviewplace.co.kr/pr/',
   '강남맛집': 'https://xn--939au0g4vj8sq.net/cp/',
   '디너의여왕': 'https://dinnerqueen.net/taste',
@@ -1330,15 +1326,11 @@ export default function Home() {
                 { key: '리뷰노트', label: '리뷰노트' },
                 { key: '미블', label: '미블' },
                 { key: '클라우드리뷰', label: '클라우드리뷰' },
-                { key: '어블로그', label: '어블로그' },
                 { key: '링블', label: '링블' },
                 { key: '놀러와체험단', label: '놀러와체험단' },
                 { key: '오마이블로그', label: '오마이블로그' },
-                { key: '에코블로그', label: '에코블로그' },
                 { key: '리뷰플레이스', label: '리뷰플레이스' },
                 { key: '모블', label: '모블 (모두의블로그)' },
-                { key: '원더블로그', label: '원더블로그' },
-                { key: '체험단천국', label: '체험단천국' },
                 { key: '체험단모아', label: '체험단모아 (모아뷰)' }
               ].map(s => (
                 <button
