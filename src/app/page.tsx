@@ -1568,12 +1568,14 @@ export default function Home() {
 
   // 공고 제목에서 핵심 키워드 정제 추출 함수
   const extractCoreKeyword = (title: string) => {
-    return title
+    const cleaned = title
       .replace(/\[.*?\]/g, '')
       .replace(/\(.*?\)/g, '')
-      .replace(/신청하기|보러가기|체험단|포토체험단|즉시제공|랜덤픽/g, '')
-      .trim()
-      .split(/\s+/)[0] || title;
+      .replace(/신청하기|보러가기|체험단|포토체험단|즉시제공|랜덤픽|릴스|쇼츠|기자단/gi, '')
+      .trim();
+    const words = cleaned.split(/\s+/).filter(w => w.length > 0);
+    if (words.length === 0) return title;
+    return words.slice(0, 3).join(' ');
   };
 
   // 🔑 무한 스크롤(Infinite Scroll) - IntersectionObserver Callback Ref 및 윈도우 스크롤 이중 이중 보장

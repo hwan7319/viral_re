@@ -63,6 +63,14 @@
   - **증상**: 레뷰 공고 클릭 시 모달 팝업에서 미션 & 가이드라인 탭이 비어있거나 노출되지 않는 문제 발생.
   - **원인 분석**: Weble API(`https://api.weble.net/v1/campaigns?id=CID`)는 단일 ID 쿼리 파라미터를 무시하고 전체 목록 객체(`{ items: [...] }`)를 반환함. 기존 파서가 반환된 `res.data` 외곽 객체에서 단일 필드(`d.keywordGuide`)를 찾으려다 `undefined`가 발생하고, 2차 릴레이 라우트 탐색 시 인증 토큰 헤더가 누락되어 401 에러로 유실됨.
   - **기술적 조치**: [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts)의 `scrapeDetailMission` 및 `scrapeDetailBenefit` 함수에서 Weble 인증 토큰을 포함한 전체 라우트 순회 및 `items.find(it => String(it.id) === String(cid))` 정밀 ID 매칭 파서로 전면 재작성함. (제공 혜택, 체험 장소 매장명/도로명 주소/연락처, 포스팅 매체, 필수 의무 표기 해시태그, 모집/신청인원 현황, 모집/리뷰 기간 100% 완벽 표출)
+* **이슈 7 (키워드 분석 엔진의 '리/도/시' 종성 상품명 지역(LOCATION) 오분류 버그 조치)**:
+  - **증상**: `바질&네롤리 주방세제` 등 공고에서 '황금키워드 & 검색량 분석하기' 클릭 시 `학원`, `맛집`, `피부과`, `핫플` 등 무관한 지역 연관어가 연관 검색어로 표출됨.
+  - **원인 분석**:
+    1) 프론트엔드 `extractCoreKeyword`가 공고 제목을 단일 첫 단어로 분할하여 `주방세제`가 잘리고 `바질&네롤리`만 추출됨.
+    2) 백엔드 `classifyQueryEntityType` 정규식이 `네롤리`, `미나리`, `브로콜리`, `아보카도` 등 **'리/도/시'로 끝나는 일반 상품/식품명**을 행정 구역(`수유리`, `미아리`, `제주도`)으로 오판하여 `LOCATION` 유형 전용 지역 서픽스 템플릿(`학원`, `맛집`, `피부과`)을 생성함.
+  - **기술적 조치**:
+    1) 프론트엔드 [`src/app/page.tsx`](file:///Users/park/review-moa/src/app/page.tsx)의 `extractCoreKeyword`를 멀티 워드 조합(`바질&네롤리 주방세제`) 보존 규격으로 전면 교체.
+    2) 백엔드 [`src/app/api/keyword/route.ts`](file:///Users/park/review-moa/src/app/api/keyword/route.ts)의 `classifyQueryEntityType`에 상품/뷰티/식품 예외 차단(`NON_LOCATION_TERMS`) 및 엄격한 행정 구역 `리` 파싱(`riLocationRegex`)을 도입하여 오분류 원천 차단.
 
 ### 🟢 오마이블로그 (ohmyblog.co.kr)
 * **수집 규격**: 백엔드 REST API(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100`) 다중 페이지 수집기 적용.

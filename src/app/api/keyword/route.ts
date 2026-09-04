@@ -294,7 +294,20 @@ async function fetchBlogMain(query: string, clientId: string, clientSecret: stri
 
 // 🔑 5대 엔티티 정밀 분류 엔진 (LOCATION, VENUE, SEASONAL_EVENT, BRAND_PRODUCT, GENERAL_CATEGORY)
 export function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | 'SEASONAL_EVENT' | 'BRAND_PRODUCT' | 'GENERAL_CATEGORY' {
-  const cleanQ = query.replace(/\s+/g, '');
+  const cleanQ = query.replace(/\s+/g, '').toLowerCase();
+
+  // 0. PRODUCT / FOOD / COSMETIC / LIVING EXCLUSION LIST (상품, 식품, 생활용품, 화장품 단어는 LOCATION 오분류 원천 차단)
+  const productTerms = [
+    '네롤리', '미나리', '브로콜리', '파슬리', '로즈마리', '체리', '블루베리', '라즈베리', '크랜베리',
+    '아보카도', '청포도', '칼로리', '다이어리', '막걸리', '주얼리', '쥬얼리', '갤러리', '레시피',
+    '주방세제', '세제', '화장품', '토너', '크림', '앰플', '세럼', '마스크', '클렌징', '바디워시',
+    '바디로션', '샴푸', '린스', '트리트먼트', '치약', '칫솔', '휴지', '물티슈', '영양제', '유산균',
+    '비타민', '밀키트', '가방', '신발', '의류', '패션', '노트북', '청소기', '가습기', '에어컨',
+    '냉장고', '세탁기', '디지털', '가전', '반려동물', '사료', '간식', '원두', '캡슐'
+  ];
+  if (productTerms.some(term => cleanQ.includes(term))) {
+    return 'GENERAL_CATEGORY';
+  }
 
   // 1. VENUE (백화점, 팝업, 쇼핑몰, 멀티플렉스 건물)
   const venueRegex = /(더현대|백화점|아울렛|스타필드|코엑스|타임스퀘어|롯데몰|아이파크몰|센텀시티)/i;
@@ -306,12 +319,27 @@ export function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | '
 
   // 3. BRAND / PRODUCT (기업, 브랜드, IT/가전 제품) - LOCATION 앞단에 위치하여 '갤럭시'('시' 접미사) 오분류 원천 방지
   const brandKeywords = ['메가커피', '컴포즈', '빽다방', '스타벅스', '투썸', '이디야', '교촌치킨', 'bhc', 'bbq', '굽네', '아이폰', '갤럭시', '다이슨', '올리브영', '오케스트로', '두산로보틱스', '파두', '무신사', '크래프톤', '야놀자', '당근마켓', '쿠팡', '네이버'];
-  if (brandKeywords.some(b => cleanQ.toLowerCase().includes(b))) return 'BRAND_PRODUCT';
+  if (brandKeywords.some(b => cleanQ.includes(b))) return 'BRAND_PRODUCT';
 
-  // 4. LOCATION / REGION (행정동, 역, 상권, 지역) - 종로3가역 등 숫자 포함 역명 및 테헤란로 등 도로명 지원
-  const locationSuffixRegex = /([가-힣0-9]{2,}(동|역|구|시|도|길|로|리|면|읍|군|해수욕장|공항|산|계곡|대로))$/;
-  const knownLocations = ['제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면', '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담'];
-  if (locationSuffixRegex.test(cleanQ) || knownLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
+  // 4. LOCATION / REGION (행정동, 역, 상권, 실제 지역)
+  const explicitRealLocations = [
+    '제주도', '제주', '해운대', '강남', '홍대', '성수', '연남', '가로수길', '동성로', '서면',
+    '판교', '분당', '일산', '송도', '여의도', '잠실', '목동', '대학로', '이태원', '압구정', '청담',
+    '수유리', '미아리', '청량리', '답십리', '안암리', '구의리', '효자동', '역삼동', '신림동'
+  ];
+  if (explicitRealLocations.some(loc => cleanQ.includes(loc))) return 'LOCATION';
+
+  const strictLocationSuffixRegex = /([가-힣0-9]{2,}(동|역|구|시|도|길|로|면|읍|군|해수욕장|공항|산|계곡|대로))$/;
+  const riLocationRegex = /(읍|면)[가-힣]*리$/;
+
+  if (riLocationRegex.test(cleanQ)) return 'LOCATION';
+
+  if (strictLocationSuffixRegex.test(cleanQ)) {
+    const generalNounExceptions = ['아보카도', '청포도', '면도', '레시피', '택시', '플래시', '섹시', '소보로', '에스프레소', '우동', '기둥'];
+    if (!generalNounExceptions.some(ex => cleanQ.includes(ex))) {
+      return 'LOCATION';
+    }
+  }
 
   // 5. GENERAL CATEGORY (일반 범용 카테고리)
   return 'GENERAL_CATEGORY';
