@@ -99,7 +99,7 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
       platform,
       category,
       location,
-      campaignUrl: `https://www.revu.net/campaign/detail/${id}`,
+      campaignUrl: `https://www.revu.net/campaign/${id}`,
       imageUrl: thumbnail,
       targetSite: '레뷰 (REVU)',
       limitCount,
