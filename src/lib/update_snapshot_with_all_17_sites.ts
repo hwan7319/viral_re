@@ -29,6 +29,27 @@ function detectCategory(title: string, desc: string): string {
   return 'life';
 }
 
+export const SITE_OFFICIAL_URLS: Record<string, string> = {
+  '레뷰 (REVU)': 'https://www.revu.net/campaign/search',
+  '레뷰': 'https://www.revu.net/campaign/search',
+  '미블': 'https://www.mrblog.net',
+  '클라우드리뷰': 'https://cloudreview.co.kr',
+  '링블': 'https://www.ringble.co.kr',
+  '놀러와체험단': 'https://www.cometoplay.kr',
+  '모블': 'https://www.modublog.co.kr',
+  '체험단모아': 'https://www.moaview.co.kr',
+  '어블로그': 'https://www.ablog.kr',
+  '오마이블로그': 'https://ohmyblog.co.kr/user/search',
+  '에코블로그': 'https://www.ecoblog.co.kr',
+  '원더블로그': 'https://wonderblog.co.kr',
+  '체험단천국': 'http://blog-cheonguk.co.kr',
+  '리뷰플레이스': 'https://www.reviewplace.co.kr/pr/',
+  '강남맛집': 'https://xn--939au0g4vj8sq.net/cp/',
+  '디너의여왕': 'https://dinnerqueen.net/taste',
+  '포블로그': 'https://4blog.net',
+  '리뷰노트': 'https://www.reviewnote.co.kr/campaigns'
+};
+
 export async function scrapeAll17SitesDeep(): Promise<any[]> {
   console.log('🚀 17개 체험단 플랫폼 전 수집 엔진 심층 가동 중...');
   const now = new Date();
@@ -369,11 +390,12 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     for (let i = 0; i < count; i++) {
       const reg = regionList[i % regionList.length];
       const tmpl = categoryTemplates[i % categoryTemplates.length];
+      const officialUrl = SITE_OFFICIAL_URLS[site] || 'https://www.moaview.co.kr';
       addCampaign({
         id: `${prefix}-expanded-${i + 1}`,
         title: `[${reg}] ${tmpl.title} (${site})`,
         description: `${site} 공식 검증 리포터단 및 서포터즈 모집 - ${tmpl.title}`,
-        campaignUrl: `https://viral-re.co.kr/campaigns/${prefix}-${i + 1}`,
+        campaignUrl: officialUrl,
         imageUrl: `https://picsum.photos/seed/${prefix}${i}/600/400`,
         targetSite: site,
         category: tmpl.cat,
@@ -406,7 +428,13 @@ export async function runUpdateDeep() {
   existing.forEach(item => map.set(item.id, item));
   freshList.forEach(item => map.set(item.id, item));
 
-  const merged = Array.from(map.values());
+  const merged = Array.from(map.values()).map(c => {
+    let url = c.campaignUrl || '';
+    if (!url || url.includes('viral-re.co.kr') || url.includes('localhost') || !url.startsWith('http')) {
+      url = SITE_OFFICIAL_URLS[c.targetSite] || 'https://www.moaview.co.kr';
+    }
+    return { ...c, campaignUrl: url };
+  });
 
   const siteCounts: Record<string, number> = {};
   merged.forEach(c => {

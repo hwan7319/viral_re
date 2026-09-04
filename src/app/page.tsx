@@ -99,6 +99,38 @@ const NaverClipIcon = ({ size = 16 }: { size?: number }) => (
   </span>
 );
 
+const SITE_OFFICIAL_URLS: Record<string, string> = {
+  '레뷰 (REVU)': 'https://www.revu.net/campaign/search',
+  '레뷰': 'https://www.revu.net/campaign/search',
+  '미블': 'https://www.mrblog.net',
+  '클라우드리뷰': 'https://cloudreview.co.kr',
+  '링블': 'https://www.ringble.co.kr',
+  '놀러와체험단': 'https://www.cometoplay.kr',
+  '모블': 'https://www.modublog.co.kr',
+  '체험단모아': 'https://www.moaview.co.kr',
+  '어블로그': 'https://www.ablog.kr',
+  '오마이블로그': 'https://ohmyblog.co.kr/user/search',
+  '에코블로그': 'https://www.ecoblog.co.kr',
+  '원더블로그': 'https://wonderblog.co.kr',
+  '체험단천국': 'http://blog-cheonguk.co.kr',
+  '리뷰플레이스': 'https://www.reviewplace.co.kr/pr/',
+  '강남맛집': 'https://xn--939au0g4vj8sq.net/cp/',
+  '디너의여왕': 'https://dinnerqueen.net/taste',
+  '포블로그': 'https://4blog.net',
+  '리뷰노트': 'https://www.reviewnote.co.kr/campaigns'
+};
+
+function getValidCampaignUrl(url?: string, site?: string): string {
+  if (!url || url.includes('viral-re.co.kr') || url.includes('localhost') || !url.startsWith('http')) {
+    if (site && SITE_OFFICIAL_URLS[site]) {
+      return SITE_OFFICIAL_URLS[site];
+    }
+    return 'https://www.moaview.co.kr';
+  }
+  return url;
+}
+
+
 // 🎨 카테고리별 세련된 벡터 SVG 아이콘 매핑
 const CategorySvgIcons: Record<string, React.ReactNode> = {
   'food-korean': (
@@ -3336,7 +3368,7 @@ export default function Home() {
               </button>
 
               <a 
-                href={selectedCampaign.campaignUrl} 
+                href={getValidCampaignUrl(selectedCampaign.campaignUrl, selectedCampaign.targetSite)} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="premium-button-primary"
