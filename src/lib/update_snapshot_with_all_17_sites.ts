@@ -337,23 +337,46 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
   } catch (e: any) {}
 
   // 11. 체험단모아 (moaview.co.kr)
-  console.log('Fetching 11. 체험단모아...');
+  console.log('Fetching 11. 체험단모아 (Live HTML)...');
   try {
     const res = await axios.get('https://www.moaview.co.kr', { headers: HEADERS, timeout: 6000 });
     const $ = cheerio.load(res.data);
-    $('a[href*="campaigns"], a[href*="detail"]').each((i, el) => {
+    $('a[href]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const text = $(el).text().trim().replace(/\s+/g, ' ');
-      const titleMatch = text.match(/\[([^\]]+)\]\s*([^\n]+)/) || [null, '', text.slice(0, 50)];
-      const title = titleMatch[0] || text.slice(0, 50);
-
-      if (title && title.length > 5) {
+      const img = $(el).find('img').attr('src') || '';
+      if (href.startsWith('http') && !href.includes('moaview.co.kr') && text.length > 5) {
         addCampaign({
-          id: `moa-${i}`,
-          title: title.slice(0, 60), description: title, campaignUrl: href, imageUrl: 'https://picsum.photos/600/400', targetSite: '체험단모아'
+          id: `moaview-live-${i + 1}`,
+          title: text.slice(0, 70),
+          description: text,
+          campaignUrl: href,
+          imageUrl: img ? (img.startsWith('http') ? img : `https://www.moaview.co.kr${img}`) : 'https://picsum.photos/600/400',
+          targetSite: '체험단모아'
         });
       }
     });
+  } catch (e: any) {}
+
+  // 12. 오마이블로그 (ohmyblog.co.kr)
+  console.log('Fetching 12. 오마이블로그 (Live REST API)...');
+  try {
+    const res = await axios.get('https://ohmyblog.co.kr/api/web/campaign/active', { headers: HEADERS, timeout: 6000 });
+    if (res.data && res.data.result === 'Y' && Array.isArray(res.data.data?.campaigns)) {
+      res.data.data.campaigns.forEach((c: any) => {
+        addCampaign({
+          id: `ohmy-${c.app_seq}`,
+          title: c.app_title || c.app_companyName || '오마이블로그 체험단',
+          description: c.supplyItem || c.app_companyName || '체험 제공',
+          campaignUrl: `https://ohmyblog.co.kr/user/productDetail.apsl?app_seq=${c.app_seq}`,
+          imageUrl: c.thumbnail ? (c.thumbnail.startsWith('http') ? c.thumbnail : `https://ohmyblog.co.kr${c.thumbnail}`) : 'https://picsum.photos/600/400',
+          targetSite: '오마이블로그',
+          limitCount: parseInt(c.app_recruitCount, 10) || 5,
+          applyCount: 0,
+          endDate: c.app_recruitEndDate ? c.app_recruitEndDate.split(' ')[0] : parseRemainDaysToDate(7)
+        });
+      });
+    }
   } catch (e: any) {}
 
   // 12. 30건 이상 풍부한 다각화 시드 데이터 확충 (각 미비 사이트별 30~50건 확충)

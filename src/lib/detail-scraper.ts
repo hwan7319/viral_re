@@ -268,6 +268,19 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       const bText = $('.benefit-info, .offer-info, .campaign-benefit').text().trim();
       if (bText && bText.length > 1) return bText;
     }
+    // 6. 오마이블로그 (ohmyblog.co.kr) -> REST API
+    else if (siteLower.includes('오마이블로그') || url.includes('ohmyblog.co.kr')) {
+      const appSeq = url.match(/app_seq=([0-9]+)/)?.[1];
+      if (appSeq) {
+        try {
+          const apiRes = await axios.get(`https://ohmyblog.co.kr/api/web/campaign/detail?app_seq=${appSeq}`, { headers: HEADERS, timeout: 4000 });
+          const d = apiRes.data?.data;
+          if (d && (d.supplyItem || d.appDe_supplyItem)) {
+            return d.supplyItem || d.appDe_supplyItem;
+          }
+        } catch (e) {}
+      }
+    }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);
   }
@@ -391,6 +404,23 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     // 7. 미블 (mible.co.kr)
     else if (siteLower.includes('미블') || url.includes('mible')) {
       extractedRaw = $('.mission_info').html() || $('.campaign_guide').html() || '';
+    }
+    // 8. 오마이블로그 (ohmyblog.co.kr)
+    else if (siteLower.includes('오마이블로그') || url.includes('ohmyblog.co.kr')) {
+      const appSeq = url.match(/app_seq=([0-9]+)/)?.[1];
+      if (appSeq) {
+        try {
+          const apiRes = await axios.get(`https://ohmyblog.co.kr/api/web/campaign/detail?app_seq=${appSeq}`, { headers: HEADERS, timeout: 4000 });
+          const d = apiRes.data?.data;
+          if (d) {
+            let parts: string[] = [];
+            const kw = [d.appDe_keywordGuide, d.appDe_hashtags].filter(Boolean).join('\n');
+            if (kw) parts.push(`📌 [지정 필수 키워드]\n${kw}`);
+            if (d.appDe_additionalMission) parts.push(`📌 [업체 상세 미션 & 가이드라인]\n${d.appDe_additionalMission}`);
+            if (parts.length > 0) extractedRaw = parts.join('\n\n');
+          }
+        } catch (e) {}
+      }
     }
     // 8. 기타 사이트 범용 파싱
     else {
