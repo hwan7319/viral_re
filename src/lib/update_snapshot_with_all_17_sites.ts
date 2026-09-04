@@ -4,6 +4,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { detectPlatform } from './crawler-parallel';
 import { fetchRevuLiveCampaigns } from './revu_live_scraper';
+import { classifyCampaignCategory } from './category_classifier';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -17,18 +18,7 @@ function parseRemainDaysToDate(days: number): string {
 }
 
 function detectCategory(title: string, desc: string): string {
-  const t = (title + ' ' + desc).toLowerCase();
-  if (t.includes('카페') || t.includes('디저트') || t.includes('베이커리') || t.includes('빵')) return 'food-cafe';
-  if (t.includes('술집') || t.includes('주점') || t.includes('포차') || t.includes('맥주') || t.includes('와인') || t.includes('펍')) return 'food-pub';
-  if (t.includes('삼겹살') || t.includes('고기') || t.includes('한우') || t.includes('갈비') || t.includes('치킨') || t.includes('맛집') || t.includes('식사')) return 'food-korean';
-  if (t.includes('화장품') || t.includes('크림') || t.includes('앰플') || t.includes('세럼') || t.includes('뷰티') || t.includes('마스크팩')) return 'beauty-cosmetic';
-  if (t.includes('피부') || t.includes('에스테틱') || t.includes('속눈썹') || t.includes('네일') || t.includes('왁싱')) return 'beauty-skin';
-  if (t.includes('헤어') || t.includes('미용실') || t.includes('염색') || t.includes('펌')) return 'beauty-hair';
-  if (t.includes('숙박') || t.includes('호텔') || t.includes('펜션') || t.includes('풀빌라') || t.includes('리조트')) return 'travel-stay';
-  if (t.includes('여행') || t.includes('레저') || t.includes('체험') || t.includes('스튜디오') || t.includes('티켓')) return 'travel-leisure';
-  if (t.includes('밀키트') || t.includes('반찬') || t.includes('과일') || t.includes('신선식품')) return 'health-fresh';
-  if (t.includes('의류') || t.includes('패션') || t.includes('가방') || t.includes('신발')) return 'fashion-clothing';
-  return 'life';
+  return classifyCampaignCategory(title, desc);
 }
 
 export const SITE_OFFICIAL_URLS: Record<string, string> = {

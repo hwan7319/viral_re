@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getRevuAuthToken } from './revu_auth';
+import { classifyCampaignCategory } from './category_classifier';
 
 export interface RevuLiveCampaign {
   id: string;
@@ -126,15 +127,8 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
       platform = 'naver-clip';
     }
 
-    // Category matching
-    let category = 'food-korean';
-    const catStr = (item.category || []).join(' ');
-    if (catStr.includes('카페') || rawTitle.includes('카페') || rawTitle.includes('디저트')) category = 'food-cafe';
-    else if (catStr.includes('맛집') || rawTitle.includes('식당') || rawTitle.includes('고기') || rawTitle.includes('푸드')) category = 'food-korean';
-    else if (catStr.includes('주점') || rawTitle.includes('술집') || rawTitle.includes('이자카야') || rawTitle.includes('바')) category = 'food-pub';
-    else if (catStr.includes('화장품') || catStr.includes('뷰티') || rawTitle.includes('뷰티') || rawTitle.includes('화장품')) category = 'beauty-cosmetic';
-    else if (catStr.includes('헤어') || catStr.includes('미용') || rawTitle.includes('헤어')) category = 'beauty-hair';
-    else if (catStr.includes('여행') || catStr.includes('숙박') || rawTitle.includes('펜션') || rawTitle.includes('호텔')) category = 'travel-stay';
+    // Category matching using precision classifier
+    const category = classifyCampaignCategory(rawTitle, reward, item.category || []);
 
     // Location extraction
     let location: string | null = null;
