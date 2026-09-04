@@ -456,12 +456,21 @@ export default function Home() {
   }, [setNextSyncTimestamp]);
 
   // 🔑 사용자의 현재 검색 및 필터 상태를 실시간 참조하는 Ref (자동 동기화 시 검색 결과 보존용)
-  const filterRef = useRef({
+  const filterRef = useRef<{
+    search: string;
+    platform: string;
+    category: string;
+    location: string;
+    type: string;
+    targetSite: string;
+    sortBy: string;
+  }>({
     search: '',
     platform: 'all',
     category: 'all',
     location: 'all',
     type: 'all',
+    targetSite: 'all',
     sortBy: 'latest'
   });
 
@@ -478,7 +487,7 @@ export default function Home() {
         platform: currentFilters.platform,
         category: currentFilters.category,
         location: currentFilters.location,
-        targetSite: 'all',
+        targetSite: currentFilters.targetSite,
         sortBy: currentFilters.sortBy,
         type: currentFilters.type,
         t: String(Date.now())
@@ -550,6 +559,7 @@ export default function Home() {
   const [hoveredSido, setHoveredSido] = useState('all'); // 마우스 호버 중인 시도 상태
   const [isLocationOpen, setIsLocationOpen] = useState(false); // 지역 상세검색 아코디언 토글
   const [activeSite, setActiveSite] = useState('all');
+  const [isSiteOpen, setIsSiteOpen] = useState(false); // 출처 사이트 상세검색 토글
   const [activeType, setActiveType] = useState('all'); // 'all' | 'visit' | 'delivery'
 
   const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
@@ -645,6 +655,7 @@ export default function Home() {
         setIsCategoryOpen(false);
         setIsPlatformOpen(false);
         setIsLocationOpen(false);
+        setIsSiteOpen(false);
       }, 350);
     }
   };
@@ -675,12 +686,12 @@ export default function Home() {
     return (
       <div 
         className="filter-container-wrap"
-        style={{ width: '100%', position: 'relative', zIndex: (isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) ? 8000 : 100, marginBottom: '28px', textAlign: 'left' }}
+        style={{ width: '100%', position: 'relative', zIndex: (isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen || isSiteOpen) ? 8000 : 100, marginBottom: '28px', textAlign: 'left' }}
         onMouseEnter={handleFilterAreaEnter}
         onMouseLeave={handleFilterAreaLeave}
       >
         {/* 💻📱 모바일용 바텀시트 딤드 오버레이 (자식 노드 편입) */}
-        {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen) && (
+        {(isTypeOpen || isCategoryOpen || isPlatformOpen || isLocationOpen || isSiteOpen) && (
           <div 
             className="mobile-backdrop"
             onClick={() => {
@@ -688,6 +699,7 @@ export default function Home() {
               setIsCategoryOpen(false);
               setIsPlatformOpen(false);
               setIsLocationOpen(false);
+              setIsSiteOpen(false);
             }}
             style={{
               position: 'fixed',
@@ -880,15 +892,52 @@ export default function Home() {
               </svg>
             </button>
 
+            {/* 5. 출처 사이트 탭 */}
+            <button
+              type="button"
+              className={`filter-tab ${isSiteOpen || activeSite !== 'all' ? 'active' : ''}`}
+              onMouseEnter={() => {
+                if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                  handleFilterAreaEnter();
+                  setIsSiteOpen(true);
+                  setIsTypeOpen(false);
+                  setIsCategoryOpen(false);
+                  setIsPlatformOpen(false);
+                  setIsLocationOpen(false);
+                }
+              }}
+              onClick={() => handleTabClick('site')}
+            >
+              <span className="filter-tab-img">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-site)' }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20" />
+                  <defs>
+                    <linearGradient id="grad-site" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f59e0b" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
+              <span>
+                {activeSite === 'all' ? '출처 사이트' : activeSite}
+              </span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isSiteOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+
             {/* 전체 초기화 단추 */}
-            {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all') && (
+            {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all' || activeSite !== 'all') && (
               <button
                 type="button"
                 className="filter-tab"
                 onClick={() => {
                   setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
                   setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
-                  setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false);
+                  setActiveSite('all');
+                  setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false); setIsSiteOpen(false);
                 }}
                 style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
               >
@@ -1229,6 +1278,63 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* 출처 체험단 사이트 상세 패널 */}
+        {isSiteOpen && (
+          <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
+            <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                🌐 출처 체험단 사이트 선택
+              </h3>
+              <button type="button" onClick={() => setIsSiteOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
+            </div>
+            <div className="filter-chip-row" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+              {[
+                { key: 'all', label: '전체 사이트' },
+                { key: '레뷰', label: '레뷰 (REVU)' },
+                { key: '디너의여왕', label: '디너의여왕' },
+                { key: '강남맛집', label: '강남맛집' },
+                { key: '포블로그', label: '포블로그' },
+                { key: '리뷰노트', label: '리뷰노트' },
+                { key: '미블', label: '미블' },
+                { key: '클라우드리뷰', label: '클라우드리뷰' },
+                { key: '어블로그', label: '어블로그' },
+                { key: '링블', label: '링블' },
+                { key: '놀러와체험단', label: '놀러와체험단' },
+                { key: '오마이블로그', label: '오마이블로그' },
+                { key: '에코블로그', label: '에코블로그' },
+                { key: '리뷰플레이스', label: '리뷰플레이스' },
+                { key: '모블', label: '모블 (모두의블로그)' },
+                { key: '원더블로그', label: '원더블로그' },
+                { key: '체험단천국', label: '체험단천국' },
+                { key: '체험단모아', label: '체험단모아 (모아뷰)' }
+              ].map(s => (
+                <button
+                  type="button"
+                  key={s.key}
+                  className={`filter-chip ${activeSite === s.key ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveSite(s.key);
+                    setIsSiteOpen(false);
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '0.85rem',
+                    fontWeight: activeSite === s.key ? 800 : 500,
+                    borderRadius: 'var(--radius-full)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: activeSite === s.key ? 'var(--accent)' : 'var(--bg-tertiary)',
+                    color: activeSite === s.key ? '#ffffff' : 'var(--text-primary)',
+                    border: activeSite === s.key ? '1px solid var(--accent)' : '1px solid var(--border-color)'
+                  }}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -1242,17 +1348,19 @@ export default function Home() {
         setIsCategoryOpen(false);
         setIsPlatformOpen(false);
         setIsLocationOpen(false);
+        setIsSiteOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const handleTabClick = (tab: 'type' | 'category' | 'platform' | 'location') => {
+  const handleTabClick = (tab: 'type' | 'category' | 'platform' | 'location' | 'site') => {
     setIsTypeOpen(tab === 'type' ? !isTypeOpen : false);
     setIsCategoryOpen(tab === 'category' ? !isCategoryOpen : false);
     setIsPlatformOpen(tab === 'platform' ? !isPlatformOpen : false);
     setIsLocationOpen(tab === 'location' ? !isLocationOpen : false);
+    setIsSiteOpen(tab === 'site' ? !isSiteOpen : false);
   };
 
   // 상단 광고 캐러셀 인덱스 상태
@@ -1831,7 +1939,7 @@ export default function Home() {
         platform: activePlatform,
         category: activeCategory,
         location: activeLocation,
-        targetSite: 'all', // 수집처별 제외 요구사항에 의거하여 항상 'all'로 고정 전달
+        targetSite: activeSite,
         sortBy: sortBy,
         type: activeType,
       });
@@ -1891,10 +1999,11 @@ export default function Home() {
       category: activeCategory,
       location: activeLocation,
       type: activeType,
+      targetSite: activeSite,
       sortBy: sortBy
     };
     fetchCampaigns();
-  }, [searchTerm, activePlatform, activeCategory, activeLocation, activeType, sortBy]);
+  }, [searchTerm, activePlatform, activeCategory, activeLocation, activeType, activeSite, sortBy]);
 
 
 
@@ -1986,8 +2095,11 @@ export default function Home() {
     return `D-${diffDays}`;
   };
 
-  // 필터링 적용된 최종 리스트 (즐겨찾기 전용 처리)
-  const displayedCampaigns = campaigns;
+  // 필터링 적용된 최종 리스트 (출처 사이트 필터 처리)
+  const displayedCampaigns = useMemo(() => {
+    if (activeSite === 'all') return campaigns;
+    return campaigns.filter(c => c.targetSite && (c.targetSite.includes(activeSite) || activeSite.includes(c.targetSite)));
+  }, [campaigns, activeSite]);
 
   // 지역 목록 목록 데이터 (광역시도 및 시군구 상세 세분화)
   const LOCATIONS_MAP: Record<string, string[]> = {
