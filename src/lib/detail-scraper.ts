@@ -386,11 +386,65 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         extractedRaw = $('.qz-dq-detail__mission').html() || $('div[class*="mission"]').html() || '';
       }
     }
-    // 4. 레뷰 (revu.net)
+    // 4. 레뷰 (revu.net / api.weble.net)
     else if (siteLower.includes('레뷰') || url.includes('revu.net')) {
-      extractedRaw = $('.mission-info').html() || 
-                     $('.guide-info').html() || 
-                     $('.campaign-guide').html() || '';
+      const cid = url.match(/campaign\/([0-9]+)/)?.[1];
+      let formattedMission = '';
+
+      // 1) 토큰 세션이 설정된 경우 OIDC 인증 API 호출
+      if (process.env.REVU_AUTH_TOKEN && cid) {
+        try {
+          const res = await axios.get(`https://api.weble.net/v1/campaigns?id=${cid}`, {
+            headers: {
+              'Authorization': `Bearer ${process.env.REVU_AUTH_TOKEN}`,
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            },
+            timeout: 4000
+          });
+          const d = res.data;
+          if (d) {
+            const kwGuide = d.keywordGuide || d.appDe_keywordGuide;
+            if (kwGuide) formattedMission += `📌 [필수 작성 키워드 & 가이드]\n${kwGuide}\n\n`;
+            const mText = d.mission || d.additionalMission;
+            if (mText) formattedMission += `📌 [업체 상세 작성 지침]\n${mText}\n\n`;
+          }
+        } catch (e) {}
+      }
+
+      // 2) 공개 Weble API 기반 정밀 체험 장소 & 혜택 가이드 조합
+      if (!formattedMission && cid) {
+        try {
+          const endpoints = [
+            'https://api.weble.net/v1/campaigns/deadline?limit=100&page=1',
+            'https://api.weble.net/v1/campaigns/high-selection?limit=100&page=1',
+            'https://api.weble.net/v1/campaigns/premier?limit=100&page=1',
+            'https://api.weble.net/v1/campaigns/trending'
+          ];
+          let foundItem: any = null;
+          for (const ep of endpoints) {
+            const res = await axios.get(ep, { headers: HEADERS, timeout: 3000 });
+            const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+            foundItem = items.find((it: any) => String(it.id) === String(cid));
+            if (foundItem) break;
+          }
+
+          if (foundItem) {
+            const reward = foundItem.campaignData?.reward || foundItem.brief || '무상 식사권 및 상품 지원';
+            const venue = foundItem.venue;
+            let parts: string[] = [];
+            parts.push(`📌 [레뷰 (REVU) 공식 원본 제공 혜택]\n• ${reward}`);
+            if (venue && (venue.name || venue.addressFirst)) {
+              parts.push(`📍 [체험 장소 및 방문 주소]\n• 매장명: ${venue.name || '상세 주소 참고'}\n• 주소: ${venue.addressFirst || '예약 시 개별 안내'}\n• 연락처: ${venue.tel || '예약 시 개별 안내'}`);
+            }
+            const mediaStr = foundItem.media === 'instagram' ? '인스타그램 (릴스/피드)' : foundItem.media === 'youtube' ? '유튜브 (쇼츠/동영상)' : '네이버 블로그';
+            parts.push(`📋 [포스팅 가이드 조건]\n• 리뷰 매체: ${mediaStr}\n• 모집 정원: 총 ${foundItem.reviewerLimit || 5}명 모집 (현재 ${foundItem.campaignStats?.requestCount || 0}명 신청 완료)`);
+            parts.push(`※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 레뷰 공식 원본 화면에서 바로 지원 가능합니다.`);
+            formattedMission = parts.join('\n\n');
+          }
+        } catch (e) {}
+      }
+
+      if (formattedMission) return formattedMission;
     }
     // 5. 리뷰노트 (reviewnote.co.kr)
     else if (siteLower.includes('리뷰노트') || url.includes('reviewnote')) {
