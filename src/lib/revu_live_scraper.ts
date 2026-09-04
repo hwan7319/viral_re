@@ -20,36 +20,51 @@ export interface RevuLiveCampaign {
 export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
   console.log('🔍 [REVU SCRAPER] 레뷰 (REVU) 100% 라이브 원본 공고 수집 시작 (Weble API)...');
 
-  const endpoints = [
-    'https://api.weble.net/v1/campaigns/deadline?limit=100&page=1',
-    'https://api.weble.net/v1/campaigns/high-selection?limit=100&page=1',
-    'https://api.weble.net/v1/campaigns/premier?limit=100&page=1',
-    'https://api.weble.net/v1/campaigns/trending'
-  ];
-
+  const baseRoutes = ['deadline', 'high-selection', 'premier'];
   const rawItemsMap = new Map<number, any>();
 
-  for (const url of endpoints) {
-    try {
-      const res = await axios.get(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          'Accept': 'application/json, text/plain, */*',
-          'Origin': 'https://www.revu.net',
-          'Referer': 'https://www.revu.net/'
-        },
-        timeout: 7000
-      });
-      const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
-      items.forEach((item: any) => {
-        if (item && item.id) {
-          rawItemsMap.set(item.id, item);
-        }
-      });
-    } catch (e: any) {
-      console.warn(`⚠️ [REVU SCRAPER] ${url} 수집 오류:`, e.message);
+  const headers: Record<string, string> = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Origin': 'https://www.revu.net',
+    'Referer': 'https://www.revu.net/'
+  };
+
+  if (process.env.REVU_AUTH_TOKEN) {
+    headers['Authorization'] = `Bearer ${process.env.REVU_AUTH_TOKEN}`;
+    console.log('🔑 [REVU SCRAPER] Authenticated session token detected. Fetching full authorized Revu feed...');
+  }
+
+  // 1. 다중 큐레이션 라우트 5페이지 딥 크롤링 (Multi-page deep scraping)
+  for (const route of baseRoutes) {
+    for (let page = 1; page <= 5; page++) {
+      try {
+        const url = `https://api.weble.net/v1/campaigns/${route}?limit=50&page=${page}`;
+        const res = await axios.get(url, { headers, timeout: 7000 });
+        const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+        if (!items || items.length === 0) break;
+
+        items.forEach((item: any) => {
+          if (item && item.id) {
+            rawItemsMap.set(item.id, item);
+          }
+        });
+      } catch (e: any) {
+        break;
+      }
     }
   }
+
+  // 2. 실시간 트렌딩 섹션 수집
+  try {
+    const res = await axios.get('https://api.weble.net/v1/campaigns/trending', { headers, timeout: 5000 });
+    const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+    items.forEach((item: any) => {
+      if (item && item.id) {
+        rawItemsMap.set(item.id, item);
+      }
+    });
+  } catch (e: any) {}
 
   const results: RevuLiveCampaign[] = [];
   const now = new Date();
