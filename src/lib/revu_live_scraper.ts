@@ -71,7 +71,25 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
 
   rawItemsMap.forEach((item, id) => {
     const rawTitle = item.item || item.title || '레뷰 프리미엄 체험단';
-    const reward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
+    const rawReward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
+    const point = item.campaignData?.point || 0;
+    const venueName = item.venue?.name;
+
+    let reward = rawReward;
+    const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
+
+    if (rawReward === '레뷰 포인트' || rawReward === '포인트') {
+      if (venueName) {
+        reward = `${venueName} 매장이용권 + 레뷰 포인트 ${pointStr}`.trim();
+      } else {
+        reward = `레뷰 포인트 ${pointStr}`.trim();
+      }
+    } else if (point > 0) {
+      if (!rawReward.includes(pointStr) && pointStr) {
+        reward = `${rawReward} + 레뷰 포인트 ${pointStr}`.trim();
+      }
+    }
+
     const thumbnail = item.thumbnail || 'https://www.revu.net/assets/img/og-revu.png';
     const media = (item.media || '').toLowerCase();
     const limitCount = item.reviewerLimit || 5;

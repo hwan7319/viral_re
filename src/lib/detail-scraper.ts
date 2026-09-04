@@ -429,8 +429,24 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
           }
 
           if (foundItem) {
-            const reward = foundItem.campaignData?.reward || foundItem.brief || '무상 식사권 및 상품 지원';
+            const rawReward = foundItem.campaignData?.reward || foundItem.brief || '무상 식사권 및 상품 지원';
+            const point = foundItem.campaignData?.point || 0;
             const venue = foundItem.venue;
+            const venueName = venue?.name;
+
+            let reward = rawReward;
+            const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
+
+            if (rawReward === '레뷰 포인트' || rawReward === '포인트') {
+              if (venueName) {
+                reward = `${venueName} 매장이용권 + 레뷰 포인트 ${pointStr}`.trim();
+              } else {
+                reward = `레뷰 포인트 ${pointStr}`.trim();
+              }
+            } else if (point > 0 && !rawReward.includes(pointStr) && pointStr) {
+              reward = `${rawReward} + 레뷰 포인트 ${pointStr}`.trim();
+            }
+
             let parts: string[] = [];
             parts.push(`📌 [레뷰 (REVU) 공식 원본 제공 혜택]\n• ${reward}`);
             if (venue && (venue.name || venue.addressFirst)) {
