@@ -2837,6 +2837,67 @@ export default function Home() {
           </div>
         </div>
 
+        {/* 📱 모바일 전용 쿠팡 파트너스 배너 광고 (Mobile-Only Coupang Partners Ad Slot) */}
+        <div 
+          className="glass-panel mobile-coupang-banner"
+          onClick={() => window.open('https://link.coupang.com', '_blank', 'noopener,noreferrer')}
+          style={{
+            width: '100%',
+            minHeight: '85px',
+            height: '85px',
+            borderRadius: 'var(--radius-md)',
+            position: 'relative',
+            overflow: 'hidden',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1000&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            cursor: 'pointer',
+            border: '1px solid rgba(225, 29, 72, 0.4)',
+            alignItems: 'center'
+          }}
+        >
+          {/* 가독성을 위한 어두운 오버레이 */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.75) 60%, rgba(225, 29, 72, 0.4) 100%)',
+            zIndex: 1
+          }} />
+
+          {/* AD 태그 & 쿠팡 전용 뱃지 */}
+          <span style={{
+            position: 'absolute', top: '6px', left: '10px',
+            fontSize: '0.55rem', fontWeight: 900, color: '#ffffff',
+            backgroundColor: '#e11d48', padding: '1px 5px', borderRadius: '3px',
+            lineHeight: 1, zIndex: 2
+          }}>COUPANG AD</span>
+
+          <div className="coupang-content-box" style={{ 
+            position: 'relative', zIndex: 2,
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start',
+            padding: '10px 16px', width: '100%', minHeight: '85px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ textAlign: 'left', flex: 1, paddingRight: '8px' }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ffffff', marginBottom: '2px', lineHeight: 1.2, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                  🛒 쿠팡 로켓배송 & 파격 핫딜 특가전 ➔
+                </h4>
+                <p style={{ fontSize: '0.65rem', color: '#cbd5e1', lineHeight: 1.2, margin: 0, opacity: 0.9, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                  이 포스팅은 쿠팡 파트너스 활동의 일환으로, 수수료를 제공받습니다.
+                </p>
+              </div>
+              <span style={{
+                backgroundColor: '#e11d48', color: '#ffffff',
+                fontSize: '0.7rem', fontWeight: 800,
+                padding: '4px 10px', borderRadius: 'var(--radius-full)',
+                whiteSpace: 'nowrap', flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(225, 29, 72, 0.5)'
+              }}>
+                바로가기
+              </span>
+            </div>
+          </div>
+        </div>
+
 
         
 

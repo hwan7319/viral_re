@@ -1500,6 +1500,11 @@ input, select {
     height: 85px !important;
   }
 
+  .mobile-coupang-banner {
+    display: flex !important;
+    margin-bottom: 16px !important;
+  }
+
   .keyword-master-input::placeholder {
     color: transparent !important;
     opacity: 0 !important;
@@ -1508,6 +1513,10 @@ input, select {
     margin: 10px 0 !important;
     padding: 8px !important;
   }
+}
+
+.mobile-coupang-banner {
+  display: none;
 }
 
 .campaign-card {
