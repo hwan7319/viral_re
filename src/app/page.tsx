@@ -1543,7 +1543,7 @@ export default function Home() {
   const [relatedVisibleCount, setRelatedVisibleCount] = useState(20);
 
   // 키워드 분석 실행 함수
-  const analyzeKeyword = async (targetQuery: string) => {
+  const analyzeKeyword = async (targetQuery: string, contextTitle: string = '', contextCategory: string = '') => {
     const q = targetQuery.trim();
     if (!q) return;
     setKeywordQuery(q);
@@ -1552,7 +1552,8 @@ export default function Home() {
     setIsKeywordModalOpen(true);
 
     try {
-      const res = await fetch(`/api/keyword?query=${encodeURIComponent(q)}`);
+      const url = `/api/keyword?query=${encodeURIComponent(q)}${contextTitle ? `&title=${encodeURIComponent(contextTitle)}` : ''}${contextCategory ? `&category=${encodeURIComponent(contextCategory)}` : ''}`;
+      const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
         setKeywordData(json.data);
@@ -3354,7 +3355,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     const kw = extractCoreKeyword(selectedCampaign.title);
-                    analyzeKeyword(kw);
+                    analyzeKeyword(kw, selectedCampaign.title, selectedCampaign.category);
                   }}
                   style={{
                     width: '100%',

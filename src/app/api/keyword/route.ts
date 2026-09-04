@@ -349,12 +349,25 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('query')?.trim();
+    const contextTitle = searchParams.get('title')?.trim() || '';
+    const contextCategory = searchParams.get('category')?.trim() || '';
 
     if (!query) {
       return NextResponse.json({ success: false, error: '검색어를 입력해 주세요.' }, { status: 400 });
     }
 
-    const cacheKey = `v108_${query.toLowerCase()}`;
+    // 🔑 스마트 카테고리 앵커 감지 (공고 제목, 카테고리, 검색어 복합 검출)
+    const fullContextText = `${query} ${contextTitle} ${contextCategory}`.toLowerCase();
+    let detectedCategoryAnchor: string | null = null;
+    if (/(주방세제|식기세척기세제|설거지세제|설거지비누|디쉬워시)/.test(fullContextText)) detectedCategoryAnchor = '주방세제';
+    else if (/(세탁세제|섬유유연제|중성세제|과탄산소다)/.test(fullContextText)) detectedCategoryAnchor = '세제';
+    else if (/(스킨케어|화장품|토너|크림|세럼|앰플|에센스|마스크팩)/.test(fullContextText)) detectedCategoryAnchor = '스킨케어';
+    else if (/(샴푸|린스|트리트먼트|두피케어|탈모샴푸)/.test(fullContextText)) detectedCategoryAnchor = '샴푸';
+    else if (/(바디워시|바디로션|바디스크럽|샤워젤)/.test(fullContextText)) detectedCategoryAnchor = '바디워시';
+    else if (/(영양제|유산균|비타민|마그네슘|오메가3|홍삼)/.test(fullContextText)) detectedCategoryAnchor = '영양제';
+    else if (/(밀키트|간편식|반찬|신선식품)/.test(fullContextText)) detectedCategoryAnchor = '밀키트';
+
+    const cacheKey = `v109_${query.toLowerCase()}_${detectedCategoryAnchor || ''}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
@@ -393,6 +406,12 @@ export async function GET(request: Request) {
       if (!cleanKw.includes(query) && /(매매|부동산|원룸|투룸|빌라|주식|대출|보험|취업|채용)/.test(cleanKw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
       if (entityType !== 'LOCATION') {
         if (/(병원|학원|필라테스|네일|안과|이비인후과|정형외과|한의원)/.test(cleanKw) && !/(병원|학원|필라테스|네일)/.test(query)) return;
+      }
+
+      // 🚫 생활/뷰티/상품 카테고리인 경우 교차 카테고리 레시피/음식 단어(고춧가루, 라자냐, 바질페스토 등) 필터링
+      if (detectedCategoryAnchor && /(주방세제|세제|스킨케어|화장품|샴푸|바디워시|영양제)/.test(detectedCategoryAnchor)) {
+        const FOOD_RECIPE_REGEX = /(치즈|모짜렐라|리코타|식초|돈카츠|돈까스|돈가스|라멘|할라피뇨|파니니|식빵|번|강황|케찹|피클|스파이스|후추|모닝빵|카레|소스|큐민|시즈닝|드레싱|잼|버터|마요네즈|시럽|밀가루|부침가루|튀김가루|고추장|된장|간장|페이스트|퓨레|페퍼|베이글|파네토네|크룽지|크로플|생크림|휘핑크림|아몬드|가공식품|통조림|당면|먹물|감자|고구마|쌈|상추|파스타|스파게티|리조또|피자|라자냐|샌드위치|샐러드|스테이크|바질페스토|고춧가루|고추가루|양념|조미료|요리|음식|레시피|베이킹|빵|쿠키|케이크|초콜릿|아이스크림|치킨|족발|보쌈|삼겹살|고기|횟집|스시|초밥|가츠동|덮밥|볶음밥|탕수육|짜장|짬뽕|마라탕|분식|떡볶이|오뎅|튀김|만두|생바질|바질가루|치아바타)/i;
+        if (FOOD_RECIPE_REGEX.test(cleanKw)) return;
       }
 
       const normKey = cleanKw.replace(/\s+/g, '').toLowerCase();
@@ -436,9 +455,13 @@ export async function GET(request: Request) {
 
           let list: any[] = primaryRes.data?.keywordList || [];
 
-          // 🔑 힌트 결과가 5개 미만인 니치/복합 키워드인 경우 서브 단어(분해 키워드) 추가 서치
+          // 🔑 힌트 결과가 5개 미만인 니치/복합 키워드인 경우 서브 단어 및 카테고리 앵커 릴레이 서치
           if (list.length < 5) {
             const subWords = query.replace(/[\[\]\(\)\&\+\/_]/g, ' ').trim().split(/\s+/).filter(w => w.length >= 2);
+            if (detectedCategoryAnchor && !subWords.includes(detectedCategoryAnchor)) {
+              subWords.push(detectedCategoryAnchor);
+            }
+
             for (const subW of subWords) {
               const cleanSub = subW.replace(/\s+/g, '');
               if (!cleanSub || cleanSub === cleanHintQuery) continue;
@@ -562,6 +585,31 @@ export async function GET(request: Request) {
     // 🔑 3. 스마트 4대 엔티티 분류 기반 후보 키워드 추출 알고리즘
     const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
 
+    const FOOD_RECIPE_TERMS = ['고춧가루', '고추가루', '라자냐', '바질페스토', '돈까스', '돈가스', '치아바타', '피자', '스파게티', '파스타', '샌드위치', '리조또', '스테이크', '떡볶이', '짜장면', '짬뽕', '생바질', '바질가루', '레시피', '샐러드', '파스타소스', '토마토'];
+
+    const safeAddCandidate = (kwStr: string, pc: number = 0, mobile: number = 0, priority: number = 2) => {
+      if (!kwStr) return;
+      const cleanKw = kwStr.trim();
+      if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
+      if (cleanKw.includes('class=') || cleanKw.includes('<') || cleanKw.includes('>') || cleanKw.includes('APP')) return;
+
+      if (!cleanKw.includes(query) && /(매매|부동산|원룸|투룸|빌라|주식|대출|보험|취업|채용)/.test(cleanKw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
+      if (entityType !== 'LOCATION') {
+        if (/(병원|학원|필라테스|네일|안과|이비인후과|정형외과|한의원)/.test(cleanKw) && !/(병원|학원|필라테스|네일)/.test(query)) return;
+      }
+
+      // 🚫 생활/뷰티/상품 카테고리인 경우 교차 카테고리 레시피/음식 단어(고춧가루, 라자냐, 바질페스토 등) 필터링
+      if (detectedCategoryAnchor && /(주방세제|세제|스킨케어|화장품|샴푸|바디워시|영양제)/.test(detectedCategoryAnchor)) {
+        const FOOD_RECIPE_REGEX = /(치즈|모짜렐라|리코타|식초|돈카츠|돈까스|돈가스|라멘|할라피뇨|파니니|식빵|번|강황|케찹|피클|스파이스|후추|모닝빵|카레|소스|큐민|시즈닝|드레싱|잼|버터|마요네즈|시럽|밀가루|부침가루|튀김가루|고추장|된장|간장|페이스트|퓨레|페퍼|베이글|파네토네|크룽지|크로플|생크림|휘핑크림|아몬드|가공식품|통조림|당면|먹물|감자|고구마|쌈|상추|파스타|스파게티|리조또|피자|라자냐|샌드위치|샐러드|스테이크|바질페스토|고춧가루|고추가루|양념|조미료|요리|음식|레시피|베이킹|빵|쿠키|케이크|초콜릿|아이스크림|치킨|족발|보쌈|삼겹살|고기|횟집|스시|초밥|가츠동|덮밥|볶음밥|탕수육|짜장|짬뽕|마라탕|분식|떡볶이|오뎅|튀김|만두|생바질|바질가루|치아바타)/i;
+        if (FOOD_RECIPE_REGEX.test(cleanKw)) return;
+      }
+
+      const key = cleanKw.replace(/\s+/g, '').toLowerCase();
+      if (!candidateMap.has(key)) {
+        candidateMap.set(key, { keyword: cleanKw, pc, mobile, total: pc + mobile, priority });
+      }
+    };
+
     const CATEGORY_PRESETS: Record<string, string[]> = {
       '주방세제': ['주방세제', '1종주방세제', '친환경주방세제', '설거지비누', '주방비누', '친환경세제', '비건주방세제', '1종세제', '과일세제', '젖병세제', '주방세제추천', '천연주방세제', '대용량주방세제', '핸드디쉬세제'],
       '세제': ['주방세제', '세탁세제', '친환경세제', '1종세제', '섬유유연제', '중성세제', '과탄산소다', '베이킹소다'],
@@ -583,27 +631,35 @@ export async function GET(request: Request) {
       '시장': ['광장시장', '남대문시장', '벼룩시장', '서문시장', '강릉중앙시장', '가락시장', '속초중앙시장', '부전시장', '제주동문시장', '서울시장', '충주시장', '대구시장', '부산시장', '통영시장', '성남시장', '울산시장', '용인시장', '소상공인시장진흥공단', '시장바구니', '시장조사', '시장경제', '시장금리', '시장실패', '시장이반찬이다', '시장놀이', '시장영어로', '시장선거', '시장하다', '시장가현재가차이', '시장을여는사람들', '시장놀이게임', '시장뜻', '시장경제신문']
     };
 
+    if (detectedCategoryAnchor && CATEGORY_PRESETS[detectedCategoryAnchor]) {
+      CATEGORY_PRESETS[detectedCategoryAnchor].forEach(bp => {
+        const key = bp.replace(/\s+/g, '').toLowerCase();
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        safeAddCandidate(bp, pc, mobile, 1);
+      });
+    }
+
     Object.keys(CATEGORY_PRESETS).forEach(cat => {
       if (query.includes(cat) || cat.includes(query)) {
         CATEGORY_PRESETS[cat].forEach(bp => {
           const key = bp.replace(/\s+/g, '').toLowerCase();
-          if (bp !== query && !candidateMap.has(key)) {
-            const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
-            const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
-            const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-            candidateMap.set(key, { keyword: bp, pc, mobile, total: pc + mobile, priority: 1 });
-          }
+          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
+          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+          safeAddCandidate(bp, pc, mobile, 1);
         });
       }
     });
 
     officialSet.forEach(kw => {
       const key = kw.replace(/\s+/g, '').toLowerCase();
-      if (kw !== query && key !== cleanHintQuery.toLowerCase() && !candidateMap.has(key)) {
+      if (kw !== query && key !== cleanHintQuery.toLowerCase()) {
         const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
         const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
         const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-        candidateMap.set(key, { keyword: kw, pc, mobile, total: pc + mobile, priority: 1 });
+        safeAddCandidate(kw, pc, mobile, 1);
       }
     });
 
@@ -617,12 +673,10 @@ export async function GET(request: Request) {
       LOCAL_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
-        if (!candidateMap.has(key1)) {
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
-          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
-          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
-        }
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        safeAddCandidate(expKw, pc, mobile, 2);
       });
     } else if (entityType === 'SEASONAL_EVENT') {
       const SEASONAL_ASSOCIATIONS = [
@@ -632,36 +686,30 @@ export async function GET(request: Request) {
       SEASONAL_ASSOCIATIONS.forEach(suf => {
         const expKw = suf.startsWith(query) || query.startsWith(suf) ? suf : `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
-        if (!candidateMap.has(key1)) {
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
-          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
-          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
-        }
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        safeAddCandidate(expKw, pc, mobile, 2);
       });
     } else if (entityType === 'VENUE') {
       const VENUE_SUFFIXES = ['맛집', '카페', '팝업', '전시', '놀거리', '디저트', '식당', '음식점', '빵집', '가볼만한곳', '주차비', '주차', '영업시간', '행사', '핫플', '데이트', '쇼핑'];
       VENUE_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
-        if (!candidateMap.has(key1)) {
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
-          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
-          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
-        }
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        safeAddCandidate(expKw, pc, mobile, 2);
       });
     } else if (entityType === 'BRAND_PRODUCT') {
       const BRAND_SUFFIXES = ['채용', '대표', '매출', '투자', '상장', '사옥', '주가', '기업정보', '연봉', '복지', '메뉴', '신메뉴', '추천', '가격', '칼로리', '영업시간', '매장', '이벤트', '할인', '후기'];
       BRAND_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
-        if (!candidateMap.has(key1)) {
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
-          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
-          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
-        }
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        safeAddCandidate(expKw, pc, mobile, 2);
       });
     }
 
@@ -671,12 +719,10 @@ export async function GET(request: Request) {
       STAY_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
-        if (!candidateMap.has(key1)) {
-          const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
-          const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
-          const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          candidateMap.set(key1, { keyword: expKw, pc, mobile, total: pc + mobile, priority: 2 });
-        }
+        const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+        const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+        const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+        safeAddCandidate(expKw, pc, mobile, 2);
       });
     }
 
@@ -688,7 +734,7 @@ export async function GET(request: Request) {
       if (!k.relKeyword) return;
       const kw = k.relKeyword.trim();
       const key = kw.replace(/\s+/g, '').toLowerCase();
-      if (kw === query || key === cleanHintQuery.toLowerCase() || candidateMap.has(key)) return;
+      if (kw === query || key === cleanHintQuery.toLowerCase()) return;
 
       // 🔑 무관한 대형 절기/명절 노이즈 필터링 (양꼬치 검색 시 말복, 추석, 설날 등 엉뚱한 대형 키워드 1~2위 점령 100% 차단)
       const seasonalNoise = /(말복|초복|중복|복날|추석|설날|명절|입추|입동|동지|단오|어버이날|스승의날|어린이날|크리스마스)/i;
@@ -699,16 +745,9 @@ export async function GET(request: Request) {
 
       const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
       const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
-      const total = pc + mobile;
 
       const isRelevant = kw.toLowerCase().includes(queryCore) || queryWords.some(w => kw.toLowerCase().includes(w));
-      candidateMap.set(key, {
-        keyword: kw,
-        pc,
-        mobile,
-        total,
-        priority: isRelevant ? 2 : 3,
-      });
+      safeAddCandidate(kw, pc, mobile, isRelevant ? 2 : 3);
     });
 
     const allCandidatesList = Array.from(candidateMap.values());
