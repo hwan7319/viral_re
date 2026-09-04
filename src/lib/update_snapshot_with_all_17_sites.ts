@@ -3,6 +3,7 @@ import path from 'path';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { detectPlatform } from './crawler-parallel';
+import { fetchRevuLiveCampaigns } from './revu_live_scraper';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -387,9 +388,31 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     }
   } catch (e: any) {}
 
-  // 13. 30건 이상 풍부한 다각화 시드 데이터 확충 (오마이블로그/체험단모아는 100% 라이브 데이터 사용)
+  // 12-2. 레뷰 (REVU) 100% 라이브 원본 공고 수집 (Weble REST API 연동)
+  try {
+    const revuLiveList = await fetchRevuLiveCampaigns();
+    revuLiveList.forEach(c => {
+      addCampaign({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        campaignUrl: c.campaignUrl,
+        imageUrl: c.imageUrl,
+        targetSite: c.targetSite,
+        platform: c.platform,
+        category: c.category,
+        location: c.location,
+        limitCount: c.limitCount,
+        applyCount: c.applyCount,
+        endDate: c.endDate
+      });
+    });
+  } catch (e: any) {
+    console.warn('⚠️ [Snapshot-Generator] 레뷰 (REVU) 라이브 연동 실패:', e.message);
+  }
+
+  // 13. 30건 이상 풍부한 다각화 시드 데이터 확충 (오마이블로그/체험단모아/레뷰는 100% 라이브 데이터 사용)
   const expandedSeedPlatforms = [
-    { site: '레뷰 (REVU)', prefix: 'revu', count: 40 },
     { site: '미블', prefix: 'mb-ext', count: 40 },
     { site: '클라우드리뷰', prefix: 'cr-ext', count: 40 },
     { site: '링블', prefix: 'ring-ext', count: 40 },

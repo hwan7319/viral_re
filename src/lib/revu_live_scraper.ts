@@ -1,53 +1,115 @@
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
-const STEALTH_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-  'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-  'Cache-Control': 'no-cache',
-  'Pragma': 'no-cache',
-  'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-  'Sec-Ch-Ua-Mobile': '?0',
-  'Sec-Ch-Ua-Platform': '"macOS"',
-  'Sec-Fetch-Dest': 'document',
-  'Sec-Fetch-Mode': 'navigate',
-  'Sec-Fetch-Site': 'none',
-  'Sec-Fetch-User': '?1',
-  'Upgrade-Insecure-Requests': '1'
-};
-
-export async function scrapeRevuLive(keyword: string) {
-  console.log(`🔍 [REVU LIVE SCRAPER] 레뷰 원본 사이트 비로그인 실시간 공고 수집 시도 (키워드: ${keyword})...`);
-  try {
-    const encoded = encodeURIComponent(keyword);
-    const searchUrl = `https://www.revu.net/campaign/search?q=${encoded}`;
-    const res = await axios.get(searchUrl, { headers: STEALTH_HEADERS, timeout: 7000 });
-    const $ = cheerio.load(res.data);
-    const campaigns: any[] = [];
-
-    $('.campaign-list-item, .card-item, .campaign-card').each((i, el) => {
-      const title = $(el).find('.title, .campaign-title, h3').text().trim();
-      const href = $(el).find('a').attr('href') || '';
-      const campaignUrl = href.startsWith('http') ? href : `https://www.revu.net${href}`;
-      const img = $(el).find('img').attr('src') || '';
-      
-      if (title && campaignUrl) {
-        campaigns.push({
-          title,
-          campaignUrl,
-          imageUrl: img,
-          targetSite: '레뷰 (REVU)'
-        });
-      }
-    });
-
-    console.log(`✅ [REVU LIVE SCRAPER] 실시간 수집 성공! 수집 건수: ${campaigns.length}건`);
-    return campaigns;
-  } catch (err: any) {
-    console.warn(`⚠️ [REVU LIVE SCRAPER] Cloudflare 차단 응답: ${err.message}`);
-    return [];
-  }
+export interface RevuLiveCampaign {
+  id: string;
+  title: string;
+  description: string;
+  platform: string;
+  category: string;
+  location: string | null;
+  campaignUrl: string;
+  imageUrl: string;
+  targetSite: string;
+  limitCount: number;
+  applyCount: number;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-scrapeRevuLive('치킨');
+export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
+  console.log('🔍 [REVU SCRAPER] 레뷰 (REVU) 100% 라이브 원본 공고 수집 시작 (Weble API)...');
+
+  const endpoints = [
+    'https://api.weble.net/v1/campaigns/deadline?limit=100&page=1',
+    'https://api.weble.net/v1/campaigns/high-selection?limit=100&page=1',
+    'https://api.weble.net/v1/campaigns/premier?limit=100&page=1',
+    'https://api.weble.net/v1/campaigns/trending'
+  ];
+
+  const rawItemsMap = new Map<number, any>();
+
+  for (const url of endpoints) {
+    try {
+      const res = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'application/json, text/plain, */*',
+          'Origin': 'https://www.revu.net',
+          'Referer': 'https://www.revu.net/'
+        },
+        timeout: 7000
+      });
+      const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+      items.forEach((item: any) => {
+        if (item && item.id) {
+          rawItemsMap.set(item.id, item);
+        }
+      });
+    } catch (e: any) {
+      console.warn(`⚠️ [REVU SCRAPER] ${url} 수집 오류:`, e.message);
+    }
+  }
+
+  const results: RevuLiveCampaign[] = [];
+  const now = new Date();
+
+  rawItemsMap.forEach((item, id) => {
+    const rawTitle = item.item || item.title || '레뷰 프리미엄 체험단';
+    const reward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
+    const thumbnail = item.thumbnail || 'https://www.revu.net/assets/img/og-revu.png';
+    const media = (item.media || '').toLowerCase();
+    const limitCount = item.reviewerLimit || 5;
+    const applyCount = item.campaignStats?.requestCount || 0;
+    const endDate = item.requestEndedOn ? item.requestEndedOn.split(' ')[0] : new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+
+    // Platform matching
+    let platform = 'blog';
+    if (media.includes('insta') || rawTitle.includes('릴스') || rawTitle.includes('인스타')) {
+      platform = 'instagram';
+    } else if (media.includes('youtube') || rawTitle.includes('쇼츠') || rawTitle.includes('유튜브')) {
+      platform = 'youtube';
+    } else if (media.includes('clip') || rawTitle.includes('클립')) {
+      platform = 'naver-clip';
+    }
+
+    // Category matching
+    let category = 'food-korean';
+    const catStr = (item.category || []).join(' ');
+    if (catStr.includes('카페') || rawTitle.includes('카페') || rawTitle.includes('디저트')) category = 'food-cafe';
+    else if (catStr.includes('맛집') || rawTitle.includes('식당') || rawTitle.includes('고기') || rawTitle.includes('푸드')) category = 'food-korean';
+    else if (catStr.includes('주점') || rawTitle.includes('술집') || rawTitle.includes('이자카야') || rawTitle.includes('바')) category = 'food-pub';
+    else if (catStr.includes('화장품') || catStr.includes('뷰티') || rawTitle.includes('뷰티') || rawTitle.includes('화장품')) category = 'beauty-cosmetic';
+    else if (catStr.includes('헤어') || catStr.includes('미용') || rawTitle.includes('헤어')) category = 'beauty-hair';
+    else if (catStr.includes('여행') || catStr.includes('숙박') || rawTitle.includes('펜션') || rawTitle.includes('호텔')) category = 'travel-stay';
+
+    // Location extraction
+    let location: string | null = null;
+    if (item.localTag && item.localTag.length > 0) {
+      location = item.localTag[0];
+    } else if (item.venue?.addressFirst) {
+      const match = item.venue.addressFirst.match(/(서울|경기|인천|부산|대구|대전|광주|제주|강원|충북|충남|전북|전남|경북|경남)\s*([가-힣]+)/);
+      if (match) location = `${match[1]} ${match[2]}`;
+    }
+
+    results.push({
+      id: `revu-live-${id}`,
+      title: rawTitle,
+      description: reward,
+      platform,
+      category,
+      location,
+      campaignUrl: `https://www.revu.net/campaign/detail/${id}`,
+      imageUrl: thumbnail,
+      targetSite: '레뷰 (REVU)',
+      limitCount,
+      applyCount,
+      endDate,
+      createdAt: item.createdAt || now.toISOString(),
+      updatedAt: item.updatedAt || now.toISOString()
+    });
+  });
+
+  console.log(`✅ [REVU SCRAPER] 레뷰 (REVU) 실시간 실데이터 ${results.length}건 파싱 성공!`);
+  return results;
+}
