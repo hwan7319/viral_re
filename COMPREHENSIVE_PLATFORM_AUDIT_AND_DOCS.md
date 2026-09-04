@@ -78,13 +78,29 @@
 
 ---
 
-## 3. 🛡️ 동일 이슈 재발 방지를 위한 기술적 가이드라인 (SOP)
+## 3. 🎨 프론트엔드 UI/UX 이슈 이력 & 조치사항 (Frontend Hover UI Bug Fix)
+
+### 🟢 출처 사이트 탭 Hover 드롭다운 잔상 버그 (Stuck Dropdown Panel)
+* **증상**: 프론트엔드 상단 검색 필터 바에서 '출처 사이트' 탭에 마우스 호버(Hover) 후, '지역 검색', '카테고리', '모집 유형', '플랫폼' 등 다른 필터 탭으로 마우스를 이동해도 '출처 사이트' 상세 선택 드롭다운 패널이 자동으로 사라지지 않고 화면에 고정되어 겹치는 UI 버그 발생.
+* **원인 분석**:
+  - `src/app/page.tsx` 내 각 필터 탭(`type`, `category`, `platform`, `location`)의 `onMouseEnter` 이벤트 핸들러에서 마우스가 들어올 때 현재 탭의 state만 `true`로 켜고 다른 탭들을 `false`로 끌 때, **`setIsSiteOpen(false)` 호출 구문이 누락**되어 있었습니다.
+  - 이로 인해 '출처 사이트' 탭 호버 시 `isSiteOpen`이 `true`가 된 후 다른 탭으로 이동하더라도 `isSiteOpen`이 여전히 `true`로 남아있어 패널이 닫히지 않고 계속 노출되었습니다.
+* **기술적 조치**:
+  - `src/app/page.tsx` 내 모든 필터 탭의 `onMouseEnter` 핸들러에 `setIsSiteOpen(false)`를 명시적으로 추가하여 마우스 이동 시 기존 드롭다운 패널이 즉각 열리고 닫히도록 100% 정상화함.
+  - 탭 클릭(`handleTabClick`) 및 마우스 탈출(`handleFilterAreaLeave`), 외부 클릭(`handleOutsideClick`)에도 동일하게 전 탭 닫기 로직을 일관되게 보장함.
+
+---
+
+## 4. 🛡️ 동일 이슈 재발 방지를 위한 기술적 가이드라인 (SOP)
 
 1. **자동 URL 샌디타이징 및 Fallback 검증**:
    - 프론트엔드 [`getValidCampaignUrl`](file:///Users/park/review-moa/src/app/page.tsx#L122-L130) 함수를 통해 올바른 딥링크 형태만 표출되도록 상시 방어.
 2. **인스타/릴스/쿠팡 카테고리 최우선 분류 알고리즘**:
    - 공고 제목 및 설명에 `릴스`, `인스타`, `reels`가 명시된 경우 `instagram` 뱃지 우선 부여.
    - `쿠팡`, `쿠팡체험단` 문구 포함 시 `coupang` 뱃지 및 모바일 쿠팡 전용 슬롯 연동.
+3. **지점명 / 단일 음절 충돌 방지 카테고리 엔진 유지**:
+   - 지점명 도시 서픽스(`청주점`, `광주점`, `원주점`, `전주점`, `파주점`, `제주점` 등) 정제 후 분류 진행.
+   - 프론트엔드 카테고리 키(`food-pub`, `food-cafe`, `food-korean`, `beauty-cosmetics`, `beauty-salon`, `accommodation`, `life-goods`, `health-fresh`, `fashion-clothing`)와의 1:1 매치 규격 엄수.
 
 ---
 *최종 업데이트: 2026-09-04*  

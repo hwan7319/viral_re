@@ -28,16 +28,16 @@ export function classifyCampaignCategory(
     return 'food-korean';
   }
   if (cleanCatText.includes('스킨케어') || cleanCatText.includes('화장품') || cleanCatText.includes('뷰티') || cleanCatText.includes('메이크업')) {
-    return 'beauty-cosmetic';
+    return 'beauty-cosmetics';
   }
   if (cleanCatText.includes('헤어') || cleanCatText.includes('미용실') || cleanCatText.includes('네일') || cleanCatText.includes('에스테틱')) {
-    return 'beauty-hair';
+    return 'beauty-salon';
   }
   if (cleanCatText.includes('숙박') || cleanCatText.includes('호텔') || cleanCatText.includes('펜션') || cleanCatText.includes('풀빌라')) {
-    return 'travel-stay';
+    return 'accommodation';
   }
   if (cleanCatText.includes('주방용품') || cleanCatText.includes('생활용품') || cleanCatText.includes('디지털') || cleanCatText.includes('가전') || cleanCatText.includes('잡화')) {
-    return 'life';
+    return 'life-goods';
   }
   if (cleanCatText.includes('농수산물') || cleanCatText.includes('식품') || cleanCatText.includes('밀키트')) {
     return 'health-fresh';
@@ -60,18 +60,18 @@ export function classifyCampaignCategory(
 
   // Beauty & Skin & Hair
   if (/(화장품|뷰티|스킨케어|토너|패드|크림|앰플|세럼|마스크팩|마스크|클렌징|바디워시|바디로션|샴푸|선크림|쿠션|립스틱)/.test(fullCleanText)) {
-    return 'beauty-cosmetic';
+    return 'beauty-cosmetics';
   }
   if (/(헤어|미용실|염색|두피|속눈썹|네일|왁싱|에스테틱)/.test(fullCleanText)) {
-    return 'beauty-hair';
+    return 'beauty-salon';
   }
 
   // Accommodation & Travel
   if (/(숙박|호텔|펜션|풀빌라|리조트|게스트하우스|글램핑|모텔)/.test(fullCleanText)) {
-    return 'travel-stay';
+    return 'accommodation';
   }
   if (/(여행|레저|관광|티켓|입장권|스튜디오|렌트카|투어)/.test(fullCleanText)) {
-    return 'travel-leisure';
+    return 'travel';
   }
 
   // Food & Health Supplies
@@ -86,8 +86,8 @@ export function classifyCampaignCategory(
 
   // Life & Appliances (Default for living, digital, bike, soap, etc.)
   if (/(주방세제|세제|치약|가습기|청소기|휴지|바이크|자전거|유아|반려|펫|가전|디지털|생활)/.test(fullCleanText)) {
-    return 'life';
+    return 'life-goods';
   }
 
-  return 'life';
+  return 'life-goods';
 }

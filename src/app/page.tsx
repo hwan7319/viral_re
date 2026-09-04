@@ -758,6 +758,7 @@ export default function Home() {
                   setIsCategoryOpen(false);
                   setIsPlatformOpen(false);
                   setIsLocationOpen(false);
+                  setIsSiteOpen(false);
                 }
               }}
               onClick={() => handleTabClick('type')}
@@ -794,6 +795,7 @@ export default function Home() {
                   setIsTypeOpen(false);
                   setIsPlatformOpen(false);
                   setIsLocationOpen(false);
+                  setIsSiteOpen(false);
                 }
               }}
               onClick={() => handleTabClick('category')}
@@ -856,6 +858,7 @@ export default function Home() {
                   setIsTypeOpen(false);
                   setIsCategoryOpen(false);
                   setIsLocationOpen(false);
+                  setIsSiteOpen(false);
                 }
               }}
               onClick={() => handleTabClick('platform')}
@@ -896,6 +899,7 @@ export default function Home() {
                   setIsTypeOpen(false);
                   setIsCategoryOpen(false);
                   setIsPlatformOpen(false);
+                  setIsSiteOpen(false);
                 }
               }}
               onClick={() => handleTabClick('location')}
