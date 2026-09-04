@@ -1328,7 +1328,7 @@ export default function Home() {
               </h3>
               <button type="button" onClick={() => setIsSiteOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
             </div>
-            <div className="filter-chip-row" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+            <div className="filter-chip-row site-chip-grid" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
               {[
                 { key: 'all', label: '전체 사이트' },
                 { key: '레뷰', label: '레뷰 (REVU)' },
