@@ -33,9 +33,27 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
   if (process.env.REVU_AUTH_TOKEN) {
     headers['Authorization'] = `Bearer ${process.env.REVU_AUTH_TOKEN}`;
     console.log('🔑 [REVU SCRAPER] Authenticated session token detected. Fetching full authorized Revu feed...');
+
+    // 인증 토큰이 설정된 경우 전용 전체 목록 API 페이징 수집 (최대 20페이지)
+    for (let page = 1; page <= 20; page++) {
+      try {
+        const url = `https://api.weble.net/v1/campaigns?limit=100&page=${page}`;
+        const res = await axios.get(url, { headers, timeout: 7000 });
+        const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+        if (!items || items.length === 0) break;
+
+        items.forEach((item: any) => {
+          if (item && item.id) {
+            rawItemsMap.set(item.id, item);
+          }
+        });
+      } catch (e: any) {
+        break;
+      }
+    }
   }
 
-  // 1. 다중 큐레이션 라우트 5페이지 딥 크롤링 (Multi-page deep scraping)
+  // 1. 다중 큐레이션 라우트 크롤링 (Multi-page deep scraping)
   for (const route of baseRoutes) {
     for (let page = 1; page <= 5; page++) {
       try {
