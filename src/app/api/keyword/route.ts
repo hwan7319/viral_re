@@ -416,32 +416,61 @@ export async function GET(request: Request) {
 
       (async () => {
         if (!customerId || !searchAdApiKey || !searchAdSecretKey) return null;
-        for (let i = 0; i < 2; i++) {
-          try {
-            const timestamp = Date.now().toString();
-            const uri = '/keywordstool';
-            const method = 'GET';
-            const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
-            return await axios.get(`https://api.searchad.naver.com${uri}`, {
-              params: { hintKeywords: cleanHintQuery, showDetail: '1' },
-              headers: {
-                'X-Timestamp': timestamp,
-                'X-API-KEY': searchAdApiKey,
-                'X-Customer': customerId,
-                'X-Signature': signature,
-              },
-              timeout: 2500,
-              httpsAgent,
-            });
-          } catch (e: any) {
-            if (e.response?.status === 429 && i === 0) {
-              await new Promise(r => setTimeout(r, 120));
-            } else {
-              return null;
+        try {
+          const timestamp = Date.now().toString();
+          const uri = '/keywordstool';
+          const method = 'GET';
+          const signature = generateSearchAdSignature(timestamp, method, uri, searchAdSecretKey);
+          
+          const primaryRes = await axios.get(`https://api.searchad.naver.com${uri}`, {
+            params: { hintKeywords: cleanHintQuery, showDetail: '1' },
+            headers: {
+              'X-Timestamp': timestamp,
+              'X-API-KEY': searchAdApiKey,
+              'X-Customer': customerId,
+              'X-Signature': signature,
+            },
+            timeout: 2500,
+            httpsAgent,
+          });
+
+          let list: any[] = primaryRes.data?.keywordList || [];
+
+          // 🔑 힌트 결과가 5개 미만인 니치/복합 키워드인 경우 서브 단어(분해 키워드) 추가 서치
+          if (list.length < 5) {
+            const subWords = query.replace(/[\[\]\(\)\&\+\/_]/g, ' ').trim().split(/\s+/).filter(w => w.length >= 2);
+            for (const subW of subWords) {
+              const cleanSub = subW.replace(/\s+/g, '');
+              if (!cleanSub || cleanSub === cleanHintQuery) continue;
+              try {
+                const ts2 = Date.now().toString();
+                const sig2 = generateSearchAdSignature(ts2, method, uri, searchAdSecretKey);
+                const subRes = await axios.get(`https://api.searchad.naver.com${uri}`, {
+                  params: { hintKeywords: cleanSub, showDetail: '1' },
+                  headers: {
+                    'X-Timestamp': ts2,
+                    'X-API-KEY': searchAdApiKey,
+                    'X-Customer': customerId,
+                    'X-Signature': sig2,
+                  },
+                  timeout: 2000,
+                  httpsAgent,
+                });
+                const subList = subRes.data?.keywordList || [];
+                subList.forEach((sk: any) => {
+                  if (sk && sk.relKeyword && !list.some((existing: any) => existing.relKeyword === sk.relKeyword)) {
+                    list.push(sk);
+                  }
+                });
+                if (list.length >= 30) break;
+              } catch (e) {}
             }
           }
+
+          return { data: { keywordList: list } };
+        } catch (e: any) {
+          return null;
         }
-        return null;
       })(),
 
       axios.get(`https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(query)}`, {
@@ -534,6 +563,15 @@ export async function GET(request: Request) {
     const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
 
     const CATEGORY_PRESETS: Record<string, string[]> = {
+      '주방세제': ['주방세제', '1종주방세제', '친환경주방세제', '설거지비누', '주방비누', '친환경세제', '비건주방세제', '1종세제', '과일세제', '젖병세제', '주방세제추천', '천연주방세제', '대용량주방세제', '핸드디쉬세제'],
+      '세제': ['주방세제', '세탁세제', '친환경세제', '1종세제', '섬유유연제', '중성세제', '과탄산소다', '베이킹소다'],
+      '바질': ['바질주방세제', '친환경주방세제', '1종주방세제', '바질', '생바질', '바질페스토', '바질키우기'],
+      '네롤리': ['네롤리오일', '네롤리향수', '바질네롤리', '아로마오일', '에센셜오일', '디퓨저'],
+      '화장품': ['스킨케어', '화장품추천', '토너패드', '수분크림', '진정세럼', '피부케어', '클렌징폼', '올리브영추천'],
+      '스킨케어': ['스킨케어', '화장품추천', '토너패드', '수분크림', '진정세럼', '피부케어', '클렌징폼', '에센스', '앰플'],
+      '샴푸': ['탈모샴푸', '두피샴푸', '단백질샴푸', '향좋은샴푸', '약산성샴푸', '비듬샴푸', '유기농샴푸'],
+      '바디워시': ['바디워시', '향좋은바디워시', '약산성바디워시', '퍼퓸바디워시', '바디로션', '바디스크럽'],
+      '밀키트': ['밀키트추천', '캠핑밀키트', '간편식', '밀키트맛집', '쿠킹박스', '집밥밀키트'],
       '메가커피': ['메가커피메뉴', '메가커피신메뉴', '메가커피추천', '메가커피가격', '메가커피칼로리', '메가커피영업시간', '메가커피아메리카노', '컴포즈커피', '빽다방', '더벤티', '이디야', '스타벅스'],
       '커피': ['아메리카노', '카페라떼', '바닐라라떼', '에스프레소', '콜드브루', '디카페인', '스타벅스', '메가커피', '컴포즈커피', '빽다방', '이디야', '투썸플레이스'],
       '제주도': ['제주도 맛집', '제주도 카페', '제주도 가볼만한곳', '제주도 여행', '제주도 숙소', '제주도 렌트카', '제주도 날씨', '제주도 호텔', '제주도 드라이브', '제주도 선물', '제주도 코스'],
