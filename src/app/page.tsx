@@ -877,7 +877,8 @@ export default function Home() {
                   activePlatform === 'blog' ? '네이버 블로그' :
                   activePlatform === 'clip' ? '네이버 클립' :
                   activePlatform === 'instagram' ? '인스타그램' :
-                  activePlatform === 'youtube' ? '유튜브' : '기타'}
+                  activePlatform === 'youtube' ? '유튜브' :
+                  activePlatform === 'coupang' ? '쿠팡 체험단' : '기타'}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1180,6 +1181,17 @@ export default function Home() {
                       <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
                       <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" />
                       <defs><linearGradient id="grad-youtube-plat" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FF0000" /><stop offset="100%" stopColor="#cc0000" /></linearGradient></defs>
+                    </svg>
+                  )
+                },
+                { 
+                  key: 'coupang', 
+                  label: '쿠팡 체험단', 
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                      <line x1="3" y1="6" x2="21" y2="6"></line>
+                      <path d="M16 10a4 4 0 0 1-8 0"></path>
                     </svg>
                   )
                 },
@@ -3003,6 +3015,11 @@ export default function Home() {
                             <span>▶️</span>
                             <span>YouTube</span>
                           </span>
+                        ) : c.platform === 'coupang' ? (
+                          <span className="badge badge-coupang" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#e11d48', color: '#ffffff' }}>
+                            <span>🛒</span>
+                            <span>쿠팡</span>
+                          </span>
                         ) : (
                           <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             <span>🌐</span>
@@ -3220,6 +3237,11 @@ export default function Home() {
                     <span className="badge badge-youtube" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <span>▶️</span>
                       <span>유튜브</span>
+                    </span>
+                  ) : selectedCampaign.platform === 'coupang' ? (
+                    <span className="badge badge-coupang" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#e11d48', color: '#ffffff' }}>
+                      <span>🛒</span>
+                      <span>쿠팡 체험단</span>
                     </span>
                   ) : (
                     <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

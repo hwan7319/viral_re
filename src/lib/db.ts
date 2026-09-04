@@ -57,7 +57,7 @@ export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
   title: string;       // 캠페인 제목
   description: string; // 제공 내역 (예: 5만원 식사권)
-  platform: 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'etc'; // 플랫폼 구분
+  platform: 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'coupang' | 'etc'; // 플랫폼 구분
   category: string; // 카테고리 (세분화 맵핑 대응을 위해 string으로 완화)
   location?: string;   // 지역 (예: 서울 강남구, 경기 수원시 등)
   campaignUrl: string; // 원본 상세 페이지 URL

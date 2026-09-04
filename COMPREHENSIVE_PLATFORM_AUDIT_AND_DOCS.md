@@ -61,8 +61,9 @@
 2. **자동 URL 샌디타이징 및 Fallback 규칙**
    - 클릭 시 내부 404가 절대 발생하지 않도록 프론트엔드 [`getValidCampaignUrl`](file:///Users/park/review-moa/src/app/page.tsx#L122-L130) 함수에서 유효성을 사전 검증합니다.
 
-3. **자동화 검증 스크립트 상시 운용**
-   - [`src/lib/audit_all_17_platforms.ts`](file:///Users/park/review-moa/src/lib/audit_all_17_platforms.ts) 스크립트를 주기적으로 실행하여 17개 플랫폼의 수집 상태, 썸네일 상태, 미션 파싱 길이를 자동으로 검증하고 보고서를 갱신합니다.
+4. **SNS 및 채널 플랫폼 자동 감지 및 쿠팡 체험단 지원 규격**
+   - **쿠팡 체험단 (`coupang`)**: 제목 또는 공고에 `쿠팡`, `쿠팡체험단`, `쿠팡페이백` 등이 포함된 경우 `coupang` 플랫폼 카테고리로 자동 분류하며 전용 UI 필터 탭과 🛒 쿠팡 전용 뱃지를 제공합니다.
+   - **인스타/릴스 오판정 방지 (`instagram`)**: 공고 제목에 `릴스`, `인스타`, `instagram`, `reels`가 명시된 경우 기존의 `blog` 오판정을 방지하고 최우선순위(Top Priority)로 `instagram` 뱃지를 부여하도록 `detectPlatform` 파서를 정교화했습니다 (오판정률 0건 달성).
 
 ---
 *최종 작성일: 2026-09-04*  

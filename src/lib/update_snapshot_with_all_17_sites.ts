@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { detectPlatform } from './crawler-parallel';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -61,7 +62,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           updatedAt: now.toISOString(),
           limitCount: item.limitCount || 5,
           applyCount: item.applyCount || 0,
-          platform: item.platform || 'blog',
+          platform: detectPlatform(item.title, item.platform || item.description || ''),
           category: item.category || detectCategory(item.title, item.description || ''),
           imageUrl: item.imageUrl || 'https://picsum.photos/600/400',
           ...item
@@ -467,7 +468,8 @@ export async function runUpdateDeep() {
     if (!url || url.includes('viral-re.co.kr') || url.includes('localhost') || !url.startsWith('http')) {
       url = SITE_OFFICIAL_URLS[c.targetSite] || 'https://www.moaview.co.kr';
     }
-    return { ...c, campaignUrl: url };
+    const realPlatform = detectPlatform(c.title, c.platform || c.description || '');
+    return { ...c, campaignUrl: url, platform: realPlatform };
   });
 
   const siteCounts: Record<string, number> = {};

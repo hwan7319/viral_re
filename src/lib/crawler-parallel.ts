@@ -75,25 +75,40 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
   return { applyCount: 0, limitCount: 5 };
 };
 
-export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'etc' => {
+export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'coupang' | 'etc' => {
   const p = (rawPlatformText || '').toLowerCase();
-  const t = title.toLowerCase();
+  const t = (title || '').toLowerCase();
 
-  const isInsta = p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels') || t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels');
-  const isYoutube = p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts') || t.includes('유튜브') || t.includes('youtube') || t.includes('쇼츠') || t.includes('shorts');
-  
-  // Title-level explicit badges take highest priority
-  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) return 'instagram';
-  if (t.includes('쇼츠') || t.includes('유튜브') || t.includes('youtube') || t.includes('shorts')) return 'youtube';
+  // 1. Coupang (Explicit title or platform text)
+  if (t.includes('쿠팡') || p.includes('쿠팡') || t.includes('coupang') || p.includes('coupang')) {
+    return 'coupang';
+  }
 
+  // 2. Instagram / Reels (Explicit title badges take absolute top priority)
+  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) {
+    return 'instagram';
+  }
+
+  // 3. YouTube / Shorts (Explicit title badges)
+  if (t.includes('쇼츠') || t.includes('유튜브') || t.includes('youtube') || t.includes('shorts')) {
+    return 'youtube';
+  }
+
+  // 4. Naver Clip / Blog
   const hasBlog = p.includes('blog') || p.includes('블로그') || t.includes('블로그');
   const hasClip = p.includes('clip') || p.includes('클립') || t.includes('클립');
 
   if (hasBlog && hasClip) return 'blog+clip';
   if (hasClip) return 'clip';
-  if (hasBlog) return 'blog';
+
+  // 5. Fallback platform text checks
+  const isInsta = p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels');
   if (isInsta) return 'instagram';
+
+  const isYoutube = p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts');
   if (isYoutube) return 'youtube';
+
+  if (hasBlog) return 'blog';
 
   return 'blog';
 };
@@ -396,7 +411,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           if (title && campaignUrl) {
             collected.push({
               id: `rb-${i}-${Math.random().toString(36).substr(2, 5)}`,
-              title, description, platform: 'blog', category: detectCategory(title, description),
+              title, description, platform: detectPlatform(title, description), category: detectCategory(title, description),
               campaignUrl, imageUrl, targetSite: '링블', limitCount: 5, applyCount: 0,
               endDate: now.toISOString().split('T')[0], createdAt: now.toISOString(), updatedAt: now.toISOString(),
               searchKeywords: `,${keyword},`
@@ -583,7 +598,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const location = locMatch ? locMatch[1] : undefined;
 
             collected.push({
-              id, title: rawTitle, description: rawTitle, platform: 'blog', category, location, campaignUrl: fullUrl,
+              id, title: rawTitle, description: rawTitle, platform: detectPlatform(rawTitle, rawTitle), category, location, campaignUrl: fullUrl,
               imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
               startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
               createdAt: now.toISOString(), updatedAt: now.toISOString(), searchKeywords: `,${keyword},`
@@ -615,7 +630,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
 
           if (rawTitle && rawTitle.length > 3) {
             collected.push({
-              id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+              id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
               category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
               imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블', limitCount: 5, applyCount: 0,
               startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
@@ -647,7 +662,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
 
           if (rawTitle && rawTitle.length > 3) {
             collected.push({
-              id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+              id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
               category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
               imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
               startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
@@ -679,7 +694,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
 
           if (rawTitle && rawTitle.length > 3) {
             collected.push({
-              id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+              id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
               category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
               imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블', limitCount: 5, applyCount: 0,
               startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()

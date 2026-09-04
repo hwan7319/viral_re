@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { insertOrUpdateCampaigns, Campaign } from './db';
+import { detectPlatform } from './crawler-parallel';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -431,7 +432,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
 
         collected.push({
-          id, title: rawTitle, description: rawTitle, platform: 'blog', category, location, campaignUrl: fullUrl,
+          id, title: rawTitle, description: rawTitle, platform: detectPlatform(rawTitle, rawTitle), category, location, campaignUrl: fullUrl,
           imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
           createdAt: now.toISOString(), updatedAt: now.toISOString(),
@@ -476,7 +477,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
           id: `cr-${cpId}`,
           title: rawTitle,
           description: rawTitle,
-          platform: 'blog',
+          platform: detectPlatform(rawTitle, rawTitle),
           category,
           campaignUrl: fullUrl,
           imageUrl: img || 'https://picsum.photos/600/400',
@@ -517,7 +518,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
 
       if (rawTitle && rawTitle.length > 3) {
         collected.push({
-          id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+          id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
           imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
@@ -551,7 +552,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
 
       if (rawTitle && rawTitle.length > 3) {
         collected.push({
-          id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+          id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
           imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
@@ -585,7 +586,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
 
       if (rawTitle && rawTitle.length > 3) {
         collected.push({
-          id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog',
+          id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
           imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
