@@ -99,16 +99,18 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
     let reward = rawReward;
     const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
 
-    if (rawReward === '레뷰 포인트' || rawReward === '포인트') {
+    if (!rawReward || rawReward === '레뷰 포인트' || rawReward === '포인트') {
       if (venueName) {
-        reward = `${venueName} 매장이용권 + 레뷰 포인트 ${pointStr}`.trim();
+        reward = `${venueName} 혜택/식사권` + (pointStr ? ` + 레뷰 포인트 ${pointStr}` : '');
       } else {
-        reward = `레뷰 포인트 ${pointStr}`.trim();
+        reward = pointStr ? `레뷰 포인트 ${pointStr}` : '무상 제공 및 식사권 지원';
       }
-    } else if (point > 0) {
-      if (!rawReward.includes(pointStr) && pointStr) {
-        reward = `${rawReward} + 레뷰 포인트 ${pointStr}`.trim();
-      }
+    } else if (point > 0 && !rawReward.includes(pointStr) && pointStr) {
+      reward = `${rawReward} + 레뷰 포인트 ${pointStr}`;
+    }
+
+    if (venueName && !reward.includes(venueName) && !rawTitle.includes(venueName)) {
+      reward = `[${venueName}] ${reward}`;
     }
 
     const thumbnail = item.thumbnail || 'https://www.revu.net/assets/img/og-revu.png';

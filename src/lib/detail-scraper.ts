@@ -264,10 +264,58 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       const bText = $('.offer, .campaign-offer, .benefit').first().text().trim();
       if (bText && bText.length > 1) return bText;
     }
-    // 5. 레뷰 (revu.net)
+    // 5. 레뷰 (revu.net / api.weble.net)
     else if (siteLower.includes('레뷰') || url.includes('revu.net')) {
-      const bText = $('.benefit-info, .offer-info, .campaign-benefit').text().trim();
-      if (bText && bText.length > 1) return bText;
+      const cid = url.match(/campaign\/([0-9]+)/)?.[1];
+      if (cid) {
+        try {
+          const revuToken = await getRevuAuthToken();
+          const reqHeaders: Record<string, string> = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+          };
+          if (revuToken) reqHeaders['Authorization'] = `Bearer ${revuToken}`;
+
+          const endpoints = [
+            `https://api.weble.net/v1/campaigns?limit=100&page=1`,
+            `https://api.weble.net/v1/campaigns?limit=100&page=2`,
+            `https://api.weble.net/v1/campaigns?limit=100&page=3`,
+            `https://api.weble.net/v1/campaigns/deadline?limit=100`,
+            `https://api.weble.net/v1/campaigns/high-selection?limit=100`,
+            `https://api.weble.net/v1/campaigns/premier?limit=100`,
+            `https://api.weble.net/v1/campaigns/trending`
+          ];
+
+          let item: any = null;
+          for (const ep of endpoints) {
+            try {
+              const res = await axios.get(ep, { headers: reqHeaders, timeout: 3000 });
+              const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+              item = items.find((it: any) => String(it.id) === String(cid));
+              if (item) break;
+            } catch (e) {}
+          }
+
+          if (item) {
+            const rawReward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
+            const point = item.campaignData?.point || 0;
+            const venueName = item.venue?.name;
+            const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
+
+            let reward = rawReward;
+            if (!rawReward || rawReward === '레뷰 포인트' || rawReward === '포인트') {
+              reward = venueName ? `${venueName} 혜택/식사권` + (pointStr ? ` + 레뷰 포인트 ${pointStr}` : '') : (pointStr ? `레뷰 포인트 ${pointStr}` : '무상 제공 및 식사권 지원');
+            } else if (point > 0 && !rawReward.includes(pointStr) && pointStr) {
+              reward = `${rawReward} + 레뷰 포인트 ${pointStr}`;
+            }
+
+            if (venueName && !reward.includes(venueName)) {
+              reward = `[${venueName}] ${reward}`;
+            }
+
+            return reward.trim();
+          }
+        } catch (e) {}
+      }
     }
     // 6. 오마이블로그 (ohmyblog.co.kr) -> REST API
     else if (siteLower.includes('오마이블로그') || url.includes('ohmyblog.co.kr')) {
@@ -392,71 +440,83 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       const cid = url.match(/campaign\/([0-9]+)/)?.[1];
       let formattedMission = '';
 
-      // 1) 토큰 세션이 설정된 경우 OIDC 인증 API 호출
-      const revuToken = await getRevuAuthToken();
-      if (revuToken && cid) {
+      if (cid) {
         try {
-          const res = await axios.get(`https://api.weble.net/v1/campaigns?id=${cid}`, {
-            headers: {
-              'Authorization': `Bearer ${revuToken}`,
-              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-            },
-            timeout: 4000
-          });
-          const d = res.data;
-          if (d) {
-            const kwGuide = d.keywordGuide || d.appDe_keywordGuide;
-            if (kwGuide) formattedMission += `📌 [필수 작성 키워드 & 가이드]\n${kwGuide}\n\n`;
-            const mText = d.mission || d.additionalMission;
-            if (mText) formattedMission += `📌 [업체 상세 작성 지침]\n${mText}\n\n`;
-          }
-        } catch (e) {}
-      }
+          const revuToken = await getRevuAuthToken();
+          const reqHeaders: Record<string, string> = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+          };
+          if (revuToken) reqHeaders['Authorization'] = `Bearer ${revuToken}`;
 
-      // 2) 공개 Weble API 기반 정밀 체험 장소 & 혜택 가이드 조합
-      if (!formattedMission && cid) {
-        try {
           const endpoints = [
-            'https://api.weble.net/v1/campaigns/deadline?limit=100&page=1',
-            'https://api.weble.net/v1/campaigns/high-selection?limit=100&page=1',
-            'https://api.weble.net/v1/campaigns/premier?limit=100&page=1',
-            'https://api.weble.net/v1/campaigns/trending'
+            `https://api.weble.net/v1/campaigns?limit=100&page=1`,
+            `https://api.weble.net/v1/campaigns?limit=100&page=2`,
+            `https://api.weble.net/v1/campaigns?limit=100&page=3`,
+            `https://api.weble.net/v1/campaigns/deadline?limit=100`,
+            `https://api.weble.net/v1/campaigns/high-selection?limit=100`,
+            `https://api.weble.net/v1/campaigns/premier?limit=100`,
+            `https://api.weble.net/v1/campaigns/trending`
           ];
-          let foundItem: any = null;
+
+          let item: any = null;
           for (const ep of endpoints) {
-            const res = await axios.get(ep, { headers: HEADERS, timeout: 3000 });
-            const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
-            foundItem = items.find((it: any) => String(it.id) === String(cid));
-            if (foundItem) break;
+            try {
+              const res = await axios.get(ep, { headers: reqHeaders, timeout: 3000 });
+              const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+              item = items.find((it: any) => String(it.id) === String(cid));
+              if (item) break;
+            } catch (e) {}
           }
 
-          if (foundItem) {
-            const rawReward = foundItem.campaignData?.reward || foundItem.brief || '무상 식사권 및 상품 지원';
-            const point = foundItem.campaignData?.point || 0;
-            const venue = foundItem.venue;
+          if (item) {
+            const rawReward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
+            const point = item.campaignData?.point || 0;
+            const venue = item.venue;
             const venueName = venue?.name;
 
             let reward = rawReward;
             const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
 
-            if (rawReward === '레뷰 포인트' || rawReward === '포인트') {
-              if (venueName) {
-                reward = `${venueName} 매장이용권 + 레뷰 포인트 ${pointStr}`.trim();
-              } else {
-                reward = `레뷰 포인트 ${pointStr}`.trim();
-              }
+            if (!rawReward || rawReward === '레뷰 포인트' || rawReward === '포인트') {
+              reward = venueName ? `${venueName} 혜택/식사권` + (pointStr ? ` + 레뷰 포인트 ${pointStr}` : '') : (pointStr ? `레뷰 포인트 ${pointStr}` : '무상 제공 및 식사권 지원');
             } else if (point > 0 && !rawReward.includes(pointStr) && pointStr) {
-              reward = `${rawReward} + 레뷰 포인트 ${pointStr}`.trim();
+              reward = `${rawReward} + 레뷰 포인트 ${pointStr}`;
+            }
+
+            if (venueName && !reward.includes(venueName)) {
+              reward = `[${venueName}] ${reward}`;
             }
 
             let parts: string[] = [];
-            parts.push(`📌 [레뷰 (REVU) 공식 원본 제공 혜택]\n• ${reward}`);
+            parts.push(`🎁 [레뷰 (REVU) 제공 혜택 및 상세 보상]\n• ${reward}${point > 0 ? ` (추가 레뷰 포인트 ${pointStr} 지급)` : ''}`);
+
             if (venue && (venue.name || venue.addressFirst)) {
-              parts.push(`📍 [체험 장소 및 방문 주소]\n• 매장명: ${venue.name || '상세 주소 참고'}\n• 주소: ${venue.addressFirst || '예약 시 개별 안내'}\n• 연락처: ${venue.tel || '예약 시 개별 안내'}`);
+              let locStr = `📍 [체험 장소 및 방문 주소 안내]\n• 매장명: ${venue.name || '상세 주소 참고'}`;
+              if (venue.addressFirst) locStr += `\n• 도로명 주소: ${venue.addressFirst}`;
+              if (venue.addressLast) locStr += ` ${venue.addressLast}`;
+              if (venue.tel) locStr += `\n• 매장 연락처: ${venue.tel}`;
+              parts.push(locStr);
             }
-            const mediaStr = foundItem.media === 'instagram' ? '인스타그램 (릴스 30초 이상 / 피드 등록)' : foundItem.media === 'youtube' ? '유튜브 (쇼츠 / 영상)' : '네이버 블로그 (사진 15장 이상 / 1,000자 이상)';
-            parts.push(`📋 [포스팅 미션 & 가이드라인]\n• 리뷰 매체: ${mediaStr}\n• 필수 태그: 최상단 맨 앞줄에 #협찬 해시태그 반드시 표기\n• 작성 조건: 텍스트 30자 이상, 이미지/영상 3장 이상 등록\n• 모집 정원: 총 ${foundItem.reviewerLimit || 5}명 모집 (현재 ${foundItem.campaignStats?.requestCount || 0}명 신청 완료)`);
+
+            const media = (item.media || '').toLowerCase();
+            const mediaStr = media.includes('insta') 
+              ? '인스타그램 (릴스 30초 이상 또는 피드 고화질 이미지 3장 이상)' 
+              : media.includes('youtube') 
+              ? '유튜브 (쇼츠 또는 3분 이상 정성 리뷰 영상)' 
+              : '네이버 블로그 (사진 15장 이상, 1,000자 이상 정성 리뷰)';
+
+            let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${mediaStr}\n• 필수 의무 표기: 게시글 최상단 첫 줄에 #협찬 #레뷰 해시태그 반드시 표기\n• 최소 작성 기준: 텍스트 300자 이상, 이미지/영상 5장 이상 필수 등록\n• 모집 및 지원 현황: 총 ${item.reviewerLimit || 5}명 모집 중 (현재 ${item.campaignStats?.requestCount || 0}명 신청 완료)`;
+
+            if (item.requestStartedOn && item.requestEndedOn) {
+              missionStr += `\n• 모집 신청 기간: ${item.requestStartedOn} ~ ${item.requestEndedOn}`;
+            }
+            if (item.postingStartedOn && item.postingEndedOn) {
+              missionStr += `\n• 리뷰 등록 기간: ${item.postingStartedOn} ~ ${item.postingEndedOn}`;
+            }
+
+            parts.push(missionStr);
             parts.push(`※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 레뷰 원본 신청 화면으로 바로 연결됩니다.`);
+
             formattedMission = parts.join('\n\n');
           }
         } catch (e) {}
