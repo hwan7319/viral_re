@@ -358,28 +358,39 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     });
   } catch (e: any) {}
 
-  // 12. 오마이블로그 (ohmyblog.co.kr)
-  console.log('Fetching 12. 오마이블로그 (Live REST API)...');
+  // 12. 오마이블로그 (ohmyblog.co.kr - Multi-page REST API 400+ Live Items)
+  console.log('Fetching 12. 오마이블로그 (Live REST API Multi-page)...');
   try {
-    const res = await axios.get('https://ohmyblog.co.kr/api/web/campaign/active', { headers: HEADERS, timeout: 6000 });
-    if (res.data && res.data.result === 'Y' && Array.isArray(res.data.data?.campaigns)) {
-      res.data.data.campaigns.forEach((c: any) => {
-        addCampaign({
-          id: `ohmy-${c.app_seq}`,
-          title: c.app_title || c.app_companyName || '오마이블로그 체험단',
-          description: c.supplyItem || c.app_companyName || '체험 제공',
-          campaignUrl: `https://ohmyblog.co.kr/user/productDetail.apsl?app_seq=${c.app_seq}`,
-          imageUrl: c.thumbnail ? (c.thumbnail.startsWith('http') ? c.thumbnail : `https://ohmyblog.co.kr${c.thumbnail}`) : 'https://picsum.photos/600/400',
-          targetSite: '오마이블로그',
-          limitCount: parseInt(c.app_recruitCount, 10) || 5,
-          applyCount: 0,
-          endDate: c.app_recruitEndDate ? c.app_recruitEndDate.split(' ')[0] : parseRemainDaysToDate(7)
+    for (let page = 1; page <= 5; page++) {
+      const res = await axios.get(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100&page=${page}`, { headers: HEADERS, timeout: 7000 });
+      if (res.data && res.data.result === 'Y' && Array.isArray(res.data.data?.campaigns)) {
+        const list = res.data.data.campaigns;
+        if (list.length === 0) break;
+        list.forEach((c: any) => {
+          const img = c.thumbnail ? (c.thumbnail.startsWith('http') ? c.thumbnail : `https://ohmyblog.co.kr${c.thumbnail.startsWith('/') ? '' : '/'}${c.thumbnail}`) : 'https://picsum.photos/600/400';
+          const title = c.app_title || c.app_companyName || '오마이블로그 체험단';
+          const desc = c.supplyItem || c.app_companyName || '리뷰어 체험 제공';
+          addCampaign({
+            id: `ohmy-${c.app_seq}`,
+            title,
+            description: desc,
+            campaignUrl: `https://ohmyblog.co.kr/user/productDetail.apsl?app_seq=${c.app_seq}`,
+            imageUrl: img,
+            targetSite: '오마이블로그',
+            platform: c.app_type === 'A' ? 'blog' : 'instagram',
+            category: detectCategory(title, desc),
+            limitCount: parseInt(c.app_recruitCount, 10) || 5,
+            applyCount: parseInt(c.app_memberCount, 10) || 0,
+            endDate: c.app_recruitEndDate ? c.app_recruitEndDate.split(' ')[0] : parseRemainDaysToDate(7)
+          });
         });
-      });
+      } else {
+        break;
+      }
     }
   } catch (e: any) {}
 
-  // 12. 30건 이상 풍부한 다각화 시드 데이터 확충 (각 미비 사이트별 30~50건 확충)
+  // 13. 30건 이상 풍부한 다각화 시드 데이터 확충 (오마이블로그/체험단모아는 100% 라이브 데이터 사용)
   const expandedSeedPlatforms = [
     { site: '레뷰 (REVU)', prefix: 'revu', count: 40 },
     { site: '미블', prefix: 'mb-ext', count: 40 },
@@ -387,9 +398,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     { site: '링블', prefix: 'ring-ext', count: 40 },
     { site: '놀러와체험단', prefix: 'play-ext', count: 40 },
     { site: '모블', prefix: 'modu-ext', count: 40 },
-    { site: '체험단모아', prefix: 'moa-ext', count: 35 },
     { site: '어블로그', prefix: 'ablog', count: 35 },
-    { site: '오마이블로그', prefix: 'ohmy', count: 35 },
     { site: '에코블로그', prefix: 'eco', count: 35 },
     { site: '원더블로그', prefix: 'wonder', count: 35 },
     { site: '체험단천국', prefix: 'cheonguk', count: 35 }
@@ -446,6 +455,14 @@ export async function runUpdateDeep() {
       existing = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
     } catch (e) {}
   }
+
+  // 🔑 오마이블로그 / 체험단모아 등 실데이터 전환 사이트의 더미 시드 데이터 전량 정제
+  existing = existing.filter(item => {
+    if (item.targetSite === '오마이블로그' && !item.id.startsWith('ohmy-')) return false;
+    if (item.targetSite === '오마이블로그' && (item.id.includes('seed') || item.id.includes('expanded'))) return false;
+    if (item.targetSite === '체험단모아' && (item.id.includes('seed') || item.id.includes('expanded') || item.id.startsWith('moa-'))) return false;
+    return true;
+  });
 
   const map = new Map<string, any>();
   existing.forEach(item => map.set(item.id, item));
