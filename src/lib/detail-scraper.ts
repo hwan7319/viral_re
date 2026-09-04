@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { getRevuAuthToken } from './revu_auth';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -392,11 +393,12 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       let formattedMission = '';
 
       // 1) 토큰 세션이 설정된 경우 OIDC 인증 API 호출
-      if (process.env.REVU_AUTH_TOKEN && cid) {
+      const revuToken = await getRevuAuthToken();
+      if (revuToken && cid) {
         try {
           const res = await axios.get(`https://api.weble.net/v1/campaigns?id=${cid}`, {
             headers: {
-              'Authorization': `Bearer ${process.env.REVU_AUTH_TOKEN}`,
+              'Authorization': `Bearer ${revuToken}`,
               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
             },
             timeout: 4000

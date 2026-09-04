@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getRevuAuthToken } from './revu_auth';
 
 export interface RevuLiveCampaign {
   id: string;
@@ -30,12 +31,13 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
     'Referer': 'https://www.revu.net/'
   };
 
-  if (process.env.REVU_AUTH_TOKEN) {
-    headers['Authorization'] = `Bearer ${process.env.REVU_AUTH_TOKEN}`;
-    console.log('🔑 [REVU SCRAPER] Authenticated session token detected. Fetching full authorized Revu feed...');
+  const token = await getRevuAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+    console.log('🔑 [REVU SCRAPER] Authenticated session token ready. Fetching full authorized Revu catalog...');
 
-    // 인증 토큰이 설정된 경우 전용 전체 목록 API 페이징 수집 (최대 20페이지)
-    for (let page = 1; page <= 20; page++) {
+    // 인증 토큰을 활용한 전체 공고 목록 API 페이징 수집 (최대 25페이지 = 2,500건)
+    for (let page = 1; page <= 25; page++) {
       try {
         const url = `https://api.weble.net/v1/campaigns?limit=100&page=${page}`;
         const res = await axios.get(url, { headers, timeout: 7000 });
