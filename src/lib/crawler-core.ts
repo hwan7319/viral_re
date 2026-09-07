@@ -516,10 +516,11 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         const img = $mb(element).find('img').attr('src') || $mb(element).parent().find('img').attr('src') || '';
 
         if (href.includes('/campaigns/') && rawTitle.length > 5) {
+          if (rawTitle.includes('바로가기') || href.includes('search?') || href.includes('query=')) return;
           if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
           const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
-          const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
-          if (!cpId) return;
+          const cpId = fullUrl.split('/campaigns/')[1] || '';
+          if (!cpId || !/^\d+$/.test(cpId.trim())) return;
 
           const id = `mb-${cpId}`;
           if (!mibleItemsMap.has(id)) {

@@ -218,8 +218,10 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       const rawTitle = $(el).text().trim().replace(/\s+/g, ' ');
       const img = $(el).find('img').attr('src') || $(el).parent().find('img').attr('src') || '';
       if (rawTitle.length > 5) {
+        if (rawTitle.includes('바로가기') || href.includes('search?') || href.includes('query=')) return;
         const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
-        const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
+        const cpId = fullUrl.split('/campaigns/')[1] || '';
+        if (!cpId || !/^\d+$/.test(cpId.trim())) return;
 
         addCampaign({
           id: `mb-${cpId}`,

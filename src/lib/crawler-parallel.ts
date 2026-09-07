@@ -585,13 +585,15 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const img = $(el).find('img').attr('src') || $(el).parent().find('img').attr('src') || '';
 
           if (href.includes('/campaigns/') && rawTitle.length > 5) {
+            if (rawTitle.includes('바로가기') || href.includes('search?') || href.includes('query=')) return;
             // 🔑 [수치 정밀 매칭] 검색어가 지정된 경우, 제목에 검색어가 실제 포함된 공고만 엄격 수집
             if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) {
               return;
             }
 
             const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
-            const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
+            const cpId = fullUrl.split('/campaigns/')[1] || '';
+            if (!cpId || !/^\d+$/.test(cpId.trim())) return;
             const id = `mb-${cpId}`;
             const category = detectCategory(rawTitle, rawTitle);
             const locMatch = rawTitle.match(/\[([^\]]+)\]/) || rawTitle.match(/^([가-힣]+\s+[가-힣]+)/);

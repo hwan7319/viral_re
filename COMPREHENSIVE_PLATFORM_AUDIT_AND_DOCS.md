@@ -141,6 +141,13 @@
      2) 크롤러 코드(`src/lib/crawler-core.ts`, `src/lib/crawler-parallel.ts`, `src/lib/push_all_sites_sync.ts`, `src/lib/push_cloudreview_sync.ts`, `src/lib/update_snapshot_with_all_17_sites.ts`) 내 외부 무작위 이미지 패치 fallback을 자사 안전 아이콘(`https://viral-re.co.kr/icon.png`)으로 변경 완료.
      3) 92건의 미블 실데이터(실제 썸네일 및 `https://www.mrblog.net/campaigns/...` 이동 원본 딥링크 100% 검증)만 깨끗하게 유지하도록 데이터 청정화 완료.
 
+15. **Issue 15: 미블(Mible) 검색 숏컷 배너('에이바헤어 바로가기', '아무도없개 바로가기' 등) 전량 제거 및 수집 필터 강화**
+   - **증상**: 미블 수집 데이터 중 '에이바헤어 바로가기', '아무도없개 바로가기', '옆커폰 바로가기' 등 미블 메인 검색 숏컷 링크 7건이 공고 데이터로 수집되어 잔존함.
+   - **원인 분석**: 미블 메인 HTML 파싱 중 `a[href*="/campaigns/"]` 태그 추출 시 `/campaigns/search?query=...` 형태의 검색어 바로가기 배너 링킹 주소가 숫자 공고 ID로 검증되지 않고 수집됨.
+   - **기술적 조치**:
+     1) DB 및 JSON 스냅샷에서 `title LIKE '%바로가기%'` 및 `campaignUrl LIKE '%search?query=%'` 형태의 숏컷 데이터 7건 전량 삭제 완료 (`22,269건` ➡️ `22,262건`).
+     2) `src/lib/crawler-core.ts`, `src/lib/crawler-parallel.ts`, `src/lib/update_snapshot_with_all_17_sites.ts` 내 미블 수집기에 `rawTitle.includes('바로가기')` 및 `!/^\d+$/.test(cpId)` 숫자 검증 필터를 추가하여 숏컷 데이터 수집 차단 완료.
+
 ### 🟢 오마이블로그 (ohmyblog.co.kr)
 * **수집 규격**: 백엔드 REST API(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100`) 다중 페이지 수집기 적용.
 * **수집 데이터**: **400건 전수 실시간 수집 완료**.
