@@ -646,6 +646,28 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
         if (benefit) return benefit;
       } catch (e) {}
     }
+    // 10. 놀러와체험단 (cometoplay.kr)
+    else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
+      try {
+        const $ = cheerio.load(res.data);
+        const b = $('.etc_list2').text().replace(/\s+/g, ' ').trim();
+        if (b) return b.replace(/^제공내역\s*/, '');
+      } catch (e) {}
+    }
+    // 11. 리뷰플레이스 (reviewplace.co.kr)
+    else if (siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) {
+      try {
+        const $ = cheerio.load(res.data);
+        let benefit = '';
+        $('dl').each((_, el) => {
+          const t = $(el).text().replace(/\s+/g, ' ').trim();
+          if (t.startsWith('제공내역')) {
+            benefit = t.replace(/^제공내역\s*/, '');
+          }
+        });
+        if (benefit) return benefit;
+      } catch (e) {}
+    }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);
   }
@@ -1022,7 +1044,75 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         if (formatted) return formatted;
       } catch (e) {}
     }
-    // 10. 기타 사이트 범용 파싱
+    // 10. 놀러와체험단 (cometoplay.kr)
+    else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
+      const items: string[] = [];
+
+      const benefitText = $('.etc_list2').text().replace(/\s+/g, ' ').trim();
+      if (benefitText) {
+        items.push(`🎁 [놀러와체험단 제공 혜택 및 상세 보상]\n• ${benefitText.replace(/^제공내역\s*/, '')}`);
+      }
+
+      let tabHtml = $('#tab1').html() || $('.tab-cont').first().html() || '';
+      if (tabHtml) {
+        const $tab = cheerio.load(tabHtml);
+        $tab('script, style, iframe, button').remove();
+
+        let tabText = $tab.text()
+          .replace(/\r\n/g, '\n')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        const limitIdx = tabText.indexOf('제한인원');
+        if (limitIdx > 0) tabText = tabText.substring(0, limitIdx).trim();
+
+        const guideIdx = tabText.indexOf('캠페인안내');
+        if (guideIdx > 0) tabText = tabText.substring(0, guideIdx).trim();
+
+        const imgIdx = tabText.indexOf('[ 제공문구 이미지 ]');
+        if (imgIdx > 0) tabText = tabText.substring(0, imgIdx).trim();
+
+        if (tabText && tabText.length > 5) {
+          items.push(`📋 [포스팅 미션 & 작성 가이드라인]\n${tabText}`);
+        }
+      }
+
+      if (items.length > 0) {
+        return items.join('\n\n');
+      }
+    }
+    // 11. 리뷰플레이스 (reviewplace.co.kr)
+    else if (siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) {
+      const items: string[] = [];
+
+      $('dl').each((_, el) => {
+        const t = $(el).text().replace(/\s+/g, ' ').trim();
+        if (t.startsWith('제공내역')) {
+          items.push(`🎁 [리뷰플레이스 제공 혜택 및 상세 보상]\n• ${t.replace(/^제공내역\s*/, '')}`);
+        } else if (t.startsWith('제목키워드') || t.startsWith('본문키워드')) {
+          items.push(`📌 [${t.substring(0, 5)}]\n• ${t.substring(5).trim()}`);
+        }
+      });
+
+      const missionLines: string[] = [];
+      $('p, div').each((_, el) => {
+        const t = $(el).text().replace(/\s+/g, ' ').trim();
+        if ((t.includes('포스팅') || t.includes('미션') || t.includes('작성해주세요') || t.includes('조합해서')) && t.length > 15 && t.length < 300) {
+          if (!missionLines.includes(t) && !t.includes('이용안내') && !t.includes('서비스 이용가이드') && !t.includes('모집기간')) {
+            missionLines.push(t);
+          }
+        }
+      });
+
+      if (missionLines.length > 0) {
+        items.push(`📋 [포스팅 미션 & 작성 가이드라인]\n${missionLines.join('\n')}`);
+      }
+
+      if (items.length > 0) {
+        return items.join('\n\n');
+      }
+    }
+    // 12. 기타 사이트 범용 파싱
     else {
       extractedRaw = $('#cmp_guide').html() || 
                      $('.campaigninfo-text').html() || 
