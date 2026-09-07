@@ -159,28 +159,65 @@ export function formatMibleMission(text: string, title?: string, url?: string): 
   return parts.join('\n\n');
 }
 
+function cleanRingbleTitleText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/^블로그\s*/gi, '')
+    .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+    .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+    .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
+    .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // 🔑 링블 (Ringble - ringble.co.kr) 공고 아이템 정밀 미션 및 가이드라인 포맷터
 function formatRingbleMission(htmlOrText: string, title?: string, url?: string, keywords?: string[]): string {
   const parts: string[] = [];
-  const cleanTitle = (title || '').replace(/^블로그\s*/, '').trim();
+  const cleanTitle = cleanRingbleTitleText(title || '');
 
   parts.push(`🎁 [링블 (Ringble) 제공 혜택 및 상세 보상]`);
   if (cleanTitle) {
     parts.push(`• 지원/상품 혜택: ${cleanTitle}`);
   }
 
+  const missionSections: string[] = [];
+
   if (keywords && keywords.length > 0) {
-    parts.push(`\n📋 [포스팅 미션 & 작성 가이드라인]`);
     const uniqueKws = Array.from(new Set(keywords));
     uniqueKws.forEach(kw => {
-      parts.push(`• ${kw}`);
+      if (kw && !kw.includes('function') && !kw.includes('var ') && !kw.includes('setInterval') && !kw.includes('getInternetExplorerVersion')) {
+        missionSections.push(kw);
+      }
     });
-  } else if (htmlOrText) {
-    const cleanTxt = htmlOrText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (cleanTxt.includes('키워드')) {
-      parts.push(`\n📋 [포스팅 미션 & 작성 가이드라인]`);
-      parts.push(`• 필수 미션 및 키워드 지침: ${cleanTxt.slice(0, 300)}`);
-    }
+  }
+
+  if (htmlOrText && missionSections.length === 0) {
+    try {
+      const $ = cheerio.load(htmlOrText || '');
+      $('script, style, iframe, header, footer, nav, .header, .footer, .gnb, #header, #footer').remove();
+      
+      $('.info_wrapper, .supply_title, .campaign_info, tr, td').each((_: number, el: any) => {
+        const text = $(el).text().trim();
+        const lines = text.split('\n').map((l: string) => l.trim()).filter((l: string) => {
+          if (!l || l.length < 5) return false;
+          if (l.includes('function') || l.includes('var ') || l.includes('setInterval') || l.includes('setTimeout') || l.includes('getInternetExplorerVersion') || l.includes('Copyright') || l.includes('사업자')) return false;
+          if (l.includes('로그인') || l.includes('회원가입') || l.includes('고객센터') || l.includes('마감임박') || l.includes('광고 문의')) return false;
+          return true;
+        });
+        const cleanSection = lines.join('\n');
+        if (cleanSection && cleanSection.length > 25 && !missionSections.includes(cleanSection) && (cleanSection.includes('키워드') || cleanSection.includes('미션') || cleanSection.includes('안내'))) {
+          missionSections.push(cleanSection);
+        }
+      });
+    } catch (e) {}
+  }
+
+  if (missionSections.length > 0) {
+    parts.push(`\n📋 [포스팅 미션 & 작성 가이드라인]`);
+    missionSections.forEach(s => {
+      parts.push(`• ${s}`);
+    });
   }
 
   parts.push(`\n※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 링블 원본 상세 화면으로 바로 이동합니다.`);
@@ -620,6 +657,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     }
 
     const $ = cheerio.load(html || '<html></html>');
+    $('script, style, iframe, header, footer, nav, .header, .footer, .gnb, #header, #footer').remove();
     let extractedRaw = '';
     const siteLower = (targetSite || '').toLowerCase();
 
