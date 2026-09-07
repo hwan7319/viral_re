@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { insertOrUpdateCampaigns, Campaign } from './db';
 import { detectPlatform } from './crawler-parallel';
 import { fetchRevuLiveCampaigns } from './revu_live_scraper';
+import { getMibleSessionCookie } from './mible_auth';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -407,41 +408,141 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
     console.error('[OnDemand] ReviewNote crawl failed:', err.message);
   }
 
-  // ==================== 5. 미블 (mrblog.net) 수집 ====================
+  // ==================== 5. 미블 (mrblog.net) 수집 (XHR 인증 및 검색/목록 전수 파서) ====================
   try {
-    const mbRes = await axios.get('https://www.mrblog.net', { headers: HEADERS, timeout: 6000 });
-    const $mb = cheerio.load(mbRes.data);
+    const sessionCookie = getMibleSessionCookie();
     let mbCount = 0;
+    const mibleItemsMap = new Map<string, Campaign>();
 
-    $mb('a').each((index, element) => {
-      const href = $mb(element).attr('href') || '';
-      const rawTitle = $mb(element).text().trim().replace(/\s+/g, ' ');
-      const img = $mb(element).find('img').attr('src') || $mb(element).parent().find('img').attr('src') || '';
-
-      if (href.includes('/campaigns/') && rawTitle.length > 5) {
-        // 🔑 [수치 정밀 매칭] 검색어가 지정된 경우, 제목에 검색어가 실제 포함된 공고만 엄격 수집
-        if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) {
-          return;
-        }
-        const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
-        const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
-        const id = `mb-${cpId}`;
-        const category = detectCategory(rawTitle, rawTitle);
-        const locMatch = rawTitle.match(/\[([^\]]+)\]/) || rawTitle.match(/^([가-힣]+\s+[가-힣]+)/);
-        const location = locMatch ? locMatch[1] : undefined;
-        const autoKws = buildAutoKeywords(rawTitle, rawTitle);
-        const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
-
-        collected.push({
-          id, title: rawTitle, description: rawTitle, platform: detectPlatform(rawTitle, rawTitle), category, location, campaignUrl: fullUrl,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
-          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
-          createdAt: now.toISOString(), updatedAt: now.toISOString(),
-          searchKeywords
+    // 1) 키워드 검색 시 Mible XHR API 수집 (인증 세션 적용)
+    if (keyword) {
+      try {
+        const searchPageUrl = `https://www.mrblog.net/campaigns/search?query=${encodedKeyword}`;
+        const initRes = await axios.get(searchPageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Cookie': `laravel_session=${sessionCookie}`
+          },
+          timeout: 5000
         });
-        mbCount++;
-      }
-    });
+
+        const setCookies = initRes.headers['set-cookie'] || [];
+        let xsrfToken = '';
+        let sessionCookieUpdated = sessionCookie;
+        setCookies.forEach(c => {
+          if (c.includes('XSRF-TOKEN=')) xsrfToken = c.split('XSRF-TOKEN=')[1].split(';')[0];
+          if (c.includes('laravel_session=')) sessionCookieUpdated = c.split('laravel_session=')[1].split(';')[0];
+        });
+
+        const $init = cheerio.load(initRes.data);
+        const metaCsrf = $init('meta[name="csrf-token"]').attr('content') || '';
+
+        for (let p = 1; p <= 5; p++) {
+          try {
+            const xhrUrl = `https://www.mrblog.net/xhr/campaigns?page=${p}&query=${encodedKeyword}`;
+            const xhrRes = await axios.get(xhrUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                'Accept': 'application/json, text/javascript, */*; q=0.01',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': metaCsrf,
+                'X-XSRF-TOKEN': xsrfToken ? decodeURIComponent(xsrfToken) : metaCsrf,
+                'Referer': searchPageUrl,
+                'Cookie': `XSRF-TOKEN=${xsrfToken}; laravel_session=${sessionCookieUpdated}`
+              },
+              timeout: 5000
+            });
+
+            const html = xhrRes.data?.html || '';
+            if (!html || xhrRes.data?.count === 0) break;
+
+            const $x = cheerio.load(html);
+            $x('a[href*="/campaigns/"]').each((_, el) => {
+              const href = $x(el).attr('href') || '';
+              const cidMatch = href.match(/\/campaigns\/([0-9]+)/);
+              if (!cidMatch) return;
+
+              const cid = cidMatch[1];
+              const img = $x(el).find('img').attr('src') || $x(el).find('img').attr('data-src') || '';
+              const rawText = $x(el).text().replace(/\s+/g, ' ').trim();
+              if (rawText.length < 5) return;
+
+              const applyMatch = rawText.match(/신청\s*([0-9]+)명/);
+              const limitMatch = rawText.match(/모집\s*([0-9]+)명/);
+              const applyCount = applyMatch ? parseInt(applyMatch[1], 10) : 0;
+              const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 5;
+
+              let cleanText = rawText
+                .replace(/D-Day/g, '')
+                .replace(/[0-9]+일\s*남음/g, '')
+                .replace(/신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명/g, '')
+                .replace(/릴스/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              const fullUrl = `https://www.mrblog.net/campaigns/${cid}`;
+              const id = `mb-${cid}`;
+              const category = detectCategory(cleanText, cleanText);
+              const autoKws = buildAutoKeywords(cleanText, cleanText);
+              const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+
+              mibleItemsMap.set(id, {
+                id, title: cleanText, description: cleanText, platform: detectPlatform(cleanText, cleanText),
+                category, campaignUrl: fullUrl,
+                imageUrl: img.startsWith('http') ? img : (img ? `https://www.mrblog.net${img}` : 'https://picsum.photos/600/400'),
+                targetSite: '미블', limitCount, applyCount,
+                startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
+                createdAt: now.toISOString(), updatedAt: now.toISOString(),
+                searchKeywords
+              });
+            });
+
+            if (xhrRes.data?.count < 24) break;
+          } catch (e) {
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 2) Mible 메인 및 인기 목록 보완
+    try {
+      const mbRes = await axios.get('https://www.mrblog.net', { headers: { 'User-Agent': 'Mozilla/5.0', 'Cookie': `laravel_session=${sessionCookie}` }, timeout: 6000 });
+      const $mb = cheerio.load(mbRes.data);
+
+      $mb('a').each((index, element) => {
+        const href = $mb(element).attr('href') || '';
+        const rawTitle = $mb(element).text().trim().replace(/\s+/g, ' ');
+        const img = $mb(element).find('img').attr('src') || $mb(element).parent().find('img').attr('src') || '';
+
+        if (href.includes('/campaigns/') && rawTitle.length > 5) {
+          if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+          const fullUrl = href.startsWith('http') ? href : `https://www.mrblog.net${href.startsWith('/') ? '' : '/'}${href}`;
+          const cpId = fullUrl.split('/campaigns/')[1] || fullUrl.replace(/[^0-9]/g, '');
+          if (!cpId) return;
+
+          const id = `mb-${cpId}`;
+          if (!mibleItemsMap.has(id)) {
+            const category = detectCategory(rawTitle, rawTitle);
+            const autoKws = buildAutoKeywords(rawTitle, rawTitle);
+            const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+
+            mibleItemsMap.set(id, {
+              id, title: rawTitle, description: rawTitle, platform: detectPlatform(rawTitle, rawTitle), category, campaignUrl: fullUrl,
+              imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
+              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
+              createdAt: now.toISOString(), updatedAt: now.toISOString(),
+              searchKeywords
+            });
+          }
+        }
+      });
+    } catch (e) {}
+
+    const mibleList = Array.from(mibleItemsMap.values());
+    mibleList.forEach(item => collected.push(item));
+    mbCount = mibleList.length;
+
     console.log(`[OnDemand] Mible parsed total ${mbCount} items`);
   } catch (err: any) {
     console.error('[OnDemand] Mible crawl failed:', err.message);

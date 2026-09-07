@@ -117,6 +117,15 @@
     1) [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts) 내 **`formatMibleMission` 전용 포맷터** 구축 및 내장.
     2) 카드 텍스트 및 DB description으로부터 제공 혜택(`🎁 [미블 (Mible) 제공 혜택 및 상세 보상]`)과 업체 상세 주의사항(`📋 [업체 상세 미션 & 주의사항]`)을 구획별로 100% 자동 파싱/구조화.
     3) 원본 실서버 CloudFront/Storage 썸네일 이미지 및 딥링크(`https://www.mrblog.net/campaigns/{cid}`), 실시간 신청/모집 정원 동기화 완성.
+* **이슈 12 (미블 (Mible - mrblog.net) XHR API 세션 인증 연동 및 16건+ 키워드 개별 공고 전수 수집 엔진 구축)**:
+  - **증상**: 미블에서 '옆커폰' 등 특정 키워드 검색 시, 개별 공고 아이템으로 분리 수집되지 않고 단순 검색 딥링크 하나로 표출되는 현상.
+  - **원인 분석**:
+    1) 미블(`mrblog.net`)은 검색 결과 페이지(`/campaigns/search?query=...`) 및 검색 XHR API(`/xhr/campaigns`) 접근 시 비로그인 유저를 `/login` 화면으로 리다이렉트 처리하거나 `CSRF token mismatch (403)` 응답을 반환함.
+    2) 기존 크롤러가 메인 홈 단일 페이지 30개 공고만 수집함에 따라, 2페이지 이후 또는 특정 검색어 전용 공고가 개별 데이터로 DB에 유입되지 못함.
+  - **기술적 조치**:
+    1) [`src/lib/mible_auth.ts`](file:///Users/park/review-moa/src/lib/mible_auth.ts) 모듈을 신규 구축하여 전달받은 `laravel_session` 쿠키 및 Meta CSRF 토큰 자동 주입 헤더 생성기 반영.
+    2) [`src/lib/crawler-core.ts`](file:///Users/park/review-moa/src/lib/crawler-core.ts) 내 미블 XHR API 파서 (`https://www.mrblog.net/xhr/campaigns?page=X&query=...`)를 탑재하여 다중 페이지 순회 알고리즘 구현.
+    3) '옆커폰' 16건 전체 개별 공고(`mb-1130549`, `mb-1129760`, `mb-1129777`, `mb-1129855` 등)를 **단일 딥링크가 아닌 16개의 완전한 개별 공고 카드로 DB 자동 수집 및 실시간 혜택/가이드라인 100% 동기화 성공**.
 
 ### 🟢 오마이블로그 (ohmyblog.co.kr)
 * **수집 규격**: 백엔드 REST API(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100`) 다중 페이지 수집기 적용.
