@@ -615,55 +615,72 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
               const url = `https://www.ringble.co.kr/category.php?category=${cat}&start=${start}`;
               const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
               const $ = cheerio.load(res.data);
-              let pageCount = 0;
+              const itemsMap = new Map<string, any>();
 
               $('a[href*="detail.php"]').each((_, el) => {
                 const href = $(el).attr('href') || '';
                 const numMatch = href.match(/number=(\d+)/);
                 if (!numMatch) return;
                 const cpId = numMatch[1];
-                if (collected.some(c => c.id === `ringble-${cpId}`)) return;
+                const id = `ringble-${cpId}`;
+                if (collected.some(c => c.id === id)) return;
 
-                const parent = $(el).closest('div, li, tr');
-                let rawTitle = $(el).attr('title') || $(el).text().trim();
-                if (!rawTitle || rawTitle.length < 2) {
-                  rawTitle = parent.text().trim().replace(/\s+/g, ' ');
-                }
-
-                let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
-                if (img && img.includes('/./')) img = img.replace('/./', '/');
-                if (img && img.startsWith('//')) img = 'https:' + img;
-                if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
-                img = img.replace(/\/+\.\//g, '/');
-
-                let cleanTitle = rawTitle
-                  .replace(/^블로그\s*/gi, '')
-                  .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
-                  .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
-                  .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
-                  .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
-                  .replace(/\s+/g, ' ')
-                  .trim();
-
-                let applyCount = 0;
-                let limitCount = 5;
-                const hm = rawTitle.match(/신청\s*(\d+)\s*[\/\,\~]\s*모집\s*(\d+)/i) || rawTitle.match(/신청\s*(\d+)/i);
-                if (hm) {
-                  if (hm[1]) applyCount = parseInt(hm[1], 10);
-                  if (hm[2]) limitCount = parseInt(hm[2], 10);
-                }
-
-                if (cleanTitle && cleanTitle.length > 2) {
-                  collected.push({
-                    id: `ringble-${cpId}`, title: cleanTitle.slice(0, 60), description: cleanTitle, platform: detectPlatform(cleanTitle, cleanTitle),
-                    category: detectCategory(cleanTitle, cleanTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
-                    imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount, applyCount,
-                    startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+                if (!itemsMap.has(id)) {
+                  itemsMap.set(id, {
+                    id,
+                    title: '',
+                    imageUrl: '',
+                    campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
+                    targetSite: '링블',
+                    limitCount: 5,
+                    applyCount: 0
                   });
-                  pageCount++;
+                }
+
+                const item = itemsMap.get(id);
+
+                const imgInside = $(el).find('img').attr('src');
+                if (imgInside) {
+                  let img = imgInside;
+                  if (img.startsWith('//')) img = 'https:' + img;
+                  if (!img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+                  img = img.replace(/\/+\.\//g, '/');
+                  item.imageUrl = img;
+                }
+
+                const text = $(el).text().trim();
+                if (text && text.length > 2 && !/\d+일\s*남음|D-Day|신청|모집/.test(text)) {
+                  let cleanTitle = text
+                    .replace(/^블로그\s*/gi, '')
+                    .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+                    .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+                    .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
+                    .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                  if (cleanTitle.length > item.title.length) {
+                    item.title = cleanTitle.slice(0, 60);
+                    item.description = cleanTitle;
+                    item.platform = detectPlatform(cleanTitle, cleanTitle);
+                    item.category = detectCategory(cleanTitle, cleanTitle);
+                  }
                 }
               });
-              if (pageCount === 0) break;
+
+              if (itemsMap.size === 0) break;
+
+              itemsMap.forEach(item => {
+                if (item.title && item.title.length > 2) {
+                  collected.push({
+                    ...item,
+                    startDate: now.toISOString().split('T')[0],
+                    endDate: parseRemainDaysToDate(7),
+                    createdAt: now.toISOString(),
+                    updatedAt: now.toISOString()
+                  });
+                }
+              });
             } catch (e) { break; }
           }
         }
