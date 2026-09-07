@@ -397,37 +397,64 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     }
   }
 
-  // 9. 놀러와체험단 (cometoplay.kr)
-  console.log('Fetching 9. 놀러와체험단...');
-  try {
-    const res = await axios.get('https://www.cometoplay.kr', { headers: HEADERS, timeout: 6000 });
-    const $ = cheerio.load(res.data);
-    $('a[href*="item.php"]').each((i, el) => {
-      const href = $(el).attr('href') || '';
-      const parent = $(el).closest('div, li, tr, td');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
-      let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
-      if (img && img.startsWith('//')) img = 'https:' + img;
-      if (img && !img.startsWith('http')) img = `https://www.cometoplay.kr${img.startsWith('/') ? '' : '/'}${img}`;
-      const numMatch = href.match(/it_id=(\d+)/);
-      const cpId = numMatch ? numMatch[1] : `${i}`;
+  // 9. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 페이지 딥 수집)
+  console.log('Fetching 9. 놀러와체험단 (다중 카테고리 & 5페이지)...');
+  const playCategories = ['001', '002', '004', '001012', '001013', '001015', '002010', '002008'];
+  for (const catId of playCategories) {
+    for (let page = 1; page <= 5; page++) {
+      try {
+        const url = `https://www.cometoplay.kr/item_list.php?category_id=${catId}&page=${page}`;
+        const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
+        const $ = cheerio.load(res.data);
+        let itemCount = 0;
 
-      const parentText = parent.text().replace(/\s+/g, ' ');
-      const cntMatch = parentText.match(/신청\s*([\d,]+)\s*명?\s*\/\s*모집\s*([\d,]+)\s*명?/i);
-      const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
-      const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+        $('a[href*="item.php"]').each((i, el) => {
+          const href = $(el).attr('href') || '';
+          const numMatch = href.match(/it_id=(\d+)/);
+          if (!numMatch) return;
+          const cpId = numMatch[1];
 
-      const cleanTitle = rawTitle.replace(/(?:D\s*-\s*day\s*\d+|D-Day)?\s*신청\s*\d+.*$/gi, '').trim();
+          const parent = $(el).closest('li, div.item, div.box, tr, td, div');
+          let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
 
-      if (cleanTitle && cleanTitle.length > 3) {
-        addCampaign({
-          id: `cometoplay-${cpId}`,
-          title: cleanTitle.slice(0, 60), description: cleanTitle, campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단',
-          applyCount, limitCount
+          let realImg = '';
+          parent.find('img').each((_, imgEl) => {
+            const src = $(imgEl).attr('src') || '';
+            if (src && (src.includes('data/') || src.includes('thumb')) && !src.includes('scrap_ic') && !src.includes('txt_ico')) {
+              realImg = src;
+            }
+          });
+          if (realImg.startsWith('./')) realImg = 'https://www.cometoplay.kr' + realImg.slice(1);
+          else if (realImg && !realImg.startsWith('http')) realImg = `https://www.cometoplay.kr/${realImg}`;
+
+          const parentText = parent.text().replace(/\s+/g, ' ');
+          const cntMatch = parentText.match(/신청\s*([\d,]+)\s*명?\s*\/\s*모집\s*([\d,]+)\s*명?/i) || parentText.match(/신청인원\s*([\d,]+)\s*명?\s*\/\s*모집인원\s*([\d,]+)\s*명?/i);
+          const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+          const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
+          const cleanTitle = rawTitle
+            .replace(/(?:D\s*-\s*day\s*\d+|D-Day|\d+\s*일\s*남음)?\s*신청\s*\d+.*$/gi, '')
+            .replace(/D-day\s*\d+/gi, '')
+            .trim();
+
+          if (cleanTitle && cleanTitle.length > 3) {
+            addCampaign({
+              id: `cometoplay-${cpId}`,
+              title: cleanTitle.slice(0, 60),
+              description: cleanTitle,
+              campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
+              imageUrl: realImg || 'https://viral-re.co.kr/icon.png',
+              targetSite: '놀러와체험단',
+              applyCount,
+              limitCount
+            });
+            itemCount++;
+          }
         });
-      }
-    });
-  } catch (e: any) {}
+        if (itemCount === 0) break;
+      } catch (e) { break; }
+    }
+  }
 
   // 10. 모블 (modublog.co.kr)
   console.log('Fetching 10. 모블...');
