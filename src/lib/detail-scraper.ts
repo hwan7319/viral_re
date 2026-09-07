@@ -275,6 +275,9 @@ export function formatMissionText(text: string): string {
   const formattedLines: string[] = [];
 
   for (let line of lines) {
+    let trimmed = line.trim();
+    if (!trimmed) continue;
+
     if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
 
     // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 문구 완전 제거]
