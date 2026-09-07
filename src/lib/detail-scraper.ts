@@ -120,6 +120,45 @@ export function formatReviewNoteMission(item: any): string {
   return parts.join('\n\n');
 }
 
+// 🔑 미블 (Mible - mrblog.net) 공고 아이템 정밀 미션 및 가이드라인 포맷터
+export function formatMibleMission(text: string, title?: string, url?: string): string {
+  if (!text) return '';
+
+  let cleanText = text
+    .replace(/D-Day/g, '')
+    .replace(/[0-9]+일\s*남음/g, '')
+    .replace(/신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명/g, '')
+    .replace(/릴스/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const parts: string[] = [];
+  const starIndex = cleanText.indexOf('*');
+  let offerStr = cleanText;
+  let notesStr = '';
+
+  if (starIndex > 0) {
+    offerStr = cleanText.substring(0, starIndex).trim();
+    notesStr = cleanText.substring(starIndex).trim();
+  }
+
+  parts.push(`🎁 [미블 (Mible) 제공 혜택 및 상세 보상]\n• ${title && !offerStr.includes(title) ? `${title}\n• ` : ''}${offerStr}`);
+
+  if (notesStr) {
+    const formattedNotes = notesStr
+      .split('**')
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(s => `• ${s.replace(/^\*/, '').trim()}`)
+      .join('\n');
+    parts.push(`📋 [업체 상세 미션 & 주의사항]\n${formattedNotes}`);
+  }
+
+  parts.push(`※ 상세 신청 및 안내 지침은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 미블 원본 사이트에서 바로 확인하실 수 있습니다.`);
+
+  return parts.join('\n\n');
+}
+
 // 🚫 사이트 공통 메뉴 / 푸터 카테고리 목록 블랙리스트
 const BLACKLIST_PATTERNS = [
   '체험단·인플루언서 마케팅은 역시',
@@ -688,8 +727,46 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     else if (siteLower.includes('체험뷰') || url.includes('chview')) {
       extractedRaw = $('.mission_box').html() || $('.guide_text').html() || '';
     }
-    // 7. 미블 (mible.co.kr)
-    else if (siteLower.includes('미블') || url.includes('mible')) {
+    // 7. 미블 (mible.co.kr / mrblog.net)
+    else if (siteLower.includes('미블') || url.includes('mible') || url.includes('mrblog')) {
+      const cid = url.match(/campaigns\/([0-9]+)/)?.[1] || url.match(/campaign\/([0-9]+)/)?.[1];
+      let formattedMission = '';
+
+      if (cid) {
+        try {
+          const db = await getDB();
+          const dbRow = await db.get<{ description: string; title: string }>(
+            'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 5',
+            [url, `mb-${cid}`, `mible-${cid}`]
+          );
+          if (dbRow && dbRow.description) {
+            formattedMission = formatMibleMission(dbRow.description, dbRow.title, url);
+          }
+        } catch (e) {}
+
+        if (!formattedMission) {
+          try {
+            const mblHeaders = {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+            };
+            const pageRes = await axios.get('https://www.mrblog.net/', { headers: mblHeaders, timeout: 4000 });
+            const $m = cheerio.load(pageRes.data);
+            $m(`a[href*="${cid}"]`).each((_, el) => {
+              const rawTxt = $m(el).text().replace(/\s+/g, ' ').trim();
+              if (rawTxt.length > 10) {
+                formattedMission = formatMibleMission(rawTxt, '', url);
+              }
+            });
+          } catch (e) {}
+        }
+      }
+
+      if (!formattedMission && cid) {
+        formattedMission = `🎁 [미블 (Mible) 캠페인 안내]\n• 공고 ID: mb-${cid}\n• 상세 제공 혜택 및 미션 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 미블 원본 사이트에서 바로 확인하실 수 있습니다.`;
+      }
+
+      if (formattedMission) return formattedMission;
+
       extractedRaw = $('.mission_info').html() || $('.campaign_guide').html() || '';
     }
     // 8. 오마이블로그 (ohmyblog.co.kr)
