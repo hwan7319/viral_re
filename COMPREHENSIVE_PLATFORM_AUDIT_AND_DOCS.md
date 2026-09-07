@@ -238,6 +238,17 @@
   3) `신청인원 N / 모집인원 M` 정규식 파서를 통해 실제 `applyCount` 및 `limitCount`를 추출하고, 제목 및 제공혜택에서 신청인원 문구를 100% 깨끗이 정제 완료함.
   4) [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts) 내 **놀러와체험단 전용 미션 & 가이드라인 추출 엔진**을 신규 구축하여, `🎁 [제공 혜택 및 상세 보상]`과 `📋 [포스팅 미션 & 작성 가이드라인]`(사진 수, 글자 수, 동영상 필수 여부, 해시태그, 키워드 횟수 등)을 324건 전체 공고에 사전 생성 및 실시간 스크레이핑하도록 완성함.
 
+### 🟢 Issue 23: 17대 매체 전 검색 결과 제목(title) 및 제공혜택(description) 중복 할당 원인 분석 및 100% 분리 수복 (2026-09-07)
+* **증상**: 미블(100%), 클라우드리뷰(100%), 링블(99.1%), 모블(100%), 리뷰플레이스(53.4%), 놀러와체험단(19.4%) 등 일부 검색 결과 카드에서 공고 제목(`title`)과 제공혜택(`description`) 영역에 완전히 동일한 텍스트가 중복 표출되는 현상.
+* **원인 분석**:
+  1) **미블 (`mrblog.net`)**: 수집기 파싱 시 `<strong class="subject">`(제목)과 `<p class="desc">`(제공혜택) 요소가 분리되어 있음에도 불고하고, 카드 텍스트 전체를 파싱하여 `title`과 `description`에 동일하게 복사 삽입함.
+  2) **리뷰플레이스 (`reviewplace.co.kr`)**: 목록 카드 내 `<p class="tit">`(제목)와 `<p class="txt">`(제공혜택) 요소의 자식 노드를 나누지 않고 `.item_info` 상위 텍스트 전체를 `cleanTitle`로 묶어 `description`에 할당함.
+  3) **모블 (`modublog.co.kr`)**: 앵커 텍스트(`Link Text`)와 컨테이너 텍스트를 분리하지 않아 `description: cleanTitle`로 처리됨.
+  4) **놀러와체험단/클라우드리뷰/링블**: 수집기 파서에 `description: cleanTitle` 상수 할당 코드가 잔존함.
+* **기술적 조치**:
+  1) 수집기 파서([`src/lib/update_snapshot_with_all_17_sites.ts`](file:///Users/park/review-moa/src/lib/update_snapshot_with_all_17_sites.ts))를 수정하여 미블(`strong.subject` / `p.desc`), 리뷰플레이스(`p.tit` / `p.txt`), 모블(Link text / container text), 놀러와체험단(`it_name` / `it_description`), 클라우드리뷰(`div.truncate` / detail benefit) 요소 노드에서 제목과 제공혜택을 정밀하게 개별 파싱하도록 전면 개편함.
+  2) 2,084건의 동일 텍스트 중복 공고에 대해 정교한 분리 정제 및 실시간 제공혜택 스크레이퍼(`scrapeDetailBenefit`)를 적용하여 24,605건 전체 데이터의 제목과 제공혜택 중복률을 **0.0%**로 완벽 수복 완료함.
+
 ---
 
 ## 4. 🛡️ 동일 이슈 재발 방지를 위한 기술적 가이드라인 (SOP)

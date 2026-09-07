@@ -176,12 +176,13 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
           const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
 
-          const cleanTitle = rawTitle.replace(/\s*(?:D\s*-\s*\d+|D-Day)?\s*신청\s*\d+.*$/gi, '').trim();
+          const title = $item.find('p.tit').text().trim() || cleanTitle;
+          const description = $item.find('p.txt').text().replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim() || title;
 
           if (cleanTitle && cleanTitle.length > 3) {
             addCampaign({
               id: `rp-${cpId}`,
-              title: cleanTitle, description: cleanTitle, campaignUrl: `https://www.reviewplace.co.kr/pr/?id=${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '리뷰플레이스',
+              title, description, campaignUrl: `https://www.reviewplace.co.kr/pr/?id=${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '리뷰플레이스',
               applyCount, limitCount
             });
             pageItems++;
@@ -275,10 +276,16 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           .replace(/\s+/g, ' ')
           .trim();
 
+        const subjectText = $item.find('strong.subject').text().trim();
+        const descText = $item.find('p.desc').text().replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim();
+        const areaText = $item.find('span.area').text().trim();
+        const title = areaText ? `[${areaText}] ${subjectText || cleanTitle}` : (subjectText || cleanTitle);
+        const description = descText || title;
+
         if (cleanTitle && cleanTitle.length > 2) {
           addCampaign({
             id: `mb-${cpId}`,
-            title: cleanTitle, description: cleanTitle, campaignUrl: fullUrl, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블',
+            title, description, campaignUrl: fullUrl, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블',
             applyCount, limitCount
           });
         }
@@ -437,11 +444,14 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
             .replace(/D-day\s*\d+/gi, '')
             .trim();
 
+          const itemTitle = $item.find('.it_name').text().trim() || cleanTitle;
+          const itemDesc = $item.find('.it_description').text().trim() || itemTitle;
+
           if (cleanTitle && cleanTitle.length > 3) {
             addCampaign({
               id: `cometoplay-${cpId}`,
-              title: cleanTitle.slice(0, 60),
-              description: cleanTitle,
+              title: itemTitle.slice(0, 60),
+              description: itemDesc,
               campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
               imageUrl: realImg || 'https://viral-re.co.kr/icon.png',
               targetSite: '놀러와체험단',
@@ -477,11 +487,16 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
 
       const cleanTitle = rawTitle.replace(/\s*신청\s*\d+.*$/gi, '').trim();
+      const linkTitle = $(el).text().trim().replace(/\s+/g, ' ');
+      const parentFull = parent.text().replace(/\s+/g, ' ').trim();
+      let cleanDesc = parentFull.replace(linkTitle, '').replace(/블로그|릴스|쇼츠|인스타|신청\s*\d+\s*\/?\s*\d*\s*명?|\d+일\s*남음|오늘마감|바로체험|P\s*[\d,]+/gi, '').trim();
+      const title = linkTitle || cleanTitle.slice(0, 60);
+      const description = cleanDesc.length > 2 ? cleanDesc : title;
 
       if (cleanTitle && cleanTitle.length > 3) {
         addCampaign({
           id: `modublog-${cpId}`,
-          title: cleanTitle.slice(0, 60), description: cleanTitle, campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블',
+          title, description, campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블',
           applyCount, limitCount
         });
       }
