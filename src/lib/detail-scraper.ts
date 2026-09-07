@@ -482,6 +482,21 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
         } catch (e) {}
       }
     }
+    // 7. 미블 (mible.co.kr / mrblog.net)
+    else if (siteLower.includes('미블') || url.includes('mible') || url.includes('mrblog')) {
+      const cid = url.match(/campaigns\/([0-9]+)/)?.[1] || url.match(/campaign\/([0-9]+)/)?.[1];
+      try {
+        const db = await getDB();
+        const dbRow = await db.get<{ description: string; title: string }>(
+          'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 3',
+          [url, cid ? `mb-${cid}` : url, cid ? `mible-${cid}` : url]
+        );
+        if (dbRow && dbRow.description) {
+          const offerStr = dbRow.description.split('*')[0].replace(/D-Day|[0-9]+일\s*남음|신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명|릴스/g, '').trim();
+          if (offerStr && offerStr.length > 2) return offerStr;
+        }
+      } catch (e) {}
+    }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);
   }
@@ -495,12 +510,13 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
   // 🔑 0. SQLite DB 사전 등록 미션 최우선 검출 (< 2ms Fast Cache Lookup)
   try {
     const db = await getDB();
-    const cidMatch = url.match(/campaign\/([0-9]+)/)?.[1];
+    const cidMatch = url.match(/campaign\/([0-9]+)/)?.[1] || url.match(/campaigns\/([0-9]+)/)?.[1];
     const revuId = cidMatch ? `revu-live-${cidMatch}` : null;
+    const mbId = cidMatch ? `mb-${cidMatch}` : null;
     
     const dbRow = await db.get<{ mission: string }>(
-      'SELECT mission FROM campaigns WHERE (campaignUrl = ? OR id = ? OR (id = ? AND mission IS NOT NULL)) AND length(COALESCE(mission, "")) > 10',
-      [url, url, revuId]
+      'SELECT mission FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ? OR (id = ? AND mission IS NOT NULL)) AND length(COALESCE(mission, "")) > 10',
+      [url, url, mbId, revuId]
     );
     if (dbRow && dbRow.mission && dbRow.mission.trim().length > 10) {
       return dbRow.mission;
@@ -523,13 +539,11 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         const cmd = `curl -s -L -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" -H "Sec-Ch-Ua: \\"Chromium\\";v=\\"128\\", \\"Google Chrome\\";v=\\"128\\"" -H "Sec-Ch-Ua-Mobile: ?0" -H "Sec-Ch-Ua-Platform: \\"Windows\\"" -H "Sec-Fetch-Dest: document" -H "Sec-Fetch-Mode: navigate" -H "Sec-Fetch-Site: none" "${safeUrl}"`;
         html = execSync(cmd, { timeout: 8000, maxBuffer: 10 * 1024 * 1024 }).toString();
       } catch (curlErr) {
-        return undefined;
+        // Continue to fallback
       }
     }
 
-    if (typeof html !== 'string' || !html) return undefined;
-
-    const $ = cheerio.load(html);
+    const $ = cheerio.load(html || '<html></html>');
     let extractedRaw = '';
     const siteLower = (targetSite || '').toLowerCase();
 
@@ -583,7 +597,6 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         else if (isMission) headerTitle = '업체 상세 미션';
         else if (isGuide) headerTitle = '이용 안내 & 가이드';
 
-        // Find associated text content across parent, closest container, or sibling wrappers
         let textEl = $(el).parent().find('.campaigninfo-text');
         if (textEl.length === 0) {
           textEl = $(el).closest('div[data-native-drag], div, tr, section').find('.campaigninfo-text');
@@ -732,37 +745,39 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       const cid = url.match(/campaigns\/([0-9]+)/)?.[1] || url.match(/campaign\/([0-9]+)/)?.[1];
       let formattedMission = '';
 
-      if (cid) {
-        try {
-          const db = await getDB();
-          const dbRow = await db.get<{ description: string; title: string }>(
-            'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 5',
-            [url, `mb-${cid}`, `mible-${cid}`]
-          );
-          if (dbRow && dbRow.description) {
-            formattedMission = formatMibleMission(dbRow.description, dbRow.title, url);
-          }
-        } catch (e) {}
-
-        if (!formattedMission) {
-          try {
-            const mblHeaders = {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
-            };
-            const pageRes = await axios.get('https://www.mrblog.net/', { headers: mblHeaders, timeout: 4000 });
-            const $m = cheerio.load(pageRes.data);
-            $m(`a[href*="${cid}"]`).each((_, el) => {
-              const rawTxt = $m(el).text().replace(/\s+/g, ' ').trim();
-              if (rawTxt.length > 10) {
-                formattedMission = formatMibleMission(rawTxt, '', url);
-              }
-            });
-          } catch (e) {}
+      try {
+        const db = await getDB();
+        const dbRow = await db.get<{ description: string; title: string }>(
+          'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 3',
+          [url, cid ? `mb-${cid}` : url, cid ? `mible-${cid}` : url]
+        );
+        if (dbRow && dbRow.description) {
+          formattedMission = formatMibleMission(dbRow.description, dbRow.title, url);
         }
-      }
+      } catch (e) {}
 
       if (!formattedMission && cid) {
-        formattedMission = `🎁 [미블 (Mible) 캠페인 안내]\n• 공고 ID: mb-${cid}\n• 상세 제공 혜택 및 미션 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 미블 원본 사이트에서 바로 확인하실 수 있습니다.`;
+        try {
+          const mblHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Referer': 'https://www.mrblog.net/'
+          };
+          const pageRes = await axios.get('https://www.mrblog.net/', { headers: mblHeaders, timeout: 4000 });
+          const $m = cheerio.load(pageRes.data);
+          $m(`a[href*="${cid}"]`).each((_, el) => {
+            const rawTxt = $m(el).text().replace(/\s+/g, ' ').trim();
+            if (rawTxt.length > 10) {
+              formattedMission = formatMibleMission(rawTxt, '', url);
+            }
+          });
+        } catch (e) {}
+      }
+
+      if (!formattedMission) {
+        const queryMatch = url.match(/query=([^&]+)/)?.[1];
+        const kw = queryMatch ? decodeURIComponent(queryMatch) : '';
+        const displayTitle = kw ? `'${kw}' 검색 연동 항목` : (cid ? `미블 공고 (mb-${cid})` : '미블 상세 공고');
+        formattedMission = `🎁 [미블 (Mible) 공고 안내]\n• 공고/검색 항목: ${displayTitle}\n• 상세 제공 혜택 및 미션 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 미블 원본 사이트에서 바로 확인하실 수 있습니다.`;
       }
 
       if (formattedMission) return formattedMission;
