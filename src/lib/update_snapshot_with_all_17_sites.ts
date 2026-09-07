@@ -255,28 +255,57 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
   } catch (e: any) {}
 
   // 8. 링블 (ringble.co.kr)
-  console.log('Fetching 8. 링블...');
-  try {
-    const res = await axios.get('https://www.ringble.co.kr', { headers: HEADERS, timeout: 6000 });
-    const $ = cheerio.load(res.data);
-    $('a[href*="detail.php"]').each((i, el) => {
-      const href = $(el).attr('href') || '';
-      const parent = $(el).closest('div, li');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
-      let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
-      if (img && img.startsWith('//')) img = 'https:' + img;
-      if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
-      const numMatch = href.match(/number=(\d+)/);
-      const cpId = numMatch ? numMatch[1] : `${i}`;
+  console.log('Fetching 8. 링블 (카테고리별 다중 페이지)...');
+  const ringbleCats = [829, 832, 1015, 834];
+  for (const cat of ringbleCats) {
+    for (let start = 1; start <= 5; start++) {
+      try {
+        const url = `https://www.ringble.co.kr/category.php?category=${cat}&start=${start}`;
+        const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+        const $ = cheerio.load(res.data);
+        let count = 0;
+        $('a[href*="detail.php"]').each((_, el) => {
+          const href = $(el).attr('href') || '';
+          const numMatch = href.match(/number=(\d+)/);
+          if (!numMatch) return;
+          const cpId = numMatch[1];
 
-      if (rawTitle && rawTitle.length > 3) {
-        addCampaign({
-          id: `ringble-${cpId}`,
-          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블'
+          const parent = $(el).closest('div, li, tr');
+          let rawTitle = $(el).attr('title') || $(el).text().trim();
+          if (!rawTitle || rawTitle.length < 2) {
+            rawTitle = parent.text().trim().replace(/\s+/g, ' ');
+          }
+
+          let cleanTitle = rawTitle
+            .replace(/^블로그\s*/gi, '')
+            .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+            .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+            .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
+            .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+          let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          if (img && img.startsWith('//')) img = 'https:' + img;
+          if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+          img = img.replace(/\/+\.\//g, '/');
+
+          if (cleanTitle && cleanTitle.length > 2) {
+            addCampaign({
+              id: `ringble-${cpId}`,
+              title: cleanTitle.slice(0, 60),
+              description: cleanTitle,
+              campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
+              imageUrl: img || 'https://viral-re.co.kr/icon.png',
+              targetSite: '링블'
+            });
+            count++;
+          }
         });
-      }
-    });
-  } catch (e: any) {}
+        if (count === 0) break;
+      } catch (e) { break; }
+    }
+  }
 
   // 9. 놀러와체험단 (cometoplay.kr)
   console.log('Fetching 9. 놀러와체험단...');
