@@ -294,7 +294,7 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-// 🧼 출처 사이트 이름([레뷰 추천], [디너의여왕] 등) 중복 제거 헬퍼 함수
+// 🧼 출처 사이트 이름 및 모집/신청 인원 문구 정제 헬퍼 함수
 const sanitizeCampaignText = (text: string): string => {
   if (!text) return '';
   let cleaned = text;
@@ -303,6 +303,15 @@ const sanitizeCampaignText = (text: string): string => {
   cleaned = cleaned.replace(/^\[(레뷰|레뷰 추천|디너의여왕|강남맛집|강남|아싸뷰|클라우드리뷰|링블|네이버|네이버쇼핑|네이버쇼핑 기획전|뷰티|체험단|모집|리뷰노트|투잡커넥트|체험뷰|미블)[^\]]*\]\s*/gi, '');
   cleaned = cleaned.replace(/\[(레뷰|디너의여왕|강남맛집|아싸뷰|클라우드리뷰|링블|리뷰노트|투잡커넥트|체험뷰|미블)[^\]]*\]/gi, '');
   
+  // 🔑 [제공 혜택 영역 내 신청/모집 인원 문구 완전 제거]
+  cleaned = cleaned
+    .replace(/(?:\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*명\s*[\/\,\~]\s*모집\s*\d+\s*명/gi, '')
+    .replace(/(?:\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*모집\s*\d+\s*명\s*[\/\,\~]\s*신청\s*\d+\s*명/gi, '')
+    .replace(/\s*(?:신청|지원)\s*\d+\s*명(?:\s*\/\s*모집\s*\d+\s*명)?/gi, '')
+    .replace(/\s*D-Day\s*/gi, ' ')
+    .replace(/\s*\d+\s*일\s*남음\s*/gi, ' ')
+    .replace(/\s+/g, ' ');
+
   return cleaned.trim();
 };
 
