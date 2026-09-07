@@ -76,38 +76,31 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
 };
 
 export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'coupang' | 'etc' => {
-  const p = (rawPlatformText || '').toLowerCase();
   const t = (title || '').toLowerCase();
+  const p = (rawPlatformText || '').toLowerCase();
+  const combined = `${t} ${p}`;
 
-  // 1. Coupang (Explicit title or platform text)
-  if (t.includes('쿠팡') || p.includes('쿠팡') || t.includes('coupang') || p.includes('coupang')) {
+  // 1. Coupang
+  if (combined.includes('쿠팡') || combined.includes('coupang')) {
     return 'coupang';
   }
 
-  // 2. Instagram / Reels (Explicit title badges take absolute top priority)
-  if (t.includes('릴스') || t.includes('인스타') || t.includes('instagram') || t.includes('reels')) {
+  // 2. Instagram / Reels
+  if (combined.includes('릴스') || combined.includes('인스타') || combined.includes('instagram') || combined.includes('reels') || combined.includes('insta')) {
     return 'instagram';
   }
 
-  // 3. YouTube / Shorts (Explicit title badges)
-  if (t.includes('쇼츠') || t.includes('유튜브') || t.includes('youtube') || t.includes('shorts')) {
+  // 3. YouTube / Shorts
+  if (combined.includes('쇼츠') || combined.includes('유튜브') || combined.includes('youtube') || combined.includes('shorts')) {
     return 'youtube';
   }
 
   // 4. Naver Clip / Blog
-  const hasBlog = p.includes('blog') || p.includes('블로그') || t.includes('블로그');
-  const hasClip = p.includes('clip') || p.includes('클립') || t.includes('클립');
+  const hasBlog = combined.includes('blog') || combined.includes('블로그');
+  const hasClip = combined.includes('clip') || combined.includes('클립');
 
   if (hasBlog && hasClip) return 'blog+clip';
   if (hasClip) return 'clip';
-
-  // 5. Fallback platform text checks
-  const isInsta = p.includes('instagram') || p.includes('insta') || p.includes('인스타') || p.includes('릴스') || p.includes('reels');
-  if (isInsta) return 'instagram';
-
-  const isYoutube = p.includes('youtube') || p.includes('유튜브') || p.includes('쇼츠') || p.includes('shorts');
-  if (isYoutube) return 'youtube';
-
   if (hasBlog) return 'blog';
 
   return 'blog';

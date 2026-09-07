@@ -484,7 +484,7 @@ export async function runUpdateDeep() {
     if (!url || url.includes('viral-re.co.kr') || url.includes('localhost') || !url.startsWith('http')) {
       url = SITE_OFFICIAL_URLS[c.targetSite] || 'https://www.moaview.co.kr';
     }
-    const realPlatform = detectPlatform(c.title, c.platform || c.description || '');
+    const realPlatform = detectPlatform(c.title, `${c.rawPlatform || ''} ${c.description || ''} ${c.targetSite || ''}`);
     return { ...c, campaignUrl: url, platform: realPlatform };
   });
 
