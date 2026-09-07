@@ -176,8 +176,9 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
           const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
 
-          const title = $item.find('p.tit').text().trim() || cleanTitle;
-          const description = $item.find('p.txt').text().replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim() || title;
+          const cleanTitle = rawTitle.replace(/\s*(?:D\s*-\s*\d+|D-Day)?\s*신청\s*\d+.*$/gi, '').trim();
+          const title = parent.find('p.tit').text().trim() || cleanTitle;
+          const description = parent.find('p.txt').text().replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim() || title;
 
           if (cleanTitle && cleanTitle.length > 3) {
             addCampaign({
@@ -276,9 +277,9 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           .replace(/\s+/g, ' ')
           .trim();
 
-        const subjectText = $item.find('strong.subject').text().trim();
-        const descText = $item.find('p.desc').text().replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim();
-        const areaText = $item.find('span.area').text().trim();
+        const subjectText = $(el).find('strong.subject').text().trim();
+        const descText = $(el).find('p.desc').text().replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim();
+        const areaText = $(el).find('span.area').text().trim();
         const title = areaText ? `[${areaText}] ${subjectText || cleanTitle}` : (subjectText || cleanTitle);
         const description = descText || title;
 
@@ -444,8 +445,8 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
             .replace(/D-day\s*\d+/gi, '')
             .trim();
 
-          const itemTitle = $item.find('.it_name').text().trim() || cleanTitle;
-          const itemDesc = $item.find('.it_description').text().trim() || itemTitle;
+          const itemTitle = parent.find('.it_name').text().trim() || cleanTitle;
+          const itemDesc = parent.find('.it_description').text().trim() || itemTitle;
 
           if (cleanTitle && cleanTitle.length > 3) {
             addCampaign({
