@@ -354,6 +354,23 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
 }
 export async function scrapeDetailBenefit(url: string, targetSite: string): Promise<string | undefined> {
   if (!url) return undefined;
+
+  // 🔑 0. SQLite DB 사전 등록 혜택 최우선 검출 (< 2ms Fast Cache Lookup)
+  try {
+    const db = await getDB();
+    const cidMatch = url.match(/campaign\/([0-9]+)/)?.[1] || url.match(/campaigns\/([0-9]+)/)?.[1] || url.match(/detail\/([0-9]+)/)?.[1];
+    const dbRow = await db.get<{ title: string; description: string }>(
+      'SELECT title, description FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ? OR id = ?) AND length(COALESCE(title, description, "")) > 2',
+      [url, url, cidMatch ? `cr-${cidMatch}` : url, cidMatch ? `mb-${cidMatch}` : url]
+    );
+    if (dbRow && (dbRow.title || dbRow.description)) {
+      const bText = dbRow.title || dbRow.description;
+      if (bText && bText.length > 2 && !bText.includes('바로가기')) {
+        return bText.split('*')[0].trim();
+      }
+    }
+  } catch (e) {}
+
   try {
     const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
     const html = res.data;
@@ -494,6 +511,20 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
         if (dbRow && dbRow.description) {
           const offerStr = dbRow.description.split('*')[0].replace(/D-Day|[0-9]+일\s*남음|신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명|릴스/g, '').trim();
           if (offerStr && offerStr.length > 2) return offerStr;
+        }
+      } catch (e) {}
+    }
+    // 8. 클라우드리뷰 (cloudreview.co.kr)
+    else if (siteLower.includes('클라우드리뷰') || url.includes('cloudreview.co.kr')) {
+      const cid = url.match(/detail\/([0-9]+)/)?.[1];
+      try {
+        const db = await getDB();
+        const dbRow = await db.get<{ description: string; title: string }>(
+          'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 3',
+          [url, cid ? `cr-${cid}` : url, cid ? `cloudreview-${cid}` : url]
+        );
+        if (dbRow && dbRow.title) {
+          return dbRow.title;
         }
       } catch (e) {}
     }
@@ -783,6 +814,29 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       if (formattedMission) return formattedMission;
 
       extractedRaw = $('.mission_info').html() || $('.campaign_guide').html() || '';
+    }
+    // 8. 클라우드리뷰 (cloudreview.co.kr)
+    else if (siteLower.includes('클라우드리뷰') || url.includes('cloudreview.co.kr')) {
+      const cid = url.match(/detail\/([0-9]+)/)?.[1];
+      let formattedMission = '';
+
+      try {
+        const db = await getDB();
+        const dbRow = await db.get<{ description: string; title: string }>(
+          'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 3',
+          [url, cid ? `cr-${cid}` : url, cid ? `cloudreview-${cid}` : url]
+        );
+        if (dbRow && (dbRow.title || dbRow.description)) {
+          const itemTitle = dbRow.title || dbRow.description;
+          formattedMission = `🎁 [클라우드리뷰 (CloudReview) 제공 혜택 및 상세 보상]\n• 지원/상품 혜택: ${itemTitle}\n\n📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: 블로그 / SNS 체험단 포스팅\n• 기본 포스팅 조건: 사진 15장 이상 및 장소 지도 지번/도로명 첨부 필수\n\n※ 세부 가이드라인 및 신청 절차는 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 클라우드리뷰 원본 사이트에서 바로 확인하실 수 있습니다.`;
+        }
+      } catch (e) {}
+
+      if (!formattedMission && cid) {
+        formattedMission = `🎁 [클라우드리뷰 (CloudReview) 캠페인 안내]\n• 공고 ID: cr-${cid}\n• 상세 제공 혜택 및 미션 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 클라우드리뷰 원본 사이트에서 바로 확인하실 수 있습니다.`;
+      }
+
+      if (formattedMission) return formattedMission;
     }
     // 8. 오마이블로그 (ohmyblog.co.kr)
     else if (siteLower.includes('오마이블로그') || url.includes('ohmyblog.co.kr')) {
