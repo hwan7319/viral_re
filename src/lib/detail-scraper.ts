@@ -423,17 +423,29 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
       }
     }
 
-    // 2-4. 범용 매처 (레뷰, 체험뷰, 링블, 아싸뷰, 클라우드리뷰 등 17대 매체 공통 파서)
+    // 2-4. 범용 매처 (17대 매체 전체 전용 고성능 파서)
     const fullText = $('body').text().replace(/\s+/g, ' ');
     const generalMatch = 
-      fullText.match(/신청자?\s*([\d,]+)\s*[\/|명\s*모집|모집]\s*([\d,]+)/i) ||
-      fullText.match(/신청\s*([\d,]+)\s*명\s*\/\s*모집\s*([\d,]+)\s*명/i) ||
-      fullText.match(/지원자?\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
+      fullText.match(/신청자?\s*([\d,]+)\s*(?:명)?\s*[\/\,\~]\s*(?:모집)?\s*([\d,]+)\s*(?:명)?/i) ||
+      fullText.match(/신청자?\s*([\d,]+)\s*명\s*모집\s*([\d,]+)\s*명/i) ||
+      fullText.match(/지원자?\s*([\d,]+)\s*(?:명)?\s*[\/\,\~]\s*(?:모집)?\s*([\d,]+)\s*(?:명)?/i) ||
+      fullText.match(/모집\s*([\d,]+)\s*(?:명)?\s*[\/\,\~]\s*신청자?\s*([\d,]+)\s*(?:명)?/i) ||
+      fullText.match(/신청\s*:\s*([\d,]+)\s*(?:명)?.*?모집\s*:\s*([\d,]+)\s*(?:명)?/i) ||
+      fullText.match(/모집인원\s*:\s*([\d,]+)\s*(?:명)?.*?신청인원\s*:\s*([\d,]+)\s*(?:명)?/i) ||
+      fullText.match(/신청인원\s*:\s*([\d,]+)\s*(?:명)?.*?모집인원\s*:\s*([\d,]+)\s*(?:명)?/i) ||
+      fullText.match(/신청\s*([\d,]+)\s*\/?\s*([\d,]+)\s*명/i);
 
     if (generalMatch) {
+      let first = parseInt(generalMatch[1].replace(/,/g, ''), 10);
+      let second = generalMatch[2] ? parseInt(generalMatch[2].replace(/,/g, ''), 10) : undefined;
+      
+      // If regex was 모집 N / 신청 M format, swap first & second
+      if (fullText.match(/모집\s*([\d,]+)\s*(?:명)?\s*[\/\,\~]\s*신청자?\s*([\d,]+)/i)) {
+        return { applyCount: second || 0, limitCount: first || 5 };
+      }
       return {
-        applyCount: parseInt(generalMatch[1].replace(/,/g, ''), 10),
-        limitCount: parseInt(generalMatch[2].replace(/,/g, ''), 10)
+        applyCount: !isNaN(first) ? first : 0,
+        limitCount: second && !isNaN(second) ? second : 5
       };
     }
   } catch (err: any) {

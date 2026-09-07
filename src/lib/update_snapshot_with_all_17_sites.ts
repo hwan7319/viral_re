@@ -43,8 +43,23 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
   const now = new Date();
   const collectedMap = new Map<string, any>();
 
+  const cleanHeadcountText = (text: string) => {
+    if (!text) return '';
+    return text
+      .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+      .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+      .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*\d+\s*(?:명)?/gi, '')
+      .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
+      .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   const addCampaign = (item: any) => {
     if (item && item.id && item.title && item.title.length > 2) {
+      item.title = cleanHeadcountText(item.title);
+      if (item.description) item.description = cleanHeadcountText(item.description);
+
       if (!collectedMap.has(item.id)) {
         collectedMap.set(item.id, {
           startDate: now.toISOString().split('T')[0],
@@ -89,9 +104,15 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         const urlParams = new URL(campaignUrl).searchParams;
         const cpId = urlParams.get('id') || href.replace(/[^0-9]/g, '');
 
+        const fullItemText = $(el).text().replace(/\s+/g, ' ');
+        const cntMatch = fullItemText.match(/신청\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
+        const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+        const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
         addCampaign({
           id: `gn-${cpId || page + '_' + i}`,
-          title, description, campaignUrl, imageUrl, location, targetSite: '강남맛집'
+          title, description, campaignUrl, imageUrl, location, targetSite: '강남맛집',
+          applyCount, limitCount
         });
       });
     } catch (e: any) { break; }
@@ -116,9 +137,15 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         const imageUrl = $(el).find('.qz-dq-card__link__img img').attr('src') || '';
         const dqId = fullUrl.split('/').pop() || fullUrl.replace(/[^0-9]/g, '');
 
+        const badgeText = $(el).find('.apply_badge').text().trim();
+        const cntMatch = badgeText.match(/신청\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
+        const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+        const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
         addCampaign({
           id: `dq-${dqId}`,
-          title, description: title, campaignUrl: fullUrl, imageUrl, targetSite: '디너의여왕'
+          title, description: title, campaignUrl: fullUrl, imageUrl, targetSite: '디너의여왕',
+          applyCount, limitCount
         });
       });
       if (!listData.has_next) break;
@@ -137,17 +164,25 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         let pageItems = 0;
         $('a[href*="/pr/?id="]').each((i, el) => {
           const href = $(el).attr('href') || '';
-          const title = $(el).text().trim().replace(/^NEW\s*/, '').replace(/\s+/g, ' ');
+          const rawTitle = $(el).text().trim().replace(/^NEW\s*/, '').replace(/\s+/g, ' ');
           const idMatch = href.match(/id=(\d+)/);
           const cpId = idMatch ? idMatch[1] : `${i}`;
-          const parent = $(el).closest('li, div.item, tr');
+          const parent = $(el).closest('li, div.item, tr, .pr_item, div');
           let img = parent.find('img').attr('src') || '';
           if (img && !img.startsWith('http')) img = `https://www.reviewplace.co.kr${img}`;
 
-          if (title && title.length > 3) {
+          const parentText = parent.text().replace(/\s+/g, ' ');
+          const cntMatch = parentText.match(/신청\s*([\d,]+)\s*\/\s*([\d,]+)\s*명/i) || parentText.match(/신청\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
+          const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+          const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
+          const cleanTitle = rawTitle.replace(/\s*(?:D\s*-\s*\d+|D-Day)?\s*신청\s*\d+.*$/gi, '').trim();
+
+          if (cleanTitle && cleanTitle.length > 3) {
             addCampaign({
               id: `rp-${cpId}`,
-              title, description: title, campaignUrl: `https://www.reviewplace.co.kr/pr/?id=${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '리뷰플레이스'
+              title: cleanTitle, description: cleanTitle, campaignUrl: `https://www.reviewplace.co.kr/pr/?id=${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '리뷰플레이스',
+              applyCount, limitCount
             });
             pageItems++;
           }
@@ -228,10 +263,25 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         const cpId = fullUrl.split('/campaigns/')[1] || '';
         if (!cpId || !/^\d+$/.test(cpId.trim())) return;
 
-        addCampaign({
-          id: `mb-${cpId}`,
-          title: rawTitle, description: rawTitle, campaignUrl: fullUrl, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블'
-        });
+        const cntMatch = rawTitle.match(/신청\s*([\d,]+)\s*명?\s*\/\s*모집\s*([\d,]+)\s*명?/i);
+        const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+        const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
+        const cleanTitle = rawTitle
+          .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+          .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+          .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
+          .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        if (cleanTitle && cleanTitle.length > 2) {
+          addCampaign({
+            id: `mb-${cpId}`,
+            title: cleanTitle, description: cleanTitle, campaignUrl: fullUrl, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블',
+            applyCount, limitCount
+          });
+        }
       }
     });
   } catch (e: any) {}
@@ -250,10 +300,24 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       const cpIdMatch = href.match(/\/detail\/(\d+)/);
       const cpId = cpIdMatch ? cpIdMatch[1] : '';
 
-      if (rawTitle && rawTitle.length > 3 && cpId) {
+      const parentText = parent.text().replace(/\s+/g, ' ');
+      const cntMatch = parentText.match(/신청\s*([\d,]+)\s*명?\s*\/\s*모집\s*([\d,]+)\s*명?/i) || parentText.match(/신청\s*([\d,]+)/i);
+      const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+      const limitCount = cntMatch && cntMatch[2] ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
+      const cleanTitle = rawTitle
+        .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+        .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+        .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?/gi, '')
+        .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day)\s*/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (cleanTitle && cleanTitle.length > 2 && cpId) {
         addCampaign({
           id: `cr-${cpId}`,
-          title: rawTitle, description: rawTitle, campaignUrl: `https://cloudreview.co.kr/campaign/detail/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '클라우드리뷰'
+          title: cleanTitle, description: cleanTitle, campaignUrl: `https://cloudreview.co.kr/campaign/detail/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '클라우드리뷰',
+          applyCount, limitCount
         });
       }
     });
@@ -340,7 +404,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     const $ = cheerio.load(res.data);
     $('a[href*="item.php"]').each((i, el) => {
       const href = $(el).attr('href') || '';
-      const parent = $(el).closest('div, li');
+      const parent = $(el).closest('div, li, tr, td');
       let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
       if (img && img.startsWith('//')) img = 'https:' + img;
@@ -348,10 +412,18 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       const numMatch = href.match(/it_id=(\d+)/);
       const cpId = numMatch ? numMatch[1] : `${i}`;
 
-      if (rawTitle && rawTitle.length > 3) {
+      const parentText = parent.text().replace(/\s+/g, ' ');
+      const cntMatch = parentText.match(/신청\s*([\d,]+)\s*명?\s*\/\s*모집\s*([\d,]+)\s*명?/i);
+      const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+      const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
+      const cleanTitle = rawTitle.replace(/(?:D\s*-\s*day\s*\d+|D-Day)?\s*신청\s*\d+.*$/gi, '').trim();
+
+      if (cleanTitle && cleanTitle.length > 3) {
         addCampaign({
           id: `cometoplay-${cpId}`,
-          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단'
+          title: cleanTitle.slice(0, 60), description: cleanTitle, campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단',
+          applyCount, limitCount
         });
       }
     });
@@ -364,7 +436,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     const $ = cheerio.load(res.data);
     $('a[href*="/product/"]').each((i, el) => {
       const href = $(el).attr('href') || '';
-      const parent = $(el).closest('div, li');
+      const parent = $(el).closest('div, li, tr, td');
       let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
       if (img && img.startsWith('//')) img = 'https:' + img;
@@ -372,10 +444,18 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       const numMatch = href.match(/\/product\/(\d+)/);
       const cpId = numMatch ? numMatch[1] : `${i}`;
 
-      if (rawTitle && rawTitle.length > 3) {
+      const parentText = parent.text().replace(/\s+/g, ' ');
+      const cntMatch = parentText.match(/신청\s*([\d,]+)\s*\/?\s*([\d,]+)\s*명/i);
+      const applyCount = cntMatch ? parseInt(cntMatch[1].replace(/,/g, ''), 10) : 0;
+      const limitCount = cntMatch ? parseInt(cntMatch[2].replace(/,/g, ''), 10) : 5;
+
+      const cleanTitle = rawTitle.replace(/\s*신청\s*\d+.*$/gi, '').trim();
+
+      if (cleanTitle && cleanTitle.length > 3) {
         addCampaign({
           id: `modublog-${cpId}`,
-          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블'
+          title: cleanTitle.slice(0, 60), description: cleanTitle, campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블',
+          applyCount, limitCount
         });
       }
     });
@@ -425,7 +505,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
             platform: c.app_type === 'A' ? 'blog' : 'instagram',
             category: detectCategory(title, desc),
             limitCount: parseInt(c.app_recruitCount, 10) || 5,
-            applyCount: parseInt(c.app_memberCount, 10) || 0,
+            applyCount: parseInt(c.applicant_count || c.app_memberCount, 10) || 0,
             endDate: c.app_recruitEndDate ? c.app_recruitEndDate.split(' ')[0] : parseRemainDaysToDate(7)
           });
         });
