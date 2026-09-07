@@ -27,7 +27,7 @@ async function syncAllRemainingSites() {
         collected.push({
           id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'general',
           campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블', limitCount: 5, applyCount: 0,
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
           createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
@@ -52,7 +52,7 @@ async function syncAllRemainingSites() {
         collected.push({
           id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'general',
           campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
           createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
@@ -77,7 +77,7 @@ async function syncAllRemainingSites() {
         collected.push({
           id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'general',
           campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블', limitCount: 5, applyCount: 0,
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
           createdAt: now.toISOString(), updatedAt: now.toISOString()
         });

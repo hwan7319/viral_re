@@ -29,7 +29,7 @@ async function pushCloudReview() {
         platform: 'blog',
         category: 'life',
         campaignUrl: `https://cloudreview.co.kr/campaign/detail/${cpId}`,
-        imageUrl: img || 'https://picsum.photos/600/400',
+        imageUrl: img || 'https://viral-re.co.kr/icon.png',
         targetSite: '클라우드리뷰',
         limitCount: 10,
         applyCount: 0,

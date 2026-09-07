@@ -133,6 +133,14 @@
     1) [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts) 내 `scrapeDetailBenefit` 및 `scrapeDetailMission` 상단에 **< 2ms DB 캐시 최우선 추출 알고리즘** 구현.
     2) 타겟 사이트가 500 장애 상태이더라도, 사전 수집된 DB의 혜택 정보(`흑돼지고추장주물럭 940g`, `한우육포세트 420g` 등)와 포스팅 미션 지침(`🎁 [제공 혜택]`, `📋 [포스팅 미션 & 작성 가이드라인]`)을 100% 정상 구조화하여 상세 모달에 방어 표출 완료.
 
+14. **Issue 14: 미블(Mible) 및 전 플랫폼 더미/가짜 데이터 525건 전량 정제 및 DB/스냅샷 Clean 갱신**
+   - **증상**: 미블 공고 목록 조회 시 랜덤 서피스 썸네일(`picsum.photos`) 및 깨진 딥링크(`https://viral-re.co.kr/campaigns/mb-ext-...`, 404 에러)를 가진 더미 데이터(`mb-ext-expanded-1` ~ `40`)가 혼입되어 출력됨.
+   - **원인 분석**: 개발/테스트 단계에서 생성되었던 가짜 모의 공고 525건이 SQLite DB 및 `data/campaigns.json` 스냅샷에 잔존하여 실서비스 데이터와 섞여 표출됨.
+   - **기술적 조치**:
+     1) SQLite 데이터베이스(`review-moa.db`) 및 스냅샷(`data/campaigns.json`)에서 `mb-ext-%` 및 `picsum.photos`, `viral-re.co.kr/campaigns/` 형태의 테스트 더미 데이터 525건 전량 삭제 완료.
+     2) 크롤러 코드(`src/lib/crawler-core.ts`, `src/lib/crawler-parallel.ts`, `src/lib/push_all_sites_sync.ts`, `src/lib/push_cloudreview_sync.ts`, `src/lib/update_snapshot_with_all_17_sites.ts`) 내 외부 무작위 이미지 패치 fallback을 자사 안전 아이콘(`https://viral-re.co.kr/icon.png`)으로 변경 완료.
+     3) 92건의 미블 실데이터(실제 썸네일 및 `https://www.mrblog.net/campaigns/...` 이동 원본 딥링크 100% 검증)만 깨끗하게 유지하도록 데이터 청정화 완료.
+
 ### 🟢 오마이블로그 (ohmyblog.co.kr)
 * **수집 규격**: 백엔드 REST API(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100`) 다중 페이지 수집기 적용.
 * **수집 데이터**: **400건 전수 실시간 수집 완료**.

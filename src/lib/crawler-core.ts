@@ -489,7 +489,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
               mibleItemsMap.set(id, {
                 id, title: cleanText, description: cleanText, platform: detectPlatform(cleanText, cleanText),
                 category, campaignUrl: fullUrl,
-                imageUrl: img.startsWith('http') ? img : (img ? `https://www.mrblog.net${img}` : 'https://picsum.photos/600/400'),
+                imageUrl: img.startsWith('http') ? img : (img ? `https://www.mrblog.net${img}` : 'https://viral-re.co.kr/icon.png'),
                 targetSite: '미블', limitCount, applyCount,
                 startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
                 createdAt: now.toISOString(), updatedAt: now.toISOString(),
@@ -529,7 +529,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
 
             mibleItemsMap.set(id, {
               id, title: rawTitle, description: rawTitle, platform: detectPlatform(rawTitle, rawTitle), category, campaignUrl: fullUrl,
-              imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블', limitCount: 5, applyCount: 0,
+              imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블', limitCount: 5, applyCount: 0,
               startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
               searchKeywords
@@ -582,7 +582,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
           platform: detectPlatform(rawTitle, rawTitle),
           category,
           campaignUrl: fullUrl,
-          imageUrl: img || 'https://picsum.photos/600/400',
+          imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '클라우드리뷰',
           limitCount: 10,
           applyCount: 0,
@@ -622,7 +622,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         collected.push({
           id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블', limitCount: 5, applyCount: 0,
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
         ringCount++;
@@ -656,7 +656,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         collected.push({
           id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
         playCount++;
@@ -690,7 +690,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         collected.push({
           id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
-          imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블', limitCount: 5, applyCount: 0,
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
         moblCount++;
@@ -758,7 +758,7 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
 
           allCampaigns.push({
             id, title, description, platform, category, location, campaignUrl,
-            imageUrl: imageUrl || 'https://picsum.photos/600/400',
+            imageUrl: imageUrl || 'https://viral-re.co.kr/icon.png',
             targetSite: '강남맛집', limitCount, applyCount,
             startDate: now.toISOString().split('T')[0], endDate,
             createdAt: now.toISOString(), updatedAt: now.toISOString(),

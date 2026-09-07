@@ -55,7 +55,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           applyCount: item.applyCount || 0,
           platform: detectPlatform(item.title, item.platform || item.description || ''),
           category: item.category || detectCategory(item.title, item.description || ''),
-          imageUrl: item.imageUrl || 'https://picsum.photos/600/400',
+          imageUrl: item.imageUrl || 'https://viral-re.co.kr/icon.png',
           ...item
         });
       }
@@ -142,7 +142,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           if (title && title.length > 3) {
             addCampaign({
               id: `rp-${cpId}`,
-              title, description: title, campaignUrl: `https://www.reviewplace.co.kr/pr/?id=${cpId}`, imageUrl: img || 'https://picsum.photos/600/400', targetSite: '리뷰플레이스'
+              title, description: title, campaignUrl: `https://www.reviewplace.co.kr/pr/?id=${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '리뷰플레이스'
             });
             pageItems++;
           }
@@ -223,7 +223,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
 
         addCampaign({
           id: `mb-${cpId}`,
-          title: rawTitle, description: rawTitle, campaignUrl: fullUrl, imageUrl: img || 'https://picsum.photos/600/400', targetSite: '미블'
+          title: rawTitle, description: rawTitle, campaignUrl: fullUrl, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블'
         });
       }
     });
@@ -246,7 +246,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       if (rawTitle && rawTitle.length > 3 && cpId) {
         addCampaign({
           id: `cr-${cpId}`,
-          title: rawTitle, description: rawTitle, campaignUrl: `https://cloudreview.co.kr/campaign/detail/${cpId}`, imageUrl: img || 'https://picsum.photos/600/400', targetSite: '클라우드리뷰'
+          title: rawTitle, description: rawTitle, campaignUrl: `https://cloudreview.co.kr/campaign/detail/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '클라우드리뷰'
         });
       }
     });
@@ -270,7 +270,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       if (rawTitle && rawTitle.length > 3) {
         addCampaign({
           id: `ringble-${cpId}`,
-          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`, imageUrl: img || 'https://picsum.photos/600/400', targetSite: '링블'
+          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블'
         });
       }
     });
@@ -294,7 +294,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       if (rawTitle && rawTitle.length > 3) {
         addCampaign({
           id: `cometoplay-${cpId}`,
-          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`, imageUrl: img || 'https://picsum.photos/600/400', targetSite: '놀러와체험단'
+          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단'
         });
       }
     });
@@ -318,7 +318,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       if (rawTitle && rawTitle.length > 3) {
         addCampaign({
           id: `modublog-${cpId}`,
-          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`, imageUrl: img || 'https://picsum.photos/600/400', targetSite: '모블'
+          title: rawTitle.slice(0, 60), description: rawTitle, campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`, imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블'
         });
       }
     });
@@ -339,7 +339,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           title: text.slice(0, 70),
           description: text,
           campaignUrl: href,
-          imageUrl: img ? (img.startsWith('http') ? img : `https://www.moaview.co.kr${img}`) : 'https://picsum.photos/600/400',
+          imageUrl: img ? (img.startsWith('http') ? img : `https://www.moaview.co.kr${img}`) : 'https://viral-re.co.kr/icon.png',
           targetSite: '체험단모아'
         });
       }
@@ -355,7 +355,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         const list = res.data.data.campaigns;
         if (list.length === 0) break;
         list.forEach((c: any) => {
-          const img = c.thumbnail ? (c.thumbnail.startsWith('http') ? c.thumbnail : `https://ohmyblog.co.kr${c.thumbnail.startsWith('/') ? '' : '/'}${c.thumbnail}`) : 'https://picsum.photos/600/400';
+          const img = c.thumbnail ? (c.thumbnail.startsWith('http') ? c.thumbnail : `https://ohmyblog.co.kr${c.thumbnail.startsWith('/') ? '' : '/'}${c.thumbnail}`) : 'https://viral-re.co.kr/icon.png';
           const title = c.app_title || c.app_companyName || '오마이블로그 체험단';
           const desc = c.supplyItem || c.app_companyName || '리뷰어 체험 제공';
           addCampaign({
@@ -435,7 +435,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         title: `[${reg}] ${tmpl.title} (${site})`,
         description: `${site} 공식 검증 리포터단 및 서포터즈 모집 - ${tmpl.title}`,
         campaignUrl: officialUrl,
-        imageUrl: `https://picsum.photos/seed/${prefix}${i}/600/400`,
+        imageUrl: `https://viral-re.co.kr/icon.png/600/400`,
         targetSite: site,
         category: tmpl.cat,
         location: reg,
