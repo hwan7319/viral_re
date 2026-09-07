@@ -726,6 +726,21 @@ export async function GET(request: Request) {
       });
     }
 
+    // 🔑 범용 블로그/콘텐츠 타겟 확장 키워드 자동 생성기 (검색어 '세계명작' -> '세계명작 중고', '세계명작 전집', '세계명작 추천' 등 직관적 타겟 확장)
+    const GENERAL_TARGET_EXTENSIONS = [
+      '중고', '전집', '추천', '책', '세트', '줄거리', '독후감', '모음', '순위', '후기',
+      '가격', '종류', '리스트', '동화', '소설', '인기', '베스트', '신작', '도서', '구입', '구매',
+      '사이트', '쇼핑몰', '방법', '정리', '비교', '매장', '위치'
+    ];
+    GENERAL_TARGET_EXTENSIONS.forEach(ext => {
+      const expKw = `${query} ${ext}`;
+      const key1 = expKw.replace(/\s+/g, '').toLowerCase();
+      const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
+      const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
+      const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
+      safeAddCandidate(expKw, pc, mobile, 1);
+    });
+
     // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 2, 3)
     const queryCore = cleanHintQuery.length >= 2 ? cleanHintQuery.slice(0, 2).toLowerCase() : cleanHintQuery.toLowerCase();
     const queryWords = query.toLowerCase().split(' ');
@@ -775,7 +790,21 @@ export async function GET(request: Request) {
       }
     }
 
+    const cleanQueryNorm = cleanHintQuery.toLowerCase();
+    const queryWordsList = query.toLowerCase().split(/\s+/).filter(w => w.length >= 1);
+
+    const hasTargetWord = (kwStr: string) => {
+      const normKw = kwStr.replace(/\s+/g, '').toLowerCase();
+      if (normKw.includes(cleanQueryNorm)) return true;
+      return queryWordsList.some(w => normKw.includes(w));
+    };
+
     allCandidatesList.sort((a, b) => {
+      const aTarget = hasTargetWord(a.keyword);
+      const bTarget = hasTargetWord(b.keyword);
+      if (aTarget && !bTarget) return -1;
+      if (!aTarget && bTarget) return 1;
+
       if (a.priority !== b.priority) return a.priority - b.priority;
       return b.total - a.total;
     });
@@ -881,8 +910,14 @@ export async function GET(request: Request) {
     // 🔑 1. 기본 실데이터 검증 (검색량 0 및 포스팅 0인 깡통 키워드 완전 제거)
     const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0) && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
-    // 🔑 2. 월간 총 검색량 내림차순 100% 정렬 (25만건의 '김밥' 등이 항상 상위에 정확히 노출)
+    // 🔑 2. 최우선 순위: 검색한 단어('세계명작' 등)가 직접 포함된 타겟 확장 키워드를 최상단 그룹으로 상위 배치
     validListRaw.sort((a: any, b: any) => {
+      const aTarget = hasTargetWord(a.keyword);
+      const bTarget = hasTargetWord(b.keyword);
+
+      if (aTarget && !bTarget) return -1;
+      if (!aTarget && bTarget) return 1;
+
       if (b.totalSearchVolume !== a.totalSearchVolume) {
         return b.totalSearchVolume - a.totalSearchVolume;
       }
