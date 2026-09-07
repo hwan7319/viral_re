@@ -411,6 +411,18 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
       }
     }
 
+    // 2-3.5 링블 -> 신청 N / 모집 N
+    if (siteLower.includes('링블') || url.includes('ringble.co.kr')) {
+      const fullText = $('body').text().replace(/\s+/g, ' ');
+      const match = fullText.match(/신청\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i) || fullText.match(/신청\s*([\d,]+)/i);
+      if (match) {
+        return {
+          applyCount: parseInt(match[1].replace(/,/g, ''), 10),
+          limitCount: match[2] ? parseInt(match[2].replace(/,/g, ''), 10) : 5
+        };
+      }
+    }
+
     // 2-4. 범용 매처 (레뷰, 체험뷰, 링블, 아싸뷰, 클라우드리뷰 등 17대 매체 공통 파서)
     const fullText = $('body').text().replace(/\s+/g, ' ');
     const generalMatch = 

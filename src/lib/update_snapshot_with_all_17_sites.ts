@@ -289,6 +289,13 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
 
           const item = itemsMap.get(id);
 
+          const containerText = $(el).parents('table').first().text();
+          const countMatch = containerText.match(/신청\s*([\d,]+)\s*\/\s*모집\s*([\d,]+)/i);
+          if (countMatch) {
+            item.applyCount = parseInt(countMatch[1].replace(/,/g, ''), 10);
+            item.limitCount = parseInt(countMatch[2].replace(/,/g, ''), 10);
+          }
+
           const imgInside = $(el).find('img').attr('src');
           if (imgInside) {
             let img = imgInside;
