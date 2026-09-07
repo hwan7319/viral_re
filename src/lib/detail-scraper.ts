@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { execSync } from 'child_process';
 import { getRevuAuthToken } from './revu_auth';
 import { getDB } from './db';
 
@@ -420,20 +421,26 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
   } catch (e) {}
   
   try {
-    let res;
+    let html = '';
     try {
-      res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+      const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
+      if (typeof res.data === 'string' && !res.data.includes('Just a moment...') && !res.data.includes('challenge-error-text')) {
+        html = res.data;
+      } else {
+        throw new Error('Cloudflare Challenge detected');
+      }
     } catch (firstErr) {
-      // Vercel Serverless IP 우회 2차 재시도 (Mobile User-Agent)
-      const mobileHeaders = {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-      };
-      res = await axios.get(url, { headers: mobileHeaders, timeout: 6000 });
+      // 2차 재시도: curl 시스템 명령어 우회 (Cloudflare Datacenter IP 403 / Challenge 방어)
+      try {
+        const safeUrl = url.replace(/"/g, '');
+        const cmd = `curl -s -L -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" -H "Sec-Ch-Ua: \\"Chromium\\";v=\\"128\\", \\"Google Chrome\\";v=\\"128\\"" -H "Sec-Ch-Ua-Mobile: ?0" -H "Sec-Ch-Ua-Platform: \\"Windows\\"" -H "Sec-Fetch-Dest: document" -H "Sec-Fetch-Mode: navigate" -H "Sec-Fetch-Site: none" "${safeUrl}"`;
+        html = execSync(cmd, { timeout: 8000, maxBuffer: 10 * 1024 * 1024 }).toString();
+      } catch (curlErr) {
+        return undefined;
+      }
     }
 
-    const html = res.data;
-    if (typeof html !== 'string') return undefined;
+    if (typeof html !== 'string' || !html) return undefined;
 
     const $ = cheerio.load(html);
     let extractedRaw = '';
