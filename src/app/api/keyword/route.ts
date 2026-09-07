@@ -309,8 +309,8 @@ export function classifyQueryEntityType(query: string): 'LOCATION' | 'VENUE' | '
     return 'GENERAL_CATEGORY';
   }
 
-  // 1. VENUE (백화점, 팝업, 쇼핑몰, 멀티플렉스 건물)
-  const venueRegex = /(더현대|백화점|아울렛|스타필드|코엑스|타임스퀘어|롯데몰|아이파크몰|센텀시티)/i;
+  // 1. VENUE (백화점, 팝업, 쇼핑몰, 멀티플렉스, 파티룸, 스페이스, 공간, 스튜디오 등)
+  const venueRegex = /(더현대|백화점|아울렛|스타필드|코엑스|타임스퀘어|롯데몰|아이파크몰|센텀시티|파티룸|스페이스|스튜디오|연습실|공유오피스|공유주방|회의실|워크숍|펜션|풀빌라|숙소|호텔|모텔|게스트하우스|아뜰리에|아지트|루프탑|라운지|하우스|스파|사우나|수목원|식물원|공원|컨벤션|웨딩홀|갤러리)/i;
   if (venueRegex.test(cleanQ)) return 'VENUE';
 
   // 2. SEASONAL / EVENT (절기, 명절, 이벤트)
@@ -713,32 +713,33 @@ export async function GET(request: Request) {
       });
     }
 
-    // 🔑 펜션/숙박 개별 상호명 전용 서픽스 확장 (예: 장곡펜션 -> 장곡펜션 수영장, 장곡펜션 위치, 장곡펜션 후기, 장곡펜션 예약 등)
-    if (/(펜션|숙소|호텔|리조트|글램핑|민박|풀빌라)$/i.test(cleanHintQuery)) {
-      const STAY_SUFFIXES = ['예약', '가격', '후기', '수영장', '위치', '바베큐', '가족여행', '입실시간', '근처맛집', '주차', '할인'];
-      STAY_SUFFIXES.forEach(suf => {
+    // 🔑 펜션/숙박/파티룸/스페이스 개별 장소 상호명 전용 서픽스 확장 (예: 아우룸스페이스 -> 예약, 가격, 후기, 위치, 대여, 이용시간, 주차 등)
+    if (/(파티룸|스페이스|스튜디오|대관|렌탈|룸|공간|연습실|홀|빌딩|타워|센터|펜션|숙소|호텔|리조트|글램핑|민박|풀빌라)$/i.test(cleanHintQuery) || entityType === 'VENUE') {
+      const VENUE_SPACE_SUFFIXES = ['예약', '가격', '후기', '위치', '대여', '대관', '이용시간', '주차', '비용', '할인', '추천', '파티룸', '영업시간', '핫플', '데이트', '주차장', '가격표', '사진'];
+      VENUE_SPACE_SUFFIXES.forEach(suf => {
         const expKw = `${query} ${suf}`;
         const key1 = expKw.replace(/\s+/g, '').toLowerCase();
         const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
         const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
         const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-        safeAddCandidate(expKw, pc, mobile, 2);
+        safeAddCandidate(expKw, pc, mobile, 1);
       });
     }
 
-    // 🔑 범용 블로그/콘텐츠 타겟 확장 키워드 자동 생성기 (검색어 '세계명작' -> '세계명작 중고', '세계명작 전집', '세계명작 추천' 등 직관적 타겟 확장)
-    const GENERAL_TARGET_EXTENSIONS = [
-      '중고', '전집', '추천', '책', '세트', '줄거리', '독후감', '모음', '순위', '후기',
-      '가격', '종류', '리스트', '동화', '소설', '인기', '베스트', '신작', '도서', '구입', '구매',
-      '사이트', '쇼핑몰', '방법', '정리', '비교', '매장', '위치'
-    ];
+    // 🔑 도서/서적/출판물 전용 타겟 확장어 (독후감, 동화, 줄거리, 전집 등은 도서 키워드에만 한정 적용)
+    const isBookQuery = /(책|도서|전집|소설|동화|문학|자서전|만화|웹툰|시집|수필|그림책|학습지|교재|출판|명작)/i.test(query);
+
+    const GENERAL_TARGET_EXTENSIONS = isBookQuery
+      ? ['중고', '전집', '추천', '책', '세트', '줄거리', '독후감', '모음', '순위', '후기', '가격', '종류', '리스트', '동화', '소설', '인기', '베스트', '신작', '도서', '구입', '구매', '방법', '정리', '비교']
+      : ['추천', '후기', '가격', '순위', '종류', '비교', '위치', '방법', '정리', '인기', '베스트', '매장', '구입', '구매', '사용법', '이용방법', '할인', '비용'];
+
     GENERAL_TARGET_EXTENSIONS.forEach(ext => {
       const expKw = `${query} ${ext}`;
       const key1 = expKw.replace(/\s+/g, '').toLowerCase();
       const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
       const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
       const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-      safeAddCandidate(expKw, pc, mobile, 1);
+      safeAddCandidate(expKw, pc, mobile, 2);
     });
 
     // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 2, 3)
