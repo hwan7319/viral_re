@@ -621,20 +621,30 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           const href = $(el).attr('href') || '';
           const parent = $(el).closest('div, li');
           let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
-          if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
-
           let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          if (img && img.includes('/./')) img = img.replace('/./', '/');
           if (img && img.startsWith('//')) img = 'https:' + img;
           if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
 
           const numMatch = href.match(/number=(\d+)/);
           const cpId = numMatch ? numMatch[1] : `${i}`;
 
-          if (rawTitle && rawTitle.length > 3) {
+          let cleanTitle = rawTitle.replace(/^블로그\s*/, '').trim();
+          cleanTitle = cleanTitle.replace(/(?:\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '').trim();
+
+          let applyCount = 0;
+          let limitCount = 5;
+          const hm = rawTitle.match(/신청\s*(\d+)\s*[\/\,\~]\s*모집\s*(\d+)/i) || rawTitle.match(/신청\s*(\d+)/i);
+          if (hm) {
+            if (hm[1]) applyCount = parseInt(hm[1], 10);
+            if (hm[2]) limitCount = parseInt(hm[2], 10);
+          }
+
+          if (cleanTitle && cleanTitle.length > 3) {
             collected.push({
-              id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
-              category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
-              imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount: 5, applyCount: 0,
+              id: `ringble-${cpId}`, title: cleanTitle.slice(0, 60), description: cleanTitle, platform: detectPlatform(cleanTitle, cleanTitle),
+              category: detectCategory(cleanTitle, cleanTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
+              imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
             });
           }

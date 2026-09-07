@@ -159,6 +159,34 @@ export function formatMibleMission(text: string, title?: string, url?: string): 
   return parts.join('\n\n');
 }
 
+// 🔑 링블 (Ringble - ringble.co.kr) 공고 아이템 정밀 미션 및 가이드라인 포맷터
+function formatRingbleMission(htmlOrText: string, title?: string, url?: string, keywords?: string[]): string {
+  const parts: string[] = [];
+  const cleanTitle = (title || '').replace(/^블로그\s*/, '').trim();
+
+  parts.push(`🎁 [링블 (Ringble) 제공 혜택 및 상세 보상]`);
+  if (cleanTitle) {
+    parts.push(`• 지원/상품 혜택: ${cleanTitle}`);
+  }
+
+  if (keywords && keywords.length > 0) {
+    parts.push(`\n📋 [포스팅 미션 & 작성 가이드라인]`);
+    const uniqueKws = Array.from(new Set(keywords));
+    uniqueKws.forEach(kw => {
+      parts.push(`• ${kw}`);
+    });
+  } else if (htmlOrText) {
+    const cleanTxt = htmlOrText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (cleanTxt.includes('키워드')) {
+      parts.push(`\n📋 [포스팅 미션 & 작성 가이드라인]`);
+      parts.push(`• 필수 미션 및 키워드 지침: ${cleanTxt.slice(0, 300)}`);
+    }
+  }
+
+  parts.push(`\n※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 링블 원본 상세 화면으로 바로 이동합니다.`);
+  return parts.join('\n');
+}
+
 // 🚫 사이트 공통 메뉴 / 푸터 카테고리 목록 블랙리스트
 const BLACKLIST_PATTERNS = [
   '체험단·인플루언서 마케팅은 역시',
@@ -528,6 +556,23 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
         }
       } catch (e) {}
     }
+    // 9. 링블 (ringble.co.kr)
+    else if (siteLower.includes('링블') || url.includes('ringble.co.kr')) {
+      try {
+        const $ = cheerio.load(res.data);
+        let benefit = '';
+        $('td, th, div, tr').each((_, el) => {
+          const t = $(el).text().trim();
+          if (t.startsWith('제공내역') && t.length > 5 && t.length < 200) {
+            const raw = t.replace('제공내역', '').trim();
+            if (raw && (!benefit || raw.length < benefit.length)) {
+              benefit = raw;
+            }
+          }
+        });
+        if (benefit) return benefit;
+      } catch (e) {}
+    }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);
   }
@@ -877,7 +922,33 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         } catch (e) {}
       }
     }
-    // 8. 기타 사이트 범용 파싱
+    // 9. 링블 (ringble.co.kr)
+    else if (siteLower.includes('링블') || url.includes('ringble.co.kr')) {
+      try {
+        let benefitTitle = '';
+        $('td, th, div, tr').each((_, el) => {
+          const t = $(el).text().trim();
+          if (t.startsWith('제공내역') && t.length > 5 && t.length < 200) {
+            const raw = t.replace('제공내역', '').trim();
+            if (raw && (!benefitTitle || raw.length < benefitTitle.length)) {
+              benefitTitle = raw;
+            }
+          }
+        });
+
+        const keywords: string[] = [];
+        $('div, td, p').each((_, el) => {
+          const t = $(el).text().trim();
+          if (t.includes('키워드 :') || t.includes('키워드:')) {
+            keywords.push(t.replace(/\s+/g, ' '));
+          }
+        });
+
+        const formatted = formatRingbleMission(html, benefitTitle, url, keywords);
+        if (formatted) return formatted;
+      } catch (e) {}
+    }
+    // 10. 기타 사이트 범용 파싱
     else {
       extractedRaw = $('#cmp_guide').html() || 
                      $('.campaigninfo-text').html() || 
