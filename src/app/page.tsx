@@ -382,11 +382,19 @@ const formatMissionText = (text: string): string => {
   const lines = cleaned.split('\n');
   const formattedLines: string[] = [];
 
-  for (let line of lines) {
-    let trimmed = line.trim();
-    if (!trimmed) continue;
-
     if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
+
+    // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 문구 완전 제거]
+    const isHeadcountLine = 
+      /모집\s*및\s*지원\s*현황/i.test(trimmed) ||
+      /신청\s*현황|지원\s*현황|모집\s*현황/i.test(trimmed) ||
+      /(?:신청|지원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*모집\s*:?\s*\d+\s*명?/i.test(trimmed) ||
+      /(?:모집|정원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*(?:신청|지원)\s*:?\s*\d+\s*명?/i.test(trimmed) ||
+      /총\s*\d+\s*명\s*모집\s*중/i.test(trimmed) ||
+      /신청인원|모집인원|지원인원/i.test(trimmed) ||
+      /현재\s*\d+\s*명\s*(?:신청|지원)/i.test(trimmed);
+
+    if (isHeadcountLine) continue;
 
     trimmed = trimmed.replace(/^([•\-\*★✔◈※▶]\s*)+/g, (match) => {
       const symbol = match.trim()[0];

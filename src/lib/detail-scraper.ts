@@ -58,7 +58,7 @@ export function formatRevuMission(item: any): string {
     ? '유튜브 (쇼츠 또는 3분 이상 정성 리뷰 영상)' 
     : '네이버 블로그 (사진 15장 이상, 1,000자 이상 정성 리뷰)';
 
-  let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${mediaStr}\n• 필수 의무 표기: 게시글 최상단 첫 줄에 #협찬 #레뷰 해시태그 반드시 표기\n• 최소 작성 기준: 텍스트 300자 이상, 이미지/영상 5장 이상 필수 등록\n• 모집 및 지원 현황: 총 ${item.reviewerLimit || 5}명 모집 중 (현재 ${item.campaignStats?.requestCount || 0}명 신청 완료)`;
+  let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${mediaStr}\n• 필수 의무 표기: 게시글 최상단 첫 줄에 #협찬 #레뷰 해시태그 반드시 표기\n• 최소 작성 기준: 텍스트 300자 이상, 이미지/영상 5장 이상 필수 등록`;
 
   if (item.requestStartedOn && item.requestEndedOn) {
     missionStr += `\n• 모집 신청 기간: ${item.requestStartedOn} ~ ${item.requestEndedOn}`;
@@ -103,7 +103,7 @@ export function formatReviewNoteMission(item: any): string {
     parts.push(`📍 [체험 장소 및 위치]\n• 위치/지역: ${locStr}`);
   }
 
-  let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${channelStr}\n• 모집 및 지원 현황: 총 ${item.infNum || 5}명 모집 중 (현재 ${item.applicantCount || 0}명 지원 완료)`;
+  let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${channelStr}`;
 
   if (item.applyEndAt) {
     const applyEnd = item.applyEndAt.split('T')[0];
@@ -275,10 +275,19 @@ export function formatMissionText(text: string): string {
   const formattedLines: string[] = [];
 
   for (let line of lines) {
-    let trimmed = line.trim();
-    if (!trimmed) continue;
-
     if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
+
+    // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 문구 완전 제거]
+    const isHeadcountLine = 
+      /모집\s*및\s*지원\s*현황/i.test(trimmed) ||
+      /신청\s*현황|지원\s*현황|모집\s*현황/i.test(trimmed) ||
+      /(?:신청|지원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*모집\s*:?\s*\d+\s*명?/i.test(trimmed) ||
+      /(?:모집|정원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*(?:신청|지원)\s*:?\s*\d+\s*명?/i.test(trimmed) ||
+      /총\s*\d+\s*명\s*모집\s*중/i.test(trimmed) ||
+      /신청인원|모집인원|지원인원/i.test(trimmed) ||
+      /현재\s*\d+\s*명\s*(?:신청|지원)/i.test(trimmed);
+
+    if (isHeadcountLine) continue;
 
     trimmed = trimmed.replace(/^([•\-\*★✔◈※▶]\s*)+/g, (match) => {
       const symbol = match.trim()[0];
