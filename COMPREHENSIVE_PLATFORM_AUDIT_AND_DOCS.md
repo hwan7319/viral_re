@@ -30,6 +30,10 @@
 
 ## 2. 🔎 사이트별 이슈 이력 & 기술적 조치사항 규격서 (Site History & Specs)
 
+> [!IMPORTANT]
+> **[사이트별 문서화 의무화 원칙]**  
+> 향후 모든 체험단 플랫폼별 수집 엔진, 미션 파싱, 딥링크 정제, 동기화, 카테고리 매핑 등의 변경/고도화/버그 수정 작업 수행 시, **별도의 언급이 없더라도 무조건 해당 사이트의 증상, 원인 분석, 기술적 조치 내역 및 진단 결과를 본 문서(`COMPREHENSIVE_PLATFORM_AUDIT_AND_DOCS.md`)에 빠짐없이 기록**하여 관리해야 합니다.
+
 ### 🟢 레뷰 (REVU - revu.net / api.weble.net)
 * **초기 이슈 1 (더미/시드 데이터 표출)**:
   - 레뷰 웹사이트(`revu.net`)는 AngularJS 기반 CSR(Single Page Application) 구조로 비로그인 일반 HTTP 요청 시 빈 껍데기 HTML만 반환되어 초기에는 시드 데이터로 방어되어 있었음.
