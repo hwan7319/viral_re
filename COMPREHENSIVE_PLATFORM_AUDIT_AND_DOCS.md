@@ -85,6 +85,16 @@
     1) **타겟 단어 포함성 그룹화 (`hasTargetWord`)**: 후보 키워드가 검색한 단어(`세계명작` 등)를 직접 포함하는지 여부를 검사하여, 검색어가 포함된 키워드들을 **Group 1(최상위 직관 타겟 확장 키워드)**로 최우선 배치함.
     2) **범용 타겟 확장키워드 자동 생성기 (`GENERAL_TARGET_EXTENSIONS`)**: `[검색어] + [중고, 전집, 추천, 책, 세트, 줄거리, 독후감, 모음, 순위, 후기, 가격, 종류, 소설 등]` 27종의 포스팅 타겟 확장어를 자동 생성하여 네이버 실시간 검색량 및 블로그 경쟁 비율을 100% 매핑함.
     3) **상위 출력 검증 완료**: '세계명작' 검색 시 1위 `은하수 세계명작`, 2위 `세계명작동화`, 3위 `믿음사 세계명작`, 4위 `삼성출판사 세계명작`, 8위 `세계명작 전집`, 11위 `세계명작 소설`, 12위 `세계명작 추천` 등 타겟 키워드 100% 상위 노출 확인.
+* **이슈 9 (포블로그 (4blog.net) 상세 미션 & 가이드라인 미노출 원인 분석 및 해결)**:
+  - **증상**: 포블로그 공고 클릭 후 상세 모달 열람 시 미션 & 가이드라인 영역이 비어있거나 출력되지 않는 문제 발생.
+  - **원인 분석**:
+    1) 포블로그의 개편된 HTML DOM 구조에서 `.campaigninfo-label` (예: `미션`, `제목 키워드`) 영역이 독립된 `<div>` 태그로 래핑되어 있었고, 실제 텍스트 요소인 `.campaigninfo-text`는 해당 래퍼의 형제(sibling) 요소 또는 상위 `div[data-native-drag]` 구조에 분리 배치됨.
+    2) 기존 파서가 `el.parent().find('.campaigninfo-text')`만 검색함에 따라 형제 래퍼의 본문 탐색에 실패하여 null/빈값을 반환함.
+    3) HTML 구조 내 '배너 복사하기' 버튼(`.btn-copy-banner`) 및 스폰서 배너(`.sponsor-banner-wrap`) 노이즈 텍스트가 함께 걸러지지 않고 유입됨.
+  - **기술적 조치**:
+    1) [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts)의 포블로그 파서를 상위 다중 래퍼(`closest('div[data-native-drag], div, tr, section')`) 및 형제 래퍼(`nextAll('.campaigninfo-text')`) 탐색 알고리즘으로 전면 고도화.
+    2) DOM 클론 처리 시 배너 복사 버튼, 스폰서 힌트 등의 UI 전용 노드를 사전 제거하여 불필요한 노이즈 전면 차단.
+    3) `📌 [리뷰어 제공 혜택]`, `📌 [이용 안내 & 가이드]`, `📌 [지정 필수 키워드]`, `📌 [업체 상세 미션]` 등 구획별 자동 포맷팅 구조를 도입하여 100% 정제 표출 완료.
 
 ### 🟢 오마이블로그 (ohmyblog.co.kr)
 * **수집 규격**: 백엔드 REST API(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100`) 다중 페이지 수집기 적용.
@@ -132,5 +142,5 @@
    - 프론트엔드 카테고리 키(`food-pub`, `food-cafe`, `food-korean`, `beauty-cosmetics`, `beauty-salon`, `accommodation`, `life-goods`, `health-fresh`, `fashion-clothing`)와의 1:1 매치 규격 엄수.
 
 ---
-*최종 업데이트: 2026-09-04*  
+*최종 업데이트: 2026-09-07*  
 *작성자: Antigravity AI Pair Programmer*

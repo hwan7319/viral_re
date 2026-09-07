@@ -463,21 +463,54 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     else if (siteLower.includes('포블로그') || url.includes('4blog.net')) {
       const missionItems: string[] = [];
 
-      $('.campaigninfo-label, label, dt, strong, .panel-heading').each((_, el) => {
-        const label = $(el).text().trim();
-        if (label.includes('미션') || label.includes('이용 안내') || label.includes('이용안내') || label.includes('가이드') || label.includes('키워드')) {
-          const parent = $(el).parent();
-          const infoText = parent.find('.campaigninfo-text').text().trim() || parent.text().replace(label, '').trim();
-          if (infoText && infoText.length > 5 && !missionItems.includes(infoText)) {
-            missionItems.push(`📌 [${label}]\n${infoText}`);
+      $('.campaigninfo-label, label').each((_, el) => {
+        const rawLabel = $(el).text().trim();
+        if (!rawLabel) return;
+
+        const isBenefit = rawLabel.includes('제공') || rawLabel.includes('혜택');
+        const isGuide = rawLabel.includes('이용 안내') || rawLabel.includes('이용안내') || rawLabel.includes('안내');
+        const isKeyword = rawLabel.includes('키워드');
+        const isMission = rawLabel.includes('미션') || rawLabel.includes('가이드');
+
+        if (!isBenefit && !isGuide && !isKeyword && !isMission) return;
+
+        let headerTitle = rawLabel;
+        if (isBenefit) headerTitle = '리뷰어 제공 혜택';
+        else if (isKeyword) headerTitle = '지정 필수 키워드';
+        else if (isMission) headerTitle = '업체 상세 미션';
+        else if (isGuide) headerTitle = '이용 안내 & 가이드';
+
+        // Find associated text content across parent, closest container, or sibling wrappers
+        let textEl = $(el).parent().find('.campaigninfo-text');
+        if (textEl.length === 0) {
+          textEl = $(el).closest('div[data-native-drag], div, tr, section').find('.campaigninfo-text');
+        }
+        if (textEl.length === 0) {
+          textEl = $(el).parent().nextAll('.campaigninfo-text').first();
+        }
+        if (textEl.length === 0) {
+          textEl = $(el).nextAll('.campaigninfo-text').first();
+        }
+
+        if (textEl.length > 0) {
+          const clone = textEl.clone();
+          clone.find('.sponsor-banner-wrap, #sponsorBanner, button, script, style, .btn-copy-banner').remove();
+
+          let infoText = clone.text().replace(/\r\n/g, '\n').trim();
+          infoText = infoText.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
+
+          if (infoText && infoText.length > 2 && !missionItems.some(item => item.includes(infoText))) {
+            missionItems.push(`📌 [${headerTitle}]\n${infoText}`);
           }
         }
       });
 
       if (missionItems.length === 0) {
         $('.campaigninfo-text').each((i, el) => {
-          const text = $(el).text().trim();
-          if (i > 0 && text.length > 15 && !text.includes('자유이용권') && !text.includes('제공') && !text.includes('도로명') && !text.includes('지번')) {
+          const clone = $(el).clone();
+          clone.find('.sponsor-banner-wrap, #sponsorBanner, button, script, style, .btn-copy-banner').remove();
+          const text = clone.text().trim();
+          if (text.length > 15 && !text.includes('자유이용권') && !text.includes('제공') && !text.includes('도로명') && !text.includes('지번')) {
             missionItems.push(text);
           }
         });
