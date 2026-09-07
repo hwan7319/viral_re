@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { execSync } from 'child_process';
 import { getRevuAuthToken } from './revu_auth';
+import { getReviewNoteHeaders } from './rn_auth';
 import { getDB } from './db';
 
 const HEADERS = {
@@ -660,11 +661,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
 
       if (cid) {
         try {
-          const rnHeaders = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-            'Referer': 'https://www.reviewnote.co.kr/campaigns',
-            'Origin': 'https://www.reviewnote.co.kr'
-          };
+          const rnHeaders = getReviewNoteHeaders();
           const apiRes = await axios.get(`https://www.reviewnote.co.kr/api/v2/campaigns?search=${cid}&limit=10`, { headers: rnHeaders, timeout: 4000 });
           const objects = apiRes.data?.objects || apiRes.data?.data || [];
           const item = objects.find((it: any) => String(it.id) === String(cid)) || objects[0];
