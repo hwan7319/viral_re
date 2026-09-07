@@ -72,6 +72,53 @@ export function formatRevuMission(item: any): string {
   return parts.join('\n\n');
 }
 
+// 🔑 리뷰노트 (ReviewNote) 공고 아이템 정밀 미션 및 가이드라인 포맷터
+export function formatReviewNoteMission(item: any): string {
+  if (!item) return '';
+
+  const title = item.title || '체험단 공고';
+  const offer = item.offer || item.description || '상세 제공내역 원본 참조';
+  
+  let locStr = '';
+  const city = typeof item.city === 'string' ? item.city : (item.city?.name || '');
+  const sido = typeof item.sido === 'string' ? item.sido : (item.sido?.name || '');
+  if (city || sido) {
+    locStr = `${city} ${sido}`.trim();
+  }
+
+  const channel = (item.channel || '').toUpperCase();
+  const channelStr = channel.includes('REELS') 
+    ? '인스타그램 릴스 (숏폼 영상 콘텐츠)' 
+    : channel.includes('INSTA') 
+    ? '인스타그램 피드' 
+    : channel.includes('CLIP') 
+    ? '네이버 클립 (숏폼 영상)' 
+    : '네이버 블로그 (정성 리뷰 포스팅)';
+
+  let parts: string[] = [];
+  parts.push(`🎁 [리뷰노트 (ReviewNote) 제공 혜택 및 상세 보상]\n• 캠페인명: ${title}\n• 제공 혜택: ${offer}`);
+
+  if (locStr) {
+    parts.push(`📍 [체험 장소 및 위치]\n• 위치/지역: ${locStr}`);
+  }
+
+  let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${channelStr}\n• 모집 및 지원 현황: 총 ${item.infNum || 5}명 모집 중 (현재 ${item.applicantCount || 0}명 지원 완료)`;
+
+  if (item.applyEndAt) {
+    const applyEnd = item.applyEndAt.split('T')[0];
+    missionStr += `\n• 모집 신청 마감: ${applyEnd}`;
+  }
+  if (item.reviewEndAt) {
+    const reviewEnd = item.reviewEndAt.split('T')[0];
+    missionStr += `\n• 리뷰 등록 마감: ${reviewEnd}`;
+  }
+
+  parts.push(missionStr);
+  parts.push(`※ 세부 미션 및 보안 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 통해 리뷰노트 원본 사이트에서 바로 확인하실 수 있습니다.`);
+
+  return parts.join('\n\n');
+}
+
 // 🚫 사이트 공통 메뉴 / 푸터 카테고리 목록 블랙리스트
 const BLACKLIST_PATTERNS = [
   '체험단·인플루언서 마케팅은 역시',
@@ -608,8 +655,37 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     }
     // 5. 리뷰노트 (reviewnote.co.kr)
     else if (siteLower.includes('리뷰노트') || url.includes('reviewnote')) {
-      extractedRaw = $('.mission_desc').html() || 
-                     $('.guide_desc').html() || '';
+      const cid = url.match(/campaigns\/([0-9]+)/)?.[1] || url.match(/campaign\/([0-9]+)/)?.[1];
+      let formattedMission = '';
+
+      if (cid) {
+        try {
+          const rnHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Referer': 'https://www.reviewnote.co.kr/campaigns',
+            'Origin': 'https://www.reviewnote.co.kr'
+          };
+          const apiRes = await axios.get(`https://www.reviewnote.co.kr/api/v2/campaigns?search=${cid}&limit=10`, { headers: rnHeaders, timeout: 4000 });
+          const objects = apiRes.data?.objects || apiRes.data?.data || [];
+          const item = objects.find((it: any) => String(it.id) === String(cid)) || objects[0];
+          if (item) {
+            formattedMission = formatReviewNoteMission(item);
+          }
+        } catch (e) {}
+      }
+
+      if (!formattedMission) {
+        extractedRaw = $('.mission_desc').html() || $('.guide_desc').html() || '';
+        if (extractedRaw) {
+          formattedMission = formatMissionText(extractedRaw);
+        }
+      }
+
+      if (!formattedMission && cid) {
+        formattedMission = `🎁 [리뷰노트 (ReviewNote) 캠페인 안내]\n• 공고 ID: ${cid}\n• 상세 제공 혜택 및 미션 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 리뷰노트 원본 사이트에서 로그인 후 바로 확인하실 수 있습니다.`;
+      }
+
+      if (formattedMission) return formattedMission;
     }
     // 6. 체험뷰 (chview.co.kr)
     else if (siteLower.includes('체험뷰') || url.includes('chview')) {

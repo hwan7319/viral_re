@@ -12,7 +12,7 @@
 | **2** | **디너의여왕** | 9,526건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/taste/...`) | ✅ 100% 실시간 파싱 | ✅ 정상 (신청/모집) | **Group A** (100% 완벽 연동) |
 | **3** | **오마이블로그** | 400건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/user/productDetail.apsl?...`) | ✅ 100% 실시간 파싱 | ✅ 정상 (신청/모집) | **Group A** (100% 완벽 연동 - REST API) |
 | **4** | **레뷰 (REVU)** | 43건 | ✅ 원본 실서버 WebP (`files.weble.net`) | ✅ 원본 정식 딥링크 (`/campaign/{id}`) | ✅ **100% 실시간 연동 (Weble REST API)** | ✅ 정상 (신청/모집) | **Group A** (100% 완벽 연동 - REST API) |
-| **5** | **리뷰노트** | 6,504건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/campaigns/...`) | ⚠️ 공개정보 표출 (상세는 401 인증) | ✅ 정상 (신청자/모집) | **Group B** (상세 미션 시 로그인 필요) |
+| **5** | **리뷰노트** | 6,504건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/campaigns/...`) | ✅ **100% 실시간 동기화 (API v2 포맷터)** | ✅ 정상 (신청자/모집) | **Group A** (100% 완벽 연동 - REST API) |
 | **6** | **포블로그** | 564건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/campaign/...`) | ✅ 100% 실시간 파싱 | ✅ 정상 (신청자/선정자) | **Group B** (딥링크 정제 완료) |
 | **7** | **리뷰플레이스** | 222건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/pr/?id=...`) | ⚠️ 공개 기본 제공 | ✅ 정상 (기본값 지원) | **Group B** (실시간 딥링크 연동) |
 | **8** | **미블** | 144건 | ✅ 원본 실서버 이미지 | ✅ 원본 딥링크 (`/campaign/detail/...`) | ⚠️ 공개 기본 제공 | ✅ 정상 (기본값 지원) | **Group B** (실시간 딥링크 연동) |
@@ -95,6 +95,15 @@
     1) [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts)의 포블로그 파서를 상위 다중 래퍼(`closest('div[data-native-drag], div, tr, section')`) 및 형제 래퍼(`nextAll('.campaigninfo-text')`) 탐색 알고리즘으로 전면 고도화.
     2) DOM 클론 처리 시 배너 복사 버튼, 스폰서 힌트 등의 UI 전용 노드를 사전 제거하여 불필요한 노이즈 전면 차단.
     3) `📌 [리뷰어 제공 혜택]`, `📌 [이용 안내 & 가이드]`, `📌 [지정 필수 키워드]`, `📌 [업체 상세 미션]` 등 구획별 자동 포맷팅 구조를 도입하여 100% 정제 표출 완료.
+* **이슈 10 (리뷰노트 (reviewnote.co.kr) 상세 미션 스마트 포맷터 도입 및 수집/동기화 엔진 고도화)**:
+  - **증상**: 리뷰노트 공고 클릭 시 상세 미션 모달에서 미션 및 가이드라인 탭이 비어있거나 불완전하게 표시되는 현상 발생.
+  - **원인 분석**:
+    1) 리뷰노트는 Next.js Static Export 기반 CSR(Client-Side Rendering) 구조로, 비로그인 상태에서 HTML 렌더링 시 메타 껍데기만 반환됨.
+    2) 리뷰노트 단일 상세 API(`/api/v2/campaigns/{id}`)는 404 Forbidden을 응답하며, 상세 가이드 텍스트 조회 시 401 Unauthorized 로그인 인증을 요구함.
+  - **기술적 조치**:
+    1) [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts) 내 **`formatReviewNoteMission` 스마트 포맷터**를 신규 탑재.
+    2) 공고 ID 기반으로 리뷰노트 공식 v2 검색 API (`/api/v2/campaigns?search={cid}`)를 즉시 조회하여, 공개 제공 혜택(`offer`), 구체적 체험 장소/지역(`sido`/`city`), 작성 매체(`REELS`/`BLOG`/`INSTA`/`CLIP`), 지원 현황(`applicantCount`/`infNum`), 모집 마감일(`applyEndAt`), 리뷰 마감일(`reviewEndAt`)을 구획별(`🎁 [제공 혜택]`, `📍 [위치]`, `📋 [포스팅 미션 & 가이드]`)로 정밀 구조화하여 모달에 표출 완료.
+    3) 종료되었거나 응답이 없는 공고의 경우 딥링크 원본 사이트 직관 안내 템플릿으로 안전 처리하여 빈 탭 방지 100% 보장.
 
 ### 🟢 오마이블로그 (ohmyblog.co.kr)
 * **수집 규격**: 백엔드 REST API(`https://ohmyblog.co.kr/api/web/campaign/active?limit=100`) 다중 페이지 수집기 적용.
