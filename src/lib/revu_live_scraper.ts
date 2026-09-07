@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getRevuAuthToken } from './revu_auth';
 import { classifyCampaignCategory } from './category_classifier';
+import { formatRevuMission } from './detail-scraper';
 
 export interface RevuLiveCampaign {
   id: string;
@@ -17,6 +18,7 @@ export interface RevuLiveCampaign {
   endDate: string;
   createdAt: string;
   updatedAt: string;
+  mission?: string;
 }
 
 export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
@@ -155,7 +157,8 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
       applyCount,
       endDate,
       createdAt: item.createdAt || now.toISOString(),
-      updatedAt: item.updatedAt || now.toISOString()
+      updatedAt: item.updatedAt || now.toISOString(),
+      mission: formatRevuMission(item)
     });
   });
 

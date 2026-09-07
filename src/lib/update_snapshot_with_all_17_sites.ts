@@ -394,7 +394,8 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         location: c.location,
         limitCount: c.limitCount,
         applyCount: c.applyCount,
-        endDate: c.endDate
+        endDate: c.endDate,
+        mission: c.mission
       });
     });
   } catch (e: any) {

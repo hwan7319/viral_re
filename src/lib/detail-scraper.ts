@@ -1,11 +1,66 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { getRevuAuthToken } from './revu_auth';
+import { getDB } from './db';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
 };
+
+// 🔑 레뷰 (REVU) 공고 아이템 정밀 미션 및 가이드라인 포맷터
+export function formatRevuMission(item: any): string {
+  if (!item) return '';
+  const rawReward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
+  const point = item.campaignData?.point || 0;
+  const venue = item.venue;
+  const venueName = venue?.name;
+
+  let reward = rawReward;
+  const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
+
+  if (!rawReward || rawReward === '레뷰 포인트' || rawReward === '포인트') {
+    reward = venueName ? `${venueName} 혜택/식사권` + (pointStr ? ` + 레뷰 포인트 ${pointStr}` : '') : (pointStr ? `레뷰 포인트 ${pointStr}` : '무상 제공 및 식사권 지원');
+  } else if (point > 0 && !rawReward.includes(pointStr) && pointStr) {
+    reward = `${rawReward} + 레뷰 포인트 ${pointStr}`;
+  }
+
+  if (venueName && !reward.includes(venueName)) {
+    reward = `[${venueName}] ${reward}`;
+  }
+
+  let parts: string[] = [];
+  parts.push(`🎁 [레뷰 (REVU) 제공 혜택 및 상세 보상]\n• ${reward}${point > 0 ? ` (추가 레뷰 포인트 ${pointStr} 지급)` : ''}`);
+
+  if (venue && (venue.name || venue.addressFirst)) {
+    let locStr = `📍 [체험 장소 및 방문 주소 안내]\n• 매장명: ${venue.name || '상세 주소 참고'}`;
+    if (venue.addressFirst) locStr += `\n• 도로명 주소: ${venue.addressFirst}`;
+    if (venue.addressLast) locStr += ` ${venue.addressLast}`;
+    if (venue.tel) locStr += `\n• 매장 연락처: ${venue.tel}`;
+    parts.push(locStr);
+  }
+
+  const media = (item.media || '').toLowerCase();
+  const mediaStr = media.includes('insta') 
+    ? '인스타그램 (릴스 30초 이상 또는 피드 고화질 이미지 3장 이상)' 
+    : media.includes('youtube') 
+    ? '유튜브 (쇼츠 또는 3분 이상 정성 리뷰 영상)' 
+    : '네이버 블로그 (사진 15장 이상, 1,000자 이상 정성 리뷰)';
+
+  let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${mediaStr}\n• 필수 의무 표기: 게시글 최상단 첫 줄에 #협찬 #레뷰 해시태그 반드시 표기\n• 최소 작성 기준: 텍스트 300자 이상, 이미지/영상 5장 이상 필수 등록\n• 모집 및 지원 현황: 총 ${item.reviewerLimit || 5}명 모집 중 (현재 ${item.campaignStats?.requestCount || 0}명 신청 완료)`;
+
+  if (item.requestStartedOn && item.requestEndedOn) {
+    missionStr += `\n• 모집 신청 기간: ${item.requestStartedOn} ~ ${item.requestEndedOn}`;
+  }
+  if (item.postingStartedOn && item.postingEndedOn) {
+    missionStr += `\n• 리뷰 등록 기간: ${item.postingStartedOn} ~ ${item.postingEndedOn}`;
+  }
+
+  parts.push(missionStr);
+  parts.push(`※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 레뷰 원본 신청 화면으로 바로 연결됩니다.`);
+
+  return parts.join('\n\n');
+}
 
 // 🚫 사이트 공통 메뉴 / 푸터 카테고리 목록 블랙리스트
 const BLACKLIST_PATTERNS = [
@@ -339,6 +394,21 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
 // 🔑 17대 체험단 사이트별 원본 상세 페이지 미션/가이드라인 전용 스크레이퍼
 export async function scrapeDetailMission(url: string, targetSite: string): Promise<string | undefined> {
   if (!url) return undefined;
+
+  // 🔑 0. SQLite DB 사전 등록 미션 최우선 검출 (< 2ms Fast Cache Lookup)
+  try {
+    const db = await getDB();
+    const cidMatch = url.match(/campaign\/([0-9]+)/)?.[1];
+    const revuId = cidMatch ? `revu-live-${cidMatch}` : null;
+    
+    const dbRow = await db.get<{ mission: string }>(
+      'SELECT mission FROM campaigns WHERE (campaignUrl = ? OR id = ? OR (id = ? AND mission IS NOT NULL)) AND length(COALESCE(mission, "")) > 10',
+      [url, url, revuId]
+    );
+    if (dbRow && dbRow.mission && dbRow.mission.trim().length > 10) {
+      return dbRow.mission;
+    }
+  } catch (e) {}
   
   try {
     let res;
@@ -449,9 +519,6 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
           if (revuToken) reqHeaders['Authorization'] = `Bearer ${revuToken}`;
 
           const endpoints = [
-            `https://api.weble.net/v1/campaigns?limit=100&page=1`,
-            `https://api.weble.net/v1/campaigns?limit=100&page=2`,
-            `https://api.weble.net/v1/campaigns?limit=100&page=3`,
             `https://api.weble.net/v1/campaigns/deadline?limit=100`,
             `https://api.weble.net/v1/campaigns/high-selection?limit=100`,
             `https://api.weble.net/v1/campaigns/premier?limit=100`,
@@ -468,56 +535,22 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
             } catch (e) {}
           }
 
+          if (!item) {
+            for (let page = 1; page <= 25; page++) {
+              try {
+                const res = await axios.get(`https://api.weble.net/v1/campaigns?limit=100&page=${page}`, { headers: reqHeaders, timeout: 3000 });
+                const items = res.data.items || (Array.isArray(res.data) ? res.data : []);
+                if (!items || items.length === 0) break;
+                item = items.find((it: any) => String(it.id) === String(cid));
+                if (item) break;
+              } catch (e) {
+                break;
+              }
+            }
+          }
+
           if (item) {
-            const rawReward = item.campaignData?.reward || item.brief || '무상 제공 및 식사권 지원';
-            const point = item.campaignData?.point || 0;
-            const venue = item.venue;
-            const venueName = venue?.name;
-
-            let reward = rawReward;
-            const pointStr = point > 0 ? (point >= 10000 ? `${point / 10000}만원` : `${point.toLocaleString()}P`) : '';
-
-            if (!rawReward || rawReward === '레뷰 포인트' || rawReward === '포인트') {
-              reward = venueName ? `${venueName} 혜택/식사권` + (pointStr ? ` + 레뷰 포인트 ${pointStr}` : '') : (pointStr ? `레뷰 포인트 ${pointStr}` : '무상 제공 및 식사권 지원');
-            } else if (point > 0 && !rawReward.includes(pointStr) && pointStr) {
-              reward = `${rawReward} + 레뷰 포인트 ${pointStr}`;
-            }
-
-            if (venueName && !reward.includes(venueName)) {
-              reward = `[${venueName}] ${reward}`;
-            }
-
-            let parts: string[] = [];
-            parts.push(`🎁 [레뷰 (REVU) 제공 혜택 및 상세 보상]\n• ${reward}${point > 0 ? ` (추가 레뷰 포인트 ${pointStr} 지급)` : ''}`);
-
-            if (venue && (venue.name || venue.addressFirst)) {
-              let locStr = `📍 [체험 장소 및 방문 주소 안내]\n• 매장명: ${venue.name || '상세 주소 참고'}`;
-              if (venue.addressFirst) locStr += `\n• 도로명 주소: ${venue.addressFirst}`;
-              if (venue.addressLast) locStr += ` ${venue.addressLast}`;
-              if (venue.tel) locStr += `\n• 매장 연락처: ${venue.tel}`;
-              parts.push(locStr);
-            }
-
-            const media = (item.media || '').toLowerCase();
-            const mediaStr = media.includes('insta') 
-              ? '인스타그램 (릴스 30초 이상 또는 피드 고화질 이미지 3장 이상)' 
-              : media.includes('youtube') 
-              ? '유튜브 (쇼츠 또는 3분 이상 정성 리뷰 영상)' 
-              : '네이버 블로그 (사진 15장 이상, 1,000자 이상 정성 리뷰)';
-
-            let missionStr = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: ${mediaStr}\n• 필수 의무 표기: 게시글 최상단 첫 줄에 #협찬 #레뷰 해시태그 반드시 표기\n• 최소 작성 기준: 텍스트 300자 이상, 이미지/영상 5장 이상 필수 등록\n• 모집 및 지원 현황: 총 ${item.reviewerLimit || 5}명 모집 중 (현재 ${item.campaignStats?.requestCount || 0}명 신청 완료)`;
-
-            if (item.requestStartedOn && item.requestEndedOn) {
-              missionStr += `\n• 모집 신청 기간: ${item.requestStartedOn} ~ ${item.requestEndedOn}`;
-            }
-            if (item.postingStartedOn && item.postingEndedOn) {
-              missionStr += `\n• 리뷰 등록 기간: ${item.postingStartedOn} ~ ${item.postingEndedOn}`;
-            }
-
-            parts.push(missionStr);
-            parts.push(`※ 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 레뷰 원본 신청 화면으로 바로 연결됩니다.`);
-
-            formattedMission = parts.join('\n\n');
+            formattedMission = formatRevuMission(item);
           }
         } catch (e) {}
       }

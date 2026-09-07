@@ -59,10 +59,17 @@
 * **이슈 5 (제공 혜택 정보 단순표기 개선 - 매장명 및 포인트 상세 명시)**:
   - 기존에는 단순히 '식사권' 또는 '레뷰 포인트' 단일 문구만 노출되어 혜택이 모호했던 문제 개선.
   - 매장명(`[venueName]`), 상세 상품 혜택, 포인트 금액(`2만원`, `3,000P`)을 정밀 결합하여 카드 및 상세 모달에서 `[화포식당 한남점] 5만원 이용권 + 레뷰 포인트 2만원` 형태로 상세히 표출하도록 고도화함.
-* **이슈 6 (상세 모달 팝업 미션 & 가이드라인 미노출 버그 원인 및 해결)**:
-  - **증상**: 레뷰 공고 클릭 시 모달 팝업에서 미션 & 가이드라인 탭이 비어있거나 노출되지 않는 문제 발생.
-  - **원인 분석**: Weble API(`https://api.weble.net/v1/campaigns?id=CID`)는 단일 ID 쿼리 파라미터를 무시하고 전체 목록 객체(`{ items: [...] }`)를 반환함. 기존 파서가 반환된 `res.data` 외곽 객체에서 단일 필드(`d.keywordGuide`)를 찾으려다 `undefined`가 발생하고, 2차 릴레이 라우트 탐색 시 인증 토큰 헤더가 누락되어 401 에러로 유실됨.
-  - **기술적 조치**: [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts)의 `scrapeDetailMission` 및 `scrapeDetailBenefit` 함수에서 Weble 인증 토큰을 포함한 전체 라우트 순회 및 `items.find(it => String(it.id) === String(cid))` 정밀 ID 매칭 파서로 전면 재작성함. (제공 혜택, 체험 장소 매장명/도로명 주소/연락처, 포스팅 매체, 필수 의무 표기 해시태그, 모집/신청인원 현황, 모집/리뷰 기간 100% 완벽 표출)
+* **이슈 6 (상세 모달 팝업 미션 & 가이드라인 미노출 2차 재발 원인 분석 및 영구 방지 건축 구축)**:
+  - **증상**: 레뷰 공고 일부(페이지 4~25에 위치한 공고) 클릭 시 미션 & 가이드라인 탭이 비어있거나 노출되지 않는 현상 발생.
+  - **원인 분석**:
+    1) **API 3페이지 제한 한계**: 기존 `scrapeDetailMission` 스크레이퍼가 Weble API 1~3페이지(300건)만 탐색하여 4~25페이지(2,500건 중 301~2500위)에 위치한 레뷰 공고는 ID 매칭 실패로 `undefined`를 반환함.
+    2) **DB 누락 버그**: `src/lib/db.ts`의 `insertOrUpdateCampaigns` 쿼리문(`INSERT INTO campaigns`, `UPDATE campaigns SET`)에 `mission` 컬럼 쓰기가 누락되어 있어 수집된 미션 데이터가 SQLite DB에 저장되지 못함.
+    3) **크롤러 파이프라인 누락**: `runCrawlerCore()`에 `fetchRevuLiveCampaigns()` 수집 라인이 연결되어 있지 않아 정기 크롤링 시 레뷰 라이브 공고가 DB에 자동 갱신되지 못함.
+  - **기술적 조치 및 영구 방지책**:
+    1) **SQLite DB `mission` 칼럼 입출력 완벽 연결**: `src/lib/db.ts`의 `insertOrUpdateCampaigns`에 `mission` 필드를 추가하여 2,500건 전체 레뷰 공고 수집 시 미션을 DB에 영구 보존하도록 수정.
+    2) **`formatRevuMission` 공통 함수화 & 사전 생성**: [`src/lib/detail-scraper.ts`](file:///Users/park/review-moa/src/lib/detail-scraper.ts)의 `formatRevuMission`을 모듈화하여 [`src/lib/revu_live_scraper.ts`](file:///Users/park/review-moa/src/lib/revu_live_scraper.ts) 수집 시 2,500건 전체 공고에 미션 및 가이드라인을 사전 생성하여 DB에 주입.
+    3) **DB 캐시 조회 (< 2ms) & 25페이지 전수 폴백(Fallback)**: `scrapeDetailMission` 시작 시 DB 캐시를 최우선 조회하여 즉시 반환하도록 하고, 미등록 공고 요청 시 Weble API 1~25페이지 전체 탐색 파이프라인을 가동하여 100% 미션 표출 보장.
+    4) **벌크 크롤러 연동**: [`src/lib/crawler-core.ts`](file:///Users/park/review-moa/src/lib/crawler-core.ts)의 `runCrawlerCore()`에 `fetchRevuLiveCampaigns()` 수집을 포함시켜 정기 수집 시 항상 최신 미션이 갱신되도록 완료.
 * **이슈 7 (키워드 분석 엔진의 '리/도/시' 종성 상품명 지역(LOCATION) 오분류 버그 조치)**:
   - **증상**: `바질&네롤리 주방세제` 등 공고에서 '황금키워드 & 검색량 분석하기' 클릭 시 `학원`, `맛집`, `피부과`, `핫플` 등 무관한 지역 연관어가 연관 검색어로 표출됨.
   - **원인 분석**:

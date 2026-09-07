@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { insertOrUpdateCampaigns, Campaign } from './db';
 import { detectPlatform } from './crawler-parallel';
+import { fetchRevuLiveCampaigns } from './revu_live_scraper';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -729,6 +730,35 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
     } catch (error: any) {
       console.error('[Core] Live scraping failed:', error.message);
     }
+  }
+
+  // 🔑 레뷰 (REVU) 100% 라이브 원본 공고 수집 파이프라인 (미션 & 가이드라인 포함)
+  try {
+    console.log('[Core] Fetching REVU live campaigns...');
+    const revuLiveList = await fetchRevuLiveCampaigns();
+    revuLiveList.forEach(c => {
+      allCampaigns.push({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        campaignUrl: c.campaignUrl,
+        imageUrl: c.imageUrl,
+        targetSite: c.targetSite,
+        platform: c.platform as any,
+        category: c.category,
+        location: c.location || undefined,
+        limitCount: c.limitCount,
+        applyCount: c.applyCount,
+        startDate: now.toISOString().split('T')[0],
+        endDate: c.endDate,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        mission: c.mission
+      });
+    });
+    console.log(`[Core] Successfully fetched ${revuLiveList.length} campaigns from REVU`);
+  } catch (e: any) {
+    console.warn('[Core] REVU live scraper failed:', e.message);
   }
 
   const result = await insertOrUpdateCampaigns(allCampaigns);

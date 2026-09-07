@@ -548,6 +548,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
           ...globalRef.memoryCampaigns[idx],
           ...c,
           searchKeywords: finalKeywords,
+          mission: c.mission || globalRef.memoryCampaigns[idx].mission,
           updatedAt: new Date().toISOString()
         };
         updated++;
@@ -589,13 +590,16 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
             title = ?, description = ?, platform = ?, category = ?, 
             location = ?, campaignUrl = ?, imageUrl = ?, targetSite = ?, 
             limitCount = ?, applyCount = ?, startDate = ?, endDate = ?, 
-            updatedAt = ?, searchKeywords = ?
+            updatedAt = ?, searchKeywords = ?,
+            mission = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE mission END
           WHERE id = ?`,
           [
             c.title, c.description, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate,
-            new Date().toISOString(), finalKeywords, c.id
+            new Date().toISOString(), finalKeywords,
+            c.mission || null, c.mission || null, c.mission || null,
+            c.id
           ]
         );
         updated++;
@@ -604,13 +608,13 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
           `INSERT INTO campaigns (
             id, title, description, platform, category, location, 
             campaignUrl, imageUrl, targetSite, limitCount, applyCount, 
-            startDate, endDate, createdAt, updatedAt, searchKeywords
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            startDate, endDate, createdAt, updatedAt, searchKeywords, mission
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             c.id, c.title, c.description, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate,
-            c.createdAt, c.updatedAt, c.searchKeywords || null
+            c.createdAt, c.updatedAt, c.searchKeywords || null, c.mission || null
           ]
         );
         inserted++;
