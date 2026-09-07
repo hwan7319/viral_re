@@ -3324,29 +3324,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 클라우드리뷰 원본 서버 DB 장애 안내 배너 */}
-                {selectedCampaign.targetSite === '클라우드리뷰' && (
-                  <div style={{
-                    padding: '12px 16px',
-                    backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#dc2626',
-                    fontSize: '0.82rem',
-                    lineHeight: 1.5,
-                    marginBottom: '16px',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '8px'
-                  }}>
-                    <span style={{ fontSize: '1rem', marginTop: '1px' }}>⚠️</span>
-                    <div>
-                      <strong style={{ fontWeight: 600 }}>클라우드리뷰 원본 웹사이트 자체 DB 장애 안내</strong><br/>
-                      클라우드리뷰 원본 사이트(cloudreview.co.kr)의 백엔드 DB 접속 장애로 신청 이동 시 원본 사이트에 데이터베이스 오류 화면(Loader.php 323)이 표시될 수 있습니다. 리뷰모아에서는 수집된 제공 혜택 및 미션을 정상 표출합니다.
-                    </div>
-                  </div>
-                )}
-
                 {/* 실제 업체 측 리뷰어 미션 & 가이드라인 안내 */}
                 <div style={{
                   padding: '18px 20px',
