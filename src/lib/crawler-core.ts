@@ -32,7 +32,7 @@ function parseDdayToDate(ddayText: string): string {
 }
 
 // 남은 일수 숫자를 YYYY-MM-DD로 변환
-function parseRemainDaysToDate(days: number): string {
+export function parseRemainDaysToDate(days: number): string {
   const now = new Date();
   const targetDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
   return targetDate.toISOString().split('T')[0];
@@ -55,7 +55,7 @@ function parseCountText(text: string): { applyCount: number; limitCount: number 
 }
 
 // 카테고리 자동 판별
-function detectCategory(title: string, desc: string): string {
+export function detectCategory(title: string, desc: string): string {
   const text = (title + ' ' + desc).toLowerCase();
   if (text.includes('카페') || text.includes('디저트') || text.includes('베이커리') || text.includes('빵') || text.includes('케이크') || text.includes('도넛') || text.includes('마카롱') || text.includes('음료') || text.includes('커피') || text.includes('빙수') || text.includes('에그타르트') || text.includes('화과자') || text.includes('아이스크림') || text.includes('티하우스')) return 'food-cafe';
   if (text.includes('술집') || text.includes('주점') || text.includes('포차') || text.includes('와인') || text.includes('맥주') || text.includes('칵테일') || text.includes('펍') || text.includes('하이볼')) return 'food-pub';

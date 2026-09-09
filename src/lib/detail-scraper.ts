@@ -272,6 +272,8 @@ export function formatMissionText(text: string): string {
       /🎁/i.test(trimmed) ||
       /제공\s*내역|제공내역|제공\s*혜택|제공혜택|제공\s*상품|제공상품|제공\s*품목|제공품목|지원\s*\/\s*상품\s*혜택|상세\s*제공|리뷰어\s*제공/i.test(trimmed) ||
       /^제공\s*:?/i.test(trimmed) ||
+      /\d+(?:만|천)?원\s*(?:식사권|체험권|이용권|포인트)/i.test(trimmed) ||
+      /추가금액 본인부담|중복 체험은 불가능|진행하실 SNS 채널을 제외한|1인 방문시 반값/i.test(trimmed) ||
       /모집\s*및\s*지원\s*현황/i.test(trimmed) ||
       /신청\s*현황|지원\s*현황|모집\s*현황/i.test(trimmed) ||
       /(?:신청|지원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*모집\s*:?\s*\d+\s*명?/i.test(trimmed) ||
@@ -470,26 +472,10 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
     const $ = cheerio.load(html);
     const siteLower = (targetSite || '').toLowerCase();
 
-    // 1. 디너의여왕 -> "제공 내역" 헤더 블록 아래 .qz-collapse__content
+    // 1. 디너의여왕
     if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
-      let bText = '';
-      $('.qz-collapse').each((_, el) => {
-        const headerText = $(el).text();
-        if (headerText.includes('제공 내역') || headerText.includes('제공내역') || headerText.includes('제공 혜택')) {
-          const strongText = $(el).find('.qz-collapse__content strong, .qz-collapse__content p, .qz-collapse__content h4').first().text().trim();
-          if (strongText && strongText.length > 1 && !strongText.includes('확인사항') && !strongText.includes('알아두면')) {
-            bText = strongText;
-          } else {
-            const fullContent = $(el).find('.qz-collapse__content').text().trim();
-            const splitText = fullContent.split(/참여\s*전\s*필수\s*확인사항|★|알아두면/)[0].trim();
-            if (splitText && splitText.length > 1) bText = splitText;
-          }
-        }
-      });
-      if (bText) {
-        bText = bText.replace(/참여\s*전\s*필수\s*확인사항.*$/gi, '').trim();
-        if (bText.length > 1) return bText;
-      }
+      const dqBenefit = await DinnerQueenScraper.scrapeDetailBenefit(url);
+      if (dqBenefit) return dqBenefit;
     }
     // 2. 강남맛집 -> dd.sub_tit
     else if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
@@ -810,18 +796,8 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     }
     // 3. 디너의여왕 (dinnerqueen.net)
     else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
-      const items: string[] = [];
-      $('.qz-wrap__list li, .layer-tertiary p, .layer-tertiary li, div[class*="guide"] p, div[class*="mission"] p').each((_, el) => {
-        const t = $(el).text().replace(/\s+/g, ' ').trim();
-        if (t && t.length > 2 && !t.includes('클립형') && !t.includes('릴스형') && !t.includes('페이백') && !t.includes('기자단') && !t.includes('제공 내역') && !t.includes('제공내역') && !t.includes('제공 혜택')) {
-          items.push(t);
-        }
-      });
-      if (items.length > 0) {
-        extractedRaw = items.join('\n');
-      } else {
-        extractedRaw = $('.qz-dq-detail__mission').html() || $('div[class*="mission"]').html() || '';
-      }
+      const dqMission = await DinnerQueenScraper.scrapeDetailMission(url);
+      if (dqMission) return formatMissionText(dqMission);
     }
     // 4. 레뷰 (revu.net / api.weble.net)
     else if (siteLower.includes('레뷰') || url.includes('revu.net')) {

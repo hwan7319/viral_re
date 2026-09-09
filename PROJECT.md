@@ -5,8 +5,27 @@
   2. **상세 보기 모달 팝업**:
      - 상세 모달 팝업 내부에는 `제공 혜택` 박스/영역을 절대로 배치하지 않음 (0% 비노출).
      - `📋 업체 원본 필수 미션 & 가이드라인` 박스 내부에는 `제공 내역`, `제공 혜택`, `제공 상품`, `지원/상품 혜택` 등 보상/혜택 관련 문구를 단 1줄도 혼입하지 않으며, 오직 순수 포스팅 지침(키워드, 사진 갯수, 영상, 장소 지도 첨부, 예약 수칙)만 표출.
-  3. **크롤러 덮어쓰기 방지 쉴드 (DB Layer Guard)**:
+  3. **체험단모아 (모아뷰)**:
+     - 100% 제거 완료. DB, JSON, UI 필터, 수집기 대상에서 완전 산출 제거 상태 유지.
+  4. **크롤러 덮어쓰기 방지 쉴드 (DB Layer Guard)**:
      - 실시간 온디맨드 크롤러(`src/lib/crawler-core.ts`) 수집 시 `description`이 옛날 방식(`title`과 동일)으로 DB를 오염시키지 않도록 파서 및 DB 저장소 레벨에서 덮어쓰기 방어.
+  5. **사이트별 고유 모듈화 (Modular Site-by-Site Scraper Architecture)**:
+     - 12개 매체사(`강남맛집`, `놀러와체험단`, `디너의여왕`, `레뷰`, `리뷰노트`, `리뷰플레이스`, `링블`, `모블`, `미블`, `오마이블로그`, `클라우드리뷰`, `포블로그`)를 `src/lib/scrapers/` 모듈로 완전 격리하여 관리.
+     - 리스트 카드에 혜택이 없는 사이트(`링블`, `놀러와체험단` 등)는 2-Step 상세 필수 조회를 통해 실시간 제공내역을 수집.
+
+## Modular Site-by-Site Scrapers (`src/lib/scrapers/`)
+- `src/lib/scrapers/01_gangnam.ts`: 강남맛집 (Gangnam Review)
+- `src/lib/scrapers/02_cometoplay.ts`: 놀러와체험단 (ComeToPlay)
+- `src/lib/scrapers/03_dinnerqueen.ts`: 디너의여왕 (DinnerQueen - `p.qz-body-kr` real benefit & guideline cleaner)
+- `src/lib/scrapers/04_revu.ts`: 레뷰 (REVU)
+- `src/lib/scrapers/05_reviewnote.ts`: 리뷰노트 (ReviewNote)
+- `src/lib/scrapers/06_reviewplace.ts`: 리뷰플레이스 (ReviewPlace)
+- `src/lib/scrapers/07_ringble.ts`: 링블 (Ringble - detail `td` `제공내역` mandatory 2-step extraction)
+- `src/lib/scrapers/08_modublog.ts`: 모블 (ModuBlog)
+- `src/lib/scrapers/09_mible.ts`: 미블 (Mible)
+- `src/lib/scrapers/10_ohmyblog.ts`: 오마이블로그 (OhMyBlog)
+- `src/lib/scrapers/11_cloudreview.ts`: 클라우드리뷰 (CloudReview - `https://cloudreview.co.kr` relative image URL resolver)
+- `src/lib/scrapers/12_4blog.ts`: 포블로그 (4Blog)
 
 ## Architecture
 - **Web Framework**: Next.js 16.2.12 (App Router), React 19.2.4, TypeScript 5, Node.js 24
