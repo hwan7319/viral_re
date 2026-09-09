@@ -89,8 +89,15 @@ export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' 
   const hasInsta = combined.includes('릴스') || combined.includes('인스타') || combined.includes('instagram') || combined.includes('reels') || combined.includes('insta');
   const hasClip = combined.includes('clip') || combined.includes('클립');
 
-  // 2. Both Blog/Naver and Instagram/Reels
-  if (combined.includes('블로그+인스타') || combined.includes('네이버+인스타') || combined.includes('블로그&인스타') || combined.includes('인스타+블로그') || (hasBlog && hasInsta && (combined.includes('+') || combined.includes('&') || combined.includes('및') || combined.includes('동시')))) {
+  // 2. Both Blog/Naver and Instagram/Reels (Requires explicit multiplatform tag or title)
+  if (
+    combined.includes('블로그+인스타') || combined.includes('인스타+블로그') ||
+    combined.includes('블로그&인스타') || combined.includes('네이버+인스타') ||
+    combined.includes('릴스+블로그') || combined.includes('블로그+릴스') ||
+    combined.includes('블로그 및 인스타') || combined.includes('블로그와 인스타') ||
+    (combined.includes('[블로그]') && combined.includes('[인스타]')) ||
+    (combined.includes('[블로그]') && combined.includes('[릴스]'))
+  ) {
     return 'blog+instagram';
   }
 
