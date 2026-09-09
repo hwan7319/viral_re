@@ -563,28 +563,31 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
       const href = $cr(element).attr('href') || '';
       const parent = $cr(element).closest('div.relative, article, div.campaign-image').parent();
       
-      let rawTitle = parent.find('div.text-sm.px-3.pt-3 a').text().trim() || 
-                     parent.find('div.truncate.pl-1').text().trim() || 
-                     $cr(element).text().trim();
-      rawTitle = rawTitle.replace(/\s+/g, ' ');
+      let mainTitle = parent.find('div.text-sm.px-3.pt-3 a, h3').text().trim().replace(/\s+/g, ' ') || $cr(element).text().trim().replace(/\s+/g, ' ');
+      let subDesc = parent.find('div.truncate.pl-1, div.px-3 div.text-xs').text().trim().replace(/\s+/g, ' ');
+      subDesc = subDesc.replace(/\d+인\s*모집.*$/g, '').trim();
+
+      const cleanTitle = mainTitle || subDesc || '클라우드리뷰';
+      const cleanDesc = (subDesc && subDesc !== mainTitle) ? subDesc : `${cleanTitle.replace(/^\[[^\]]+\]\s*/, '')} 체험 혜택`;
+      const fullSearchText = `${cleanTitle} ${cleanDesc}`;
 
       const img = parent.find('img').attr('data-original') || parent.find('img').attr('data-src') || parent.find('img').attr('src') || '';
       const cpIdMatch = href.match(/\/detail\/(\d+)/);
       const cpId = cpIdMatch ? cpIdMatch[1] : '';
 
-      if (rawTitle && rawTitle.length > 3 && cpId) {
-        if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) {
+      if (cleanTitle && cleanTitle.length > 3 && cpId) {
+        if (keyword && !fullSearchText.toLowerCase().includes(keyword.toLowerCase())) {
           return;
         }
 
         const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
-        const category = detectCategory(rawTitle, rawTitle);
+        const category = detectCategory(fullSearchText, fullSearchText);
 
         collected.push({
           id: `cr-${cpId}`,
-          title: rawTitle,
-          description: rawTitle,
-          platform: detectPlatform(rawTitle, rawTitle),
+          title: cleanTitle,
+          description: cleanDesc,
+          platform: detectPlatform(fullSearchText, fullSearchText),
           category,
           campaignUrl: fullUrl,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
