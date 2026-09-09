@@ -624,15 +624,22 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       try {
         const $ = cheerio.load(res.data);
         let benefit = '';
-        $('td, th, div, tr').each((_, el) => {
-          const t = $(el).text().trim();
-          if (t.startsWith('제공내역') && t.length > 5 && t.length < 200) {
-            const raw = t.replace('제공내역', '').trim();
-            if (raw && (!benefit || raw.length < benefit.length)) {
-              benefit = raw;
+        $('td').each((_, el) => {
+          const text = $(el).text().trim().replace(/\s+/g, ' ');
+          if (text.includes('제공내역')) {
+            const clean = text.replace(/.*제공내역\s*/, '').trim();
+            if (clean && (!benefit || clean.length < benefit.length)) {
+              benefit = clean;
             }
           }
         });
+        if (!benefit) {
+          const bodyText = $('body').text().replace(/\s+/g, ' ');
+          const match = bodyText.match(/제공내역\s*:?\s*([^가-힣A-Za-z0-9]*[가-힣A-Za-z0-9\s\,\+\(\)\[\]\~\!\@\#\$\%\^\&\*\-\_\=\:\;\.\/\<\>]+?)(?=신청안내|리뷰어|미션|안내사항|구매옵션|원고료|$)/i);
+          if (match && match[1]) {
+            benefit = match[1].trim().slice(0, 100);
+          }
+        }
         if (benefit) return benefit;
       } catch (e) {}
     }
