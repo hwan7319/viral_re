@@ -447,7 +447,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
 
           const itDescText = parent.find('.it_description').text().trim().replace(/\s+/g, ' ');
           const itemTitle = cleanTitle;
-          const itemDesc = itDescText || itemTitle;
+          const itemDesc = (itDescText && !itDescText.startsWith('#')) ? itDescText : '';
 
           let platform: any = detectPlatform(itemTitle, itemDesc);
           const iClass = parent.find('i').attr('class') || '';

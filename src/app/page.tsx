@@ -324,7 +324,24 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   let cleaned = sanitizeCampaignText(desc);
   const cleanTitle = sanitizeCampaignText(title);
 
-  if (!cleaned) return cleanTitle || '상세 제공 혜택 원본 참조';
+  const fallbackText = '상세 혜택 페이지 참조 (클릭 시 확인)';
+
+  if (!cleaned) return fallbackText;
+
+  // 🔑 제목과 100% 동일하거나 제목 문구가 중복된 경우 제목 재출력 완전 방지 및 혜택 부분만 정밀 서브스트링 추출
+  if (
+    cleaned === cleanTitle ||
+    cleanTitle.includes(cleaned) ||
+    cleaned.includes(cleanTitle) ||
+    (cleaned.length > 5 && cleanTitle.startsWith(cleaned)) ||
+    (cleanTitle.length > 5 && cleaned.startsWith(cleanTitle))
+  ) {
+    if (cleaned.startsWith(cleanTitle) && cleaned.length > cleanTitle.length + 3) {
+      const extra = cleaned.slice(cleanTitle.length).trim().replace(/^[-:\s]+/, '');
+      if (extra && extra.length > 2 && !extra.includes('체험권 및 후기 포스팅 혜택')) return extra;
+    }
+    return fallbackText;
+  }
 
   // 불필요한 관용성 수거 안구 문구 정제 (예: "가이드라인 참고 부탁드립니다!")
   cleaned = cleaned
@@ -335,10 +352,10 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   // D-day / 신청자수 등의 부모 카드 텍스트가 통째 오추출된 경우 필터링
   const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^D-\d+/.test(cleaned);
   if (isCardJunk) {
-    return cleanTitle || '상세 제공 혜택 원본 참조';
+    return fallbackText;
   }
 
-  return cleaned || cleanTitle;
+  return cleaned || fallbackText;
 };
 
 // 📋 실제 업체 미션 안내 헬퍼 함수

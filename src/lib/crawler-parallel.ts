@@ -759,7 +759,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
                 collected.push({
                   id,
                   title: cleanTitle.slice(0, 60),
-                  description: cleanTitle,
+                  description: '',
                   platform,
                   category: detectCategory(cleanTitle, cleanTitle),
                   location,
