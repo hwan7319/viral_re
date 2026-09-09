@@ -445,6 +445,144 @@ const formatMissionText = (text: string): string => {
   return result.trim();
 };
 
+// 🎨 모달 미션 & 가이드라인 고품격 가독성 정제 렌더러 컴포넌트 (들여쓰기, 불릿, 섹션 헤더, 해시태그 칩, 경고 박스 완벽 구분)
+const FormattedMissionDisplay = ({ rawText }: { rawText: string }) => {
+  if (!rawText) return null;
+
+  const lines = rawText.split('\n');
+  const renderedElements: React.ReactNode[] = [];
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      renderedElements.push(
+        <div key={`space-${index}`} style={{ height: '6px' }} />
+      );
+      return;
+    }
+
+    // 1. 섹션 헤더 / 타이틀 강조 (📌, 📋, 📍, 릴스/블로그 촬영 미션, 체험시간, 방문위치 등)
+    const isSectionHeader = 
+      /^(?:📌|📋|📍|🎁|🏆|[-★]?\s*(?:릴스|블로그|숏폼|클립)\s*(?:촬영\/편집\s*)?미션|★\s*리뷰가이드|체험\s*시간:|휴무일:|방문\s*위치:|인스타그램은\s*아래|표시광고법에\s*따라|키워드는\s*띄어쓰기|필수\s*키워드|필수\s*사진|작성\s*포인트)/i.test(trimmed) ||
+      /^\[.*(?:미션|가이드라인|해시태그|안내|주의사항).*\]$/i.test(trimmed);
+
+    if (isSectionHeader) {
+      renderedElements.push(
+        <div 
+          key={`header-${index}`} 
+          style={{
+            fontWeight: 800,
+            fontSize: '0.88rem',
+            color: 'var(--accent)',
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '7px 12px',
+            borderRadius: 'var(--radius-sm)',
+            borderLeft: '4px solid var(--accent)',
+            marginTop: index === 0 ? '0' : '12px',
+            marginBottom: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          {trimmed}
+        </div>
+      );
+      return;
+    }
+
+    // 2. 해시태그 라인 (#협찬 #건대맛집 #마라탕 등 -> 태그 칩으로 렌더링)
+    if (trimmed.startsWith('#') || (trimmed.includes('#') && trimmed.split('#').length > 2)) {
+      const hashtags = trimmed.split(/\s+/).filter(tag => tag.startsWith('#'));
+      if (hashtags.length > 0) {
+        renderedElements.push(
+          <div key={`hash-${index}`} style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', margin: '6px 0 8px 0' }}>
+            {hashtags.map((tag, hIdx) => (
+              <span 
+                key={hIdx}
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: '#6366f1',
+                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  padding: '3px 10px',
+                  borderRadius: 'var(--radius-full)'
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        );
+        return;
+      }
+    }
+
+    // 3. 주의사항 및 경고 박스 (★ 챗 GPT... / ★ 당일 예약 불가 등)
+    const isWarning = 
+      /^(?:★|※|🚨|⚠️)\s*(?:챗\s*GPT|당일\s*예약|대리\s*체험|중복\s*체험|취소|회수|청구|주의)/i.test(trimmed) ||
+      trimmed.includes('절대 불가') || trimmed.includes('비용청구');
+
+    if (isWarning) {
+      renderedElements.push(
+        <div 
+          key={`warn-${index}`}
+          style={{
+            fontSize: '0.82rem',
+            fontWeight: 700,
+            color: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            padding: '7px 12px',
+            borderRadius: 'var(--radius-sm)',
+            margin: '6px 0',
+            lineHeight: 1.5,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '6px'
+          }}
+        >
+          <span style={{ flexShrink: 0 }}>⚠️</span>
+          <span>{trimmed.replace(/^[★※🚨⚠️]\s*/, '')}</span>
+        </div>
+      );
+      return;
+    }
+
+    // 4. 일반 리스트 불릿 및 번호 텍스트 (내어쓰기 들여쓰기 1.4rem 적용으로 자동 가독성 보장)
+    const bulletMatch = trimmed.match(/^([•\-\*★✔◈※▶]\s*|\d+[\.\)]\s*)/);
+    const bulletSymbol = bulletMatch ? bulletMatch[1].trim() : '•';
+    const textContent = bulletMatch ? trimmed.slice(bulletMatch[1].length) : trimmed;
+
+    renderedElements.push(
+      <div 
+        key={`item-${index}`}
+        style={{
+          fontSize: '0.85rem',
+          lineHeight: 1.7,
+          color: 'var(--text-primary)',
+          paddingLeft: '1.4rem',
+          textIndent: '-1.4rem',
+          marginBottom: '4px',
+          wordBreak: 'keep-all'
+        }}
+      >
+        <span style={{ color: 'var(--accent)', fontWeight: 800, marginRight: '6px', display: 'inline-block' }}>
+          {bulletSymbol}
+        </span>
+        <span>{textContent}</span>
+      </div>
+    );
+  });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '2px 0' }}>
+      {renderedElements}
+    </div>
+  );
+};
+
 const SIDO_QUICK_TABS = [
   { key: 'all', label: '전국' },
   { key: '서울', label: '서울' },
@@ -3372,17 +3510,11 @@ export default function Home() {
                     </div>
                   ) : selectedCampaign.mission ? (
                     <div style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--text-primary)',
-                      lineHeight: 1.75,
-                      whiteSpace: 'pre-line',
-                      wordBreak: 'keep-all',
-                      maxHeight: '320px',
+                      maxHeight: '380px',
                       overflowY: 'auto',
-                      paddingRight: '8px',
-                      fontWeight: 400
+                      paddingRight: '6px'
                     }}>
-                      {formatMissionText(selectedCampaign.mission)}
+                      <FormattedMissionDisplay rawText={selectedCampaign.mission} />
                     </div>
                   ) : (
                     <p style={{ fontSize: '0.83rem', color: 'var(--text-tertiary)', margin: 0, lineHeight: 1.6 }}>
