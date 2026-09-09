@@ -29,18 +29,27 @@ function detectCategory(title: string, desc: string): string {
   return 'life-goods';
 }
 
+function isDummyCampaign(title: string, desc: string): boolean {
+  const t = title.toLowerCase().trim();
+  const d = desc.toLowerCase().trim();
+  if (t === 'test' || t === 'dummy' || t === 'mock' || t === '참여 조건' || t === '참여조건') return true;
+  if (t.includes('[1원 상당] test') || t.includes('test [1원') || (t.includes('test') && d.includes('1원'))) return true;
+  if (t.length < 2) return true;
+  return false;
+}
+
 export const AssaViewScraper: SiteScraper = {
   siteName: '아싸뷰',
 
   async scrapeList(keyword?: string): Promise<ScrapedCampaign[]> {
     const collected: ScrapedCampaign[] = [];
     const now = new Date();
-    const maxPages = keyword ? 3 : 5;
+    const maxPages = keyword ? 5 : 30;
 
     for (let page = 1; page <= maxPages; page++) {
       try {
         const url = `https://assaview.co.kr/campaign_list.php?page=${page}${keyword ? `&search=${encodeURIComponent(keyword)}` : ''}`;
-        const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
+        const res = await axios.get(url, { headers: HEADERS, timeout: 8000 });
         const $ = cheerio.load(res.data);
 
         let countOnPage = 0;
@@ -51,38 +60,56 @@ export const AssaViewScraper: SiteScraper = {
           if (!cpIdMatch) return;
           const cpId = cpIdMatch[1];
 
-          const parent = $(el).closest('li, div.card, div.item, div');
+          const parent = $(el).closest('li, a, div.item, div.card');
+          const subjectText = parent.find('.subject').text().trim().replace(/\s+/g, ' ');
+          const optNameText = parent.find('.opt_name').text().trim().replace(/\s+/g, ' ');
+          const chipText = parent.find('.rs_cp_type_chip').text().trim();
+          const iconSrc = parent.find('.review_type_icon').attr('src') || '';
 
-          let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          let title = subjectText || optNameText;
+          let description = optNameText || subjectText;
+
+          if (!title || title === '참여 조건') {
+            const rawText = parent.find('.details').text().replace(/\s+/g, ' ').trim();
+            title = rawText.replace(/방문형|배송형|구매형|신청.*$/gi, '').trim();
+          }
+
+          title = title.replace(/\d{4}\/\d{2}\/\d{2}\s*\d{2}:\d{2}:\d{2}/gi, '').trim();
+
+          if (isDummyCampaign(title, description)) return;
+
+          let platform = detectPlatform(title, description);
+          if (iconSrc.includes('reels_icon') || iconSrc.includes('insta')) platform = 'instagram';
+          else if (iconSrc.includes('clip')) platform = 'clip';
+          else if (chipText.includes('인스타')) platform = 'instagram';
+
+          const category = detectCategory(title, description);
+
+          let img = parent.find('.imgBox img').attr('src') || parent.find('img').attr('src') || '';
           if (img && !img.startsWith('http')) {
             img = `https://assaview.co.kr/${img.replace(/^\.\//, '')}`;
           }
 
-          let fullText = parent.text().replace(/\s+/g, ' ').trim();
-          let title = $(el).find('.title, h3, h4, p').first().text().trim() || $(el).text().trim() || fullText;
-          title = title
-            .replace(/\d{4}\/\d{2}\/\d{2}\s*\d{2}:\d{2}:\d{2}/gi, '')
-            .replace(/신청\s*\d+\s*[\/\,\~]\s*\d+\s*명?/gi, '')
-            .replace(/신청\s*\d+\s*명?/gi, '')
-            .replace(/NEW|방문형|배송형|구매형|선착순|리뷰어|모집/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
+          const applyMatch = parent.find('.desc b').text().trim();
+          const limitMatch = parent.find('.desc').text().match(/\/ (\d+)명/);
+          const applyCount = parseInt(applyMatch, 10) || 0;
+          const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 5;
 
-          if (keyword && !title.toLowerCase().includes(keyword.toLowerCase()) && !fullText.toLowerCase().includes(keyword.toLowerCase())) return;
+          if (keyword && !title.toLowerCase().includes(keyword.toLowerCase()) && !description.toLowerCase().includes(keyword.toLowerCase())) return;
 
           if (title && title.length > 2 && !collected.some(c => c.id === `assaview-${cpId}`)) {
             countOnPage++;
             collected.push({
               id: `assaview-${cpId}`,
-              title: title.slice(0, 70),
-              description: '', // Will be enriched
-              platform: detectPlatform(title, fullText),
-              category: detectCategory(title, fullText),
+              title: title.slice(0, 80),
+              description: description || title,
+              platform,
+              category,
               campaignUrl: `https://assaview.co.kr/campaign.php?cp_id=${cpId}`,
               imageUrl: img || 'https://viral-re.co.kr/icon.png',
               targetSite: '아싸뷰',
-              limitCount: 5,
-              applyCount: 0,
+              limitCount,
+              applyCount,
               startDate: now.toISOString().split('T')[0],
               endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
               createdAt: now.toISOString(),

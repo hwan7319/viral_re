@@ -533,6 +533,18 @@ export async function queryCampaigns(filters: {
   return rows;
 }
 
+function isDummyCampaignItem(c: Campaign): boolean {
+  if (!c || !c.title) return true;
+  const t = c.title.trim().toLowerCase();
+  const d = (c.description || '').trim().toLowerCase();
+  const id = (c.id || '').trim().toLowerCase();
+  if (t === 'test' || t === 'dummy' || t === 'mock' || t === '참여 조건' || t === '참여조건') return true;
+  if (t.includes('[1원 상당] test') || t.includes('test [1원') || (t.includes('test') && (d.includes('1원') || d.includes('test')))) return true;
+  if (id.startsWith('test-') || id.startsWith('dummy-') || id.startsWith('mock-')) return true;
+  if (t.length < 2) return true;
+  return false;
+}
+
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
 export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER || globalRef.isMockDb);
@@ -543,6 +555,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
     let updated = 0;
     
     for (const c of campaigns) {
+      if (isDummyCampaignItem(c)) continue;
       const idx = globalRef.memoryCampaigns.findIndex((x: Campaign) => x.id === c.id);
       if (idx > -1) {
         let finalKeywords = globalRef.memoryCampaigns[idx].searchKeywords || '';
@@ -590,6 +603,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
 
   try {
     for (const c of campaigns) {
+      if (isDummyCampaignItem(c)) continue;
       const existing = await db.get('SELECT id, title, description, searchKeywords FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
