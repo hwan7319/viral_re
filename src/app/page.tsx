@@ -324,26 +324,9 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   let cleaned = sanitizeCampaignText(desc);
   const cleanTitle = sanitizeCampaignText(title);
 
-  const fallbackText = '상세 혜택 페이지 참조 (클릭 시 확인)';
+  if (!cleaned) return cleanTitle || '리뷰어 무상 체험 혜택';
 
-  if (!cleaned) return fallbackText;
-
-  // 🔑 제목과 100% 동일하거나 제목 문구가 중복된 경우 제목 재출력 완전 방지 및 혜택 부분만 정밀 서브스트링 추출
-  if (
-    cleaned === cleanTitle ||
-    cleanTitle.includes(cleaned) ||
-    cleaned.includes(cleanTitle) ||
-    (cleaned.length > 5 && cleanTitle.startsWith(cleaned)) ||
-    (cleanTitle.length > 5 && cleaned.startsWith(cleanTitle))
-  ) {
-    if (cleaned.startsWith(cleanTitle) && cleaned.length > cleanTitle.length + 3) {
-      const extra = cleaned.slice(cleanTitle.length).trim().replace(/^[-:\s]+/, '');
-      if (extra && extra.length > 2 && !extra.includes('체험권 및 후기 포스팅 혜택')) return extra;
-    }
-    return fallbackText;
-  }
-
-  // 불필요한 관용성 수거 안구 문구 정제 (예: "가이드라인 참고 부탁드립니다!")
+  // 불필요한 관용성 문구 및 마감 수량 문구 정제
   cleaned = cleaned
     .replace(/가이드라인\s*참고.*$/gi, '')
     .replace(/상세정보\s*원본\s*참조.*$/gi, '')
@@ -351,18 +334,31 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
     .replace(/D-\d+/gi, '')
     .trim();
 
-  // 해시태그 형태(#7만원식사권 #횟집 등) 텍스트 정제
+  // 해시태그 형태(#7만원식사권 #횟집 등) 정제
   if (cleaned.startsWith('#') || cleaned.includes('#')) {
     cleaned = cleaned.replace(/#/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
-  // D-day / 신청자수 등의 부모 카드 텍스트가 통째 오추출된 경우 필터링
-  const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^[a-zA-Z\s\d]{1,3}$/.test(cleaned);
-  if (isCardJunk) {
-    return fallbackText;
+  // 만약 제목이 desc 앞부분에 통째로 들어있는 경우 (예: "제목 - 7만원 식사권"), 제목 부분 떼어내기
+  if (cleaned.length > cleanTitle.length + 3 && cleaned.startsWith(cleanTitle)) {
+    const extra = cleaned.slice(cleanTitle.length).trim().replace(/^[-:\s]+/, '');
+    if (extra && extra.length > 2) return extra;
   }
 
-  return cleaned || fallbackText;
+  // 완전 동일한 경우 제목에서 혜택 키워드 추출
+  if (cleaned === cleanTitle) {
+    const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|혜택)?|식사권|이용권|무료숙박권|무상제공|원고료\s*\d+만?\s*원?)/i);
+    if (benefitMatch) return benefitMatch[1];
+    return cleanTitle;
+  }
+
+  // D-day / 신청자수 등의 부모 카드 텍스트 오추출 필터링
+  const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^[a-zA-Z\s\d]{1,3}$/.test(cleaned);
+  if (isCardJunk) {
+    return cleanTitle || '리뷰어 무상 체험 혜택';
+  }
+
+  return cleaned || cleanTitle;
 };
 
 // 📋 실제 업체 미션 안내 헬퍼 함수
