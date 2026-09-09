@@ -1062,7 +1062,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       let tabHtml = $('#tab1').html() || $('.tab-cont').first().html() || '';
       if (tabHtml) {
         const $tab = cheerio.load(tabHtml);
-        $tab('script, style, iframe, button').remove();
+        $tab('script, style, iframe, button, .etc_list2, .etc_list').remove();
 
         let tabText = $tab.text()
           .replace(/\.[\w-]+\s*\{[^}]*\}/g, '')
