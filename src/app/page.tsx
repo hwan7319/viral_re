@@ -344,7 +344,8 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   // 만약 제목이 desc 앞부분에 통째로 들어있는 경우 (예: "제목 - 7만원 식사권"), 제목 부분 떼어내기
   if (cleaned.length > cleanTitle.length + 3 && cleaned.startsWith(cleanTitle)) {
     const extra = cleaned.slice(cleanTitle.length).trim().replace(/^[-:\s]+/, '');
-    if (extra && extra.length > 2) return extra;
+    const isJunkExtra = /체험권\s*및\s*후기|후기\s*포스팅|체험\s*혜택|리뷰\s*작성|무상\s*체험/i.test(extra);
+    if (extra && extra.length > 2 && !isJunkExtra) return extra;
   }
 
   // 리뷰플레이스 등: desc가 "[광진구/20만원 상당] 제목" 과 같거나 제목과 동일한 경우 혜택 키워드/상당 가격 태그 우선 추출

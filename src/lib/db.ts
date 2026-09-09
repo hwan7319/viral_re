@@ -220,11 +220,12 @@ export async function getDB(): Promise<Database> {
       WHERE endDate < ?;
     `, [todayStr]);
 
-    // 🔑 [EC2/서버리스 공통] DB가 비어있는 경우 data/campaigns.json 스냅샷 18,176건 자동 시딩
-    const rowCount = await dbInstance.get('SELECT COUNT(*) as cnt FROM campaigns');
-    if (!rowCount || rowCount.cnt === 0) {
-      const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
-      if (fs.existsSync(jsonPath)) {
+    // 🔑 [EC2/서버리스 공통] DB 시딩 및 JSON 스냅샷 자동 동기화
+    const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+    if (fs.existsSync(jsonPath)) {
+      const rowCount = await dbInstance.get<{ cnt: number }>('SELECT COUNT(*) as cnt FROM campaigns');
+      const currentCnt = rowCount?.cnt || 0;
+      if (currentCnt === 0) {
         const fileData = fs.readFileSync(jsonPath, 'utf-8');
         const loaded: Campaign[] = JSON.parse(fileData);
         if (loaded.length > 0) {
