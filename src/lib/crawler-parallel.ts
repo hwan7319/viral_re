@@ -283,8 +283,11 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             const dqId = fullUrl.split('/').pop() || fullUrl.replace(/[^0-9]/g, '');
             const id = `dq-${dqId}`;
 
+            const descText = $(element).find('.qz-caption-kr.color-placeholder.ellipsis').text().trim().replace(/\s+/g, ' ');
+            const cleanDesc = (descText && descText !== title) ? descText : title.replace(/^\[[^\]]+\]\s*/, '').trim() + ' 체험 혜택';
+
             dqItems.push({
-              id, title, description: title, platform, category, location, campaignUrl: fullUrl,
+              id, title, description: cleanDesc, platform, category, location, campaignUrl: fullUrl,
               imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),

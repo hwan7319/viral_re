@@ -223,9 +223,11 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         const id = `dq-${dqId}`;
         const autoKws = buildAutoKeywords(title, badgesText);
         const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+        const descText = $(element).find('.qz-caption-kr.color-placeholder.ellipsis').text().trim().replace(/\s+/g, ' ');
+        const cleanDesc = (descText && descText !== title) ? descText : title.replace(/^\[[^\]]+\]\s*/, '').trim() + ' 체험 혜택';
 
         collected.push({
-          id, title, description: title, platform, category, location, campaignUrl: fullUrl,
+          id, title, description: cleanDesc, platform, category, location, campaignUrl: fullUrl,
           imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
           startDate: now.toISOString().split('T')[0], endDate,
           createdAt: now.toISOString(), updatedAt: now.toISOString(),
@@ -281,9 +283,11 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
           const id = `dq-${dqId}`;
           const autoKws = buildAutoKeywords(title, badgesText);
           const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+          const descText = $list(element).find('.qz-caption-kr.color-placeholder.ellipsis').text().trim().replace(/\s+/g, ' ');
+          const cleanDesc = (descText && descText !== title) ? descText : title.replace(/^\[[^\]]+\]\s*/, '').trim() + ' 체험 혜택';
 
           collected.push({
-            id, title, description: title, platform, category, location, campaignUrl: fullUrl,
+            id, title, description: cleanDesc, platform, category, location, campaignUrl: fullUrl,
             imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
             startDate: now.toISOString().split('T')[0], endDate,
             createdAt: now.toISOString(), updatedAt: now.toISOString(),
