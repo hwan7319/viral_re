@@ -696,10 +696,10 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
       }
     })(),
 
-    // 12. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 파싱 & 인원 수치 파싱)
+    // 12. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 파싱 & 인원/위치/플랫폼 수치 정밀 파싱)
     (async () => {
       try {
-        const playCategories = ['001', '002', '004'];
+        const playCategories = ['001', '002', '003', '004', '005', '006'];
         for (const catId of playCategories) {
           try {
             const url = `https://www.cometoplay.kr/item_list.php?category_id=${catId}&page=1`;
@@ -715,7 +715,8 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
               if (collected.some(c => c.id === id)) return;
 
               const parent = $(el).closest('li, div.item, div.box, tr, td, div');
-              let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+              const itNameText = parent.find('.it_name').text().trim().replace(/\s+/g, ' ');
+              let rawTitle = itNameText || $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
               if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
               let realImg = '';
@@ -738,13 +739,30 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
                 .replace(/D-day\s*\d+/gi, '')
                 .trim();
 
+              let platform: 'blog' | 'instagram' | 'clip' | 'youtube' | 'etc' = detectPlatform(cleanTitle, cleanTitle);
+              const iClass = parent.find('i').attr('class') || '';
+              if (iClass.includes('insta')) platform = 'instagram';
+              else if (iClass.includes('clip')) platform = 'clip';
+              else if (iClass.includes('youtube')) platform = 'youtube';
+              else if (iClass.includes('blog')) platform = 'blog';
+
+              let location = '';
+              const locMatch = cleanTitle.match(/^\[([^\]]+)\]/);
+              if (locMatch) {
+                const tag = locMatch[1].trim();
+                if (!['인스타그램', '유튜브', '블로그', '쿠팡', '클립'].includes(tag)) {
+                  location = tag;
+                }
+              }
+
               if (cleanTitle && cleanTitle.length > 3) {
                 collected.push({
                   id,
                   title: cleanTitle.slice(0, 60),
                   description: cleanTitle,
-                  platform: detectPlatform(cleanTitle, cleanTitle),
+                  platform,
                   category: detectCategory(cleanTitle, cleanTitle),
+                  location,
                   campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
                   imageUrl: realImg || 'https://viral-re.co.kr/icon.png',
                   targetSite: '놀러와체험단',
@@ -759,9 +777,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
             });
           } catch (e) {}
         }
-      } catch (err: any) {
-        console.warn('[Parallel-Crawl] 놀러와체험단 failed:', err.message);
-      }
+      } catch (e) {}
     })(),
 
     // 13. 모블 (모두의블로그)

@@ -1059,6 +1059,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         $tab('script, style, iframe, button').remove();
 
         let tabText = $tab.text()
+          .replace(/\.[\w-]+\s*\{[^}]*\}/g, '')
           .replace(/\r\n/g, '\n')
           .replace(/\s+/g, ' ')
           .trim();

@@ -407,14 +407,13 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
 
   // 9. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 페이지 딥 수집)
   console.log('Fetching 9. 놀러와체험단 (다중 카테고리 & 5페이지)...');
-  const playCategories = ['001', '002', '004', '001012', '001013', '001015', '002010', '002008'];
+  const playCategories = ['001', '002', '003', '004', '005', '006', '001012', '001013', '001015', '002010', '002008'];
   for (const catId of playCategories) {
     for (let page = 1; page <= 5; page++) {
       try {
         const url = `https://www.cometoplay.kr/item_list.php?category_id=${catId}&page=${page}`;
         const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
         const $ = cheerio.load(res.data);
-        let itemCount = 0;
 
         $('a[href*="item.php"]').each((i, el) => {
           const href = $(el).attr('href') || '';
@@ -423,7 +422,8 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           const cpId = numMatch[1];
 
           const parent = $(el).closest('li, div.item, div.box, tr, td, div');
-          let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+          const itNameText = parent.find('.it_name').text().trim().replace(/\s+/g, ' ');
+          let rawTitle = itNameText || $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
 
           let realImg = '';
           parent.find('img').each((_, imgEl) => {
@@ -445,8 +445,25 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
             .replace(/D-day\s*\d+/gi, '')
             .trim();
 
-          const itemTitle = parent.find('.it_name').text().trim() || cleanTitle;
-          const itemDesc = parent.find('.it_description').text().trim() || itemTitle;
+          const itDescText = parent.find('.it_description').text().trim().replace(/\s+/g, ' ');
+          const itemTitle = cleanTitle;
+          const itemDesc = itDescText || itemTitle;
+
+          let platform: 'blog' | 'instagram' | 'clip' | 'youtube' | 'etc' = detectPlatform(itemTitle, itemDesc);
+          const iClass = parent.find('i').attr('class') || '';
+          if (iClass.includes('insta')) platform = 'instagram';
+          else if (iClass.includes('clip')) platform = 'clip';
+          else if (iClass.includes('youtube')) platform = 'youtube';
+          else if (iClass.includes('blog')) platform = 'blog';
+
+          let location = '';
+          const locMatch = itemTitle.match(/^\[([^\]]+)\]/);
+          if (locMatch) {
+            const tag = locMatch[1].trim();
+            if (!['인스타그램', '유튜브', '블로그', '쿠팡', '클립'].includes(tag)) {
+              location = tag;
+            }
+          }
 
           if (cleanTitle && cleanTitle.length > 3) {
             addCampaign({
@@ -457,12 +474,12 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
               imageUrl: realImg || 'https://viral-re.co.kr/icon.png',
               targetSite: '놀러와체험단',
               applyCount,
-              limitCount
+              limitCount,
+              platform,
+              location
             });
-            itemCount++;
           }
         });
-        if (itemCount === 0) break;
       } catch (e) { break; }
     }
   }
