@@ -933,7 +933,7 @@ export default function Home() {
                   activePlatform === 'blog+instagram' ? '네이버&인스타' :
                   activePlatform === 'instagram' ? '인스타그램' :
                   activePlatform === 'youtube' ? '유튜브' :
-                  activePlatform === 'coupang' ? '쿠팡 체험단' : '기타'}
+                  activePlatform === 'coupang' ? '쿠팡 체험단' : '플랫폼'}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1264,18 +1264,6 @@ export default function Home() {
                       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                       <line x1="3" y1="6" x2="21" y2="6"></line>
                       <path d="M16 10a4 4 0 0 1-8 0"></path>
-                    </svg>
-                  )
-                },
-                { 
-                  key: 'etc', 
-                  label: '기타 플랫폼', 
-                  icon: (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-plat-etc)' }}>
-                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                      <defs><linearGradient id="grad-plat-etc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#9ca3af" /><stop offset="100%" stopColor="#4b5563" /></linearGradient></defs>
                     </svg>
                   )
                 }
