@@ -33,6 +33,38 @@ export function parseSearchAdVolume(val: any): number {
   return 0;
 }
 
+// 🔑 키워드 연관성 정밀 측정 엔진 (Levenshtein/Containment/n-Gram 유사도 산출 - Option B Threshold)
+export function calculateKeywordRelevance(query: string, candidate: string): number {
+  if (!query || !candidate) return 0;
+  const qNorm = query.replace(/\s+/g, '').toLowerCase();
+  const cNorm = candidate.replace(/\s+/g, '').toLowerCase();
+
+  if (qNorm === cNorm) return 1.0;
+  if (cNorm.includes(qNorm)) return 0.95;
+  if (qNorm.includes(cNorm)) return 0.85;
+
+  const qWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 1);
+  let matchedWords = 0;
+  for (const w of qWords) {
+    if (cNorm.includes(w)) matchedWords++;
+  }
+  if (qWords.length > 0 && matchedWords > 0) {
+    return 0.5 + 0.3 * (matchedWords / qWords.length);
+  }
+
+  // 2-gram 문맥 유사도 측정
+  let nGramMatches = 0;
+  const totalGrams = Math.max(1, qNorm.length - 1);
+  for (let i = 0; i < qNorm.length - 1; i++) {
+    const gram = qNorm.substring(i, i + 2);
+    if (cNorm.includes(gram)) nGramMatches++;
+  }
+  const nGramScore = nGramMatches / totalGrams;
+  if (nGramScore >= 0.3) return 0.3 + 0.3 * nGramScore;
+
+  return 0.0;
+}
+
 // 🔑 네이버 블로그 검색 API로 포스팅 수, 월간 실발행량 및 최근 발행일 조회 (429 Rate Limit 재시도 및 백오프 적용)
 async function fetchBlogStats(keyword: string, clientId: string, clientSecret: string, retries = 3) {
   for (let i = 0; i < retries; i++) {
@@ -495,21 +527,27 @@ export async function GET(request: Request) {
           return null;
         }
       })(),
+    ]);
 
-      axios.get(`https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(query)}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
-        timeout: 1200,
-        httpsAgent,
-      }).then(acRes => {
-        if (acRes.data && acRes.data.items && acRes.data.items[0]) {
+    // 🔑 1순위 데이터 소스: 네이버 자동완성 및 다중 확장 자동완성 패치
+    const extList = ['', '추천', '후기', '가격', '동화', '전집', '소설', '세트', '종류', '순위', '위치', '방법', '비교'];
+    await Promise.all(extList.map(async (ext) => {
+      const targetQ = ext ? `${query} ${ext}` : query;
+      try {
+        const acRes = await axios.get(`https://ac.search.naver.com/nx/ac?q_enc=UTF-8&st=100&r_format=json&q=${encodeURIComponent(targetQ)}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
+          timeout: 1000,
+          httpsAgent,
+        });
+        if (acRes.data?.items?.[0]) {
           acRes.data.items[0].forEach((item: any) => {
             if (item[0] && typeof item[0] === 'string') {
               addCandidateKeyword(item[0], 'official');
             }
           });
         }
-      }).catch(() => null),
-    ]);
+      } catch (e) {}
+    }));
 
     let totalPosts = blogRes?.total ?? mainStats?.totalPosts ?? 0;
     let mainMonthlyPosts = mainStats.monthlyPosts || 0;
@@ -739,39 +777,57 @@ export async function GET(request: Request) {
       const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key1);
       const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
       const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-      safeAddCandidate(expKw, pc, mobile, 2);
+      safeAddCandidate(expKw, pc, mobile, 1);
     });
 
-    // 3-3. 검색광고 연관키워드 중 관련도 및 총 검색량 높은 키워드 추가 (우선순위 2, 3)
-    const queryCore = cleanHintQuery.length >= 2 ? cleanHintQuery.slice(0, 2).toLowerCase() : cleanHintQuery.toLowerCase();
-    const queryWords = query.toLowerCase().split(' ');
+    const cleanQueryNorm = cleanHintQuery.toLowerCase();
+    const queryWordsList = query.toLowerCase().split(/\s+/).filter(w => w.length >= 1);
 
+    const hasTargetWord = (kwStr: string) => {
+      const normKw = kwStr.replace(/\s+/g, '').toLowerCase();
+      if (normKw.includes(cleanQueryNorm)) return true;
+      return queryWordsList.some(w => normKw.includes(w));
+    };
+
+    // 3-3. 검색광고 연관키워드 중 관련도(Option B Threshold >= 0.25) 검증 키워드 추가
     adRelatedItems.forEach((k: any) => {
       if (!k.relKeyword) return;
       const kw = k.relKeyword.trim();
       const key = kw.replace(/\s+/g, '').toLowerCase();
       if (kw === query || key === cleanHintQuery.toLowerCase()) return;
 
-      // 🔑 무관한 대형 절기/명절 노이즈 필터링 (양꼬치 검색 시 말복, 추석, 설날 등 엉뚱한 대형 키워드 1~2위 점령 100% 차단)
+      // 🔑 무관한 대형 절기/명절 노이즈 필터링
       const seasonalNoise = /(말복|초복|중복|복날|추석|설날|명절|입추|입동|동지|단오|어버이날|스승의날|어린이날|크리스마스)/i;
       if (seasonalNoise.test(kw) && !seasonalNoise.test(query)) return;
 
       // 부동산/매매/대출 등 노이즈 필터링
       if (/(매매|부동산|원룸|투룸|빌라|아파트|주식|대출|보험|취업|채용)/.test(kw) && !/(매매|부동산|주식|대출|취업|채용)/.test(query)) return;
 
+      const relScore = calculateKeywordRelevance(query, kw);
+
+      // 🔑 Option B Threshold: 유사도 0.25 미만인 무관한 카테고리 대형 키워드 하드 컷오프
+      if (relScore < 0.25 && !hasTargetWord(kw)) return;
+
       const pc = parseSearchAdVolume(k.monthlyPcQcCnt);
       const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
 
-      const isRelevant = kw.toLowerCase().includes(queryCore) || queryWords.some(w => kw.toLowerCase().includes(w));
-      safeAddCandidate(kw, pc, mobile, isRelevant ? 2 : 3);
+      const isDirectRelevant = relScore >= 0.7 || hasTargetWord(kw);
+      safeAddCandidate(kw, pc, mobile, isDirectRelevant ? 1 : 2);
     });
 
-    const allCandidatesList = Array.from(candidateMap.values());
+    const rawCandidatesList = Array.from(candidateMap.values());
+
+    // 🔑 Option B Threshold 2차 검증 필터링 (유사도 0.25 미만 무관 키워드 완전 제거)
+    const filteredCandidatesList = rawCandidatesList.filter(item => {
+      if (item.priority === 1 || hasTargetWord(item.keyword)) return true;
+      const score = calculateKeywordRelevance(query, item.keyword);
+      return score >= 0.25;
+    });
 
     // 🔑 3-4. 2차 검색광고 전수 동기화 파이프라인 (1차 검색광고 힌트에 누락된 최우선 순위 키워드 실시간 전수 패치)
-    const missingZeroVolCandidates = allCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
+    const missingZeroVolCandidates = filteredCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
     if (missingZeroVolCandidates.length > 0) {
-      const targets = missingZeroVolCandidates.slice(0, 30);
+      const targets = missingZeroVolCandidates.slice(0, 35);
       const chunkSize = 5;
       for (let i = 0; i < targets.length; i += chunkSize) {
         const chunk = targets.slice(i, i + chunkSize);
@@ -791,27 +847,22 @@ export async function GET(request: Request) {
       }
     }
 
-    const cleanQueryNorm = cleanHintQuery.toLowerCase();
-    const queryWordsList = query.toLowerCase().split(/\s+/).filter(w => w.length >= 1);
+    // 🔑 방식 1 정렬 알고리즘:
+    // 1차: 타겟 키워드 포함어 / 1순위 자동완성 / 핀포인트 연관어 (Group 1) -> 검색량 내림차순
+    // 2차: 문맥 연관어 (Group 2, 유사도 >= 0.25) -> 검색량 내림차순
+    filteredCandidatesList.sort((a, b) => {
+      const aDirect = hasTargetWord(a.keyword) || a.priority === 1;
+      const bDirect = hasTargetWord(b.keyword) || b.priority === 1;
 
-    const hasTargetWord = (kwStr: string) => {
-      const normKw = kwStr.replace(/\s+/g, '').toLowerCase();
-      if (normKw.includes(cleanQueryNorm)) return true;
-      return queryWordsList.some(w => normKw.includes(w));
-    };
-
-    allCandidatesList.sort((a, b) => {
-      const aTarget = hasTargetWord(a.keyword);
-      const bTarget = hasTargetWord(b.keyword);
-      if (aTarget && !bTarget) return -1;
-      if (!aTarget && bTarget) return 1;
+      if (aDirect && !bDirect) return -1;
+      if (!aDirect && bDirect) return 1;
 
       if (a.priority !== b.priority) return a.priority - b.priority;
       return b.total - a.total;
     });
 
     // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
-    const candidateKeywordsList = allCandidatesList.slice(0, 100);
+    const candidateKeywordsList = filteredCandidatesList.slice(0, 100);
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
