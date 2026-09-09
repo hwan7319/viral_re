@@ -61,6 +61,8 @@ export const ReviewPlaceScraper: SiteScraper = {
       const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
       const $ = cheerio.load(res.data);
 
+      $('script, style, iframe, header, footer, nav, #hd, #ft, .header_wrap, .footer_wrap').remove();
+
       // 1. Receipt / Hotdeal coupon card
       const couponCard = $('.rp-receipt-detail__coupon-card').text().replace(/\s+/g, ' ').trim();
       if (couponCard) {
@@ -78,26 +80,34 @@ export const ReviewPlaceScraper: SiteScraper = {
       // 2. Standard ReviewPlace campaign: 제공내역
       let benefit = '';
 
-      // Direct text under .pr_info or dt/dd
-      $('dt, th, div, td').each((_, el) => {
-        const text = $(el).text().trim();
+      $('dt, th, div, td, p, span').each((_, el) => {
+        const text = $(el).clone().children().remove().end().text().trim();
         if (text === '제공내역' || text.startsWith('제공내역')) {
-          const next = $(el).next().text().trim() || $(el).parent().find('dd, td, .txt, .desc').text().trim();
-          if (next && next !== '제공내역' && (!benefit || next.length > benefit.length)) {
+          let next = $(el).next().text().trim() || $(el).parent().find('dd, td, .txt, .desc, p, span').not($(el)).first().text().trim();
+          next = next.replace(/[\w-]+\s*\{[^}]*\}/g, '').replace(/@media[^{]+\{[^}]*\}/g, '').trim();
+          if (next && next !== '제공내역' && !next.includes('{') && (!benefit || next.length > benefit.length)) {
             benefit = next.replace(/\s+/g, ' ').trim();
           }
         }
       });
 
       if (!benefit) {
-        const fullText = $('body').text().replace(/\s+/g, ' ');
-        const match = fullText.match(/제공내역\s*([^방문주소제목키워드본문키워드캠페인안내리뷰어미션]*)/i);
+        const bodyText = $('body').text().replace(/[\w-]+\s*\{[^}]*\}/g, '').replace(/\s+/g, ' ');
+        const match = bodyText.match(/제공내역\s*([^방문주소제목키워드본문키워드캠페인안내리뷰어미션]*)/i);
         if (match && match[1]) {
           benefit = match[1].trim().slice(0, 150);
         }
       }
 
-      return benefit ? benefit.replace(/-->/g, '').trim() : undefined;
+      if (benefit) {
+        benefit = benefit
+          .replace(/-->|<!--/g, '')
+          .replace(/[\w-]+\s*\{[^}]*\}/g, '')
+          .replace(/리뷰\s*신청하기.*$/g, '')
+          .trim();
+      }
+
+      return benefit || undefined;
     } catch (e) {
       return undefined;
     }
