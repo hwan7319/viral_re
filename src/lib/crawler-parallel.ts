@@ -811,36 +811,53 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
     // 13. 모블 (모두의블로그)
     (async () => {
       try {
-        const res = await axios.get('https://www.modublog.co.kr', { headers: HEADERS, timeout: 6000 });
-        const $ = cheerio.load(res.data);
-        $('a[href*="/product/"]').each((i, el) => {
-          const href = $(el).attr('href') || '';
-          const parent = $(el).closest('div, li');
-          let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
-          if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+        const seenMoblIds = new Set<string>();
+        for (let page = 1; page <= 5; page++) {
+          const pageUrl = `https://www.modublog.co.kr/product/?page=${page}`;
+          try {
+            const res = await axios.get(pageUrl, { headers: HEADERS, timeout: 6000 });
+            const $ = cheerio.load(res.data);
+            const boxes = $('.c_box');
+            if (boxes.length === 0) break;
 
-          let img = '';
-          parent.find('img').each((__, imgEl) => {
-            const src = $(imgEl).attr('src') || $(imgEl).attr('data-src') || '';
-            if (src && !src.includes('starred-') && !src.includes('logo') && !src.includes('icon') && (src.includes('list_thumb') || src.includes('data/') || src.includes('thumb'))) {
-              img = src;
-            }
-          });
-          if (img && img.startsWith('//')) img = 'https:' + img;
-          if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+            boxes.each((_, el) => {
+              const href = $(el).find('a[href*="/product/"]').attr('href') || '';
+              const numMatch = href.match(/\/product\/(\d+)/);
+              if (!numMatch) return;
+              const cpId = numMatch[1];
+              if (seenMoblIds.has(cpId)) return;
 
-          const numMatch = href.match(/\/product\/(\d+)/);
-          const cpId = numMatch ? numMatch[1] : `${i}`;
+              const title = $(el).find('.c_title a').text().trim().replace(/\s+/g, ' ');
+              const sub = $(el).find('.pr_subject_sub').text().trim().replace(/\s+/g, ' ');
+              const platformText = $(el).find('.btn_ca').first().text().trim();
+              const cleanTitle = title || sub || '모블 체험단';
+              const cleanDesc = sub || title || cleanTitle;
+              const fullSearchText = `${cleanTitle} ${cleanDesc}`;
 
-          if (rawTitle && rawTitle.length > 3) {
-            collected.push({
-              id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
-              category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
-              imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블', limitCount: 5, applyCount: 0,
-              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+              if (keyword && !fullSearchText.toLowerCase().includes(keyword.toLowerCase())) return;
+
+              seenMoblIds.add(cpId);
+              let img = $(el).find('img').attr('src') || $(el).find('img').attr('data-original') || $(el).find('img').attr('data-src') || '';
+              if (img && img.startsWith('//')) img = 'https:' + img;
+              if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+              const recruitText = $(el).find('.recruit').text().replace(/\s+/g, '');
+              const recruitMatch = recruitText.match(/신청(\d+)\/(\d+)/);
+              const applyCount = recruitMatch ? parseInt(recruitMatch[1], 10) : 0;
+              const limitCount = recruitMatch ? parseInt(recruitMatch[2], 10) : 0;
+
+              collected.push({
+                id: `modublog-${cpId}`, title: cleanTitle.slice(0, 80), description: cleanDesc,
+                platform: detectPlatform(platformText, fullSearchText), category: detectCategory(fullSearchText, fullSearchText),
+                campaignUrl: `https://www.modublog.co.kr/product/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png',
+                targetSite: '모블', limitCount, applyCount,
+                startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+              });
             });
+          } catch (e) {
+            break;
           }
-        });
+        }
       } catch (err: any) {
         console.warn('[Parallel-Crawl] 모블 (모두의블로그) failed:', err.message);
       }

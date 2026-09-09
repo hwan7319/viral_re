@@ -670,33 +670,55 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
 
   // ==================== 9. 모블 (모두의블로그) ====================
   try {
-    const moblRes = await axios.get('https://www.modublog.co.kr', { headers: HEADERS, timeout: 6000 });
-    const $mobl = cheerio.load(moblRes.data);
     let moblCount = 0;
+    const seenMoblIds = new Set<string>();
+    for (let page = 1; page <= 5; page++) {
+      const pageUrl = `https://www.modublog.co.kr/product/?page=${page}`;
+      try {
+        const moblRes = await axios.get(pageUrl, { headers: HEADERS, timeout: 6000 });
+        const $mobl = cheerio.load(moblRes.data);
+        const boxes = $mobl('.c_box');
+        if (boxes.length === 0) break;
 
-    $mobl('a[href*="/product/"]').each((i, el) => {
-      const href = $mobl(el).attr('href') || '';
-      const parent = $mobl(el).closest('div, li');
-      let rawTitle = $mobl(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
-      if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
+        boxes.each((_, el) => {
+          const href = $mobl(el).find('a[href*="/product/"]').attr('href') || '';
+          const numMatch = href.match(/\/product\/(\d+)/);
+          if (!numMatch) return;
+          const cpId = numMatch[1];
+          if (seenMoblIds.has(cpId)) return;
 
-      let img = $mobl(el).find('img').attr('src') || parent.find('img').attr('src') || '';
-      if (img && img.startsWith('//')) img = 'https:' + img;
-      if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+          const title = $mobl(el).find('.c_title a').text().trim().replace(/\s+/g, ' ');
+          const sub = $mobl(el).find('.pr_subject_sub').text().trim().replace(/\s+/g, ' ');
+          const platformText = $mobl(el).find('.btn_ca').first().text().trim();
+          const cleanTitle = title || sub || '모블 체험단';
+          const cleanDesc = sub || title || cleanTitle;
+          const fullSearchText = `${cleanTitle} ${cleanDesc}`;
 
-      const numMatch = href.match(/\/product\/(\d+)/);
-      const cpId = numMatch ? numMatch[1] : `${i}`;
+          if (keyword && !fullSearchText.toLowerCase().includes(keyword.toLowerCase())) return;
 
-      if (rawTitle && rawTitle.length > 3) {
-        collected.push({
-          id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
-          category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
-          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블', limitCount: 5, applyCount: 0,
-          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+          seenMoblIds.add(cpId);
+          let img = $mobl(el).find('img').attr('src') || $mobl(el).find('img').attr('data-original') || $mobl(el).find('img').attr('data-src') || '';
+          if (img && img.startsWith('//')) img = 'https:' + img;
+          if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
+
+          const recruitText = $mobl(el).find('.recruit').text().replace(/\s+/g, '');
+          const recruitMatch = recruitText.match(/신청(\d+)\/(\d+)/);
+          const applyCount = recruitMatch ? parseInt(recruitMatch[1], 10) : 0;
+          const limitCount = recruitMatch ? parseInt(recruitMatch[2], 10) : 0;
+
+          collected.push({
+            id: `modublog-${cpId}`, title: cleanTitle.slice(0, 80), description: cleanDesc,
+            platform: detectPlatform(platformText, fullSearchText), category: detectCategory(fullSearchText, fullSearchText),
+            campaignUrl: `https://www.modublog.co.kr/product/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png',
+            targetSite: '모블', limitCount, applyCount,
+            startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+          });
+          moblCount++;
         });
-        moblCount++;
+      } catch (e) {
+        break;
       }
-    });
+    }
     console.log(`[OnDemand] ModuBlog parsed total ${moblCount} items`);
   } catch (err: any) {
     console.error('[OnDemand] ModuBlog crawl failed:', err.message);
