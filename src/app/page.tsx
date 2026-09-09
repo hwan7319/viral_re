@@ -326,12 +326,14 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
 
   if (!cleaned) return cleanTitle || '리뷰어 무상 체험 혜택';
 
-  // 불필요한 관용성 문구 및 마감 수량 문구 정제
+  // 불필요한 관용성 문구 및 마감 수량/D-day/신청자수 문구 정제
   cleaned = cleaned
+    .replace(/\/\s*\d+\s*명\s*(?:주말|평일)?$/gi, '')
     .replace(/가이드라인\s*참고.*$/gi, '')
     .replace(/상세정보\s*원본\s*참조.*$/gi, '')
+    .replace(/(?:D\s*-\s*\d+|D-Day|\d+\s*일\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
+    .replace(/D\s*-\s*\d+\s*(?:주말|평일)?/gi, '')
     .replace(/D-day\s*\d+/gi, '')
-    .replace(/D-\d+/gi, '')
     .trim();
 
   // 해시태그 형태(#7만원식사권 #횟집 등) 정제
@@ -345,16 +347,19 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
     if (extra && extra.length > 2) return extra;
   }
 
-  // 완전 동일한 경우 제목에서 혜택 키워드 추출
-  if (cleaned === cleanTitle) {
-    const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|혜택)?|식사권|이용권|무료숙박권|무상제공|원고료\s*\d+만?\s*원?)/i);
+  // 리뷰플레이스 등: desc가 "[광진구/20만원 상당] 제목" 과 같거나 제목과 동일한 경우 혜택 키워드/상당 가격 태그 우선 추출
+  if (cleaned === cleanTitle || (cleanTitle.length > 5 && cleaned.startsWith(cleanTitle.slice(0, 15)))) {
+    const tagMatch = cleanTitle.match(/\[([^\]]*?\d+만?원?[^\]]*?)\]/);
+    if (tagMatch) return `${tagMatch[1]} 체험 혜택`;
+    const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*상당|\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|포인트|혜택)?|식사권|이용권|무료숙박권|무상제공|원고료\s*\d+만?\s*원?)/i);
     if (benefitMatch) return benefitMatch[1];
-    return cleanTitle;
   }
 
   // D-day / 신청자수 등의 부모 카드 텍스트 오추출 필터링
   const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^[a-zA-Z\s\d]{1,3}$/.test(cleaned);
   if (isCardJunk) {
+    const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*상당|\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|혜택)?|식사권|이용권|무료숙박권|무상제공)/i);
+    if (benefitMatch) return benefitMatch[1];
     return cleanTitle || '리뷰어 무상 체험 혜택';
   }
 
@@ -3320,21 +3325,6 @@ export default function Home() {
               {/* 모달 본문 내용 */}
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
-                {/* 제공 혜택 */}
-                <div style={{
-                  padding: '14px 16px',
-                  backgroundColor: 'var(--accent-light)',
-                  border: '1px solid rgba(99, 102, 241, 0.25)',
-                  borderRadius: 'var(--radius-md)'
-                }}>
-                  <h4 style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    제공 혜택
-                  </h4>
-                  <p style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, margin: 0 }}>
-                    {sanitizeOfferDescription(selectedCampaign.description, selectedCampaign.title)}
-                  </p>
-                </div>
-
                 {/* 기본 정보 테이블 */}
                 <div style={{
                   display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
