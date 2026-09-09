@@ -1,4 +1,12 @@
-# Project: review-moa Automated Precision Testing & Verification
+- **CRITICAL PERMANENT UI & DATA INVARIANTS (영구 엄수 핵심 원칙)**:
+  1. **검색 결과 리스트 카드**:
+     - 제목 아래 `제공 혜택` 박스는 100% 실시간/정제된 구체적 혜택 정보(`5만원 식사권`, `7만원 체험권`, `6단 아기병풍` 등)만 표출.
+     - `description`에 제목(`title`) 문구가 중복/반복되거나 `description === title` 형태가 되어서는 안 됨.
+  2. **상세 보기 모달 팝업**:
+     - 상세 모달 팝업 내부에는 `제공 혜택` 박스/영역을 절대로 배치하지 않음 (0% 비노출).
+     - `📋 업체 원본 필수 미션 & 가이드라인` 박스 내부에는 `제공 내역`, `제공 혜택`, `제공 상품`, `지원/상품 혜택` 등 보상/혜택 관련 문구를 단 1줄도 혼입하지 않으며, 오직 순수 포스팅 지침(키워드, 사진 갯수, 영상, 장소 지도 첨부, 예약 수칙)만 표출.
+  3. **크롤러 덮어쓰기 방지 쉴드 (DB Layer Guard)**:
+     - 실시간 온디맨드 크롤러(`src/lib/crawler-core.ts`) 수집 시 `description`이 옛날 방식(`title`과 동일)으로 DB를 오염시키지 않도록 파서 및 DB 저장소 레벨에서 덮어쓰기 방어.
 
 ## Architecture
 - **Web Framework**: Next.js 16.2.12 (App Router), React 19.2.4, TypeScript 5, Node.js 24
