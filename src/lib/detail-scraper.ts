@@ -268,8 +268,13 @@ export function formatMissionText(text: string): string {
 
     if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
 
-    // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 및 제공혜택 문구 완전 제거]
+    // 🔑 [미션 & 가이드라인 영역 내 네비게이션 지역 카테고리, 수치 및 제공혜택 문구 완전 제거]
+    const isRegionOrCategoryLine =
+      /강남\/논현|명동\/이태원|홍대\/마포|삼성\/선릉|강동\/천호|송파\/잠실|서초\/반포|강서\/목동|관악\/신림|시청\/남대문|종로\/대학로|수유\/동대문|여의도\/영등포|교대\/사당|노원\/강북|의정부\/동두천|성남\/판교|광명\/시흥|과천\/안양|남양주\/구리|일산\/파주/i.test(trimmed) ||
+      /^•?\s*(?:대전|충청|경북|경남|전라|서울|경기|전국|인천|부천|대구|부산|광주|강원|제주)$/i.test(trimmed);
+
     const isHeadcountOrBenefitLine = 
+      isRegionOrCategoryLine ||
       /🎁/i.test(trimmed) ||
       /제공\s*내역|제공내역|제공\s*혜택|제공혜택|제공\s*상품|제공상품|제공\s*품목|제공품목|지원\s*\/\s*상품\s*혜택|상세\s*제공|리뷰어\s*제공/i.test(trimmed) ||
       /^제공\s*:?/i.test(trimmed) ||

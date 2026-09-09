@@ -119,27 +119,32 @@ export const DinnerQueenScraper: SiteScraper = {
       const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
       const $ = cheerio.load(res.data);
 
-      const fullMissionText = $('.qz-collapse__content').map((_, el) => $(el).text()).get().join('\n');
-      if (!fullMissionText) return undefined;
-
-      const lines = fullMissionText.split(/\n+/);
       const cleanLines: string[] = [];
 
-      for (let line of lines) {
-        line = line.trim().replace(/\s+/g, ' ');
-        if (!line) continue;
+      $('.qz-collapse__content').each((_, el) => {
+        // Skip top navbar dropdown menus and point banner defaults
+        if ($(el).parents('.category__wrap, .dq-taste-detail__point-banner').length > 0) return;
 
-        // Filter out site headers, navbars, categories, dates, and region links
-        if (line.match(/^(?:전체|클립형|릴스형|배송|맛집|지역|배달|여가|뷰티|페이백|기자단|기타|서울|경기|전국|인천|부천|대구|부산|광주|강원|제주|발표 날짜|리뷰 기간|\d{2}\.\d{2}\.\d{2})/i)) continue;
-        if (line.includes('지역 캠페인') || line.includes('신청 기간') || line.includes('일정보기') || line.includes('/') || line.includes('건대') || line.includes('강남')) continue;
+        const text = $(el).text();
+        const lines = text.split(/\n+/);
 
-        // Filter out offer benefit header & offer benefit content lines
-        if (/^(?:제공\s*내역|제공내역|제공\s*혜택|제공혜택|제공\s*상품|지원\s*혜택)/i.test(line)) continue;
-        if (line.includes('추가금액 본인부담') || line.includes('중복 체험은 불가능') || line.includes('진행하실 SNS') || line.includes('1인 방문시 반값') || line.includes('포장체험불가')) continue;
-        if (/\d+(?:만|천)?원\s*(?:식사권|체험권|지원|제공)/i.test(line) && line.length < 100) continue;
+        for (let line of lines) {
+          line = line.trim().replace(/\s+/g, ' ');
+          if (!line) continue;
 
-        cleanLines.push(line);
-      }
+          // Filter out site headers, navbars, region dropdowns, dates
+          if (line.match(/^(?:전체|클립형|릴스형|배송|맛집|지역|배달|여가|뷰티|페이백|기자단|기타|서울|경기|전국|인천|부천|대구|부산|광주|강원|제주|대전|충청|경북|경남|전라|발표 날짜|리뷰 기간|\d{2}\.\d{2}\.\d{2})/i)) continue;
+          if (line.includes('지역 캠페인') || line.includes('신청 기간') || line.includes('일정보기') || line.includes('건대/왕십리') || line.includes('강남/논현') || line.includes('명동/이태원') || line.includes('홍대/마포') || line.includes('삼성/선릉') || line.includes('송파/잠실') || line.includes('서초/반포') || line.includes('일산/파주')) continue;
+
+          // Filter out offer benefit headers, map links, action buttons
+          if (/^(?:제공\s*내역|제공내역|제공\s*혜택|제공혜택|제공\s*상품|지원\s*혜택)/i.test(line)) continue;
+          if (line.includes('추가금액 본인부담') || line.includes('중복 체험은 불가능') || line.includes('진행하실 SNS') || line.includes('1인 방문시 반값') || line.includes('포장체험불가')) continue;
+          if (/\d+(?:만|천)?원\s*(?:식사권|체험권|지원|제공)/i.test(line) && line.length < 100) continue;
+          if (line.includes('바로가기') || line.includes('복사하기') || line.startsWith('https://')) continue;
+
+          cleanLines.push(line);
+        }
+      });
 
       const finalMission = Array.from(new Set(cleanLines)).join('\n').trim();
       return finalMission || undefined;
