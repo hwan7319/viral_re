@@ -166,12 +166,7 @@ function cleanRingbleTitleText(text: string): string {
 // 🔑 링블 (Ringble - ringble.co.kr) 공고 아이템 정밀 미션 및 가이드라인 포맷터
 function formatRingbleMission(htmlOrText: string, title?: string, url?: string, keywords?: string[]): string {
   const parts: string[] = [];
-  const cleanTitle = cleanRingbleTitleText(title || '');
-
-  parts.push(`🎁 [링블 (Ringble) 제공 혜택 및 상세 보상]`);
-  if (cleanTitle) {
-    parts.push(`• 지원/상품 혜택: ${cleanTitle}`);
-  }
+  parts.push(`📋 [링블 (Ringble) 포스팅 미션 & 작성 가이드라인]`);
 
   const missionSections: string[] = [];
 
@@ -274,8 +269,9 @@ export function formatMissionText(text: string): string {
 
     // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 및 제공혜택 문구 완전 제거]
     const isHeadcountOrBenefitLine = 
-      /🎁\s*\[.*?제공\s*혜택.*?\]/i.test(trimmed) ||
-      /^제공\s*혜택\s*:?/i.test(trimmed) ||
+      /🎁/i.test(trimmed) ||
+      /제공\s*내역|제공내역|제공\s*혜택|제공혜택|제공\s*상품|제공상품|제공\s*품목|제공품목|지원\s*\/\s*상품\s*혜택|상세\s*제공|리뷰어\s*제공/i.test(trimmed) ||
+      /^제공\s*:?/i.test(trimmed) ||
       /모집\s*및\s*지원\s*현황/i.test(trimmed) ||
       /신청\s*현황|지원\s*현황|모집\s*현황/i.test(trimmed) ||
       /(?:신청|지원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*모집\s*:?\s*\d+\s*명?/i.test(trimmed) ||
@@ -808,9 +804,9 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     // 3. 디너의여왕 (dinnerqueen.net)
     else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
       const items: string[] = [];
-      $('.qz-wrap__list li, .qz-collapse__content p, .qz-collapse__content li').each((_, el) => {
+      $('.qz-wrap__list li, .layer-tertiary p, .layer-tertiary li, div[class*="guide"] p, div[class*="mission"] p').each((_, el) => {
         const t = $(el).text().replace(/\s+/g, ' ').trim();
-        if (t && t.length > 2 && !t.includes('클립형') && !t.includes('릴스형') && !t.includes('페이백') && !t.includes('기자단')) {
+        if (t && t.length > 2 && !t.includes('클립형') && !t.includes('릴스형') && !t.includes('페이백') && !t.includes('기자단') && !t.includes('제공 내역') && !t.includes('제공내역') && !t.includes('제공 혜택')) {
           items.push(t);
         }
       });

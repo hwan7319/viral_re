@@ -348,11 +348,12 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   }
 
   // 리뷰플레이스 등: desc가 "[광진구/20만원 상당] 제목" 과 같거나 제목과 동일한 경우 혜택 키워드/상당 가격 태그 우선 추출
-  if (cleaned === cleanTitle || (cleanTitle.length > 5 && cleaned.startsWith(cleanTitle.slice(0, 15)))) {
+  if (cleaned === cleanTitle || (cleanTitle.length > 5 && (cleaned.includes(cleanTitle) || cleanTitle.includes(cleaned)))) {
     const tagMatch = cleanTitle.match(/\[([^\]]*?\d+만?원?[^\]]*?)\]/);
     if (tagMatch) return `${tagMatch[1]} 체험 혜택`;
     const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*상당|\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|포인트|혜택)?|식사권|이용권|무료숙박권|무상제공|원고료\s*\d+만?\s*원?)/i);
     if (benefitMatch) return benefitMatch[1];
+    return '리뷰어 무상 체험 혜택 제공';
   }
 
   // D-day / 신청자수 등의 부모 카드 텍스트 오추출 필터링
@@ -360,10 +361,10 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   if (isCardJunk) {
     const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*상당|\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|혜택)?|식사권|이용권|무료숙박권|무상제공)/i);
     if (benefitMatch) return benefitMatch[1];
-    return cleanTitle || '리뷰어 무상 체험 혜택';
+    return '리뷰어 무상 체험 혜택 제공';
   }
 
-  return cleaned || cleanTitle;
+  return cleaned || '리뷰어 무상 체험 혜택 제공';
 };
 
 // 📋 실제 업체 미션 안내 헬퍼 함수
