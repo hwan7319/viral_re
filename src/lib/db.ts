@@ -544,10 +544,18 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
           newKeywords.forEach(k => currentKeywordsSet.add(k));
           finalKeywords = currentKeywordsSet.size > 0 ? `,${Array.from(currentKeywordsSet).join(',')},` : '';
         }
+
+        const existingDesc = globalRef.memoryCampaigns[idx].description || '';
+        const existingTitle = globalRef.memoryCampaigns[idx].title || '';
+        let finalDesc = c.description;
+        if (existingDesc && existingDesc !== existingTitle && (!c.description || c.description === c.title || c.description.startsWith(c.title))) {
+          finalDesc = existingDesc;
+        }
         
         globalRef.memoryCampaigns[idx] = {
           ...globalRef.memoryCampaigns[idx],
           ...c,
+          description: finalDesc,
           searchKeywords: finalKeywords,
           mission: c.mission || globalRef.memoryCampaigns[idx].mission,
           updatedAt: new Date().toISOString()
@@ -574,16 +582,22 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
 
   try {
     for (const c of campaigns) {
-      const existing = await db.get('SELECT id, searchKeywords FROM campaigns WHERE id = ?', [c.id]);
+      const existing = await db.get('SELECT id, title, description, searchKeywords FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
-        // 기존 검색 키워드가 존재한다면, 새로운 키워드 태그를 누적 결합하여 보존
         let finalKeywords = existing.searchKeywords || '';
         if (c.searchKeywords) {
           const newKeywords = c.searchKeywords.split(',').filter(Boolean);
           const currentKeywordsSet = new Set(finalKeywords.split(',').filter(Boolean));
           newKeywords.forEach(k => currentKeywordsSet.add(k));
           finalKeywords = currentKeywordsSet.size > 0 ? `,${Array.from(currentKeywordsSet).join(',')},` : '';
+        }
+
+        const existingDesc = existing.description || '';
+        const existingTitle = existing.title || '';
+        let finalDesc = c.description;
+        if (existingDesc && existingDesc !== existingTitle && (!c.description || c.description === c.title || c.description.startsWith(c.title))) {
+          finalDesc = existingDesc;
         }
 
         await db.run(
@@ -595,7 +609,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
             mission = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE mission END
           WHERE id = ?`,
           [
-            c.title, c.description, c.platform, c.category,
+            c.title, finalDesc, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate,
             new Date().toISOString(), finalKeywords,
