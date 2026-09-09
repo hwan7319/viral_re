@@ -136,19 +136,37 @@ export const AssaViewScraper: SiteScraper = {
 
       let benefit = '';
 
-      $('option, .option_list, .cp_option').each((_, el) => {
+      $('.opt_name, .option_list, .cp_option').each((_, el) => {
         const text = $(el).text().replace(/\s+/g, ' ').trim();
-        if (text && !text.includes('옵션을 선택') && !text.includes('개인정보') && (text.includes('상당') || text.includes('배송비') || text.includes('이용권') || text.includes('제공') || text.includes('원]'))) {
-          if (!benefit || text.length > benefit.length) {
-            benefit = text;
-          }
+        if (text && !text.includes('옵션을 선택') && !text.includes('개인정보') && text.length > 2) {
+          if (!benefit || text.length > benefit.length) benefit = text;
         }
       });
 
       if (!benefit) {
+        const bodyText = $('body').text().replace(/\s+/g, ' ');
+        const match = bodyText.match(/진행옵션\s*(\d+명\s*모집)?\s*([^\n\r]*?)(?=\s*옵션을|공유하기|신청|최소|$)/i);
+        if (match && match[2]) {
+          let clean = match[2].replace(/\d+명\s*모집/g, '').replace(/옵션을 선택.*$/g, '').trim();
+          if (clean && clean.length > 2 && !clean.includes('개인정보')) {
+            benefit = clean;
+          }
+        }
+      }
+
+      if (!benefit) {
+        $('option').each((_, el) => {
+          const text = $(el).text().trim();
+          if (text && !text.includes('옵션을 선택') && text.length > 2) {
+            if (!benefit) benefit = text;
+          }
+        });
+      }
+
+      if (!benefit) {
         $('div, tr, td, p').each((_, el) => {
           const text = $(el).clone().children().remove().end().text().trim();
-          if (text.includes('원 상당]') || text.includes('배송비 포함') || text.includes('이용권')) {
+          if (text.includes('원 상당]') || text.includes('배송비 포함') || text.includes('이용권') || text.includes('식사권')) {
             if (!benefit || (text.length > 5 && text.length < 150)) {
               let clean = text.replace(/옵션을 선택해주세요|선택하세요|-->/g, '').trim();
               if (clean && !clean.includes('개인정보') && !clean.includes('function')) {
@@ -157,22 +175,6 @@ export const AssaViewScraper: SiteScraper = {
             }
           }
         });
-      }
-
-      if (!benefit) {
-        const bodyText = $('body').text().replace(/\s+/g, ' ');
-        const match = bodyText.match(/\[([\d,]+원\s*상당\][^\n\r]*?)(?=\s*공유하기|신청|옵션|$)/i) || bodyText.match(/진행옵션\s*([\s\S]*?)(?=옵션을|공유하기|신청|$)/i);
-        if (match && match[1]) {
-          let clean = match[1].replace(/[\d,]+\s*명\s*모집|진행옵션/g, '').trim();
-          if (clean && !clean.includes('개인정보')) {
-            benefit = clean;
-          }
-        }
-      }
-
-      if (!benefit) {
-        const title = $('h1, h2, .cp_title, .title').first().text().trim().replace(/\s+/g, ' ');
-        if (title && !title.includes('개인정보')) benefit = title;
       }
 
       return benefit ? benefit.slice(0, 150).trim() : undefined;
@@ -205,7 +207,6 @@ export const AssaViewScraper: SiteScraper = {
 
       const lines = convertedText.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.includes('-->'));
 
-      let benefitStr = '';
       let addressStr = '';
       let timeStr = '';
       let noteStr = '';
@@ -214,17 +215,12 @@ export const AssaViewScraper: SiteScraper = {
 
       for (let i = 0; i < lines.length; i++) {
         const l = lines[i];
-        if ((l.includes('원 상당]') || l.includes('배송비 포함')) && !l.includes('개인정보')) {
-          if (!benefitStr && l.length < 150) benefitStr = l;
-        }
         if (l.startsWith('매장 주소 :') || l.startsWith('매장 주소:')) addressStr = l.replace(/^매장 주소\s*:\s*/, '').trim();
         if (l.startsWith('방문 가능 시간 :') || l.startsWith('방문 가능 시간:')) timeStr = l.replace(/^방문 가능 시간\s*:\s*/, '').trim();
         if (l.startsWith('방문 참고 사항 :') || l.startsWith('방문 참고 사항:')) noteStr = l.replace(/^방문 참고 사항\s*:\s*/, '').trim();
         if (l === '제목 키워드' && i + 2 < lines.length) titleKwStr = lines[i + 2];
         if (l === '본문 키워드' && i + 2 < lines.length) bodyKwStr = lines[i + 2];
       }
-
-      if (benefitStr) sections.push(`🎁 [제공내역]\n• ${benefitStr}`);
 
       if (addressStr || timeStr || noteStr) {
         let locSection = '📍 [체험 장소 및 방문/예약 안내]';
