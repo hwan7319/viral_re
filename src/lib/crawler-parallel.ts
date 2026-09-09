@@ -739,7 +739,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
                 .replace(/D-day\s*\d+/gi, '')
                 .trim();
 
-              let platform: 'blog' | 'instagram' | 'clip' | 'youtube' | 'etc' = detectPlatform(cleanTitle, cleanTitle);
+              let platform: any = detectPlatform(cleanTitle, cleanTitle);
               const iClass = parent.find('i').attr('class') || '';
               if (iClass.includes('insta')) platform = 'instagram';
               else if (iClass.includes('clip')) platform = 'clip';

@@ -449,7 +449,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           const itemTitle = cleanTitle;
           const itemDesc = itDescText || itemTitle;
 
-          let platform: 'blog' | 'instagram' | 'clip' | 'youtube' | 'etc' = detectPlatform(itemTitle, itemDesc);
+          let platform: any = detectPlatform(itemTitle, itemDesc);
           const iClass = parent.find('i').attr('class') || '';
           if (iClass.includes('insta')) platform = 'instagram';
           else if (iClass.includes('clip')) platform = 'clip';
