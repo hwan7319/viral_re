@@ -628,49 +628,6 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     console.warn('⚠️ [Snapshot-Generator] 레뷰 (REVU) 라이브 연동 실패:', e.message);
   }
 
-  // 13. 30건 이상 풍부한 다각화 시드 데이터 확충 (오마이블로그/체험단모아/레뷰는 100% 라이브 데이터 사용)
-  const expandedSeedPlatforms = [
-    { site: '미블', prefix: 'mb-ext', count: 40 },
-    { site: '클라우드리뷰', prefix: 'cr-ext', count: 40 },
-    { site: '링블', prefix: 'ring-ext', count: 40 },
-    { site: '놀러와체험단', prefix: 'play-ext', count: 40 },
-    { site: '모블', prefix: 'modu-ext', count: 40 }
-  ];
-
-  const regionList = ['서울 강남', '서울 홍대', '서울 성수', '서울 마포', '서울 건대', '경기 수원', '경기 성남', '경기 분당', '인천 송도', '부산 해운대', '대구 동성로', '대전 둔산', '광주 상무', '제주 서귀포', '전국 배송'];
-  const categoryTemplates = [
-    { title: '프리미엄 숯불 구이 전문점 5만원 식사권', cat: 'food-korean' },
-    { title: '시그니처 수제 디저트 & 생과일 에이드 2인 세트', cat: 'food-cafe' },
-    { title: '감성 분위기 퓨전 한식주점 자유 이용권', cat: 'food-pub' },
-    { title: '고농축 히알루론산 수분 앰플 화장품 무상 배송', cat: 'beauty-cosmetic' },
-    { title: '피부 스킨케어 & 에스테틱 맞춤 케어 서비스', cat: 'beauty-skin' },
-    { title: '트렌디 트렌드 헤어 스타일링 & 프리미엄 클리닉', cat: 'beauty-hair' },
-    { title: '오션뷰 최고급 독채 풀빌라 펜션 1박 무료 숙박권', cat: 'travel-stay' },
-    { title: '인기 아쿠아리움 & 테마파크 2인 콤보 관람 티켓', cat: 'travel-leisure' },
-    { title: '신선 원육 한우 셰프 추천 신선 밀키트 포장 체험', cat: 'health-fresh' },
-    { title: 'F/W 시즌 100% 가울 신상 오버핏 니트 무상 협찬', cat: 'fashion-clothing' }
-  ];
-
-  expandedSeedPlatforms.forEach(({ site, prefix, count }) => {
-    for (let i = 0; i < count; i++) {
-      const reg = regionList[i % regionList.length];
-      const tmpl = categoryTemplates[i % categoryTemplates.length];
-      const officialUrl = SITE_OFFICIAL_URLS[site] || 'https://www.moaview.co.kr';
-      addCampaign({
-        id: `${prefix}-expanded-${i + 1}`,
-        title: `[${reg}] ${tmpl.title} (${site})`,
-        description: `${site} 공식 검증 리포터단 및 서포터즈 모집 - ${tmpl.title}`,
-        campaignUrl: officialUrl,
-        imageUrl: `https://viral-re.co.kr/icon.png/600/400`,
-        targetSite: site,
-        category: tmpl.cat,
-        location: reg,
-        limitCount: 5 + (i % 5),
-        applyCount: 1 + (i % 8)
-      });
-    }
-  });
-
   const finalCollected = Array.from(collectedMap.values());
   console.log(`✅ Total collected fresh campaigns across 17 sites: ${finalCollected.length}`);
   return finalCollected;

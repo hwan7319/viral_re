@@ -41,7 +41,6 @@ export function formatRevuMission(item: any): string {
   }
 
   let parts: string[] = [];
-  parts.push(`🎁 [레뷰 (REVU) 제공 혜택 및 상세 보상]\n• ${reward}${point > 0 ? ` (추가 레뷰 포인트 ${pointStr} 지급)` : ''}`);
 
   if (venue && (venue.name || venue.addressFirst)) {
     let locStr = `📍 [체험 장소 및 방문 주소 안내]\n• 매장명: ${venue.name || '상세 주소 참고'}`;
@@ -76,9 +75,6 @@ export function formatRevuMission(item: any): string {
 // 🔑 리뷰노트 (ReviewNote) 공고 아이템 정밀 미션 및 가이드라인 포맷터
 export function formatReviewNoteMission(item: any): string {
   if (!item) return '';
-
-  const title = item.title || '체험단 공고';
-  const offer = item.offer || item.description || '상세 제공내역 원본 참조';
   
   let locStr = '';
   const city = typeof item.city === 'string' ? item.city : (item.city?.name || '');
@@ -97,8 +93,6 @@ export function formatReviewNoteMission(item: any): string {
     : '네이버 블로그 (정성 리뷰 포스팅)';
 
   let parts: string[] = [];
-  parts.push(`🎁 [리뷰노트 (ReviewNote) 제공 혜택 및 상세 보상]\n• 캠페인명: ${title}\n• 제공 혜택: ${offer}`);
-
   if (locStr) {
     parts.push(`📍 [체험 장소 및 위치]\n• 위치/지역: ${locStr}`);
   }
@@ -134,15 +128,11 @@ export function formatMibleMission(text: string, title?: string, url?: string): 
 
   const parts: string[] = [];
   const starIndex = cleanText.indexOf('*');
-  let offerStr = cleanText;
   let notesStr = '';
 
   if (starIndex > 0) {
-    offerStr = cleanText.substring(0, starIndex).trim();
     notesStr = cleanText.substring(starIndex).trim();
   }
-
-  parts.push(`🎁 [미블 (Mible) 제공 혜택 및 상세 보상]\n• ${title && !offerStr.includes(title) ? `${title}\n• ` : ''}${offerStr}`);
 
   if (notesStr) {
     const formattedNotes = notesStr
@@ -152,6 +142,8 @@ export function formatMibleMission(text: string, title?: string, url?: string): 
       .map(s => `• ${s.replace(/^\*/, '').trim()}`)
       .join('\n');
     parts.push(`📋 [업체 상세 미션 & 주의사항]\n${formattedNotes}`);
+  } else {
+    parts.push(`📋 [포스팅 미션 & 작성 가이드라인]\n• ${cleanText}`);
   }
 
   parts.push(`※ 상세 신청 및 안내 지침은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 미블 원본 사이트에서 바로 확인하실 수 있습니다.`);
@@ -280,8 +272,10 @@ export function formatMissionText(text: string): string {
 
     if (/^[•\-\*★✔◈※▶\s]+$/.test(trimmed)) continue;
 
-    // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 문구 완전 제거]
-    const isHeadcountLine = 
+    // 🔑 [미션 & 가이드라인 영역 내 모집/신청 인원 수치 및 제공혜택 문구 완전 제거]
+    const isHeadcountOrBenefitLine = 
+      /🎁\s*\[.*?제공\s*혜택.*?\]/i.test(trimmed) ||
+      /^제공\s*혜택\s*:?/i.test(trimmed) ||
       /모집\s*및\s*지원\s*현황/i.test(trimmed) ||
       /신청\s*현황|지원\s*현황|모집\s*현황/i.test(trimmed) ||
       /(?:신청|지원)\s*:?\s*\d+\s*명?\s*[\/\,\~\:]\s*모집\s*:?\s*\d+\s*명?/i.test(trimmed) ||
@@ -290,7 +284,7 @@ export function formatMissionText(text: string): string {
       /신청인원|모집인원|지원인원/i.test(trimmed) ||
       /현재\s*\d+\s*명\s*(?:신청|지원)/i.test(trimmed);
 
-    if (isHeadcountLine) continue;
+    if (isHeadcountOrBenefitLine) continue;
 
     trimmed = trimmed.replace(/^([•\-\*★✔◈※▶]\s*)+/g, (match) => {
       const symbol = match.trim()[0];
@@ -1044,14 +1038,26 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         if (formatted) return formatted;
       } catch (e) {}
     }
+    // 9.5 모블 (modublog.co.kr)
+    else if (siteLower.includes('모블') || url.includes('modublog.co.kr')) {
+      const cid = url.match(/product\/([0-9]+)/)?.[1];
+      let formattedMission = '';
+      try {
+        const $m = cheerio.load(html);
+        const guideText = $m('.product-detail, .view-content, #bo_v_con').text().replace(/\s+/g, ' ').trim();
+        if (guideText && guideText.length > 20) {
+          formattedMission = `📋 [포스팅 미션 & 작성 가이드라인]\n• ${guideText}`;
+        }
+      } catch (e) {}
+
+      if (!formattedMission) {
+        formattedMission = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: 블로그 / 인스타그램 / 쿠팡 체험단\n• 필수 의무 표기: 게시글 하단 대가성 표시 및 네이버 지도 장소 링크 첨부\n• 최소 작성 기준: 사진 15장 이상, 텍스트 1,000자 이상 정성 리뷰 작성\n\n※ 상세 키워드 및 추가 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 모블 원본 사이트에서 바로 확인하실 수 있습니다.`;
+      }
+      return formattedMission;
+    }
     // 10. 놀러와체험단 (cometoplay.kr)
     else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
       const items: string[] = [];
-
-      const benefitText = $('.etc_list2').text().replace(/\s+/g, ' ').trim();
-      if (benefitText) {
-        items.push(`🎁 [놀러와체험단 제공 혜택 및 상세 보상]\n• ${benefitText.replace(/^제공내역\s*/, '')}`);
-      }
 
       let tabHtml = $('#tab1').html() || $('.tab-cont').first().html() || '';
       if (tabHtml) {
@@ -1088,9 +1094,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
 
       $('dl').each((_, el) => {
         const t = $(el).text().replace(/\s+/g, ' ').trim();
-        if (t.startsWith('제공내역')) {
-          items.push(`🎁 [리뷰플레이스 제공 혜택 및 상세 보상]\n• ${t.replace(/^제공내역\s*/, '')}`);
-        } else if (t.startsWith('제목키워드') || t.startsWith('본문키워드')) {
+        if (t.startsWith('제목키워드') || t.startsWith('본문키워드')) {
           items.push(`📌 [${t.substring(0, 5)}]\n• ${t.substring(5).trim()}`);
         }
       });

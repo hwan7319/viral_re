@@ -819,7 +819,13 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
           let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
           if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
-          let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+          let img = '';
+          parent.find('img').each((__, imgEl) => {
+            const src = $(imgEl).attr('src') || $(imgEl).attr('data-src') || '';
+            if (src && !src.includes('starred-') && !src.includes('logo') && !src.includes('icon') && (src.includes('list_thumb') || src.includes('data/') || src.includes('thumb'))) {
+              img = src;
+            }
+          });
           if (img && img.startsWith('//')) img = 'https:' + img;
           if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
 
