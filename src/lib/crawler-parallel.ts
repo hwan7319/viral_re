@@ -75,7 +75,7 @@ const parseCountText = (text: string): { applyCount: number; limitCount: number 
   return { applyCount: 0, limitCount: 5 };
 };
 
-export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'coupang' | 'etc' => {
+export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'blog+instagram' | 'instagram' | 'youtube' | 'coupang' | 'etc' => {
   const t = (title || '').toLowerCase();
   const p = (rawPlatformText || '').toLowerCase();
   const combined = `${t} ${p}`;
@@ -85,20 +85,26 @@ export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' 
     return 'coupang';
   }
 
-  // 2. Instagram / Reels
-  if (combined.includes('릴스') || combined.includes('인스타') || combined.includes('instagram') || combined.includes('reels') || combined.includes('insta')) {
+  const hasBlog = combined.includes('blog') || combined.includes('블로그') || combined.includes('네이버');
+  const hasInsta = combined.includes('릴스') || combined.includes('인스타') || combined.includes('instagram') || combined.includes('reels') || combined.includes('insta');
+  const hasClip = combined.includes('clip') || combined.includes('클립');
+
+  // 2. Both Blog/Naver and Instagram/Reels
+  if (combined.includes('블로그+인스타') || combined.includes('네이버+인스타') || combined.includes('블로그&인스타') || combined.includes('인스타+블로그') || (hasBlog && hasInsta && (combined.includes('+') || combined.includes('&') || combined.includes('및') || combined.includes('동시')))) {
+    return 'blog+instagram';
+  }
+
+  // 3. Instagram / Reels
+  if (hasInsta) {
     return 'instagram';
   }
 
-  // 3. YouTube / Shorts
+  // 4. YouTube / Shorts
   if (combined.includes('쇼츠') || combined.includes('유튜브') || combined.includes('youtube') || combined.includes('shorts')) {
     return 'youtube';
   }
 
-  // 4. Naver Clip / Blog
-  const hasBlog = combined.includes('blog') || combined.includes('블로그');
-  const hasClip = combined.includes('clip') || combined.includes('클립');
-
+  // 5. Naver Clip / Blog
   if (hasBlog && hasClip) return 'blog+clip';
   if (hasClip) return 'clip';
   if (hasBlog) return 'blog';

@@ -930,6 +930,7 @@ export default function Home() {
                 {activePlatform === 'all' ? '플랫폼' :
                   activePlatform === 'blog' ? '네이버 블로그' :
                   activePlatform === 'clip' ? '네이버 클립' :
+                  activePlatform === 'blog+instagram' ? '네이버&인스타' :
                   activePlatform === 'instagram' ? '인스타그램' :
                   activePlatform === 'youtube' ? '유튜브' :
                   activePlatform === 'coupang' ? '쿠팡 체험단' : '기타'}
@@ -1215,6 +1216,22 @@ export default function Home() {
                   key: 'clip', 
                   label: '네이버 클립', 
                   icon: <NaverClipIcon size={26} />
+                },
+                { 
+                  key: 'blog+instagram', 
+                  label: '네이버&인스타', 
+                  icon: (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                      <NaverBlogIcon size={18} />
+                      <span style={{ fontSize: '12px', fontWeight: 900, color: '#ee2a7b', margin: '0 1px' }}>+</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-insta-combined)' }}>
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                        <defs><linearGradient id="grad-insta-combined" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f9ce71" /><stop offset="50%" stopColor="#ee2a7b" /><stop offset="100%" stopColor="#6228d7" /></linearGradient></defs>
+                      </svg>
+                    </span>
+                  )
                 },
                 { 
                   key: 'instagram', 

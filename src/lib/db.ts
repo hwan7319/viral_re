@@ -57,7 +57,7 @@ export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
   title: string;       // 캠페인 제목
   description: string; // 제공 내역 (예: 5만원 식사권)
-  platform: 'blog' | 'clip' | 'blog+clip' | 'instagram' | 'youtube' | 'coupang' | 'etc'; // 플랫폼 구분
+  platform: 'blog' | 'clip' | 'blog+clip' | 'blog+instagram' | 'instagram' | 'youtube' | 'coupang' | 'etc' | string; // 플랫폼 구분
   category: string; // 카테고리 (세분화 맵핑 대응을 위해 string으로 완화)
   location?: string;   // 지역 (예: 서울 강남구, 경기 수원시 등)
   campaignUrl: string; // 원본 상세 페이지 URL
@@ -320,12 +320,16 @@ export async function queryCampaigns(filters: {
         });
       }
     }
-    // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 블로그+클립 복합 매칭 지원)
+    // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 네이버&인스타 복합 매칭 지원)
     if (filters.platform && filters.platform !== 'all') {
       if (filters.platform === 'blog') {
-        result = result.filter(c => c.platform === 'blog' || c.platform === 'blog+clip');
+        result = result.filter(c => c.platform === 'blog' || c.platform === 'blog+clip' || c.platform === 'blog+instagram' || c.platform === 'naver+instagram');
       } else if (filters.platform === 'clip') {
         result = result.filter(c => c.platform === 'clip' || c.platform === 'blog+clip');
+      } else if (filters.platform === 'instagram') {
+        result = result.filter(c => c.platform === 'instagram' || c.platform === 'blog+instagram' || c.platform === 'naver+instagram');
+      } else if (filters.platform === 'blog+instagram' || filters.platform === 'naver+instagram') {
+        result = result.filter(c => c.platform === 'blog+instagram' || c.platform === 'naver+instagram');
       } else if (filters.platform === 'blog+clip') {
         result = result.filter(c => c.platform === 'blog+clip');
       } else {
@@ -422,12 +426,16 @@ export async function queryCampaigns(filters: {
     }
   }
 
-  // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 블로그+클립 복합 매칭 지원)
+  // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 네이버&인스타 복합 매칭 지원)
   if (filters.platform && filters.platform !== 'all') {
     if (filters.platform === 'blog') {
-      query += " AND (platform = 'blog' OR platform = 'blog+clip')";
+      query += " AND (platform = 'blog' OR platform = 'blog+clip' OR platform = 'blog+instagram' OR platform = 'naver+instagram')";
     } else if (filters.platform === 'clip') {
       query += " AND (platform = 'clip' OR platform = 'blog+clip')";
+    } else if (filters.platform === 'instagram') {
+      query += " AND (platform = 'instagram' OR platform = 'blog+instagram' OR platform = 'naver+instagram')";
+    } else if (filters.platform === 'blog+instagram' || filters.platform === 'naver+instagram') {
+      query += " AND (platform = 'blog+instagram' OR platform = 'naver+instagram')";
     } else if (filters.platform === 'blog+clip') {
       query += " AND platform = 'blog+clip'";
     } else {
