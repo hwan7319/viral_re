@@ -571,7 +571,10 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
       const cleanDesc = (subDesc && subDesc !== mainTitle) ? subDesc : `${cleanTitle.replace(/^\[[^\]]+\]\s*/, '')} 체험 혜택`;
       const fullSearchText = `${cleanTitle} ${cleanDesc}`;
 
-      const img = parent.find('img').attr('data-original') || parent.find('img').attr('data-src') || parent.find('img').attr('src') || '';
+      let img = parent.find('img').attr('data-original') || parent.find('img').attr('data-src') || parent.find('img').attr('src') || '';
+      if (img && !img.startsWith('http')) {
+        img = img.startsWith('//') ? 'https:' + img : 'https://cloudreview.co.kr' + (img.startsWith('/') ? '' : '/') + img;
+      }
       const cpIdMatch = href.match(/\/detail\/(\d+)/);
       const cpId = cpIdMatch ? cpIdMatch[1] : '';
 
