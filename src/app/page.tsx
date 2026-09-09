@@ -107,6 +107,7 @@ const SITE_OFFICIAL_URLS: Record<string, string> = {
   '링블': 'https://www.ringble.co.kr',
   '놀러와체험단': 'https://www.cometoplay.kr',
   '모블': 'https://www.modublog.co.kr',
+  '아싸뷰': 'https://assaview.co.kr/',
   '오마이블로그': 'https://ohmyblog.co.kr/user/search',
   '리뷰플레이스': 'https://www.reviewplace.co.kr/pr/',
   '강남맛집': 'https://xn--939au0g4vj8sq.net/cp/',
@@ -1540,7 +1541,8 @@ export default function Home() {
                 { key: '놀러와체험단', label: '놀러와체험단' },
                 { key: '오마이블로그', label: '오마이블로그' },
                 { key: '리뷰플레이스', label: '리뷰플레이스' },
-                { key: '모블', label: '모블 (모두의블로그)' }
+                { key: '모블', label: '모블 (모두의블로그)' },
+                { key: '아싸뷰', label: '아싸뷰' }
               ].map(s => (
                 <button
                   type="button"

@@ -883,6 +883,68 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
       } catch (err: any) {
         console.warn('[Parallel-Crawl] 모블 (모두의블로그) failed:', err.message);
       }
+    })(),
+
+    // 14. 아싸뷰 (assaview.co.kr)
+    (async () => {
+      try {
+        const seenAssaViewIds = new Set<string>();
+        for (let page = 1; page <= 5; page++) {
+          const pageUrl = `https://assaview.co.kr/campaign_list.php?page=${page}${keyword ? `&search=${encodeURIComponent(keyword)}` : ''}`;
+          try {
+            const res = await axios.get(pageUrl, { headers: HEADERS, timeout: 6000 });
+            const $ = cheerio.load(res.data);
+
+            $('a[href*="campaign.php?cp_id="]').each((_, el) => {
+              const href = $(el).attr('href') || '';
+              const cpIdMatch = href.match(/cp_id=(\d+)/);
+              if (!cpIdMatch) return;
+              const cpId = cpIdMatch[1];
+              if (seenAssaViewIds.has(cpId)) return;
+
+              const parent = $(el).closest('li, div.card, div.item, div');
+              let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
+              if (img && !img.startsWith('http')) {
+                img = `https://assaview.co.kr/${img.replace(/^\.\//, '')}`;
+              }
+
+              let fullText = parent.text().replace(/\s+/g, ' ').trim();
+              let title = $(el).find('.title, h3, h4, p').first().text().trim() || $(el).text().trim() || fullText;
+              title = title
+                .replace(/\d{4}\/\d{2}\/\d{2}\s*\d{2}:\d{2}:\d{2}/gi, '')
+                .replace(/신청\s*\d+\s*[\/\,\~]\s*\d+\s*명?/gi, '')
+                .replace(/신청\s*\d+\s*명?/gi, '')
+                .replace(/NEW|방문형|배송형|구매형|선착순|리뷰어|모집/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              if (keyword && !title.toLowerCase().includes(keyword.toLowerCase()) && !fullText.toLowerCase().includes(keyword.toLowerCase())) return;
+
+              seenAssaViewIds.add(cpId);
+              collected.push({
+                id: `assaview-${cpId}`,
+                title: title.slice(0, 80),
+                description: '',
+                platform: detectPlatform(title, fullText),
+                category: detectCategory(title, fullText),
+                campaignUrl: `https://assaview.co.kr/campaign.php?cp_id=${cpId}`,
+                imageUrl: img || 'https://viral-re.co.kr/icon.png',
+                targetSite: '아싸뷰',
+                limitCount: 5,
+                applyCount: 0,
+                startDate: now.toISOString().split('T')[0],
+                endDate: parseRemainDaysToDate(7),
+                createdAt: now.toISOString(),
+                updatedAt: now.toISOString()
+              });
+            });
+          } catch (e) {
+            break;
+          }
+        }
+      } catch (err: any) {
+        console.warn('[Parallel-Crawl] 아싸뷰 (assaview.co.kr) failed:', err.message);
+      }
     })()
   ]);
 

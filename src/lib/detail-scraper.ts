@@ -7,6 +7,7 @@ import { getDB } from './db';
 import { DinnerQueenScraper } from './scrapers/03_dinnerqueen';
 import { ModuBlogScraper } from './scrapers/05_modublog';
 import { ReviewPlaceScraper } from './scrapers/06_reviewplace';
+import { AssaViewScraper } from './scrapers/12_assaview';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -655,6 +656,11 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       const mbBenefit = await ModuBlogScraper.scrapeDetailBenefit(url);
       if (mbBenefit) return mbBenefit;
     }
+    // 13. 아싸뷰 (assaview.co.kr)
+    else if ((siteLower.includes('아싸뷰') || url.includes('assaview.co.kr')) && AssaViewScraper.scrapeDetailBenefit) {
+      const avBenefit = await AssaViewScraper.scrapeDetailBenefit(url);
+      if (avBenefit) return avBenefit;
+    }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);
   }
@@ -1030,6 +1036,11 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     else if ((siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) && ReviewPlaceScraper.scrapeDetailMission) {
       const rpMission = await ReviewPlaceScraper.scrapeDetailMission(url);
       if (rpMission) return rpMission;
+    }
+    // 9.7 아싸뷰 (assaview.co.kr)
+    else if ((siteLower.includes('아싸뷰') || url.includes('assaview.co.kr')) && AssaViewScraper.scrapeDetailMission) {
+      const avMission = await AssaViewScraper.scrapeDetailMission(url);
+      if (avMission) return avMission;
     }
     // 10. 놀러와체험단 (cometoplay.kr)
     else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
