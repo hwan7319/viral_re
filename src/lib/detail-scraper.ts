@@ -5,6 +5,7 @@ import { getRevuAuthToken } from './revu_auth';
 import { getReviewNoteHeaders } from './rn_auth';
 import { getDB } from './db';
 import { DinnerQueenScraper } from './scrapers/03_dinnerqueen';
+import { ModuBlogScraper } from './scrapers/05_modublog';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -657,6 +658,11 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
         if (benefit) return benefit;
       } catch (e) {}
     }
+    // 12. 모블 (modublog.co.kr)
+    else if ((siteLower.includes('모블') || url.includes('modublog.co.kr')) && ModuBlogScraper.scrapeDetailBenefit) {
+      const mbBenefit = await ModuBlogScraper.scrapeDetailBenefit(url);
+      if (mbBenefit) return mbBenefit;
+    }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);
   }
@@ -1024,21 +1030,9 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       } catch (e) {}
     }
     // 9.5 모블 (modublog.co.kr)
-    else if (siteLower.includes('모블') || url.includes('modublog.co.kr')) {
-      const cid = url.match(/product\/([0-9]+)/)?.[1];
-      let formattedMission = '';
-      try {
-        const $m = cheerio.load(html);
-        const guideText = $m('.product-detail, .view-content, #bo_v_con').text().replace(/\s+/g, ' ').trim();
-        if (guideText && guideText.length > 20) {
-          formattedMission = `📋 [포스팅 미션 & 작성 가이드라인]\n• ${guideText}`;
-        }
-      } catch (e) {}
-
-      if (!formattedMission) {
-        formattedMission = `📋 [포스팅 미션 & 작성 가이드라인]\n• 리뷰 작성 매체: 블로그 / 인스타그램 / 쿠팡 체험단\n• 필수 의무 표기: 게시글 하단 대가성 표시 및 네이버 지도 장소 링크 첨부\n• 최소 작성 기준: 사진 15장 이상, 텍스트 1,000자 이상 정성 리뷰 작성\n\n※ 상세 키워드 및 추가 가이드라인은 아래 [실제 캠페인 신청하러 가기] 버튼을 누르시면 모블 원본 사이트에서 바로 확인하실 수 있습니다.`;
-      }
-      return formattedMission;
+    else if ((siteLower.includes('모블') || url.includes('modublog.co.kr')) && ModuBlogScraper.scrapeDetailMission) {
+      const mbMission = await ModuBlogScraper.scrapeDetailMission(url);
+      if (mbMission) return mbMission;
     }
     // 10. 놀러와체험단 (cometoplay.kr)
     else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
