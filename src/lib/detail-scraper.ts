@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import { getRevuAuthToken } from './revu_auth';
 import { getReviewNoteHeaders } from './rn_auth';
 import { getDB } from './db';
+import { DinnerQueenScraper } from './scrapers/03_dinnerqueen';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -473,7 +474,7 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
     const siteLower = (targetSite || '').toLowerCase();
 
     // 1. 디너의여왕
-    if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
+    if ((siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) && DinnerQueenScraper.scrapeDetailBenefit) {
       const dqBenefit = await DinnerQueenScraper.scrapeDetailBenefit(url);
       if (dqBenefit) return dqBenefit;
     }
@@ -795,7 +796,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       extractedRaw = missionItems.join('\n\n');
     }
     // 3. 디너의여왕 (dinnerqueen.net)
-    else if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
+    else if ((siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) && DinnerQueenScraper.scrapeDetailMission) {
       const dqMission = await DinnerQueenScraper.scrapeDetailMission(url);
       if (dqMission) return formatMissionText(dqMission);
     }
