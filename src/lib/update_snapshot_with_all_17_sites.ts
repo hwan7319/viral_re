@@ -405,9 +405,11 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     }
   }
 
-  // 9. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 페이지 딥 수집)
+  // 9. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 페이지 딥 수집 & 상세페이지 100% 진짜 제공혜택 동기화)
   console.log('Fetching 9. 놀러와체험단 (다중 카테고리 & 5페이지)...');
   const playCategories = ['001', '002', '003', '004', '005', '006', '001012', '001013', '001015', '002010', '002008'];
+  const rawPlayItems: any[] = [];
+
   for (const catId of playCategories) {
     for (let page = 1; page <= 5; page++) {
       try {
@@ -420,6 +422,8 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
           const numMatch = href.match(/it_id=(\d+)/);
           if (!numMatch) return;
           const cpId = numMatch[1];
+          const id = `cometoplay-${cpId}`;
+          if (rawPlayItems.some(x => x.id === id)) return;
 
           const parent = $(el).closest('li, div.item, div.box, tr, td, div');
           const itNameText = parent.find('.it_name').text().trim().replace(/\s+/g, ' ');
@@ -465,12 +469,14 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
             }
           }
 
+          const fullUrl = href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`;
+
           if (cleanTitle && cleanTitle.length > 3) {
-            addCampaign({
-              id: `cometoplay-${cpId}`,
+            rawPlayItems.push({
+              id,
               title: itemTitle.slice(0, 60),
               description: itemDesc,
-              campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
+              campaignUrl: fullUrl,
               imageUrl: realImg || 'https://viral-re.co.kr/icon.png',
               targetSite: '놀러와체험단',
               applyCount,
@@ -482,6 +488,29 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
         });
       } catch (e) { break; }
     }
+  }
+
+  // 🔑 15개 병렬 청크로 상세 페이지(.etc_list2)에서 진짜 제공 혜택 패치 후 저장
+  const playChunkSize = 15;
+  for (let i = 0; i < rawPlayItems.length; i += playChunkSize) {
+    const chunk = rawPlayItems.slice(i, i + playChunkSize);
+    const enriched = await Promise.all(
+      chunk.map(async (item) => {
+        try {
+          const dRes = await axios.get(item.campaignUrl, { headers: HEADERS, timeout: 4000 });
+          const $d = cheerio.load(dRes.data);
+          let benefitText = $d('.etc_list2').text().replace(/\s+/g, ' ').trim();
+          benefitText = benefitText.replace(/^제공내역\s*/, '').trim();
+          return {
+            ...item,
+            description: benefitText || item.description || ''
+          };
+        } catch (e) {
+          return item;
+        }
+      })
+    );
+    enriched.forEach(item => addCampaign(item));
   }
 
   // 10. 모블 (modublog.co.kr)

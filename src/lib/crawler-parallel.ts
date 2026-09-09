@@ -696,10 +696,11 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
       }
     })(),
 
-    // 12. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 파싱 & 인원/위치/플랫폼 수치 정밀 파싱)
+    // 12. 놀러와체험단 (cometoplay.kr - 카테고리별 다중 파싱 & 인원/위치/플랫폼/진짜 제공혜택 정밀 파싱)
     (async () => {
       try {
         const playCategories = ['001', '002', '003', '004', '005', '006'];
+        const rawItems: any[] = [];
         for (const catId of playCategories) {
           try {
             const url = `https://www.cometoplay.kr/item_list.php?category_id=${catId}&page=1`;
@@ -712,7 +713,7 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
               if (!numMatch) return;
               const cpId = numMatch[1];
               const id = `cometoplay-${cpId}`;
-              if (collected.some(c => c.id === id)) return;
+              if (rawItems.some(c => c.id === id)) return;
 
               const parent = $(el).closest('li, div.item, div.box, tr, td, div');
               const itNameText = parent.find('.it_name').text().trim().replace(/\s+/g, ' ');
@@ -755,15 +756,16 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
                 }
               }
 
+              const fullUrl = href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`;
+
               if (cleanTitle && cleanTitle.length > 3) {
-                collected.push({
+                rawItems.push({
                   id,
                   title: cleanTitle.slice(0, 60),
-                  description: '',
                   platform,
                   category: detectCategory(cleanTitle, cleanTitle),
                   location,
-                  campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
+                  campaignUrl: fullUrl,
                   imageUrl: realImg || 'https://viral-re.co.kr/icon.png',
                   targetSite: '놀러와체험단',
                   limitCount,
@@ -776,6 +778,32 @@ export async function crawlKeywordOnDemandParallel(keyword: string): Promise<num
               }
             });
           } catch (e) {}
+        }
+
+        // 🔑 실시간 15개 병렬 청크로 상세 페이지(.etc_list2)에서 100% 진짜 제공 혜택 패치
+        const chunkSize = 15;
+        for (let i = 0; i < rawItems.length; i += chunkSize) {
+          const chunk = rawItems.slice(i, i + chunkSize);
+          const enriched = await Promise.all(
+            chunk.map(async (item) => {
+              try {
+                const dRes = await axios.get(item.campaignUrl, { headers: HEADERS, timeout: 4000 });
+                const $d = cheerio.load(dRes.data);
+                let benefitText = $d('.etc_list2').text().replace(/\s+/g, ' ').trim();
+                benefitText = benefitText.replace(/^제공내역\s*/, '').trim();
+                return {
+                  ...item,
+                  description: benefitText || ''
+                };
+              } catch (e) {
+                return {
+                  ...item,
+                  description: ''
+                };
+              }
+            })
+          );
+          collected.push(...enriched);
         }
       } catch (e) {}
     })(),
