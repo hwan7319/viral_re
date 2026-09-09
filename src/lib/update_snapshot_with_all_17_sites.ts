@@ -712,6 +712,19 @@ export async function runUpdateDeep() {
     return { ...c, campaignUrl: url, platform: realPlatform };
   });
 
+  // 🔑 놀러와체험단 잔여 오디트 및 100% 실혜택 동기화 검증
+  for (const item of merged) {
+    if ((item.targetSite === '놀러와체험단' || item.id.startsWith('cometoplay-')) && item.description && item.description.startsWith('#')) {
+      try {
+        const dRes = await axios.get(item.campaignUrl, { headers: HEADERS, timeout: 3000 });
+        const $d = cheerio.load(dRes.data);
+        let benefitText = $d('.etc_list2').text().replace(/\s+/g, ' ').trim();
+        benefitText = benefitText.replace(/^제공내역\s*/, '').trim();
+        if (benefitText) item.description = benefitText;
+      } catch (e) {}
+    }
+  }
+
   const siteCounts: Record<string, number> = {};
   merged.forEach(c => {
     const site = c.targetSite || '기타';

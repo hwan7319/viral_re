@@ -347,10 +347,17 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   cleaned = cleaned
     .replace(/가이드라인\s*참고.*$/gi, '')
     .replace(/상세정보\s*원본\s*참조.*$/gi, '')
+    .replace(/D-day\s*\d+/gi, '')
+    .replace(/D-\d+/gi, '')
     .trim();
 
+  // 해시태그 형태(#7만원식사권 #횟집 등) 텍스트 정제
+  if (cleaned.startsWith('#') || cleaned.includes('#')) {
+    cleaned = cleaned.replace(/#/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
   // D-day / 신청자수 등의 부모 카드 텍스트가 통째 오추출된 경우 필터링
-  const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^D-\d+/.test(cleaned);
+  const isCardJunk = (cleaned.includes('신청') && cleaned.includes('모집')) || /^[a-zA-Z\s\d]{1,3}$/.test(cleaned);
   if (isCardJunk) {
     return fallbackText;
   }
