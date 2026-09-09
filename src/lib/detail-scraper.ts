@@ -6,6 +6,7 @@ import { getReviewNoteHeaders } from './rn_auth';
 import { getDB } from './db';
 import { DinnerQueenScraper } from './scrapers/03_dinnerqueen';
 import { ModuBlogScraper } from './scrapers/05_modublog';
+import { ReviewPlaceScraper } from './scrapers/06_reviewplace';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -645,18 +646,9 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       } catch (e) {}
     }
     // 11. 리뷰플레이스 (reviewplace.co.kr)
-    else if (siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) {
-      try {
-        const $ = cheerio.load(res.data);
-        let benefit = '';
-        $('dl').each((_, el) => {
-          const t = $(el).text().replace(/\s+/g, ' ').trim();
-          if (t.startsWith('제공내역')) {
-            benefit = t.replace(/^제공내역\s*/, '');
-          }
-        });
-        if (benefit) return benefit;
-      } catch (e) {}
+    else if ((siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) && ReviewPlaceScraper.scrapeDetailBenefit) {
+      const rpBenefit = await ReviewPlaceScraper.scrapeDetailBenefit(url);
+      if (rpBenefit) return rpBenefit;
     }
     // 12. 모블 (modublog.co.kr)
     else if ((siteLower.includes('모블') || url.includes('modublog.co.kr')) && ModuBlogScraper.scrapeDetailBenefit) {
@@ -1033,6 +1025,11 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     else if ((siteLower.includes('모블') || url.includes('modublog.co.kr')) && ModuBlogScraper.scrapeDetailMission) {
       const mbMission = await ModuBlogScraper.scrapeDetailMission(url);
       if (mbMission) return mbMission;
+    }
+    // 9.6 리뷰플레이스 (reviewplace.co.kr)
+    else if ((siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) && ReviewPlaceScraper.scrapeDetailMission) {
+      const rpMission = await ReviewPlaceScraper.scrapeDetailMission(url);
+      if (rpMission) return rpMission;
     }
     // 10. 놀러와체험단 (cometoplay.kr)
     else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
