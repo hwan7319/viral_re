@@ -595,22 +595,57 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
           [url, cid ? `mb-${cid}` : url, cid ? `mible-${cid}` : url]
         );
         if (dbRow && dbRow.description) {
-          const offerStr = dbRow.description.split('*')[0].replace(/D-Day|[0-9]+일\s*남음|신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명|릴스/g, '').trim();
+          const raw = dbRow.description;
+          // title과 description이 분리된 상태라면 description 반환
+          if (dbRow.title && dbRow.description !== dbRow.title && !dbRow.description.startsWith(dbRow.title)) {
+            return dbRow.description;
+          }
+          // 분리되지 않은 통합 텍스트인 경우 혜택 영역만 슬라이싱 파싱
+          const tokens = raw.split(' ');
+          if (tokens.length >= 4) {
+            const benefitStr = tokens.slice(3).join(' ').replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|\d+\s*시간\s*남음)?\s*(?:신청|지원)\s*\d+.*$/gi, '').trim();
+            if (benefitStr && benefitStr.length > 2) return benefitStr;
+          }
+          const offerStr = raw.split('*')[0].replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|\d+\s*시간\s*남음)?\s*(?:신청|지원)\s*\d+.*$/gi, '').trim();
           if (offerStr && offerStr.length > 2) return offerStr;
         }
       } catch (e) {}
     }
     // 8. 클라우드리뷰 (cloudreview.co.kr)
     else if (siteLower.includes('클라우드리뷰') || url.includes('cloudreview.co.kr')) {
-      const cid = url.match(/detail\/([0-9]+)/)?.[1];
       try {
+        const $ = cheerio.load(res.data);
+        let benefit = '';
+
+        $('span, div, p').each((_, el) => {
+          const classAttr = $(el).attr('class') || '';
+          const text = $(el).text().replace(/\s+/g, ' ').trim();
+          if (classAttr.includes('text-gray-500') || classAttr.includes('neutral-200') || text.includes('제공') || text.includes('원 상당')) {
+            if (text.length > 5 && text.length < 250 && !text.includes('Copyright') && !text.includes('로그인')) {
+              let clean = text
+                .replace(/^\[[^\]]+\]\s*/, '')
+                .replace(/제공\s*0원\s*상당.*$/g, '')
+                .replace(/사장님의\s*통큰\s*배려.*$/g, '')
+                .replace(/Layer\s*\d+\s*s\s*/gi, '')
+                .trim();
+              if (clean && (!benefit || clean.length > benefit.length)) {
+                benefit = clean;
+              }
+            }
+          }
+        });
+
+        if (benefit) return benefit;
+
+        // DB Fallback
+        const cid = url.match(/detail\/([0-9]+)/)?.[1];
         const db = await getDB();
         const dbRow = await db.get<{ description: string; title: string }>(
           'SELECT description, title FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ?) AND length(COALESCE(description, "")) > 3',
           [url, cid ? `cr-${cid}` : url, cid ? `cloudreview-${cid}` : url]
         );
-        if (dbRow && dbRow.title) {
-          return dbRow.title;
+        if (dbRow && dbRow.description && dbRow.description !== dbRow.title) {
+          return dbRow.description;
         }
       } catch (e) {}
     }
