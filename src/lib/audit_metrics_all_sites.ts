@@ -7,9 +7,9 @@ async function auditSiteMetrics() {
 
   const snapshot = JSON.parse(fs.readFileSync('data/campaigns.json', 'utf8'));
 
-  const sites = Array.from(new Set(snapshot.map((c: any) => c.targetSite || '기타')));
+  const sites: string[] = Array.from(new Set(snapshot.map((c: any) => c.targetSite || '기타')));
   
-  const siteAnalysis = sites.map((site: string) => {
+  const siteAnalysis = sites.map((site: any) => {
     const campaigns = snapshot.filter((c: any) => (c.targetSite || '기타') === site);
     const total = campaigns.length;
 
