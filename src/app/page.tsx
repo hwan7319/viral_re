@@ -354,7 +354,7 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
     if (tagMatch) return `${tagMatch[1]} 체험 혜택`;
     const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*상당|\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|포인트|혜택)?|식사권|이용권|무료숙박권|무상제공|원고료\s*\d+만?\s*원?)/i);
     if (benefitMatch) return benefitMatch[1];
-    return '리뷰어 무상 체험 혜택 제공';
+    return `${cleanTitle.replace(/^\[[^\]]+\]\s*/, '')} 체험 혜택`;
   }
 
   // D-day / 신청자수 등의 부모 카드 텍스트 오추출 필터링
@@ -362,10 +362,10 @@ const sanitizeOfferDescription = (desc: string, title: string): string => {
   if (isCardJunk) {
     const benefitMatch = cleanTitle.match(/(\d+만\s*원?\s*상당|\d+만\s*원?\s*(?:식사권|이용권|상품권|체험권|혜택)?|식사권|이용권|무료숙박권|무상제공)/i);
     if (benefitMatch) return benefitMatch[1];
-    return '리뷰어 무상 체험 혜택 제공';
+    return `${cleanTitle.replace(/^\[[^\]]+\]\s*/, '')} 체험 혜택`;
   }
 
-  return cleaned || '리뷰어 무상 체험 혜택 제공';
+  return cleaned || `${cleanTitle.replace(/^\[[^\]]+\]\s*/, '')} 체험 혜택`;
 };
 
 // 📋 실제 업체 미션 안내 헬퍼 함수
