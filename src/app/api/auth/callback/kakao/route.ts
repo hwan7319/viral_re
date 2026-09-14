@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         <title>카카오 인증 완료</title>
         <script>
           if (window.opener) {
-            window.opener.postMessage(${JSON.stringify(postData)}, '*');
+            window.opener.postMessage(${JSON.stringify(postData)}, window.location.origin);
           }
           window.close();
         </script>
@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
                   avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&h=150&q=80',
                   provider: 'KakaoTalk'
                 }
-              }, '*');
+              }, window.location.origin);
             }
             window.close();
           });

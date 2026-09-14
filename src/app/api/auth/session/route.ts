@@ -4,12 +4,30 @@ import { upsertUser, getUserBookmarks } from '@/lib/db';
 // 🔑 POST: 사용자 로그인/회원가입 처리 및 DB 동기화
 export async function POST(req: NextRequest) {
   try {
+    // CSRF 방어: Origin 및 Referer 검증
+    const origin = req.headers.get('origin');
+    const host = req.headers.get('host');
+    if (origin && host) {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        return NextResponse.json({ success: false, error: 'Forbidden cross-origin request' }, { status: 403 });
+      }
+    }
+
     const body = await req.json();
     const { id, name, email, avatar, provider } = body;
 
     if (!id || !name || !email || !provider) {
       return NextResponse.json(
         { success: false, error: '필수 회원 정보가 누락되었습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 이메일 형식 기본 검증
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { success: false, error: '유효하지 않은 이메일 형식입니다.' },
         { status: 400 }
       );
     }

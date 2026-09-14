@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
         <title>Instagram 인증 완료</title>
         <script>
           if (window.opener) {
-            window.opener.postMessage(${JSON.stringify(postData)}, '*');
+            window.opener.postMessage(${JSON.stringify(postData)}, window.location.origin);
           }
           window.close();
         </script>
@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
                   avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150&q=80',
                   provider: 'Instagram'
                 }
-              }, '*');
+              }, window.location.origin);
             }
             window.close();
           });

@@ -6,9 +6,9 @@ import https from 'https';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// 🔑 SSL/TLS Root CA 인증서 검증 오판정 및 차단 방지 (unable to verify the first certificate 우회)
+// 🔑 SSL/TLS Root CA 인증서 검증 (환경변수 기재 시에만 선별 우회)
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: false
+  rejectUnauthorized: process.env.ALLOW_INSECURE_TLS === 'true' ? false : true
 });
 
 // ⚡ 10분 TTL 글로벌 인메모리 고속 LRU 메모리 캐시 (반복/주요 키워드 0.05초 초고속 반환)
@@ -407,12 +407,12 @@ export async function GET(request: Request) {
 
     const entityType = classifyQueryEntityType(query);
 
-    const clientId = process.env.NAVER_CLIENT_ID || 'q9pQhg3nFnKJtORmjiWp';
-    const clientSecret = process.env.NAVER_CLIENT_SECRET || 'JS9tAMAkWC';
+    const clientId = process.env.NAVER_CLIENT_ID || '';
+    const clientSecret = process.env.NAVER_CLIENT_SECRET || '';
 
-    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '4483791';
-    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
-    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
+    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '';
+    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '';
+    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || '';
 
     let pcSearchVolume = 0;
     let mobileSearchVolume = 0;

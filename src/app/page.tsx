@@ -1874,6 +1874,7 @@ export default function Home() {
 
     // 🔑 소셜 로그인 가상 세션 메신저 리스너 등록 + 백엔드 DB 세션 연동
     const handleMessage = async (event: MessageEvent) => {
+      if (typeof window !== 'undefined' && event.origin !== window.location.origin) return;
       if (event.data && event.data.type === 'MOCK_LOGIN_SUCCESS') {
         const loggedUser = event.data.user;
         
@@ -2132,7 +2133,7 @@ export default function Home() {
                 avatar: '${selected.avatar}',
                 provider: '${providerNames[provider]}'
               }
-            }, '*');
+            }, window.location.origin);
             window.close();
           });
         </script>

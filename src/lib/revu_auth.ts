@@ -15,8 +15,8 @@ export async function getRevuAuthToken(): Promise<string | null> {
     return cachedToken;
   }
 
-  const username = process.env.REVU_ID || 'itellme7319@gmail.com';
-  const password = process.env.REVU_PASSWORD || 'sh73194862!';
+  const username = process.env.REVU_ID;
+  const password = process.env.REVU_PASSWORD;
 
   if (!username || !password) {
     return process.env.REVU_AUTH_TOKEN || null;

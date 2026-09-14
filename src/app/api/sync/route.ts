@@ -5,6 +5,17 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || req.headers.get('x-sync-secret');
+    const expectedSecret = process.env.SYNC_SECRET_KEY || process.env.CRON_SECRET;
+    
+    // 비밀키가 설정되어 있는 경우 검증 실행 (Bearer token 또는 직접 헤더)
+    if (expectedSecret && authHeader !== `Bearer ${expectedSecret}` && authHeader !== expectedSecret) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized sync request.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { campaigns } = body;
 
@@ -27,12 +38,6 @@ export async function POST(req: NextRequest) {
       message: 'Successfully synchronized data.',
       inserted: result.inserted,
       updated: result.updated
-    }, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      }
     });
   } catch (error: any) {
     console.error('[API-Sync] Error synchronizing data:', error);

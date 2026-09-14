@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { getRevuAuthToken } from './revu_auth';
 import { getReviewNoteHeaders } from './rn_auth';
 import { getDB } from './db';
@@ -734,9 +734,20 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     } catch (firstErr) {
       // 2차 재시도: curl 시스템 명령어 우회 (Cloudflare Datacenter IP 403 / Challenge 방어)
       try {
-        const safeUrl = url.replace(/"/g, '');
-        const cmd = `curl -s -L -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" -H "Sec-Ch-Ua: \\"Chromium\\";v=\\"128\\", \\"Google Chrome\\";v=\\"128\\"" -H "Sec-Ch-Ua-Mobile: ?0" -H "Sec-Ch-Ua-Platform: \\"Windows\\"" -H "Sec-Fetch-Dest: document" -H "Sec-Fetch-Mode: navigate" -H "Sec-Fetch-Site: none" "${safeUrl}"`;
-        html = execSync(cmd, { timeout: 8000, maxBuffer: 10 * 1024 * 1024 }).toString();
+        const curlArgs = [
+          '-s', '-L',
+          '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+          '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          '-H', 'Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          '-H', 'Sec-Ch-Ua: "Chromium";v="128", "Google Chrome";v="128"',
+          '-H', 'Sec-Ch-Ua-Mobile: ?0',
+          '-H', 'Sec-Ch-Ua-Platform: "Windows"',
+          '-H', 'Sec-Fetch-Dest: document',
+          '-H', 'Sec-Fetch-Mode: navigate',
+          '-H', 'Sec-Fetch-Site: none',
+          url
+        ];
+        html = execFileSync('curl', curlArgs, { timeout: 8000, maxBuffer: 10 * 1024 * 1024, encoding: 'utf-8' });
       } catch (curlErr) {
         // Continue to fallback
       }

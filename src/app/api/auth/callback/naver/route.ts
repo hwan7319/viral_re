@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         <title>네이버 인증 완료</title>
         <script>
           if (window.opener) {
-            window.opener.postMessage(${JSON.stringify(postData)}, '*');
+            window.opener.postMessage(${JSON.stringify(postData)}, window.location.origin);
           }
           window.close();
         </script>
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
                   avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80',
                   provider: 'Naver'
                 }
-              }, '*');
+              }, window.location.origin);
             }
             window.close();
           });

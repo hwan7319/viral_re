@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { runCrawlerCore } from '@/lib/crawler-core';
 
 // 전역 동시성 제어 및 쿨타임 변수 (메모리 싱글톤)
@@ -6,8 +6,18 @@ let isCrawlingActive = false;
 let lastCrawlSuccessTime = 0;
 const GLOBAL_CRAWL_COOLTIME_MS = 60 * 1000; // 60초(1분) 쿨타임
 
-async function handleCrawl() {
+async function handleCrawl(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || req.headers.get('x-crawl-secret');
+    const expectedSecret = process.env.CRAWL_SECRET_KEY || process.env.CRON_SECRET;
+
+    if (expectedSecret && authHeader !== `Bearer ${expectedSecret}` && authHeader !== expectedSecret) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized crawl request.' },
+        { status: 401 }
+      );
+    }
+
     const now = Date.now();
 
     // 1. Concurrency Lock: 이미 크롤링이 진행 중인 경우 즉각 차단
@@ -68,10 +78,10 @@ async function handleCrawl() {
   }
 }
 
-export async function POST() {
-  return handleCrawl();
+export async function POST(req: NextRequest) {
+  return handleCrawl(req);
 }
 
-export async function GET() {
-  return handleCrawl();
+export async function GET(req: NextRequest) {
+  return handleCrawl(req);
 }

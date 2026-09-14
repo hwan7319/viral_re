@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
         <title>Google 인증 완료</title>
         <script>
           if (window.opener) {
-            window.opener.postMessage(${JSON.stringify(postData)}, '*');
+            window.opener.postMessage(${JSON.stringify(postData)}, window.location.origin);
           }
           window.close();
         </script>
@@ -146,7 +146,7 @@ export async function GET(req: NextRequest) {
                   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80',
                   provider: 'Google'
                 }
-              }, '*');
+              }, window.location.origin);
             }
             window.close();
           });
