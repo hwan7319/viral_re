@@ -59,7 +59,7 @@ export function estimateMonthlyPostsFromSample(total: number, items: BlogItem[],
 }
 
 async function fetchPage(keyword: string, clientId: string, clientSecret: string, start: number) {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       return await axios.get('https://openapi.naver.com/v1/search/blog.json', {
         params: { query: keyword, display: 100, start, sort: 'date' },
@@ -71,8 +71,8 @@ async function fetchPage(keyword: string, clientId: string, clientSecret: string
       });
     } catch (error) {
       const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-      if (attempt === 1 || status !== 429) throw error;
-      await new Promise(resolve => setTimeout(resolve, 250));
+      if (attempt === 2 || (status !== 429 && (status === undefined || status < 500))) throw error;
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
     }
   }
   throw new Error('Naver blog request failed');

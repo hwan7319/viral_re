@@ -707,7 +707,7 @@ export async function GET(request: Request) {
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 20;
+    const chunkSize = 5;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
@@ -775,7 +775,7 @@ export async function GET(request: Request) {
       );
       chunkResultsRaw.push(...chunkRes);
       if (i + chunkSize < candidateKeywordsList.length) {
-        await new Promise(r => setTimeout(r, 15));
+        await new Promise(r => setTimeout(r, 200));
       }
     }
 
