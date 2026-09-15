@@ -3,9 +3,7 @@ import { scrape as gangnam } from './scrapers/search/gangnam';
 import { scrape as dinnerqueen } from './scrapers/search/dinnerqueen';
 import { scrape as fourblog } from './scrapers/search/fourblog';
 import { scrape as reviewnote } from './scrapers/search/reviewnote';
-import { scrape as ringble_search } from './scrapers/search/ringble_search';
 import { scrape as chvu } from './scrapers/search/chvu';
-import { scrape as assaview_search } from './scrapers/search/assaview_search';
 import { scrape as cloudreview } from './scrapers/search/cloudreview';
 import { scrape as revu } from './scrapers/search/revu';
 import { scrape as mible } from './scrapers/search/mible';
@@ -14,7 +12,9 @@ import { scrape as cometoplay } from './scrapers/search/cometoplay';
 import { scrape as modublog } from './scrapers/search/modublog';
 import { scrape as assaview_pages } from './scrapers/search/assaview_pages';
 export { detectPlatform, generateRealMission } from './scraper-utils';
-const scrapers = [gangnam, dinnerqueen, fourblog, reviewnote, ringble_search, chvu, assaview_search, cloudreview, revu, mible, ringble_categories, cometoplay, modublog, assaview_pages];
+// Keep one current implementation per source. The retired Ringble/AssaView URLs
+// returned 404 and previously made a healthy source look like a partial failure.
+const scrapers = [gangnam, dinnerqueen, fourblog, reviewnote, chvu, cloudreview, revu, mible, ringble_categories, cometoplay, modublog, assaview_pages];
 export async function collectCampaigns(keyword: string): Promise<Campaign[]> {
   const collected = new Map<string, Campaign>();
   // Limit concurrent sites, not the number of returned campaigns.

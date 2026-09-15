@@ -128,7 +128,7 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
     } else if (media.includes('youtube') || rawTitle.includes('쇼츠') || rawTitle.includes('유튜브')) {
       platform = 'youtube';
     } else if (media.includes('clip') || rawTitle.includes('클립')) {
-      platform = 'naver-clip';
+      platform = 'clip';
     }
 
     // Category matching using precision classifier

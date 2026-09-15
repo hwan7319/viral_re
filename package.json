@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "crawl": "tsx src/scripts/crawler.ts",
-    "test:live": "tsx src/lib/audit_troubleshoot_all.ts",
+    "test:live": "tsx src/scripts/audit-live-sources.ts --all",
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {

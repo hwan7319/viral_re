@@ -36,6 +36,7 @@ await (async () => {
               return;
             }
 
+            if (collected.some(item => item.id === `cr-${cpId}`)) return;
             const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
             const category = detectCategory(fullSearchText, fullSearchText);
 

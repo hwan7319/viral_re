@@ -2,7 +2,7 @@ import { deadlineFromText } from './campaign-values';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { insertOrUpdateCampaigns, Campaign } from './db';
-import { detectPlatform } from './crawler-parallel';
+import { collectCampaigns, detectPlatform } from './crawler-parallel';
 import { fetchRevuLiveCampaigns } from './revu_live_scraper';
 import { getMibleSessionCookie } from './mible_auth';
 
@@ -878,6 +878,12 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
     console.warn('[Core] REVU live scraper failed:', e.message);
   }
 
-  const result = await insertOrUpdateCampaigns(allCampaigns);
+  // The scheduled bulk job must refresh every maintained source, not only the
+  // three sources implemented inline above. Inline records win because their
+  // parsers include richer deadline and mission fields.
+  const parallelCampaigns = await collectCampaigns('');
+  const merged = new Map(parallelCampaigns.map(campaign => [campaign.id, campaign]));
+  for (const campaign of allCampaigns) merged.set(campaign.id, campaign);
+  const result = await insertOrUpdateCampaigns([...merged.values()]);
   return { ...result, isMock: false };
 }

@@ -25,16 +25,32 @@ test('regression suite', async t => {
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
-  rows.push(fixture('expired', { endDate: '2020-01-01' }), fixture('busan', { location: '부산 중구' }), fixture('negative', { description: '치킨 제외' }), fixture('no-limit', { limitCount: 0, applyCount: 1000 }), fixture('percent', { title: '할인 50%' }));
+  rows.push(fixture('expired', { endDate: '2020-01-01' }), fixture('unknown-current', { endDate: '', updatedAt: new Date().toISOString() }), fixture('unknown-stale', { endDate: '', updatedAt: '2020-01-01T00:00:00Z' }), fixture('busan', { location: '부산 중구' }), fixture('negative', { description: '치킨 제외' }), fixture('no-limit', { limitCount: 0, applyCount: 1000 }), fixture('percent', { title: '할인 50%' }));
   await db.insertOrUpdateCampaigns(rows);
+  await t.test('trending keywords remain visible before organic search logs accumulate', async () => {
+    const initial = await db.getTrendingKeywords();
+    assert.equal(initial.length, 10);
+    assert.equal(new Set(initial.map(item => item.word)).size, 10);
+    assert.ok(initial.every(item => item.count === 0));
+
+    await db.logSearchQuery('신규인기검색어');
+    await db.logSearchQuery('신규인기검색어');
+    const ranked = await db.getTrendingKeywords();
+    assert.deepEqual(ranked[0], { word: '신규인기검색어', count: 2 });
+    assert.equal(ranked.length, 10);
+  });
   await t.test('expired campaigns retain their original deadline and are excluded', async () => {
     assert.equal((await db.getCampaignById('expired'))?.endDate, '2020-01-01');
     assert.equal((await db.queryCampaigns({})).some(c => c.id === 'expired'), false);
   });
+  await t.test('currently observed listings without a published deadline remain visible briefly', async () => {
+    assert.equal((await db.queryCampaigns({})).some(c => c.id === 'unknown-current'), true);
+    assert.equal((await db.queryCampaigns({})).some(c => c.id === 'unknown-stale'), false);
+  });
   await t.test('pagination reaches results after 300 and reports full count', async () => {
     const first = await (await campaigns(new NextRequest('http://localhost:3000/api/campaigns?crawl=false&limit=300'))).json();
     assert.equal(first.data.length, 300);
-    assert.equal(first.totalCount, rows.length - 1);
+    assert.equal(first.totalCount, rows.length - 2);
     const last = await (await campaigns(new NextRequest('http://localhost:3000/api/campaigns?crawl=false&offset=300&limit=300'))).json();
     assert.equal(last.data.length, first.totalCount - 300);
     assert.equal(last.nextOffset, null);

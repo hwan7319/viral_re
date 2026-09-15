@@ -253,7 +253,10 @@ export async function queryCampaigns(filters: {
     const activeMemory = globalRef.memoryCampaigns as Campaign[];
 
     // 당일 기준 마감된 건 검색 목록에서 제외 필터링 기본 탑재
-    let result: Campaign[] = activeMemory.filter((c: Campaign) => c.endDate >= todayStr);
+    const recentlyObserved = Date.now() - 48 * 60 * 60 * 1000;
+    let result: Campaign[] = activeMemory.filter((c: Campaign) =>
+      c.endDate >= todayStr || (!c.endDate && Date.parse(c.updatedAt) >= recentlyObserved)
+    );
     
     // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치, 미션, 출처 사이트명에서 직접 연관 매칭)
     if (filters.search) {
@@ -371,7 +374,7 @@ export async function queryCampaigns(filters: {
   const db = await getDB();
   const todayStr = koreanDate();
   // 당일 기준 마감된 건 검색 목록에서 제외 조건 기본 탑재 (endDate >= 오늘)
-  let query = 'SELECT * FROM campaigns WHERE endDate >= ?';
+  let query = "SELECT * FROM campaigns WHERE (endDate >= ? OR (endDate = '' AND datetime(updatedAt) >= datetime('now', '-2 days')))";
   const params: any[] = [todayStr];
 
   // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치, 미션, 출처 사이트명에서 직접 연관 매칭 + 부정어 제외)
@@ -808,12 +811,23 @@ export async function getTrendingKeywords(): Promise<{ word: string; count: numb
     }
   }
 
-  return organicList.slice(0, 10);
+  const ranked = organicList.slice(0, 10);
+  const existing = new Set(ranked.map(item => item.word.trim().toLowerCase()));
+
+  for (const word of DEFAULT_TRENDING_SEED) {
+    if (ranked.length >= 10) break;
+    const normalized = word.toLowerCase();
+    if (existing.has(normalized)) continue;
+    ranked.push({ word, count: 0 });
+    existing.add(normalized);
+  }
+
+  return ranked;
 }
 
 export async function getTotalCampaignCount(): Promise<number> {
   if (process.env.VERCEL || process.env.NOW_BUILDER) return (await queryCampaigns({})).length;
-  const row = await (await getDB()).get<{ count: number }>('SELECT COUNT(*) AS count FROM campaigns WHERE endDate >= ?', [koreanDate()]);
+  const row = await (await getDB()).get<{ count: number }>("SELECT COUNT(*) AS count FROM campaigns WHERE (endDate >= ? OR (endDate = '' AND datetime(updatedAt) >= datetime('now', '-2 days')))", [koreanDate()]);
   return row?.count ?? 0;
 }
 
