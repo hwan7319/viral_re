@@ -3,7 +3,7 @@ import axios from 'axios';
 export interface BlogStats {
   totalPosts: number;
   monthlyPosts: number | null;
-  monthlyPostsEstimated: boolean;
+  monthlyPostsIsLowerBound: boolean;
   recentDate: string;
   available: boolean;
 }
@@ -30,31 +30,27 @@ export function summarizeBlogSample(total: number, items: BlogItem[], now = new 
   return {
     totalPosts: total,
     monthlyPosts: complete ? dates.filter(date => date >= cutoff).length : null,
-    monthlyPostsEstimated: false,
+    monthlyPostsIsLowerBound: false,
     recentDate: recent ? `${recent.slice(0, 4)}.${recent.slice(4, 6)}.${recent.slice(6, 8)}` : '-',
     available: true,
   };
 }
 
-export function estimateMonthlyPostsFromSample(total: number, items: BlogItem[], now = new Date()): BlogStats {
+export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[], now = new Date()): BlogStats {
   const exact = summarizeBlogSample(total, items, now);
   if (exact.monthlyPosts !== null || total === 0) return exact;
 
-  const timestamps = items
-    .map(item => parsePostDate(item.postdate || ''))
-    .filter(Number.isFinite)
-    .sort((a, b) => b - a);
-  if (timestamps.length === 0) return exact;
-
-  const newest = Math.min(now.getTime(), timestamps[0]);
-  const oldest = timestamps[timestamps.length - 1];
-  const observedDays = Math.max(1, (newest - oldest) / DAY_MS + 1);
-  const projected = Math.round((timestamps.length / observedDays) * 30);
+  const cutoff = now.getTime() - 30 * DAY_MS;
+  const observedRecentPosts = items.filter(item => {
+    const timestamp = parsePostDate(item.postdate || '');
+    return Number.isFinite(timestamp) && timestamp >= cutoff;
+  }).length;
+  if (observedRecentPosts === 0) return exact;
 
   return {
     ...exact,
-    monthlyPosts: Math.min(total, Math.max(timestamps.length, projected)),
-    monthlyPostsEstimated: true,
+    monthlyPosts: observedRecentPosts,
+    monthlyPostsIsLowerBound: true,
   };
 }
 
@@ -108,7 +104,7 @@ export async function fetchBlogStats(
         if (summary.monthlyPosts !== null || response.data.items.length < 100) break;
       }
 
-      const data = estimateMonthlyPostsFromSample(total, items);
+      const data = summarizeAvailableMonthlyPosts(total, items);
       if (cache.size >= 1_000) cache.delete(cache.keys().next().value!);
       cache.set(key, { time: now, data });
       return data;
@@ -120,7 +116,7 @@ export async function fetchBlogStats(
   return {
     totalPosts: 0,
     monthlyPosts: null,
-    monthlyPostsEstimated: false,
+    monthlyPostsIsLowerBound: false,
     recentDate: '-',
     available: false,
   };
