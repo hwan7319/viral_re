@@ -22,7 +22,7 @@ import {
   parseSearchAdVolume,
   fetchSearchAdBatch,
   fetchSingleKeywordAd,
-} from '../src/app/api/keyword/route';
+} from '../src/lib/keyword-engine';
 
 interface ChallengeResult {
   category: string;

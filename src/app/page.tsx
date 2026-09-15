@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'react';
-import { Campaign } from '@/lib/db';
+import type { Campaign } from '@/lib/db';
+import { koreanDate } from '@/lib/campaign-values';
+import { fetchCampaignPage } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
+
+const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
 interface IconProps {
   className?: string;
@@ -694,6 +698,8 @@ export default function Home() {
 
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
+  const loadedCountRef = useRef(60);
+  useEffect(() => { loadedCountRef.current = campaigns.length; }, [campaigns.length]);
 
   const triggerManualSync = useCallback(async () => {
     setIsSyncingData(true);
@@ -711,29 +717,23 @@ export default function Home() {
         t: String(Date.now())
       });
 
-      const res = await fetch(`/api/campaigns?${params.toString()}`);
-      const data = await res.json();
-      const fetchedList = (data && (data.data || data.campaigns)) || [];
-
-      if (Array.isArray(fetchedList) && fetchedList.length > 0) {
-        setCampaigns(prevList => {
-          // 🔑 보고 있는 검색 결과 보존 (Strict In-Place Update):
-          // 현재 화면에 표시된 목록(prevList)의 순서와 항목을 100% 보존하면서
-          // 지원자 수(applyCount), 정원(limitCount), 미션, 혜택 수치만 조용히 갱신합니다.
-          const freshMap = new Map<string, Campaign>(fetchedList.map((item: Campaign) => [item.id, item]));
-          return prevList.map(existing => {
-            const fresh = freshMap.get(existing.id);
-            if (!fresh) return existing;
-            return {
-              ...existing,
-              applyCount: fresh.applyCount !== undefined ? fresh.applyCount : existing.applyCount,
-              limitCount: fresh.limitCount !== undefined ? fresh.limitCount : existing.limitCount,
-              mission: fresh.mission || existing.mission,
-              description: fresh.description || existing.description
-            };
-          });
-        });
+      params.set('crawl', 'false');
+      const generation = JSON.stringify(filterRef.current);
+      const refreshed: Campaign[] = [];
+      let offset: number | null = 0;
+      const wanted = Math.max(60, loadedCountRef.current);
+      while (offset !== null && refreshed.length < wanted) {
+        params.set('offset', String(offset));
+        const page = await fetchCampaignPage(params);
+        refreshed.push(...page.data);
+        offset = page.nextOffset;
+        if (generation !== JSON.stringify(filterRef.current)) return;
+        setMatchedCount(page.totalCount);
       }
+      if (generation !== JSON.stringify(filterRef.current)) return;
+      setCampaigns(refreshed);
+      setNextOffset(offset);
+
     } catch (e) {
       console.warn('Auto sync failed:', e);
     } finally {
@@ -1872,277 +1872,13 @@ export default function Home() {
     fetchTrendingKeywords();
     fetchCampaigns();
 
-    // 🔑 소셜 로그인 가상 세션 메신저 리스너 등록 + 백엔드 DB 세션 연동
-    const handleMessage = async (event: MessageEvent) => {
-      if (typeof window !== 'undefined' && event.origin !== window.location.origin) return;
-      if (event.data && event.data.type === 'MOCK_LOGIN_SUCCESS') {
-        const loggedUser = event.data.user;
-        
-        try {
-          // 1. 소셜 ID 임의 고유 생성 (이메일 기반)
-          const mockId = `${loggedUser.provider.toLowerCase()}_${loggedUser.email.replace(/[^a-zA-Z0-9]/g, '')}`;
-          
-          // 2. 백엔드 DB에 세션 등록/가입 호출
-          const res = await fetch('/api/auth/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: mockId,
-              name: loggedUser.name,
-              email: loggedUser.email,
-              avatar: loggedUser.avatar,
-              provider: loggedUser.provider
-            })
-          });
-          
-          const result = await res.json();
-          if (result.success) {
-            setUser(result.user);
-            setIsLoginModalOpen(false);
-            showToast(`${result.user.name}님, 성공적으로 로그인되었습니다 (회원 DB 연동 완료)`, 'success');
-          } else {
-            showToast('회원 세션 등록에 실패했습니다.', 'error');
-          }
-        } catch (error) {
-          console.error(error);
-          showToast('회원 연동 중 오류가 발생했습니다.', 'error');
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    fetch('/api/auth/session').then(res => res.json()).then(result => {
+      if (result.success) setUser(result.user);
+    }).catch(() => {});
   }, []);
 
-  // 🔑 소셜 로그인 팝업 창 트리거 및 가상 흐름 연출
   const handleSocialLogin = (provider: string) => {
-    const mockProfiles: Record<string, { name: string; email: string; avatar: string }> = {
-      google: {
-        name: '홍길동 (Google)',
-        email: 'gildong.hong@gmail.com',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'
-      },
-      naver: {
-        name: '네이버 사용자',
-        email: 'naver_user@naver.com',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80'
-      },
-      kakao: {
-        name: '라이언 (Kakao)',
-        email: 'ryan.kakao@kakao.com',
-        avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&h=150&q=80'
-      },
-      instagram: {
-        name: '인플루언서 (Insta)',
-        email: 'influencer@instagram.com',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150&q=80'
-      }
-    };
-
-    // 🔑 4대 소셜 로그인 실 API 공식 OAuth2 연동 대응 (각 소셜의 인가 코드 요청 주소로 진짜 팝업창 열기)
-    if (provider === 'kakao' || provider === 'naver' || provider === 'google' || provider === 'instagram') {
-      let authUrl = '';
-      let windowName = '';
-      
-      if (provider === 'kakao') {
-        const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'your_kakao_client_id';
-        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/kakao');
-        authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
-        windowName = 'KakaoSocialLogin';
-      } else if (provider === 'naver') {
-        const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID || 'your_naver_client_id';
-        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/naver');
-        authUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=naver_state`;
-        windowName = 'NaverSocialLogin';
-      } else if (provider === 'google') {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'your_google_client_id';
-        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/google');
-        authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20profile%20email`;
-        windowName = 'GoogleSocialLogin';
-      } else if (provider === 'instagram') {
-        const clientId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || 'your_instagram_client_id';
-        const redirectUri = encodeURIComponent('http://localhost:3030/api/auth/callback/instagram');
-        authUrl = `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user_profile,user_media&response_type=code`;
-        windowName = 'InstagramSocialLogin';
-      }
-
-      const popup = window.open(
-        authUrl,
-        windowName,
-        'width=460,height=580,top=150,left=150,resizable=no,scrollbars=no,status=no'
-      );
-      if (!popup) {
-        showToast('팝업 차단이 감지되었습니다. 팝업 허용 후 다시 시도해주세요.', 'error');
-      }
-      return;
-    }
-
-    const selected = mockProfiles[provider];
-    const popup = window.open(
-      '',
-      'MockSocialLogin',
-      'width=460,height=580,top=150,left=150,resizable=no,scrollbars=no,status=no'
-    );
-
-    if (!popup) {
-      showToast('팝업 차단이 감지되었습니다. 팝업 허용 후 다시 시도해주세요.', 'error');
-      return;
-    }
-
-    const providerNames: Record<string, string> = {
-      google: 'Google',
-      naver: 'Naver',
-      kakao: 'KakaoTalk',
-      instagram: 'Instagram'
-    };
-    const providerColors: Record<string, string> = {
-      google: '#ffffff',
-      naver: '#03c75a',
-      kakao: '#fee500',
-      instagram: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #bc1888)'
-    };
-    const textColors: Record<string, string> = {
-      google: '#3c4043',
-      naver: '#ffffff',
-      kakao: '#191919',
-      instagram: '#ffffff'
-    };
-
-    const popupHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${providerNames[provider]} 소셜 로그인</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-          }
-          .container {
-            text-align: center;
-            padding: 30px;
-            border-radius: 20px;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            max-width: 360px;
-            width: 80%;
-          }
-          .logo {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: ${providerColors[provider]};
-            color: ${textColors[provider]};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: 800;
-            margin: 0 auto 24px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-          }
-          .spinner {
-            width: 36px;
-            height: 36px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid #6366f1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          h2 {
-            font-size: 1.25rem;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-          }
-          p {
-            color: #94a3b8;
-            font-size: 0.85rem;
-            margin: 0;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="logo">${providerNames[provider][0]}</div>
-          
-          <!-- 1. 로딩 스테이지 -->
-          <div id="loadingStage">
-            <h2>${providerNames[provider]} 연동 중</h2>
-            <p>보안 세션을 생성하고 있습니다...</p>
-            <div class="spinner"></div>
-          </div>
-
-          <!-- 2. 실제 데이터 입력 폼 스테이지 (기본 숨김) -->
-          <div id="formStage" style="display: none; animation: fadeIn 0.3s ease-out;">
-            <h2>${providerNames[provider]} 연동 성공</h2>
-            <p style="margin-bottom: 20px; font-size: 0.8rem; color: #94a3b8;">사용하실 정보를 직접 기입해 주세요.</p>
-            
-            <div style="text-align: left;">
-              <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 6px; font-weight: 700;">사용자 이름 / 닉네임</label>
-              <input type="text" id="userName" value="${selected.name}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: #1e293b; color: #fff; box-sizing: border-box; margin-bottom: 12px; outline: none; font-size: 0.9rem;" />
-              
-              <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 6px; font-weight: 700;">이메일 주소</label>
-              <input type="email" id="userEmail" value="${selected.email}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: #1e293b; color: #fff; box-sizing: border-box; margin-bottom: 20px; outline: none; font-size: 0.9rem;" />
-            </div>
-
-            <button id="btnSubmit" style="width: 100%; padding: 12px; border-radius: 8px; background: #6366f1; color: #fff; font-weight: 700; border: none; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
-              간편 로그인 완료하기
-            </button>
-          </div>
-
-        </div>
-        <script>
-          // 1.2초 후 폼 스테이지로 스위칭
-          setTimeout(() => {
-            document.getElementById('loadingStage').style.display = 'none';
-            document.getElementById('formStage').style.display = 'block';
-          }, 1200);
-
-          // 완료 제출 이벤트 바인딩
-          const btn = document.getElementById('btnSubmit');
-          btn.addEventListener('click', () => {
-            const name = document.getElementById('userName').value.trim();
-            const email = document.getElementById('userEmail').value.trim();
-            
-            if (!name || !email) {
-              alert('이름과 이메일을 모두 입력해 주세요.');
-              return;
-            }
-
-            window.opener.postMessage({
-              type: 'MOCK_LOGIN_SUCCESS',
-              user: {
-                name: name,
-                email: email,
-                avatar: '${selected.avatar}',
-                provider: '${providerNames[provider]}'
-              }
-            }, window.location.origin);
-            window.close();
-          });
-        </script>
-      </body>
-      </html>
-    `;
-
-    popup.document.write(popupHtml);
-    popup.document.close();
+    window.location.assign(`/api/auth/login/${encodeURIComponent(provider)}`);
   };
 
   // 테마 변경 토글
@@ -2168,67 +1904,46 @@ export default function Home() {
     }
   };
 
-  // 캠페인 데이터 패칭
+  const searchRequestRef = useRef<AbortController | null>(null);
+  const pageRequestRef = useRef(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const [matchedCount, setMatchedCount] = useState(0);
+  const makeSearchParams = () => new URLSearchParams({ search: searchTerm, platform: activePlatform, category: activeCategory, location: activeLocation, targetSite: activeSite, sortBy, type: activeType });
   const fetchCampaigns = async () => {
+    searchRequestRef.current?.abort();
+    const controller = new AbortController();
+    searchRequestRef.current = controller;
+    pageRequestRef.current = false;
     setLoading(true);
-    fetchTrendingKeywords(); // 검색 조회 시 실시간 인기 검색어 통계도 자동 갱신
+    setNextOffset(null);
     try {
-      const params = new URLSearchParams({
-        search: searchTerm,
-        platform: activePlatform,
-        category: activeCategory,
-        location: activeLocation,
-        targetSite: activeSite,
-        sortBy: sortBy,
-        type: activeType,
-      });
-
-      const res = await fetch(`/api/campaigns?${params.toString()}`);
-      const result = await res.json();
-      
-      if (result.success) {
-        setCampaigns(result.data);
-        setVisibleCount(12); // 필터 변경 시 1페이지부터 노출되도록 초기화
-
-        // 🔑 백그라운드 수집이 유발된 경우 2.2초 뒤 무소음 화면 갱신 실행 (Non-blocking UX)
-        if (result.isCrawlingTriggered) {
-          showToast('신규 체험단을 실시간 매칭하는 중입니다... 잠시만 기다려주세요.', 'info');
-          setTimeout(async () => {
-            try {
-              const resSilent = await fetch(`/api/campaigns?${params.toString()}`);
-              const resultSilent = await resSilent.json();
-              if (resultSilent.success) {
-                setCampaigns(prevList => {
-                  const freshMap = new Map<string, Campaign>((resultSilent.data || []).map((item: Campaign) => [item.id, item]));
-                  return prevList.map(existing => {
-                    const fresh = freshMap.get(existing.id);
-                    if (!fresh) return existing;
-                    return {
-                      ...existing,
-                      applyCount: fresh.applyCount !== undefined ? fresh.applyCount : existing.applyCount,
-                      limitCount: fresh.limitCount !== undefined ? fresh.limitCount : existing.limitCount,
-                      mission: fresh.mission || existing.mission,
-                      description: fresh.description || existing.description
-                    };
-                  });
-                });
-                showToast('실시간 신규 체험단 매칭이 완료되었습니다!', 'success');
-              }
-            } catch (err) {
-              console.error('Silent refetch failed:', err);
-            }
-          }, 2200);
-        }
-      } else {
-        showToast('데이터를 가져오는데 실패했습니다.', 'error');
-      }
+      const result = await fetchCampaignPage(makeSearchParams(), controller.signal);
+      if (controller.signal.aborted) return;
+      setCampaigns(result.data);
+      setMatchedCount(result.totalCount);
+      setNextOffset(result.nextOffset);
+      setVisibleCount(12);
     } catch (error) {
-      console.error(error);
-      showToast('네트워크 오류가 발생했습니다.', 'error');
-    } finally {
-      setLoading(false);
-    }
+      if (!controller.signal.aborted) showToast('데이터를 가져오는데 실패했습니다.', 'error');
+    } finally { if (!controller.signal.aborted) setLoading(false); }
   };
+  useEffect(() => {
+    if (loading || pageRequestRef.current || nextOffset === null || visibleCount < campaigns.length) return;
+    const controller = searchRequestRef.current;
+    if (!controller) return;
+    pageRequestRef.current = true;
+    const params = makeSearchParams();
+    params.set('offset', String(nextOffset));
+    params.set('crawl', 'false');
+    fetchCampaignPage(params, controller.signal).then(result => {
+      if (controller.signal.aborted) return;
+      setCampaigns(previous => Array.from(new Map([...previous, ...result.data].map(c => [c.id, c])).values()));
+      setMatchedCount(result.totalCount);
+      setNextOffset(result.nextOffset);
+    }).catch(() => { if (!controller.signal.aborted) showToast('추가 결과를 불러오지 못했습니다. 다시 스크롤해주세요.', 'error'); })
+      .finally(() => { if (!controller.signal.aborted) pageRequestRef.current = false; });
+  }, [visibleCount, campaigns.length, nextOffset, loading]);
+  useEffect(() => () => searchRequestRef.current?.abort(), []);
 
   // 검색 및 필터 파라미터가 변경될 때마다 자동 페칭 및 filterRef 동기화
   useEffect(() => {
@@ -2321,14 +2036,9 @@ export default function Home() {
 
   // 남은 마감일 계산 함수 (D-Day)
   const calculateDday = (endDateStr: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(endDateStr);
-    end.setHours(0, 0, 0, 0);
-    
-    const diffTime = end.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+    if (!endDateStr) return '마감일 확인 필요';
+    const diffDays = Math.round((Date.parse(endDateStr) - Date.parse(koreanDate())) / 86400000);
+
     if (diffDays === 0) return '오늘마감';
     if (diffDays < 0) return '마감됨';
     return `D-${diffDays}`;
@@ -3062,7 +2772,7 @@ export default function Home() {
         <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0', marginBottom: '24px' }}>
           <div>
             <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-              검색 결과 <span style={{ color: 'var(--accent)' }}>{displayedCampaigns.length}</span>건
+              검색 결과 <span style={{ color: 'var(--accent)' }}>{matchedCount}</span>건
             </span>
           </div>
 
@@ -3320,7 +3030,7 @@ export default function Home() {
             </div>
 
           {/* 🔑 무한 스크롤(Infinite Scroll) 스크롤 감지 센티널 바 */}
-          {displayedCampaigns.length > visibleCount && (
+          {(displayedCampaigns.length > visibleCount || nextOffset !== null) && (
             <div 
               ref={loadMoreRef}
               style={{ 
@@ -3335,7 +3045,7 @@ export default function Home() {
               }}
             >
               <Icons.Refresh className="animate-spin" style={{ width: '16px', height: '16px' }} />
-              <span>체험단 정보 자동으로 더 불러오는 중... ({visibleCount} / {displayedCampaigns.length}개 표출 중)</span>
+              <span>체험단 정보 자동으로 더 불러오는 중... ({Math.min(visibleCount, campaigns.length)} / {matchedCount}개 표출 중)</span>
             </div>
           )}
           </>
@@ -3731,10 +3441,10 @@ export default function Home() {
                           </button>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
-                          (PC {keywordData.pcSearchVolume.toLocaleString()} / 모바일 {keywordData.mobileSearchVolume.toLocaleString()})
+                          (PC {displayMetric(keywordData.pcSearchVolume)} / 모바일 {displayMetric(keywordData.mobileSearchVolume)})
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalSearchVolume.toLocaleString()}</span>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{displayMetric(keywordData.totalSearchVolume)}</span>
                           <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--accent)' }}>회</span>
                         </div>
                         {activeKeywordGuideTooltip === 'volume' && (
@@ -3758,7 +3468,7 @@ export default function Home() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
                           <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10b981', fontVariantNumeric: 'tabular-nums' }}>
-                            {(keywordData.monthlyPosts || 0).toLocaleString()}
+                            {displayMetric(keywordData.monthlyPosts)}
                           </span>
                           <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10b981' }}>건/월</span>
                         </div>
@@ -3773,7 +3483,7 @@ export default function Home() {
                           (네이버 누적 등록 문서)
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{keywordData.totalPosts.toLocaleString()}</span>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{displayMetric(keywordData.totalPosts)}</span>
                           <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)' }}>건</span>
                         </div>
                       </div>
@@ -3799,7 +3509,7 @@ export default function Home() {
                           {keywordData.statusText}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', fontVariantNumeric: 'tabular-nums' }}>{keywordData.competitionRatio}</span>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 900, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', fontVariantNumeric: 'tabular-nums' }}>{keywordData.competitionRatio ?? '확인 불가'}</span>
                         </div>
                         {activeKeywordGuideTooltip === 'ratio' && (
                           <div style={{
@@ -3970,13 +3680,13 @@ export default function Home() {
                                 </button>
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {item.totalSearchVolume.toLocaleString()}회
+                                {displayMetric(item.totalSearchVolume)}회
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {(item.monthlyPosts || 0).toLocaleString()}건/월
+                                {displayMetric(item.monthlyPosts)}건/월
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: 'var(--text-secondary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {item.totalPosts.toLocaleString()}건
+                                {displayMetric(item.totalPosts)}건
                               </td>
                               <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
                                 <span style={{
@@ -3985,7 +3695,7 @@ export default function Home() {
                                   color: item.grade === 'GOLD' ? '#10b981' : item.grade === 'NORMAL' ? '#d97706' : '#ef4444',
                                   whiteSpace: 'nowrap'
                                 }}>
-                                  {item.competitionRatio} ({item.gradeLabel})
+                                  {item.competitionRatio ?? '확인 불가'} ({item.gradeLabel})
                                 </span>
                               </td>
                               <td style={{ padding: '10px 8px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.74rem', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
@@ -4049,20 +3759,20 @@ export default function Home() {
                           }}>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>월간 검색량: </span>
-                              <strong style={{ color: 'var(--accent)' }}>{item.totalSearchVolume.toLocaleString()}회</strong>
+                              <strong style={{ color: 'var(--accent)' }}>{displayMetric(item.totalSearchVolume)}회</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>월 포스팅: </span>
-                              <strong style={{ color: '#10b981' }}>{(item.monthlyPosts || 0).toLocaleString()}건</strong>
+                              <strong style={{ color: '#10b981' }}>{displayMetric(item.monthlyPosts)}건</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>누적 포스팅: </span>
-                              <strong style={{ color: 'var(--text-primary)' }}>{(item.totalPosts || 0).toLocaleString()}건</strong>
+                              <strong style={{ color: 'var(--text-primary)' }}>{displayMetric(item.totalPosts)}건</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>경쟁비율: </span>
                               <strong style={{ color: item.grade === 'GOLD' ? '#10b981' : item.grade === 'NORMAL' ? '#d97706' : '#ef4444' }}>
-                                {item.competitionRatio} ({item.gradeLabel})
+                                {item.competitionRatio ?? '확인 불가'} ({item.gradeLabel})
                               </strong>
                             </div>
                           </div>

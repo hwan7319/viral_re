@@ -34,7 +34,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // @ts-ignore - 터널 및 외부 디바이스 접속 시 dev HMR 차단을 허용하기 위한 설정 (TypeScript 컴파일 무시)
   allowedDevOrigins: [
     "funny-adults-kick.loca.lt",
     "*.loca.lt",

@@ -14,4 +14,5 @@ async function main() {
 
 main().catch(err => {
   console.error('Fatal CLI crawler error:', err);
+  process.exitCode = 1;
 });

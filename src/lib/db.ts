@@ -1,3 +1,4 @@
+import { koreanDate } from './campaign-values';
 export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-foreign', '맛집'],
   'food-korean': ['food-korean', 'food-restaurant', 'food'],
@@ -84,20 +85,20 @@ export interface User {
   updatedAt: string; // 정보 수정일 (ISO 8601)
 }
 
-const DB_DIR = path.join(process.cwd(), 'data');
+const DB_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'review-moa.db');
 
 let dbInstance: Database | null = null;
 
 // SQLite DB 초기화 및 연결
-export async function getDB(): Promise<Database> {
+async function initializeDB(): Promise<Database> {
   if (dbInstance) return dbInstance;
 
   // 🔑 Vercel 빌드 및 서버리스 read-only 샌드박스 등인지 체크
-  const isServerless = process.env.VERCEL || process.env.NOW_BUILDER || !fs.existsSync(DB_DIR);
+  const isServerless = process.env.VERCEL || process.env.NOW_BUILDER;
   const targetDbFile = isServerless ? ':memory:' : DB_FILE;
 
-  if (!isServerless && !fs.existsSync(DB_DIR)) {
+  if (!isServerless && !fs.existsSync(/* turbopackIgnore: true */ DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
   }
 
@@ -111,30 +112,15 @@ export async function getDB(): Promise<Database> {
       driver: sqlite3Driver.Database,
     });
   } catch (err: any) {
-    console.warn('[DB] Failed to load sqlite3 native binary. Falling back to memory mock database for build safety:', err.message);
-    globalRef.isMockDb = true;
-    
-    // Vercel 환경에서 빌드 성공을 보장하기 위한 Mock 인스턴스 반환
-    dbInstance = {
-      exec: async () => {},
-      all: async () => [],
-      get: async () => null,
-      run: async () => ({ lastID: 1, changes: 1 }),
-      close: async () => {},
-      prepare: async () => ({
-        bind: async () => {},
-        reset: async () => {},
-        finalize: async () => {},
-        run: async () => ({ lastID: 1, changes: 1 }),
-        all: async () => [],
-        get: async () => null,
-      } as any)
-    } as any;
+    dbInstance = null;
+    throw new Error('SQLite database unavailable', { cause: err });
   }
 
   if (!dbInstance) {
     throw new Error('Database initialization failed.');
   }
+
+  await dbInstance.exec('PRAGMA busy_timeout = 10000; PRAGMA foreign_keys = ON;');
 
   // 스키마 초기 설정
   await dbInstance.exec(`
@@ -211,17 +197,10 @@ export async function getDB(): Promise<Database> {
     await dbInstance.exec('ALTER TABLE campaigns ADD COLUMN mission TEXT');
   } catch (e) {}
 
-  // 🔑 [과거 마감일 자동 갱신 마이그레이션] 과거 수집 데이터의 endDate가 지나 검색 결과에서 0건으로 누락되는 현상 영구 방지
+  // Empty databases may be seeded; original deadlines must never be extended.
   try {
-    const todayStr = new Date().toISOString().split('T')[0];
-    await dbInstance.run(`
-      UPDATE campaigns 
-      SET endDate = date('now', '+7 days') 
-      WHERE endDate < ?;
-    `, [todayStr]);
-
     // 🔑 [EC2/서버리스 공통] DB 시딩 및 JSON 스냅샷 자동 동기화
-    const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+    const jsonPath = path.join(DB_DIR, 'campaigns.json');
     if (fs.existsSync(jsonPath)) {
       const rowCount = await dbInstance.get<{ cnt: number }>('SELECT COUNT(*) as cnt FROM campaigns');
       const currentCnt = rowCount?.cnt || 0;
@@ -230,11 +209,11 @@ export async function getDB(): Promise<Database> {
         const loaded: Campaign[] = JSON.parse(fileData);
         if (loaded.length > 0) {
           console.log(`[DB-AutoSeed] Seeding ${loaded.length} snapshot campaigns into SQLite DB...`);
-          await insertOrUpdateCampaigns(loaded);
+          await writeCampaigns(loaded);
         }
       }
     }
-  } catch (err: any) {}
+  } catch (err) { throw new Error("Campaign snapshot initialization failed", { cause: err }); }
 
   return dbInstance;
 }
@@ -256,22 +235,12 @@ export async function queryCampaigns(filters: {
     // 💡 [서버리스 메모리 하이브리드 복구] 메모리가 초기화되어 빈 상태인 경우, 배포된 campaigns.json 스냅샷 파일에서 메모리를 즉시 Rehydrate 복구합니다.
     if (globalRef.memoryCampaigns.length === 0) {
       try {
-        const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+        const jsonPath = path.join(DB_DIR, 'campaigns.json');
         if (fs.existsSync(jsonPath)) {
           const fileData = fs.readFileSync(jsonPath, 'utf-8');
           const loaded: Campaign[] = JSON.parse(fileData);
-          const today = new Date();
-          const todayStr = today.toISOString().split('T')[0];
+          globalRef.memoryCampaigns = loaded;
 
-          // 🔑 [영구 방지] 스냅샷 데이터의 endDate가 과거 날짜로 경과하여 펜션/카테고리 검색 결과가 0건으로 유실되는 문제 자동 동적 갱신
-          globalRef.memoryCampaigns = loaded.map((c: Campaign) => {
-            if (!c.endDate || c.endDate < todayStr) {
-              const futureDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-              return { ...c, endDate: futureDate.toISOString().split('T')[0] };
-            }
-            return c;
-          });
-          console.log(`[Vercel-Rehydration] Successfully loaded & auto-refreshed ${globalRef.memoryCampaigns.length} snapshot campaigns.`);
         }
       } catch (err: any) {
         console.error('[Vercel-Rehydration] Failed to rehydrate memoryCampaigns:', err.message);
@@ -279,18 +248,9 @@ export async function queryCampaigns(filters: {
     }
 
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = koreanDate(today);
 
-    // 🔑 [영구 해결] 스냅샷 데이터 중 endDate가 오늘 이전으로 경과된 캠페인의 마감일을 실시간 자동 갱신 보정
-    const activeMemory = (globalRef.memoryCampaigns as Campaign[]).map((c: Campaign) => {
-      if (!c.endDate || c.endDate < todayStr) {
-        const futureDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-        return { ...c, endDate: futureDate.toISOString().split('T')[0] };
-      }
-      return c;
-    });
-
-    globalRef.memoryCampaigns = activeMemory;
+    const activeMemory = globalRef.memoryCampaigns as Campaign[];
 
     // 당일 기준 마감된 건 검색 목록에서 제외 필터링 기본 탑재
     let result: Campaign[] = activeMemory.filter((c: Campaign) => c.endDate >= todayStr);
@@ -347,7 +307,7 @@ export async function queryCampaigns(filters: {
       if (parts.length > 1) {
         const sigungu = parts[1].toLowerCase();
         const stem = sigungu.replace(/(구|군|시)$/, '');
-        result = result.filter(c => c.location && (c.location.toLowerCase().includes(sigungu) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
+        result = result.filter(c => c.location && c.location.toLowerCase().includes(parts[0].toLowerCase().replace(/(특별자치시|특별자치도|광역시|특별시|도|시)$/, '')) && (c.location.toLowerCase().includes(sigungu) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
       } else {
         const loc = parts[0].toLowerCase();
         const sidoStem = loc.replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
@@ -383,7 +343,7 @@ export async function queryCampaigns(filters: {
     }
 
     // 6. 정렬
-    const nowStr = new Date().toISOString().split('T')[0];
+    const nowStr = koreanDate();
     if (filters.sortBy === 'endDate') {
       result.sort((a, b) => {
         const aActive = a.endDate >= nowStr ? 0 : 1;
@@ -404,25 +364,25 @@ export async function queryCampaigns(filters: {
       result.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '') || (b.id || '').localeCompare(a.id || ''));
     }
     
-    // 성능 최적화: 대량 전송 부하를 방지하기 위해 상위 300개만 반환
-    return result.slice(0, 300);
+    // Pagination belongs to the HTTP boundary; internal queries retain all matches.
+    return result;
   }
 
   const db = await getDB();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = koreanDate();
   // 당일 기준 마감된 건 검색 목록에서 제외 조건 기본 탑재 (endDate >= 오늘)
   let query = 'SELECT * FROM campaigns WHERE endDate >= ?';
   const params: any[] = [todayStr];
 
   // 1. 검색어 정밀 필터 (제목, 본문 혜택, 위치, 미션, 출처 사이트명에서 직접 연관 매칭 + 부정어 제외)
   if (filters.search) {
-    const s = filters.search.trim();
+    const s = filters.search.trim().replace(/[\\%_]/g, '\\$&');
     if (s) {
-      query += ' AND (title LIKE ? OR (description LIKE ? AND description NOT LIKE ? AND description NOT LIKE ?) OR location LIKE ? OR mission LIKE ? OR targetSite LIKE ?)';
+      query += ' AND (title LIKE ? OR (description LIKE ? AND description NOT LIKE ? AND description NOT LIKE ? AND description NOT LIKE ? AND description NOT LIKE ?) OR location LIKE ? OR mission LIKE ? OR targetSite LIKE ?)';
       const searchParam = `%${s}%`;
       const noParam1 = `%${s} 제공불가%`;
       const noParam2 = `%${s} 제공 불가%`;
-      params.push(searchParam, searchParam, noParam1, noParam2, searchParam, searchParam, searchParam);
+      params.push(searchParam, searchParam, noParam1, noParam2, `%${s} 제외%`, `%${s} 불가%`, searchParam, searchParam, searchParam);
     }
   }
 
@@ -457,6 +417,8 @@ export async function queryCampaigns(filters: {
     const parts = filters.location.trim().split(/\s+/);
     if (parts.length > 1) {
       const sigungu = parts[1];
+      query += ' AND location LIKE ?';
+      params.push(`%${parts[0].replace(/(특별자치시|특별자치도|광역시|특별시|도|시)$/, '')}%`);
       const stem = sigungu.replace(/(구|군|시)$/, '');
       if (stem.length >= 2 && stem !== sigungu) {
         query += ' AND (location LIKE ? OR location LIKE ?)';
@@ -492,14 +454,14 @@ export async function queryCampaigns(filters: {
   // 5-1. 방문/배송 구분 필터
   if (filters.type && filters.type !== 'all') {
     if (filters.type === 'visit') {
-      query += " AND location IS NOT NULL AND location != '' AND location NOT LIKE '%배송%' AND location NOT LIKE '%전국%' AND location NOT LIKE '%재택%' AND location NOT LIKE '%택배%' AND location NOT LIKE '%온라인%'";
+      query += " AND location IS NOT NULL AND TRIM(location) != '' AND location NOT LIKE '%배송%' AND location NOT LIKE '%전국%' AND location NOT LIKE '%재택%' AND location NOT LIKE '%택배%' AND location NOT LIKE '%온라인%'";
     } else if (filters.type === 'delivery') {
-      query += " AND (location IS NULL OR location = '' OR location LIKE '%배송%' OR location LIKE '%전국%' OR location LIKE '%재택%' OR location LIKE '%택배%' OR location LIKE '%온라인%')";
+      query += " AND (location IS NULL OR TRIM(location) = '' OR location LIKE '%배송%' OR location LIKE '%전국%' OR location LIKE '%재택%' OR location LIKE '%택배%' OR location LIKE '%온라인%')";
     }
   }
 
   // 6. 정렬
-  const nowStr = new Date().toISOString().split('T')[0];
+  const nowStr = koreanDate();
   if (filters.sortBy === 'endDate') {
     query += ` ORDER BY 
       CASE WHEN endDate >= '${nowStr}' THEN 0 ELSE 1 END,
@@ -507,18 +469,20 @@ export async function queryCampaigns(filters: {
       updatedAt DESC,
       id DESC`;
   } else if (filters.sortBy === 'popular') {
-    query += ' ORDER BY CAST(applyCount AS REAL) / CASE WHEN limitCount = 0 THEN 1 ELSE limitCount END DESC, id DESC';
+    query += ' ORDER BY CASE WHEN limitCount = 0 THEN 0 ELSE CAST(applyCount AS REAL) / limitCount END DESC, id DESC';
   } else {
     query += ' ORDER BY createdAt DESC, id DESC';
   }
 
-  // 7. 성능 최적화: 대용량 데이터 로드 시 페이로드 전송 부하 방지를 위한 최대 300개 제한
-  query += ' LIMIT 300';
+  query = query.replace(/(?:NOT )?LIKE \?/g, match => `${match} ESCAPE '\\'`);
+
+  // Return the complete filtered set for accurate counts and pagination.
+
   const rows = await db.all<Campaign[]>(query, params);
   if (rows.length === 0 && !filters.search && (!filters.category || filters.category === 'all')) {
     const totalCount = await db.get('SELECT COUNT(*) as cnt FROM campaigns');
     if (!totalCount || totalCount.cnt === 0) {
-      const jsonPath = path.join(process.cwd(), 'data', 'campaigns.json');
+      const jsonPath = path.join(DB_DIR, 'campaigns.json');
       if (fs.existsSync(jsonPath)) {
         const fileData = fs.readFileSync(jsonPath, 'utf-8');
         const loaded: Campaign[] = JSON.parse(fileData);
@@ -546,7 +510,7 @@ function isDummyCampaignItem(c: Campaign): boolean {
 }
 
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
-export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
+async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER || globalRef.isMockDb);
 
   // 🔑 Vercel/서버리스 환경인 경우: DB 쓰기가 금지되므로 글로벌 메모리 변수에 데이터를 업서트하여 실시간 수집 보장
@@ -577,6 +541,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
           ...globalRef.memoryCampaigns[idx],
           ...c,
           description: finalDesc,
+          endDate: c.endDate || globalRef.memoryCampaigns[idx].endDate,
           searchKeywords: finalKeywords,
           mission: c.mission || globalRef.memoryCampaigns[idx].mission,
           updatedAt: new Date().toISOString()
@@ -594,7 +559,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
     return { inserted, updated };
   }
 
-  const db = await getDB();
+  const db = dbInstance || await getDB();
   
   let inserted = 0;
   let updated = 0;
@@ -604,7 +569,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
   try {
     for (const c of campaigns) {
       if (isDummyCampaignItem(c)) continue;
-      const existing = await db.get('SELECT id, title, description, searchKeywords FROM campaigns WHERE id = ?', [c.id]);
+      const existing = await db.get('SELECT id, title, description, searchKeywords, endDate FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
         let finalKeywords = existing.searchKeywords || '';
@@ -633,7 +598,7 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
           [
             c.title, finalDesc, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
-            c.limitCount, c.applyCount, c.startDate || null, c.endDate,
+            c.limitCount, c.applyCount, c.startDate || null, c.endDate || existing.endDate,
             new Date().toISOString(), finalKeywords,
             c.mission || null, c.mission || null, c.mission || null,
             c.id
@@ -666,15 +631,16 @@ export async function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ 
 
   // 🔑 로컬 맥북 환경일 때만: SQLite 데이터를 JSON 스냅샷 파일로도 즉시 동시성 백업 쓰기!
   // 이렇게 하면 Git 커밋/푸시 시 항상 전체 데이터베이스의 최신 스냅샷이 Vercel 서버로 함께 배포됩니다.
-  if (!isServerless && !globalRef.isMockDb) {
+  if (!isServerless && process.env.WRITE_CAMPAIGN_SNAPSHOT === 'true') {
     try {
       const allCampaigns = await db.all('SELECT * FROM campaigns');
       if (allCampaigns && allCampaigns.length > 1000) {
         fs.writeFileSync(
-          path.join(process.cwd(), 'data', 'campaigns.json'),
+          path.join(DB_DIR, 'campaigns.json.tmp'),
           JSON.stringify(allCampaigns, null, 2),
           'utf-8'
         );
+        fs.renameSync(path.join(DB_DIR, 'campaigns.json.tmp'), path.join(DB_DIR, 'campaigns.json'));
         console.log(`[DB-Backup] Successfully wrote ${allCampaigns.length} campaigns snapshot to campaigns.json`);
       }
     } catch (err: any) {
@@ -832,7 +798,7 @@ export async function getTrendingKeywords(): Promise<{ word: string; count: numb
     try {
       const db = await getDB();
       const rows = await db.all<{ keyword: string; cnt: number }[]>(
-        "SELECT keyword, COUNT(*) as cnt FROM search_logs WHERE searchedAt >= datetime('now', '-1 day') GROUP BY keyword ORDER BY cnt DESC LIMIT 20"
+        "SELECT keyword, COUNT(*) as cnt FROM search_logs WHERE datetime(searchedAt) >= datetime('now', '-1 day') GROUP BY keyword ORDER BY cnt DESC LIMIT 20"
       );
       organicList = rows
         .filter(r => isValidSearchKeyword(r.keyword))
@@ -842,31 +808,34 @@ export async function getTrendingKeywords(): Promise<{ word: string; count: numb
     }
   }
 
-  const existingSet = new Set(organicList.map(item => item.word));
-  const resultList = [...organicList];
-
-  for (const seed of DEFAULT_TRENDING_SEED) {
-    if (resultList.length >= 10) break;
-    if (!existingSet.has(seed)) {
-      resultList.push({ word: seed, count: 1 });
-      existingSet.add(seed);
-    }
-  }
-
-  return resultList.slice(0, 10);
+  return organicList.slice(0, 10);
 }
 
 export async function getTotalCampaignCount(): Promise<number> {
-  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
-  if (isServerless) {
-    return (globalRef.memoryCampaigns && globalRef.memoryCampaigns.length > 0) ? globalRef.memoryCampaigns.length : 17528;
+  if (process.env.VERCEL || process.env.NOW_BUILDER) return (await queryCampaigns({})).length;
+  const row = await (await getDB()).get<{ count: number }>('SELECT COUNT(*) AS count FROM campaigns WHERE endDate >= ?', [koreanDate()]);
+  return row?.count ?? 0;
+}
+
+export async function getCampaignById(id: string): Promise<Campaign | undefined> {
+  if (process.env.VERCEL || process.env.NOW_BUILDER) {
+    await queryCampaigns({});
+    return globalRef.memoryCampaigns.find((c: Campaign) => c.id === id);
   }
-  try {
-    const db = await getDB();
-    const todayStr = new Date().toISOString().split('T')[0];
-    const row = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM campaigns WHERE endDate >= ?', [todayStr]);
-    return row?.count || 17528;
-  } catch (e) {
-    return 17528;
-  }
+  return (await getDB()).get<Campaign>('SELECT * FROM campaigns WHERE id = ?', [id]);
+}
+
+let dbReady: Promise<Database> | undefined;
+export function getDB(): Promise<Database> {
+  return dbReady ??= initializeDB().catch(error => { dbReady = undefined; dbInstance = null; throw error; });
+}
+let writeQueue: Promise<unknown> = Promise.resolve();
+export function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
+  const task = writeQueue.then(async () => {
+    if (!process.env.VERCEL && !process.env.NOW_BUILDER) await getDB();
+    else await queryCampaigns({});
+    return writeCampaigns(campaigns);
+  });
+  writeQueue = task.catch(() => {});
+  return task;
 }

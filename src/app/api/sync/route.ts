@@ -1,3 +1,4 @@
+import { authorizeJob } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { insertOrUpdateCampaigns } from '@/lib/db';
 
@@ -5,16 +6,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization') || req.headers.get('x-sync-secret');
-    const expectedSecret = process.env.SYNC_SECRET_KEY || process.env.CRON_SECRET;
-    
-    // 비밀키가 설정되어 있는 경우 검증 실행 (Bearer token 또는 직접 헤더)
-    if (expectedSecret && authHeader !== `Bearer ${expectedSecret}` && authHeader !== expectedSecret) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized sync request.' },
-        { status: 401 }
-      );
-    }
+    const denied = authorizeJob(req, 'SYNC');
+    if (denied) return denied;
 
     const body = await req.json();
     const { campaigns } = body;
@@ -25,6 +18,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    if (campaigns.length > 500 || campaigns.some(c =>
+      !c || ['id', 'title', 'description', 'platform', 'category', 'campaignUrl', 'imageUrl', 'targetSite', 'endDate', 'createdAt', 'updatedAt'].some(k => typeof c[k] !== 'string' || c[k].length > 20000) ||
+      !Number.isInteger(c.applyCount) || c.applyCount < 0 || !Number.isInteger(c.limitCount) || c.limitCount < 0 ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(c.endDate)
+    )) return NextResponse.json({ success: false, error: 'Invalid campaign payload (maximum 500 per request)' }, { status: 400 });
 
     console.log(`[API-Sync] Received sync request for ${campaigns.length} campaigns`);
 
@@ -39,10 +38,10 @@ export async function POST(req: NextRequest) {
       inserted: result.inserted,
       updated: result.updated
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[API-Sync] Error synchronizing data:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: '캠페인 동기화에 실패했습니다.' },
       { status: 500 }
     );
   }

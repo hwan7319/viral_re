@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axiosLibrary from 'axios';
+const axios = axiosLibrary.create({ maxRedirects: 0, maxContentLength: 5 * 1024 * 1024 });
 import * as cheerio from 'cheerio';
 import { execFileSync } from 'child_process';
 import { getRevuAuthToken } from './revu_auth';
@@ -343,8 +344,8 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
             const found = list.find((item: any) => String(item.id) === String(cid) || (title && item.title?.includes(title)));
             if (found) {
               return {
-                applyCount: found.applicantCount !== undefined ? Number(found.applicantCount) : 0,
-                limitCount: found.infNum !== undefined ? Number(found.infNum) : 5
+                applyCount: found.applicantCount !== undefined ? Number(found.applicantCount) : undefined,
+                limitCount: found.infNum !== undefined ? Number(found.infNum) : undefined
               };
             }
           }
@@ -419,7 +420,7 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
       if (match) {
         return {
           applyCount: parseInt(match[1].replace(/,/g, ''), 10),
-          limitCount: match[2] ? parseInt(match[2].replace(/,/g, ''), 10) : 5
+          limitCount: match[2] ? parseInt(match[2].replace(/,/g, ''), 10) : undefined
         };
       }
     }
@@ -442,11 +443,11 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
       
       // If regex was 모집 N / 신청 M format, swap first & second
       if (fullText.match(/모집\s*([\d,]+)\s*(?:명)?\s*[\/\,\~]\s*신청자?\s*([\d,]+)/i)) {
-        return { applyCount: second || 0, limitCount: first || 5 };
+        return { applyCount: Number.isFinite(second) ? second : undefined, limitCount: Number.isFinite(first) ? first : undefined };
       }
       return {
-        applyCount: !isNaN(first) ? first : 0,
-        limitCount: second && !isNaN(second) ? second : 5
+        applyCount: !isNaN(first) ? first : undefined,
+        limitCount: second !== undefined && !isNaN(second) ? second : undefined
       };
     }
   } catch (err: any) {

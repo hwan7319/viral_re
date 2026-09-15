@@ -17,7 +17,7 @@ import {
   parseSearchAdVolume,
   fetchSearchAdBatch,
   fetchSingleKeywordAd,
-} from '../src/app/api/keyword/route';
+} from '../src/lib/keyword-engine';
 
 // Test statistics tracker
 interface TestStats {
@@ -117,11 +117,7 @@ interface KeywordData {
   timestamp: string;
 }
 
-interface KeywordApiResponse {
-  success: boolean;
-  error?: string;
-  data?: KeywordData;
-}
+type KeywordApiResponse = { success: true; data: KeywordData; error?: never } | { success: false; error: string; data?: never };
 
 // Helper to invoke Next.js route GET handler
 async function callKeywordApi(query: string): Promise<KeywordApiResponse> {

@@ -103,7 +103,6 @@ async function fixAllTitleAndDescription() {
 
   // Write back to files
   fs.writeFileSync(filePath, JSON.stringify(items, null, 2), 'utf-8');
-  fs.writeFileSync(path.join(process.cwd(), 'campaigns.json'), JSON.stringify(items, null, 2), 'utf-8');
   console.log('✅ Saved updated snapshot JSON files!');
 
   // Update SQLite DB

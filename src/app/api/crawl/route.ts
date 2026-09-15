@@ -1,3 +1,5 @@
+import { reserveKeywordCrawl, releaseCrawl } from '@/lib/crawl-jobs';
+import { authorizeJob } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { runCrawlerCore } from '@/lib/crawler-core';
 
@@ -8,15 +10,8 @@ const GLOBAL_CRAWL_COOLTIME_MS = 60 * 1000; // 60초(1분) 쿨타임
 
 async function handleCrawl(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization') || req.headers.get('x-crawl-secret');
-    const expectedSecret = process.env.CRAWL_SECRET_KEY || process.env.CRON_SECRET;
-
-    if (expectedSecret && authHeader !== `Bearer ${expectedSecret}` && authHeader !== expectedSecret) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized crawl request.' },
-        { status: 401 }
-      );
-    }
+    const denied = authorizeJob(req, 'CRAWL');
+    if (denied) return denied;
 
     const now = Date.now();
 
@@ -47,6 +42,7 @@ async function handleCrawl(req: NextRequest) {
     }
 
     // 3. 락 활성화 및 크롤러 구동
+    if (!reserveKeywordCrawl('__bulk__')) return NextResponse.json({ success: false, error: 'Crawler busy or cooling down' }, { status: 429 });
     isCrawlingActive = true;
     const startTime = Date.now();
     
@@ -55,6 +51,7 @@ async function handleCrawl(req: NextRequest) {
       result = await runCrawlerCore();
       lastCrawlSuccessTime = Date.now(); // 성공 시각 갱신
     } finally {
+      releaseCrawl();
       isCrawlingActive = false; // 예외/성공 여부 상관없이 반드시 락 해제
     }
 

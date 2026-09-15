@@ -1,3 +1,4 @@
+import { deadlineFromText } from './campaign-values';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { insertOrUpdateCampaigns, Campaign } from './db';
@@ -11,25 +12,7 @@ const HEADERS = {
 };
 
 // D-Day 텍스트 날짜 변환
-function parseDdayToDate(ddayText: string): string {
-  const now = new Date();
-  const namumMatch = ddayText.match(/(\d+)일\s*남음/);
-  if (namumMatch) {
-    const days = parseInt(namumMatch[1]);
-    const targetDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-    return targetDate.toISOString().split('T')[0];
-  }
-  const match = ddayText.match(/D-(\d+)/i);
-  if (match) {
-    const days = parseInt(match[1]);
-    const targetDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-    return targetDate.toISOString().split('T')[0];
-  }
-  if (ddayText.includes('오늘마감') || ddayText.includes('D-0')) {
-    return now.toISOString().split('T')[0];
-  }
-  return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-}
+const parseDdayToDate = deadlineFromText;
 
 // 남은 일수 숫자를 YYYY-MM-DD로 변환
 export function parseRemainDaysToDate(days: number): string {
@@ -41,7 +24,7 @@ export function parseRemainDaysToDate(days: number): string {
 // 지원수 및 정원수 파싱
 function parseCountText(text: string): { applyCount: number; limitCount: number } {
   let applyCount = 0;
-  let limitCount = 10;
+  let limitCount = 0;
   try {
     const cleanText = text.replace(/,/g, '');
     const applyMatch = cleanText.match(/신청\s*(\d+)/);
@@ -328,7 +311,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         // 이미지 경로 조합
         const imageUrl = `https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/${item.PRID}/thumbnail/${item.IMGKEY}`;
         const endDate = parseRemainDaysToDate(item.REMAINDATE || 7);
-        const limitCount = parseInt(item.REVIEWER_CNT || item.LIMIT_CNT || 5, 10) || 5;
+        const limitCount = parseInt(item.REVIEWER_CNT || item.LIMIT_CNT || 0, 10) || 0;
         const applyCount = parseInt(item.REVIEWER_REQ_CNT || item.REQ_CNT || 0, 10) || 0;
 
         const autoKws = buildAutoKeywords(title, description);
@@ -381,8 +364,8 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         const location = item.sido?.name ? `${item.city || ''} ${item.sido.name}` : undefined;
         const campaignUrl = `https://www.reviewnote.co.kr/campaigns/${item.id}`;
         const imageUrl = `https://firebasestorage.googleapis.com/v0/b/reviewnote-e92d9.appspot.com/o/${encodeURIComponent(item.imageKey)}?alt=media`;
-        const endDate = item.applyEndAt ? item.applyEndAt.split('T')[0] : parseRemainDaysToDate(7);
-        const limitCount = item.infNum || 10;
+        const endDate = item.applyEndAt ? item.applyEndAt.split('T')[0] : '';
+        const limitCount = item.infNum || 0;
         const applyCount = item.applicantCount || 0;
 
         const autoKws = buildAutoKeywords(title, description);
@@ -474,7 +457,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
               const applyMatch = rawText.match(/신청\s*([0-9]+)명/);
               const limitMatch = rawText.match(/모집\s*([0-9]+)명/);
               const applyCount = applyMatch ? parseInt(applyMatch[1], 10) : 0;
-              const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 5;
+              const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 0;
 
               let cleanText = rawText
                 .replace(/D-Day/g, '')
@@ -495,7 +478,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
                 category, campaignUrl: fullUrl,
                 imageUrl: img.startsWith('http') ? img : (img ? `https://www.mrblog.net${img}` : 'https://viral-re.co.kr/icon.png'),
                 targetSite: '미블', limitCount, applyCount,
-                startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
+                startDate: now.toISOString().split('T')[0], endDate: '',
                 createdAt: now.toISOString(), updatedAt: now.toISOString(),
                 searchKeywords
               });
@@ -534,8 +517,8 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
 
             mibleItemsMap.set(id, {
               id, title: rawTitle, description: rawTitle, platform: detectPlatform(rawTitle, rawTitle), category, campaignUrl: fullUrl,
-              imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블', limitCount: 5, applyCount: 0,
-              startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7),
+              imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '미블', limitCount: 0, applyCount: 0,
+              startDate: now.toISOString().split('T')[0], endDate: '',
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
               searchKeywords
             });
@@ -595,10 +578,10 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
           campaignUrl: fullUrl,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '클라우드리뷰',
-          limitCount: 10,
+          limitCount: 0,
           applyCount: 0,
           startDate: now.toISOString().split('T')[0],
-          endDate: parseRemainDaysToDate(7),
+          endDate: '',
           createdAt: now.toISOString(),
           updatedAt: now.toISOString()
         });
@@ -633,8 +616,8 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         collected.push({
           id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
-          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount: 5, applyCount: 0,
-          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount: 0, applyCount: 0,
+          startDate: now.toISOString().split('T')[0], endDate: '', createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
         ringCount++;
       }
@@ -667,8 +650,8 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
         collected.push({
           id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: detectPlatform(rawTitle, rawTitle),
           category: detectCategory(rawTitle, rawTitle), campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
-          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
-          startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+          imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단', limitCount: 0, applyCount: 0,
+          startDate: now.toISOString().split('T')[0], endDate: '', createdAt: now.toISOString(), updatedAt: now.toISOString()
         });
         playCount++;
       }
@@ -721,7 +704,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
             platform: detectPlatform(platformText, fullSearchText), category: detectCategory(fullSearchText, fullSearchText),
             campaignUrl: `https://www.modublog.co.kr/product/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png',
             targetSite: '모블', limitCount, applyCount,
-            startDate: now.toISOString().split('T')[0], endDate: parseRemainDaysToDate(7), createdAt: now.toISOString(), updatedAt: now.toISOString()
+            startDate: now.toISOString().split('T')[0], endDate: '', createdAt: now.toISOString(), updatedAt: now.toISOString()
           });
           moblCount++;
         });

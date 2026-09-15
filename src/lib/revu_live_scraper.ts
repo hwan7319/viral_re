@@ -117,9 +117,9 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
 
     const thumbnail = item.thumbnail || 'https://www.revu.net/assets/img/og-revu.png';
     const media = (item.media || '').toLowerCase();
-    const limitCount = item.reviewerLimit || 5;
+    const limitCount = item.reviewerLimit ?? 0;
     const applyCount = item.campaignStats?.requestCount || 0;
-    const endDate = item.requestEndedOn ? item.requestEndedOn.split(' ')[0] : new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+    const endDate = item.requestEndedOn ? item.requestEndedOn.split(' ')[0] : '';
 
     // Platform matching
     let platform = 'blog';

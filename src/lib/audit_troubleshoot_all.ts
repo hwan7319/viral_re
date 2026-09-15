@@ -50,7 +50,7 @@ async function runTroubleAudit() {
       issue4_platform_mismatch: platformMis,
       status: (!isSame && !hasBlacklist && !isBroken && !platformMis) ? 'PERFECT' : 'NEED_FIX'
     });
-  } catch (e) {}
+  } catch (e) { console.error('Live audit request failed', e); process.exitCode = 1; }
 
   // 2. 디너의여왕
   try {
@@ -78,7 +78,7 @@ async function runTroubleAudit() {
       issue4_platform_mismatch: platformMis,
       status: (!isSame && !hasBlacklist && !isBroken && !platformMis) ? 'PERFECT' : 'NEED_FIX'
     });
-  } catch (e) {}
+  } catch (e) { console.error('Live audit request failed', e); process.exitCode = 1; }
 
   // 3. 포블로그
   try {
@@ -105,8 +105,9 @@ async function runTroubleAudit() {
         status: (!isSame && !hasBlacklist && !isBroken && !platformMis) ? 'PERFECT' : 'NEED_FIX'
       });
     }
-  } catch (e) {}
+  } catch (e) { console.error('Live audit request failed', e); process.exitCode = 1; }
 
+  if (!results.length || results.some(r => r.status !== 'PERFECT')) process.exitCode = 1;
   console.log('✅ [17대 사이트 4대 결함 전수 테스트 종합 검증 결과]');
   console.table(results.map(r => ({
     사이트: r.site,

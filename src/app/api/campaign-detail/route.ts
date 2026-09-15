@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { scrapeDetailMission, scrapeDetailBenefit, scrapeDetailCounts } from '@/lib/detail-scraper';
-import { getDB } from '@/lib/db';
+import { refreshCampaignDetail } from '@/lib/detail-service';
+import { getCampaignById } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,23 +8,21 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const url = searchParams.get('url');
-    const targetSite = searchParams.get('targetSite') || '';
     const campaignId = searchParams.get('id');
-    const title = searchParams.get('title') || '';
 
-    if (!url) {
-      return NextResponse.json({ success: false, error: 'URL parameter is required' }, { status: 400 });
-    }
-
+    if (!campaignId) return NextResponse.json({ success: false, error: 'Campaign ID required' }, { status: 400 });
+    const campaign = await getCampaignById(campaignId);
+    if (!campaign) return NextResponse.json({ success: false }, { status: 404 });
+    if (url && url !== campaign.campaignUrl) return NextResponse.json({ success: false, error: 'Campaign URL mismatch' }, { status: 400 });
     // SSRF 방어: 허용된 체험단 사이트 도메인 검증
     try {
-      const parsed = new URL(url);
+      const parsed = new URL(campaign.campaignUrl);
       if (!['http:', 'https:'].includes(parsed.protocol)) {
         return NextResponse.json({ success: false, error: 'Invalid URL protocol' }, { status: 400 });
       }
       const ALLOWED_DOMAIN_PATTERNS = [
         'revu.net', 'dinnerqueen.net', 'reviewnote.co.kr', '4blog.net',
-        '939au0g4vj8sq.net', 'ringble.co.kr', 'cometoplay.kr', 'modublog.co.kr',
+        'xn--939au0g4vj8sq.net', 'ringble.co.kr', 'cometoplay.kr', 'modublog.co.kr',
         'assaview.co.kr', 'ohmyblog.co.kr', 'reviewplace.co.kr', 'mrblog.net',
         'mible.co.kr', 'cloudreview.co.kr', 'weble.net'
       ];
@@ -34,43 +32,13 @@ export async function GET(request: NextRequest) {
       if (!isAllowedHost) {
         return NextResponse.json({ success: false, error: 'Access to untrusted host is prohibited' }, { status: 403 });
       }
-    } catch (e) {
+    } catch {
       return NextResponse.json({ success: false, error: 'Invalid URL format' }, { status: 400 });
     }
 
-    const [mission, realBenefit, counts] = await Promise.all([
-      scrapeDetailMission(url, targetSite),
-      scrapeDetailBenefit(url, targetSite),
-      scrapeDetailCounts(url, targetSite, title)
-    ]);
-
-    // 🔑 DB 실시간 백그라운드 동기화 (Sync Back to DB - mission, description, applyCount, limitCount 전수 수복)
-    if (campaignId) {
-      try {
-        const db = await getDB();
-        if (mission) {
-          await db.run('UPDATE campaigns SET mission = ? WHERE id = ?', [mission, campaignId]);
-        }
-        if (realBenefit) {
-          await db.run('UPDATE campaigns SET description = ? WHERE id = ?', [realBenefit, campaignId]);
-        }
-        if (counts.applyCount !== undefined) {
-          await db.run('UPDATE campaigns SET applyCount = ? WHERE id = ?', [counts.applyCount, campaignId]);
-        }
-        if (counts.limitCount !== undefined) {
-          await db.run('UPDATE campaigns SET limitCount = ? WHERE id = ?', [counts.limitCount, campaignId]);
-        }
-      } catch (dbErr) {}
-    }
-
-    return NextResponse.json({
-      success: true,
-      mission: mission || null,
-      realBenefit: realBenefit || null,
-      applyCount: counts.applyCount,
-      limitCount: counts.limitCount
-    });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(await refreshCampaignDetail(campaignId));
+  } catch (error) {
+    const busy = error instanceof Error && error.message === 'DETAIL_BUSY';
+    return NextResponse.json({ success: false, error: busy ? '잠시 후 다시 시도해주세요.' : '상세 조회 실패' }, { status: busy ? 429 : 500 });
   }
 }

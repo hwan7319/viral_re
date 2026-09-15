@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# viral_re / 체험단 통합 검색
 
-## Getting Started
+Next.js 16.3.5, React 19, TypeScript, SQLite, Axios/Cheerio and Playwright.
 
-First, run the development server:
-
-```bash
+```sh
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test
+npm run typecheck
+npm run build
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The search page queries `/api/campaigns` with region, platform, recruitment type, category, source and sort filters. Results use server pagination (60 per page by default, maximum 300 per page). Search-triggered background crawling has a global concurrency limit and a three-minute keyword cooldown, including empty results.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`src/lib/crawler-parallel.ts` coordinates site collectors in `src/lib/scrapers/search/` with at most three sites in flight. Common parsing utilities live in `src/lib/scraper-utils.ts`. `crawler-core.ts` retains the bulk and legacy crawler entry points. Detail enrichment is centralized in `detail-service.ts`, with deduplication, bounded concurrency and caching.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`src/lib/db.ts` manages persistent SQLite and campaign-only serverless memory reads. `data/campaigns.json` is the single canonical seed snapshot. Expired deadlines remain unchanged and are excluded from active searches using Korea's calendar date. Unknown crawl deadlines are not fabricated. Known dates are retained when an update cannot determine a new deadline.
 
-## Learn More
+`src/lib/keyword-engine.ts` combines Naver APIs. Blog metrics are in `blog-stats.ts`. Unknown or censored search volumes, unavailable blog totals and unprovable monthly totals are represented as unavailable, never generated from unrelated metrics.
 
-To learn more about Next.js, take a look at the following resources:
+OAuth authorization, signed HTTP-only sessions and identity checks live in `auth.ts` and `oauth.ts`. The client cannot register a trusted session by submitting an ID. Mutation APIs fail closed when secrets are missing. Provider credentials are required to enable social login.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [EC2 operation and verification](docs/operations/DEPLOYMENT.md) for environment configuration, release and rollback procedures. Older audit reports describe historical snapshots, not the current verified behavior or live source availability.

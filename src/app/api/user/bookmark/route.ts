@@ -1,35 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { toggleUserBookmark, getUserBookmarks } from '@/lib/db';
-
-// 🔑 POST: 사용자 북마크(찜) 상태를 SQLite DB에 토글 저장 및 동기화
-export async function POST(req: NextRequest) {
+import { toggleUserBookmark, getUserBookmarks, getCampaignById } from '@/lib/db';
+import { authenticatedUser, sameOrigin } from '@/lib/auth';
+export async function POST(request: NextRequest) {
+  if (!sameOrigin(request)) return NextResponse.json({ success: false }, { status: 403 });
+  const user = await authenticatedUser(request);
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   try {
-    const body = await req.json();
-    const { userId, campaignId } = body;
-
-    if (!userId || !campaignId) {
-      return NextResponse.json(
-        { success: false, error: '인증 유저 ID 또는 캠페인 ID가 없습니다.' },
-        { status: 400 }
-      );
-    }
-
-    // 1. DB 북마크 토글 실행
-    const result = await toggleUserBookmark(userId, campaignId);
-
-    // 2. 토글 완료 후의 최종 전체 북마크 목록을 가져와 동기화
-    const updatedBookmarks = await getUserBookmarks(userId);
-
-    return NextResponse.json({
-      success: true,
-      active: result.active,
-      bookmarks: updatedBookmarks
-    });
-  } catch (error: any) {
-    console.error('[API User Bookmark Error]:', error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
+    const { campaignId } = await request.json();
+    if (typeof campaignId !== 'string' || campaignId.length > 200 || !await getCampaignById(campaignId)) return NextResponse.json({ success: false, error: 'Invalid campaign' }, { status: 400 });
+    const result = await toggleUserBookmark(user.id, campaignId);
+    return NextResponse.json({ success: true, ...result, bookmarks: await getUserBookmarks(user.id) });
+  } catch { return NextResponse.json({ success: false, error: 'Bookmark update failed' }, { status: 500 }); }
 }

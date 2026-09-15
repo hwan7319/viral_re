@@ -637,7 +637,6 @@ export async function runUpdateDeep() {
   const freshList = await scrapeAll17SitesDeep();
 
   const dataPath = path.join(process.cwd(), 'data', 'campaigns.json');
-  const rootPath = path.join(process.cwd(), 'campaigns.json');
 
   let existing: any[] = [];
   if (fs.existsSync(dataPath)) {
@@ -692,9 +691,8 @@ export async function runUpdateDeep() {
   console.table(siteCounts);
 
   fs.writeFileSync(dataPath, JSON.stringify(merged, null, 2), 'utf-8');
-  fs.writeFileSync(rootPath, JSON.stringify(merged, null, 2), 'utf-8');
 
-  console.log(`✅ Successfully saved ${merged.length} items to BOTH ./data/campaigns.json and ./campaigns.json!`);
+  console.log(`✅ Successfully saved ${merged.length} items to ./data/campaigns.json!`);
 }
 
 runUpdateDeep();
