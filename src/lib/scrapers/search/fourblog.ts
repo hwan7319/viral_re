@@ -1,6 +1,41 @@
 import type { Campaign } from '../../db';
 import axios from 'axios';
 import { HEADERS, parseRemainDaysToDate, detectCategory, generateRealMission, buildAutoKeywords } from '../../scraper-utils';
+
+const ORIGIN = 'https://4blog.net';
+
+async function fetchCampaigns(keyword: string) {
+  const url = ORIGIN + '/loadMoreDataCategorySearch2?search=' + encodeURIComponent(keyword) + '&search2=' + encodeURIComponent(keyword) + '&offset=0&limit=30';
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const landing = await axios.get(ORIGIN, { headers: HEADERS, timeout: 8000 });
+      const cookies = (landing.headers['set-cookie'] || []).map(value => value.split(';')[0]).join('; ');
+      const response = await axios.get(url, {
+        headers: {
+          ...HEADERS,
+          Accept: 'application/json, text/javascript, */*; q=0.01',
+          Referer: ORIGIN + '/',
+          'X-Requested-With': 'XMLHttpRequest',
+          ...(cookies ? { Cookie: cookies } : {}),
+        },
+        timeout: 8000,
+      });
+      if (!Array.isArray(response.data)) {
+        const invalidResponse = new Error('Fourblog returned a non-JSON campaign response') as Error & { retryable?: boolean };
+        invalidResponse.retryable = true;
+        throw invalidResponse;
+      }
+      return response;
+    } catch (error: any) {
+      lastError = error;
+      const retryable = [403, 429].includes(error.response?.status) || error.retryable;
+      if (!retryable || attempt === 1) break;
+      await new Promise(resolve => setTimeout(resolve, 1_250));
+    }
+  }
+  throw lastError;
+}
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -8,7 +43,7 @@ const encodedKeyword = encodeURIComponent(keyword);
 await (async () => {
       try {
         const pbUrl = `https://4blog.net/loadMoreDataCategorySearch2?search=${encodedKeyword}&search2=${encodedKeyword}&offset=0&limit=30`;
-        const response = await axios.get(pbUrl, { headers: HEADERS, timeout: 5000 });
+        const response = await fetchCampaigns(keyword);
         if (Array.isArray(response.data)) {
           response.data.forEach((item: any) => {
             const id = `pb-${item.CID}`;
@@ -19,7 +54,8 @@ await (async () => {
             const location = item.LOCATION_NM ? item.LOCATION_NM.replace(/[\[\]]/g, '') : undefined;
             const campaignUrl = `https://4blog.net/campaign/${item.CID}/`;
             const imageUrl = `https://d3oxv6xcx9d0j1.cloudfront.net/public/pr/${item.PRID}/thumbnail/${item.IMGKEY}`;
-            const endDate = parseRemainDaysToDate(item.REMAINDATE || 7);
+            const remainDays = Number(item.REMAINDATE);
+            const endDate = Number.isInteger(remainDays) && remainDays >= 0 ? parseRemainDaysToDate(remainDays) : '';
             const limitCount = parseInt(item.REVIEWER_CNT || item.LIMIT_CNT || 0, 10) || 0;
             const applyCount = parseInt(item.REVIEWER_REQ_CNT || item.REQ_CNT || 0, 10) || 0;
             const autoKws = buildAutoKeywords(title, description);

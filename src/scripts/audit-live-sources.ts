@@ -3,7 +3,6 @@ import { scrape as gangnam } from '../lib/scrapers/search/gangnam';
 import { scrape as dinnerqueen } from '../lib/scrapers/search/dinnerqueen';
 import { scrape as fourblog } from '../lib/scrapers/search/fourblog';
 import { scrape as reviewnote } from '../lib/scrapers/search/reviewnote';
-import { scrape as chvu } from '../lib/scrapers/search/chvu';
 import { scrape as cloudreview } from '../lib/scrapers/search/cloudreview';
 import { scrape as revu } from '../lib/scrapers/search/revu';
 import { scrape as mible } from '../lib/scrapers/search/mible';
@@ -11,6 +10,7 @@ import { scrape as ringble } from '../lib/scrapers/search/ringble_categories';
 import { scrape as cometoplay } from '../lib/scrapers/search/cometoplay';
 import { scrape as modublog } from '../lib/scrapers/search/modublog';
 import { scrape as assaview } from '../lib/scrapers/search/assaview_pages';
+import { scrape as ohmyblog } from '../lib/scrapers/search/ohmyblog';
 
 const keyword = process.argv[2] === '--all' ? '' : (process.argv[2] || '맛집');
 const timeoutMs = 45_000;
@@ -20,7 +20,6 @@ const sources: Array<[string, string, (keyword: string) => Promise<Campaign[]>]>
   ['디너의여왕', 'dinnerqueen', dinnerqueen],
   ['포블로그', 'fourblog', fourblog],
   ['리뷰노트', 'reviewnote', reviewnote],
-  ['체험뷰', 'chvu', chvu],
   ['클라우드리뷰', 'cloudreview', cloudreview],
   ['레뷰', 'revu', revu],
   ['미블', 'mible', mible],
@@ -28,6 +27,7 @@ const sources: Array<[string, string, (keyword: string) => Promise<Campaign[]>]>
   ['놀러와체험단', 'cometoplay', cometoplay],
   ['모블', 'modublog', modublog],
   ['아싸뷰', 'assaview_pages', assaview],
+  ['오마이블로그', 'ohmyblog', ohmyblog],
 ];
 
 function validHttpUrl(value: string) {
