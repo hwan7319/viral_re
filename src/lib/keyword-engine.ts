@@ -324,7 +324,7 @@ export async function GET(request: Request) {
 
     const [blogRes, mainStats, adRes] = await Promise.all([
       fetchBlogMain(query, clientId, clientSecret),
-      fetchBlogStats(query, clientId, clientSecret),
+      fetchBlogStats(query, clientId, clientSecret, 10),
 
       (async () => {
         if (!customerId || !searchAdApiKey || !searchAdSecretKey) return null;
@@ -703,7 +703,7 @@ export async function GET(request: Request) {
     });
 
     // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
-    const candidateKeywordsList = filteredCandidatesList;
+    const candidateKeywordsList = filteredCandidatesList.slice(0, 100);
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
@@ -761,6 +761,7 @@ export async function GET(request: Request) {
               totalSearchVolume: hasSearchVolume ? kwTotalVol : null,
               totalPosts: stats.available ? stats.totalPosts : null,
               monthlyPosts: stats.monthlyPosts,
+              monthlyPostsEstimated: stats.monthlyPostsEstimated,
               isRealSearchAdData: hasSearchVolume,
               competitionRatio: compRatio,
               grade,
@@ -829,6 +830,7 @@ export async function GET(request: Request) {
         totalClickCount: parseFloat((pcClickCount + mobileClickCount).toFixed(1)),
         totalPosts: mainStats.available ? totalPosts : null,
         monthlyPosts: mainMonthlyPosts,
+        monthlyPostsEstimated: mainStats.monthlyPostsEstimated,
         competitionRatio,
         grade,
         statusText,

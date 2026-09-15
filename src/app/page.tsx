@@ -3464,13 +3464,14 @@ export default function Home() {
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월 블로그 포스팅 수</span>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
-                          (최근 30일 신규 발행량)
+                          (최근 30일 {keywordData.monthlyPostsEstimated ? '표본 추정 발행량' : '신규 발행량'})
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
                           <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10b981', fontVariantNumeric: 'tabular-nums' }}>
                             {displayMetric(keywordData.monthlyPosts)}
                           </span>
                           <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10b981' }}>건/월</span>
+                          {keywordData.monthlyPostsEstimated && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>(추정)</span>}
                         </div>
                       </div>
 
@@ -3683,7 +3684,7 @@ export default function Home() {
                                 {displayMetric(item.totalSearchVolume)}회
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {displayMetric(item.monthlyPosts)}건/월
+                                {displayMetric(item.monthlyPosts)}건/월{item.monthlyPostsEstimated ? ' (추정)' : ''}
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: 'var(--text-secondary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {displayMetric(item.totalPosts)}건
@@ -3763,7 +3764,7 @@ export default function Home() {
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>월 포스팅: </span>
-                              <strong style={{ color: '#10b981' }}>{displayMetric(item.monthlyPosts)}건</strong>
+                              <strong style={{ color: '#10b981' }}>{displayMetric(item.monthlyPosts)}건{item.monthlyPostsEstimated ? ' (추정)' : ''}</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>누적 포스팅: </span>

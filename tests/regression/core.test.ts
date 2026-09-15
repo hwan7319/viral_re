@@ -21,7 +21,7 @@ test('regression suite', async t => {
   const { POST: session } = await import('../../src/app/api/auth/session/route');
   const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
-  const { summarizeBlogSample } = await import('../../src/lib/blog-stats');
+  const { summarizeBlogSample, estimateMonthlyPostsFromSample } = await import('../../src/lib/blog-stats');
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
@@ -96,6 +96,11 @@ test('regression suite', async t => {
     assert.equal(deadlineFromText('D-2', new Date('2026-09-13T16:00:00Z')), '2026-09-16');
     assert.equal(summarizeBlogSample(10000, [{ postdate: '20260914' }], new Date('2026-09-14')).monthlyPosts, null);
     assert.equal(summarizeBlogSample(1, [{ postdate: '20260914' }], new Date('2026-09-14')).monthlyPosts, 1);
+    const estimate = estimateMonthlyPostsFromSample(10000, [
+      { postdate: '20260914' }, { postdate: '20260913' }, { postdate: '20260912' },
+    ], new Date('2026-09-14'));
+    assert.equal(estimate.monthlyPosts, 30);
+    assert.equal(estimate.monthlyPostsEstimated, true);
   });
   await t.test('upstream failures produce unavailable keyword metrics, not invented counts', async () => {
     const original = axios.get;
