@@ -43,10 +43,10 @@ export const ReviewPlaceScraper: SiteScraper = {
           campaignUrl: href.startsWith('http') ? href : `https://www.reviewplace.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '리뷰플레이스',
-          limitCount: 5,
+          limitCount: 0,
           applyCount: 0,
           startDate: now.toISOString().split('T')[0],
-          endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
+          endDate: '',
           createdAt: now.toISOString(),
           updatedAt: now.toISOString()
         });

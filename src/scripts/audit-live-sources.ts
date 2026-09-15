@@ -11,6 +11,7 @@ import { scrape as cometoplay } from '../lib/scrapers/search/cometoplay';
 import { scrape as modublog } from '../lib/scrapers/search/modublog';
 import { scrape as assaview } from '../lib/scrapers/search/assaview_pages';
 import { scrape as ohmyblog } from '../lib/scrapers/search/ohmyblog';
+import { ReviewPlaceScraper } from '../lib/scrapers/06_reviewplace';
 
 const keyword = process.argv[2] === '--all' ? '' : (process.argv[2] || '맛집');
 const timeoutMs = 45_000;
@@ -28,6 +29,7 @@ const sources: Array<[string, string, (keyword: string) => Promise<Campaign[]>]>
   ['모블', 'modublog', modublog],
   ['아싸뷰', 'assaview_pages', assaview],
   ['오마이블로그', 'ohmyblog', ohmyblog],
+  ['리뷰플레이스', 'reviewplace', keyword => ReviewPlaceScraper.scrapeList(keyword)],
 ];
 
 function validHttpUrl(value: string) {

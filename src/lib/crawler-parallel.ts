@@ -11,10 +11,12 @@ import { scrape as cometoplay } from './scrapers/search/cometoplay';
 import { scrape as modublog } from './scrapers/search/modublog';
 import { scrape as assaview_pages } from './scrapers/search/assaview_pages';
 import { scrape as ohmyblog } from './scrapers/search/ohmyblog';
+import { ReviewPlaceScraper } from './scrapers/06_reviewplace';
 export { detectPlatform, generateRealMission } from './scraper-utils';
 // Keep one current implementation per source. The retired Ringble/AssaView URLs
 // returned 404 and previously made a healthy source look like a partial failure.
-const scrapers = [gangnam, dinnerqueen, fourblog, reviewnote, cloudreview, revu, mible, ringble_categories, cometoplay, modublog, assaview_pages, ohmyblog];
+const reviewplace = (keyword: string) => ReviewPlaceScraper.scrapeList(keyword);
+const scrapers = [gangnam, dinnerqueen, fourblog, reviewnote, cloudreview, revu, mible, ringble_categories, cometoplay, modublog, assaview_pages, ohmyblog, reviewplace];
 export async function collectCampaigns(keyword: string): Promise<Campaign[]> {
   const collected = new Map<string, Campaign>();
   // Limit concurrent sites, not the number of returned campaigns.
