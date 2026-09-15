@@ -2883,8 +2883,9 @@ export default function Home() {
             <div className="campaign-grid">
               {displayedCampaigns.slice(0, visibleCount).map((c) => {
                 const dday = calculateDday(c.endDate);
-                const competitionRate = c.limitCount > 0 ? (c.applyCount / c.limitCount).toFixed(1) : '0';
-                const ratePercent = Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100));
+                const hasVerifiedCounts = c.limitCount > 0;
+                const competitionRate = hasVerifiedCounts ? (c.applyCount / c.limitCount).toFixed(1) : null;
+                const ratePercent = hasVerifiedCounts ? Math.min(100, Math.floor((c.applyCount / c.limitCount) * 100)) : 0;
 
                 let ddayColor = 'var(--success)';
                 if (dday === '오늘마감' || dday === 'D-1' || dday === 'D-2') ddayColor = 'var(--danger)';
@@ -3009,15 +3010,15 @@ export default function Home() {
                       </div>
                       <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                          <span>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</span>
-                          <span style={{ fontWeight: 700, color: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--success)' }}>
-                            경쟁률 {competitionRate}:1
+                          <span>{hasVerifiedCounts ? <>지원현황 <strong>{c.applyCount}</strong> / {c.limitCount}명</> : '지원현황 확인 불가'}</span>
+                          <span style={{ fontWeight: 700, color: hasVerifiedCounts && Number(competitionRate) >= 1 ? 'var(--danger)' : 'var(--text-tertiary)' }}>
+                            {hasVerifiedCounts ? `경쟁률 ${competitionRate}:1` : '경쟁률 확인 불가'}
                           </span>
                         </div>
                         <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                           <div style={{
                             width: `${ratePercent}%`, height: '100%',
-                            backgroundColor: parseFloat(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
+                            backgroundColor: Number(competitionRate) >= 1 ? 'var(--danger)' : 'var(--accent)',
                             borderRadius: 'var(--radius-full)',
                             transition: 'width 0.4s ease'
                           }} />
