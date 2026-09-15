@@ -729,14 +729,12 @@ export async function GET(request: Request) {
             }
 
             const stats = await fetchBlogStats(item.keyword, clientId, clientSecret);
-            let totalPosts = stats.totalPosts;
-            let monthlyPosts = stats.monthlyPosts;
-            let recentDate = stats.recentDate;
-
-            if (!Number.isFinite(kwTotalVol) || kwTotalVol <= 0) return null;
+            const hasSearchVolume = Number.isFinite(kwTotalVol) && kwTotalVol > 0;
 
             // 🔑 [수학적 1:1 완벽 일치 경쟁비율 공식] 누적 포스팅 총 문서 수 / 월간 총 검색량
-            const compRatio = stats.available && kwTotalVol > 0 ? parseFloat((totalPosts / kwTotalVol).toFixed(2)) : null;
+            const compRatio = stats.available && hasSearchVolume
+              ? parseFloat((stats.totalPosts / kwTotalVol).toFixed(2))
+              : null;
 
             let grade: 'GOLD' | 'NORMAL' | 'HARD' | 'UNKNOWN';
             let gradeLabel: string;
@@ -758,16 +756,16 @@ export async function GET(request: Request) {
               keyword: item.keyword,
               priority: item.priority || 3,
               isOfficial: true,
-              pcSearchVolume: kwPc,
-              mobileSearchVolume: kwMobile,
-              totalSearchVolume: kwTotalVol,
-              totalPosts: stats.available ? totalPosts : null,
-              monthlyPosts,
-              isRealSearchAdData: true,
+              pcSearchVolume: hasSearchVolume ? kwPc : null,
+              mobileSearchVolume: hasSearchVolume ? kwMobile : null,
+              totalSearchVolume: hasSearchVolume ? kwTotalVol : null,
+              totalPosts: stats.available ? stats.totalPosts : null,
+              monthlyPosts: stats.monthlyPosts,
+              isRealSearchAdData: hasSearchVolume,
               competitionRatio: compRatio,
               grade,
               gradeLabel,
-              recentDate,
+              recentDate: stats.recentDate,
             };
           } catch (e) {
             return null;
@@ -782,11 +780,11 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 🔑 1. 기본 실데이터 검증 (검색량 0 및 포스팅 0인 깡통 키워드 완전 제거)
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && (item.totalPosts > 0 || item.totalSearchVolume > 0) && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 자동완성/문맥 후보는 지표 API가 일시적으로 없더라도 유지한다.
+    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
 
     // 🔑 2. 최우선 순위: 검색한 단어('세계명작' 등)가 직접 포함된 타겟 확장 키워드를 최상단 그룹으로 상위 배치
-    validListRaw.sort((a: any, b: any) => b.totalSearchVolume - a.totalSearchVolume || a.keyword.localeCompare(b.keyword));
+    validListRaw.sort((a: any, b: any) => (b.totalSearchVolume ?? -1) - (a.totalSearchVolume ?? -1) || a.keyword.localeCompare(b.keyword));
     const final100List = validListRaw;
 
     const relatedKeywords = final100List.map((item: any, index: number) => ({
