@@ -882,11 +882,25 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
   }
 
   // The scheduled bulk job must refresh every maintained source, not only the
-  // three sources implemented inline above. Inline records win because their
-  // parsers include richer deadline and mission fields.
+  // sources implemented inline above. Source adapters may have richer list or
+  // detail fields, so retain an existing non-placeholder value when merging.
   const parallelCampaigns = await collectCampaigns('');
-  const merged = new Map(parallelCampaigns.map(campaign => [campaign.id, campaign]));
-  for (const campaign of allCampaigns) merged.set(campaign.id, campaign);
+  const merged = new Map(allCampaigns.map(campaign => [campaign.id, campaign]));
+  for (const campaign of parallelCampaigns) {
+    const existing = merged.get(campaign.id);
+    if (!existing) {
+      merged.set(campaign.id, campaign);
+      continue;
+    }
+    const hasRealDescription = (value: string, title: string) => !!value && value !== title && !value.startsWith(title);
+    merged.set(campaign.id, {
+      ...existing,
+      ...campaign,
+      description: hasRealDescription(campaign.description, campaign.title) ? campaign.description : existing.description,
+      endDate: campaign.endDate || existing.endDate,
+      mission: campaign.mission || existing.mission,
+    });
+  }
   const result = await insertOrUpdateCampaigns([...merged.values()]);
   return { ...result, isMock: false };
 }

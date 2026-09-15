@@ -79,7 +79,10 @@ export const AssaViewScraper: SiteScraper = {
           if (isDummyCampaign(title, description)) return;
 
           let platform = detectPlatform(title, description);
-          if (iconSrc.includes('reels_icon') || iconSrc.includes('insta')) platform = 'instagram';
+          // The list card exposes the authoritative campaign channel. Do not
+          // infer a blog platform from a product title when it is 구매형/쿠팡.
+          if (chipText.includes('구매') || parent.find('.imgBox').hasClass('coupang_wow_card')) platform = 'coupang';
+          else if (iconSrc.includes('reels_icon') || iconSrc.includes('insta')) platform = 'instagram';
           else if (iconSrc.includes('clip')) platform = 'clip';
           else if (chipText.includes('인스타')) platform = 'instagram';
 
@@ -90,10 +93,10 @@ export const AssaViewScraper: SiteScraper = {
             img = `https://assaview.co.kr/${img.replace(/^\.\//, '')}`;
           }
 
-          const applyMatch = parent.find('.desc b').text().trim();
-          const limitMatch = parent.find('.desc').text().match(/\/ (\d+)명/);
-          const applyCount = parseInt(applyMatch, 10) || 0;
-          const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 5;
+          const progressText = parent.find('.desc').text().replace(/\s+/g, ' ').trim();
+          const progressMatch = progressText.match(/신청\s*(\d+)\s*\/\s*(\d+)\s*명/);
+          const applyCount = progressMatch ? Number(progressMatch[1]) : 0;
+          const limitCount = progressMatch ? Number(progressMatch[2]) : 0;
 
           if (keyword && !title.toLowerCase().includes(keyword.toLowerCase()) && !description.toLowerCase().includes(keyword.toLowerCase())) return;
 

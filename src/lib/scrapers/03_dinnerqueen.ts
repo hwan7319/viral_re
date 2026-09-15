@@ -92,6 +92,14 @@ export const DinnerQueenScraper: SiteScraper = {
       const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
       const $ = cheerio.load(res.data);
 
+      // The offer lives in the collapse section labelled "제공 내역". Reading
+      // the first generic collapse block can return the campaign title instead.
+      const offerSection = $('.qz-collapse').filter((_, element) =>
+        $(element).find('strong').filter((_, label) => /제공\s*내역/.test($(label).text())).length > 0,
+      ).first();
+      const directOffer = offerSection.find('.qz-collapse__content > p').first().text().replace(/\s+/g, ' ').trim();
+      if (directOffer) return directOffer;
+
       let offerBenefit = '';
       $('div').each((_, el) => {
         const text = $(el).clone().children().remove().end().text().trim();

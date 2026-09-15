@@ -49,7 +49,10 @@ await (async () => {
               }
 
               let platform = detectPlatform(title, description);
-              if (iconSrc.includes('reels_icon') || iconSrc.includes('insta')) platform = 'instagram';
+              // 아싸뷰는 목록 카드의 진행 유형이 작성 플랫폼의 근거다. 상품명만으로
+              // 블로그로 추정하면 쿠팡 구매형 캠페인이 잘못 표시된다.
+              if (chipText.includes('구매') || parent.find('.imgBox').hasClass('coupang_wow_card')) platform = 'coupang';
+              else if (iconSrc.includes('reels_icon') || iconSrc.includes('insta')) platform = 'instagram';
               else if (iconSrc.includes('clip')) platform = 'clip';
               else if (chipText.includes('인스타')) platform = 'instagram';
 
@@ -58,10 +61,10 @@ await (async () => {
                 img = `https://assaview.co.kr/${img.replace(/^\.\//, '')}`;
               }
 
-              const applyMatch = parent.find('.desc b').text().trim();
-              const limitMatch = parent.find('.desc').text().match(/\/ (\d+)명/);
-              const applyCount = parseInt(applyMatch, 10) || 0;
-              const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 0;
+              const progressText = parent.find('.desc').text().replace(/\s+/g, ' ').trim();
+              const progressMatch = progressText.match(/신청\s*(\d+)\s*\/\s*(\d+)\s*명/);
+              const applyCount = progressMatch ? Number(progressMatch[1]) : 0;
+              const limitCount = progressMatch ? Number(progressMatch[2]) : 0;
 
               if (keyword && !title.toLowerCase().includes(keyword.toLowerCase()) && !description.toLowerCase().includes(keyword.toLowerCase())) return;
 

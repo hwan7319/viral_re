@@ -3201,7 +3201,9 @@ export default function Home() {
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>체험 방식</span>
                     <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>
-                      {selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
+                      {selectedCampaign.platform === 'coupang'
+                        ? '구매형 (쿠팡)'
+                        : selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
                     </span>
                   </div>
                 </div>
