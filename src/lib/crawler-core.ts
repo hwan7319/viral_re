@@ -294,7 +294,10 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
   }
 
   // ==================== 3. 포블로그 수집 (loadMoreDataCategorySearch2 API 직접 호출) ====================
-  try {
+  // Bulk synchronization uses the shared scraper below.  Its category sweep
+  // handles the public API's empty-query response and EC2 client fallback.
+  // Keep this legacy one-keyword path only for an explicit on-demand search.
+  if (keyword.trim()) try {
     const pbUrl = `https://4blog.net/loadMoreDataCategorySearch2?search=${encodedKeyword}&search2=${encodedKeyword}&offset=0&limit=30`;
     const response = await axios.get(pbUrl, { headers: HEADERS, timeout: 6000 });
     

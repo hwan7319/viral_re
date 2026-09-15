@@ -8,7 +8,7 @@ const ORIGIN = 'https://4blog.net';
 const execFileAsync = promisify(execFile);
 
 async function fetchCampaigns(keyword: string) {
-  const url = ORIGIN + '/loadMoreDataCategorySearch2?search=' + encodeURIComponent(keyword) + '&search2=' + encodeURIComponent(keyword) + '&offset=0&limit=30';
+  const url = ORIGIN + '/loadMoreDataCategorySearch2?search=' + encodeURIComponent(keyword) + '&search2=' + encodeURIComponent(keyword) + '&offset=0&limit=100';
   let lastError: unknown;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -55,13 +55,15 @@ async function fetchCampaigns(keyword: string) {
   throw lastError;
 }
 export async function scrape(keyword: string): Promise<Campaign[]> {
-const collected: Campaign[] = [];
+const collected = new Map<string, Campaign>();
 const now = new Date();
-const encodedKeyword = encodeURIComponent(keyword);
-await (async () => {
+// The public endpoint treats an empty search as no result.  Use the site's
+// active discovery categories during scheduled synchronization, while keeping
+// a caller's keyword untouched for an on-demand search.
+const queries = keyword.trim() ? [keyword.trim()] : ['맛집', '뷰티', '여행', '식품', '생활', '패션', '가전', '육아', '반려동물'];
+for (const query of queries) {
       try {
-        const pbUrl = `https://4blog.net/loadMoreDataCategorySearch2?search=${encodedKeyword}&search2=${encodedKeyword}&offset=0&limit=30`;
-        const response = await fetchCampaigns(keyword);
+        const response = await fetchCampaigns(query);
         if (Array.isArray(response.data)) {
           response.data.forEach((item: any) => {
             const id = `pb-${item.CID}`;
@@ -77,12 +79,12 @@ await (async () => {
             const limitCount = parseInt(item.REVIEWER_CNT || item.LIMIT_CNT || 0, 10) || 0;
             const applyCount = parseInt(item.REVIEWER_REQ_CNT || item.REQ_CNT || 0, 10) || 0;
             const autoKws = buildAutoKeywords(title, description);
-            const searchKeywords = autoKws ? `,${keyword},${autoKws.substring(1)}` : `,${keyword},`;
+            const searchKeywords = autoKws ? `,${query},${autoKws.substring(1)}` : `,${query},`;
 
             // 원본 실제 미션 데이터 매핑 (포블로그 원본 상세 미션)
             const mission = item.MISSION || item.CAMPAIGN_GUIDE || item.GUIDE || generateRealMission(title, platform, category, location);
 
-            collected.push({
+            collected.set(id, {
               id, title, description, platform, category, location, campaignUrl,
               imageUrl, targetSite: '포블로그', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
@@ -95,6 +97,6 @@ await (async () => {
       } catch (err: any) {
         console.error('[Parallel-Crawl] 포블로그 failed:', err.message);
       }
-    })();
-return collected;
+    }
+return [...collected.values()];
 }
