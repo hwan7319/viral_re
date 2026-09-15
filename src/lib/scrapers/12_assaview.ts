@@ -210,6 +210,15 @@ export const AssaViewScraper: SiteScraper = {
 
       const lines = convertedText.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.includes('-->'));
 
+      // 구매형 안내는 일반 "미션" 제목 앞에 있으므로 기존 줄 기반 파서에서
+      // 빠졌다. 이 영역은 구매·환급·선정 후 제출 조건의 원본 근거다.
+      const purchaseGuide = $('.guide_area.campaign_ .guide_list li').first();
+      const purchaseTitle = purchaseGuide.find('h5').text().replace(/\s+/g, ' ').trim();
+      const purchaseText = purchaseGuide.find('.text_').text().replace(/\s+/g, ' ').trim();
+      if (purchaseTitle && purchaseText) {
+        sections.push(`🛒 [${purchaseTitle}]\n${purchaseText}`);
+      }
+
       let addressStr = '';
       let timeStr = '';
       let noteStr = '';
