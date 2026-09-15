@@ -23,7 +23,7 @@ OAuth users and bookmarks require persistent SQLite. Memory snapshots are suitab
 1. Run `npm ci`, `npm test`, `npm run typecheck`, `npm run build`, and `npm audit` locally.
 2. Back up SQLite with its backup API, the runtime snapshot, running PM2 definition, commit ID, and `.next` directory. Protect the PM2 backup because it may contain environment secrets.
 3. Commit and push the reviewed change. Fast-forward the EC2 checkout, preserving locally modified data and unrelated files.
-4. Export that commit into a new release directory, link the production environment file, install dependencies and build. On the 1 GB instance use `NODE_OPTIONS=--max-old-space-size=512 npm run build -- --webpack`.
+4. Export that commit into a new release directory, link the production environment file, install dependencies and build. On Amazon Linux with glibc 2.34, run `npm rebuild sqlite3 --build-from-source` after `npm ci` so the native module matches the host. On the 1 GB instance use `NODE_OPTIONS=--max-old-space-size=512 npm run build -- --webpack`.
 5. Start a canary on an unused localhost port against the persistent database. Check the home page, paginated search, unauthorized mutation responses, and missing-provider behavior.
 6. Switch PM2 `viral-re` to the new release, verify HTTPS through Nginx, and save the PM2 configuration. Keep the previous code, dependencies, and backup for rollback.
 
