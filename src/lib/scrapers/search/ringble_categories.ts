@@ -1,7 +1,75 @@
-import type { Campaign } from '../../db';
+import { getDB, type Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+
+const deadlineCache = new Map<string, string>();
+
+function parseRecruitmentEndDate(text: string): string {
+  // 링블 상세: "26년 09월 16일(수) ~ 26년 09월 22일(화)"
+  const dates = [...text.matchAll(/(\d{2,4})년\s*(\d{1,2})월\s*(\d{1,2})일/g)];
+  const end = dates.at(-1);
+  if (!end) return '';
+  const rawYear = Number(end[1]);
+  const year = rawYear < 100 ? 2000 + rawYear : rawYear;
+  const month = Number(end[2]);
+  const day = Number(end[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return '';
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+async function fetchRecruitmentEndDate(url: string): Promise<string> {
+  const cached = deadlineCache.get(url);
+  if (cached !== undefined) return cached;
+  try {
+    const response = await axios.get(url, { headers: HEADERS, timeout: 8_000 });
+    const $ = cheerio.load(response.data);
+    let period = '';
+    $('td').each((_, element) => {
+      if ($(element).text().replace(/\s+/g, ' ').trim() === '모집 기간') {
+        period = $(element).next('td').text().replace(/\s+/g, ' ').trim();
+      }
+    });
+    const endDate = parseRecruitmentEndDate(period);
+    deadlineCache.set(url, endDate);
+    return endDate;
+  } catch {
+    return '';
+  }
+}
+
+async function enrichDeadlines(campaigns: Campaign[]): Promise<Campaign[]> {
+  const concurrency = 12;
+  let index = 0;
+  await Promise.all(Array.from({ length: concurrency }, async () => {
+    while (index < campaigns.length) {
+      const campaign = campaigns[index++];
+      const endDate = await fetchRecruitmentEndDate(campaign.campaignUrl);
+      if (endDate) campaign.endDate = endDate;
+    }
+  }));
+  return campaigns;
+}
+
+async function restoreKnownDeadlines(campaigns: Campaign[]): Promise<void> {
+  if (!campaigns.length) return;
+  const db = await getDB();
+  const known = new Map<string, string>();
+  for (let offset = 0; offset < campaigns.length; offset += 900) {
+    const ids = campaigns.slice(offset, offset + 900).map(campaign => campaign.id);
+    const placeholders = ids.map(() => '?').join(', ');
+    const rows = await db.all<{ id: string; endDate: string }[]>(
+      `SELECT id, endDate FROM campaigns WHERE id IN (${placeholders}) AND endDate <> ''`,
+      ids,
+    );
+    for (const row of rows) known.set(row.id, row.endDate);
+  }
+  for (const campaign of campaigns) {
+    const endDate = known.get(campaign.id);
+    if (endDate) campaign.endDate = endDate;
+  }
+}
+
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -95,5 +163,7 @@ await (async () => {
         console.warn('[Parallel-Crawl] 링블 failed:', err.message);
       }
     })();
-return collected;
+ await restoreKnownDeadlines(collected);
+ await enrichDeadlines(collected.filter(campaign => !campaign.endDate));
+ return collected;
 }
