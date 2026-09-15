@@ -1,8 +1,11 @@
 import type { Campaign } from '../../db';
 import axios from 'axios';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { HEADERS, parseRemainDaysToDate, detectCategory, generateRealMission, buildAutoKeywords } from '../../scraper-utils';
 
 const ORIGIN = 'https://4blog.net';
+const execFileAsync = promisify(execFile);
 
 async function fetchCampaigns(keyword: string) {
   const url = ORIGIN + '/loadMoreDataCategorySearch2?search=' + encodeURIComponent(keyword) + '&search2=' + encodeURIComponent(keyword) + '&offset=0&limit=30';
@@ -33,6 +36,21 @@ async function fetchCampaigns(keyword: string) {
       if (!retryable || attempt === 1) break;
       await new Promise(resolve => setTimeout(resolve, 1_250));
     }
+  }
+  try {
+    // Fourblog's Cloudflare configuration intermittently rejects Axios from
+    // EC2 while accepting a normal command-line browser request. This is a
+    // same-origin, public API fallback; no proxy or IP bypass is used.
+    const { stdout } = await execFileAsync('curl', [
+      '-sS', '--fail', '--max-time', '10',
+      '-A', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      '-e', ORIGIN + '/',
+      url,
+    ], { maxBuffer: 2 * 1024 * 1024 });
+    const data = JSON.parse(stdout);
+    if (Array.isArray(data)) return { data };
+  } catch (error) {
+    lastError = error;
   }
   throw lastError;
 }
