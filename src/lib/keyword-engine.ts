@@ -781,8 +781,16 @@ export async function GET(request: Request) {
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
 
-    // 자동완성/문맥 후보는 지표 API가 일시적으로 없더라도 유지한다.
-    const validListRaw = relatedListRaw.filter((item: any) => item && item.keyword && !item.keyword.includes('<') && !item.keyword.includes('>'));
+    // 검색광고 API에서 월간 검색량이 실제 집계된 연관어만 노출한다.
+    const validListRaw = relatedListRaw.filter((item: any) =>
+      item &&
+      item.keyword &&
+      item.isRealSearchAdData === true &&
+      Number.isFinite(item.totalSearchVolume) &&
+      item.totalSearchVolume > 0 &&
+      !item.keyword.includes('<') &&
+      !item.keyword.includes('>')
+    );
 
     // 🔑 2. 최우선 순위: 검색한 단어('세계명작' 등)가 직접 포함된 타겟 확장 키워드를 최상단 그룹으로 상위 배치
     validListRaw.sort((a: any, b: any) => (b.totalSearchVolume ?? -1) - (a.totalSearchVolume ?? -1) || a.keyword.localeCompare(b.keyword));

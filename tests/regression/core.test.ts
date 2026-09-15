@@ -114,13 +114,7 @@ test('regression suite', async t => {
       assert.equal(payload.data.monthlyPosts, null);
       assert.equal(payload.data.competitionRatio, null);
       assert.equal(payload.data.grade, 'UNKNOWN');
-      assert.ok(payload.data.relatedKeywords.length > 0);
-      assert.ok(payload.data.relatedKeywords.every((item: { totalSearchVolume: unknown; totalPosts: unknown; competitionRatio: unknown; grade: unknown }) =>
-        item.totalSearchVolume === null &&
-        item.totalPosts === null &&
-        item.competitionRatio === null &&
-        item.grade === 'UNKNOWN'
-      ));
+      assert.deepEqual(payload.data.relatedKeywords, []);
     } finally { axios.get = original; }
   });
   await t.test('OAuth requires signed matching state and verifies provider identity', async () => {
