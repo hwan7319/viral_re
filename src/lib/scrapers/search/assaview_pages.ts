@@ -9,7 +9,10 @@ const encodedKeyword = encodeURIComponent(keyword);
 await (async () => {
       try {
         const seenAssaViewIds = new Set<string>();
-        const maxAssaPages = keyword ? 5 : 30;
+        // A 30-page sequential crawl monopolized the bulk job for several
+        // minutes. Keep the current, recent listing window bounded for both
+        // scheduled and keyword-triggered collection.
+        const maxAssaPages = 5;
         for (let page = 1; page <= maxAssaPages; page++) {
           const pageUrl = `https://assaview.co.kr/campaign_list.php?page=${page}${keyword ? `&search=${encodeURIComponent(keyword)}` : ''}`;
           try {
