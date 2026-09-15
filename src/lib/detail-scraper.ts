@@ -706,8 +706,10 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
 // 🔑 17대 체험단 사이트별 원본 상세 페이지 미션/가이드라인 전용 스크레이퍼
 export async function scrapeDetailMission(url: string, targetSite: string): Promise<string | undefined> {
   if (!url) return undefined;
+  let storedMission: string | undefined;
 
-  // 🔑 0. SQLite DB 사전 등록 미션 최우선 검출 (< 2ms Fast Cache Lookup)
+  // Keep the previous value only as a fallback. The detail page is the source
+  // of truth: returning this value first hid later source-side corrections.
   try {
     const db = await getDB();
     const cidMatch = url.match(/campaign\/([0-9]+)/)?.[1] || url.match(/campaigns\/([0-9]+)/)?.[1];
@@ -719,7 +721,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       [url, url, mbId, revuId]
     );
     if (dbRow && dbRow.mission && dbRow.mission.trim().length > 10) {
-      return dbRow.mission;
+      storedMission = dbRow.mission;
     }
   } catch (e) {}
   
@@ -1174,5 +1176,5 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
   } catch (err: any) {
     console.warn(`[Detail-Scraper] Failed to scrape mission for ${url}:`, err.message);
   }
-  return undefined;
+  return storedMission;
 }
