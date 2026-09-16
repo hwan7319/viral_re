@@ -55,7 +55,7 @@ export const ReviewPlaceScraper: SiteScraper = {
       // not part of the campaign title and previously leaked false-looking
       // values such as "0 / 5명" into search results.
       rawTitle = rawTitle
-        .replace(/\s*D\s*-\s*\d+\s*신청\b/gi, ' ')
+        .replace(/\s*D\s*-\s*\d+\s*신청/gi, ' ')
         .replace(/\s*(?:신청|지원)\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
         .replace(/\s+/g, ' ')
         .trim();
