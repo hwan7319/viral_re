@@ -8,6 +8,36 @@ const HEADERS = {
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 };
 
+export function parseReviewPlaceDeadline(html: string, now = new Date()): string {
+  const $ = cheerio.load(html);
+  $('script, style, noscript').remove();
+  const text = $('body').text().replace(/\s+/g, ' ').trim();
+  const period = text.match(/모집\s*기간\s*(\d{1,2})\s*[.월\-/]\s*(\d{1,2})\s*(?:일)?\s*[~～-]\s*(\d{1,2})\s*[.월\-/]\s*(\d{1,2})/i);
+  if (!period) return '';
+
+  const endMonth = Number(period[3]);
+  const endDay = Number(period[4]);
+  if (endMonth < 1 || endMonth > 12 || endDay < 1 || endDay > 31) return '';
+  const currentMonth = now.getMonth() + 1;
+  const year = now.getFullYear() + (endMonth < currentMonth - 6 ? 1 : 0);
+  return `${year}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
+}
+
+async function enrichDeadlines(campaigns: ScrapedCampaign[]): Promise<void> {
+  const concurrency = 4;
+  for (let offset = 0; offset < campaigns.length; offset += concurrency) {
+    await Promise.all(campaigns.slice(offset, offset + concurrency).map(async campaign => {
+      try {
+        const response = await axios.get(campaign.campaignUrl, { headers: HEADERS, timeout: 6000 });
+        const endDate = parseReviewPlaceDeadline(String(response.data || ''));
+        if (endDate) campaign.endDate = endDate;
+      } catch (error: any) {
+        console.warn(`[ReviewPlace] 상세 마감일 ${campaign.id} skipped:`, error.message);
+      }
+    }));
+  }
+}
+
 export const ReviewPlaceScraper: SiteScraper = {
   siteName: '리뷰플레이스',
 
@@ -53,6 +83,7 @@ export const ReviewPlaceScraper: SiteScraper = {
       }
     });
 
+    await enrichDeadlines(collected);
     return collected;
   },
 
