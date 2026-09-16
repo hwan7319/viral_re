@@ -9,6 +9,17 @@ import CoupangBanner from '@/components/CoupangBanner';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
+const fallbackThumbnail = (title: string, targetSite: string) => {
+  const safeTitle = title.replace(/[<>&]/g, '').slice(0, 32);
+  const safeSite = targetSite.replace(/[<>&]/g, '').slice(0, 20);
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1d4ed8"/><stop offset="1" stop-color="#0f766e"/></linearGradient></defs><rect width="800" height="450" fill="url(#g)"/><text x="48" y="190" fill="white" font-family="Arial, sans-serif" font-size="30" opacity=".82">${safeSite || '체험단 캠페인'}</text><text x="48" y="248" fill="white" font-family="Arial, sans-serif" font-size="38" font-weight="700">${safeTitle || '이미지를 불러올 수 없습니다'}</text><text x="48" y="304" fill="white" font-family="Arial, sans-serif" font-size="23" opacity=".75">원본 상세 페이지에서 확인하세요</text></svg>`)}`;
+};
+
+const replaceBrokenThumbnail = (image: HTMLImageElement, title: string, targetSite: string) => {
+  image.onerror = null;
+  image.src = fallbackThumbnail(title, targetSite);
+};
+
 const campaignDataSourceLabel = (dataSource?: Campaign['dataSource']) => {
   if (dataSource === 'detail') return '상세 원본 검증';
   if (dataSource === 'api') return '공식 API 수집';
@@ -2928,6 +2939,7 @@ export default function Home() {
                         alt={c.title}
                         loading="lazy"
                         referrerPolicy="no-referrer"
+                        onError={(event) => replaceBrokenThumbnail(event.currentTarget, c.title, c.targetSite)}
                         style={{
                           width: '100%', height: '170px', objectFit: 'cover',
                           transition: 'transform 0.4s ease'
@@ -3151,6 +3163,7 @@ export default function Home() {
                   src={selectedCampaign.imageUrl} 
                   alt={selectedCampaign.title}
                   referrerPolicy="no-referrer"
+                  onError={(event) => replaceBrokenThumbnail(event.currentTarget, selectedCampaign.title, selectedCampaign.targetSite)}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div style={{

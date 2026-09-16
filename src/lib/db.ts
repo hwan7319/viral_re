@@ -589,7 +589,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
   try {
     for (const c of campaigns) {
       if (isDummyCampaignItem(c)) continue;
-      const existing = await db.get('SELECT id, title, description, searchKeywords, endDate, dataSource FROM campaigns WHERE id = ?', [c.id]);
+      const existing = await db.get('SELECT id, title, description, imageUrl, searchKeywords, endDate, dataSource FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
         let finalKeywords = existing.searchKeywords || '';
@@ -610,6 +610,10 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
         const existingSource = String(existing.dataSource || 'list');
         const incomingSource = c.dataSource || 'list';
         const finalSource = (sourceRank[existingSource] || 1) > (sourceRank[incomingSource] || 1) ? existingSource : incomingSource;
+        const incomingImageIsFallback = !c.imageUrl || c.imageUrl.includes('/icon.png');
+        const finalImageUrl = incomingImageIsFallback && existing.imageUrl && !existing.imageUrl.includes('/icon.png')
+          ? existing.imageUrl
+          : c.imageUrl;
 
         await db.run(
           `UPDATE campaigns SET 
@@ -621,7 +625,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           WHERE id = ?`,
           [
             c.title, finalDesc, c.platform, c.category,
-            c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
+            c.location || null, c.campaignUrl, finalImageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate || existing.endDate,
             new Date().toISOString(), finalKeywords, finalSource,
             c.mission || null, c.mission || null, c.mission || null,

@@ -87,6 +87,11 @@ test('regression suite', async t => {
     await db.insertOrUpdateCampaigns([fixture('provenance', { dataSource: 'list' })]);
     assert.equal((await db.getCampaignById('provenance'))?.dataSource, 'detail');
   });
+  await t.test('a missing thumbnail from a later sync does not erase a saved source image', async () => {
+    await db.insertOrUpdateCampaigns([fixture('thumbnail', { imageUrl: 'https://images.example.com/original.jpg' })]);
+    await db.insertOrUpdateCampaigns([fixture('thumbnail', { imageUrl: 'https://viral-re.co.kr/icon.png' })]);
+    assert.equal((await db.getCampaignById('thumbnail'))?.imageUrl, 'https://images.example.com/original.jpg');
+  });
   await t.test('sync fails closed and rejects malformed objects', async () => {
     const req = (body: unknown, token = '') => new NextRequest('http://localhost:3000/api/sync', { method: 'POST', headers: { authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     assert.equal((await sync(req({ campaigns: [] }))).status, 503);
