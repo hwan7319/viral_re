@@ -56,6 +56,7 @@ export const ReviewPlaceScraper: SiteScraper = {
       // values such as "0 / 5명" into search results.
       rawTitle = rawTitle
         .replace(/\s*D\s*-\s*\d+\s*신청/gi, ' ')
+        .replace(/\s*0\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
         .replace(/\s*(?:신청|지원)\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
         .replace(/\s+/g, ' ')
         .trim();
