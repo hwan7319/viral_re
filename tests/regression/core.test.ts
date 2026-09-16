@@ -24,6 +24,7 @@ test('regression suite', async t => {
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { parseCloudReviewDetail } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
+  const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
@@ -147,6 +148,10 @@ test('regression suite', async t => {
   await t.test('ReviewPlace detail keeps its published recruitment end date', () => {
     const html = '<main>모집기간 09.16 ~ 09.28 리뷰어발표 09.29</main>';
     assert.equal(parseReviewPlaceDeadline(html, new Date('2026-09-16T00:00:00+09:00')), '2026-09-28');
+  });
+  await t.test('ComeToPlay detail keeps its published reviewer application end date', () => {
+    const html = '<span><em>리뷰어 신청</em> 09.16 ~ 09.21</span><script>var austDay = new Date(1790002799000);</script>';
+    assert.equal(parseComeToPlayDeadline(html, new Date('2026-09-16T00:00:00+09:00')), '2026-09-21');
   });
   await t.test('upstream failures produce unavailable keyword metrics, not invented counts', async () => {
     const original = axios.get;

@@ -2,6 +2,26 @@ import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+
+export function parseComeToPlayDeadline(html: string, now = new Date()): string {
+  const $ = cheerio.load(html);
+  const text = $('body').text().replace(/\s+/g, ' ').trim();
+  const period = text.match(/리뷰어\s*신청\s*(\d{1,2})\s*[./월-]\s*(\d{1,2})\s*(?:일)?\s*[~～-]\s*(\d{1,2})\s*[./월-]\s*(\d{1,2})/i);
+  if (period) {
+    const month = Number(period[3]);
+    const day = Number(period[4]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const year = now.getFullYear() + (month < now.getMonth() + 1 - 6 ? 1 : 0);
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+  }
+  const timestamp = html.match(/new\s+Date\((\d{13})\)/i)?.[1];
+  if (timestamp) {
+    const date = new Date(Number(timestamp));
+    if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10);
+  }
+  return '';
+}
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -102,7 +122,9 @@ await (async () => {
                 benefitText = benefitText.replace(/^제공내역\s*/, '').trim();
                 return {
                   ...item,
-                  description: benefitText || ''
+                  description: benefitText || '',
+                  endDate: parseComeToPlayDeadline(String(dRes.data || '')),
+                  dataSource: 'detail' as const,
                 };
               } catch (e) {
                 return {

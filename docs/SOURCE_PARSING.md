@@ -12,7 +12,7 @@ Each source uses an isolated list adapter. A list adapter must preserve only val
 | 레뷰 | Weble API | API/detail | API date | API/detail |
 | 미블 | public list | detail refresh | list D-day | unavailable unless published |
 | 링블 | 4 categories × 5 pages | cached, 12-way detail requests | detail `모집 기간` | detail when published |
-| 놀러와체험단 | public list | detail refresh | not publicly listed | unavailable unless published |
+| 놀러와체험단 | public list | all current detail pages | detail `리뷰어 신청` period, then countdown timestamp | detail when published |
 | 모블 | public list | detail refresh | not publicly listed | unavailable unless published |
 | 아싸뷰 | current pages | detail refresh | not publicly listed | detail when published |
 | 오마이블로그 | official API | official API | API end date | API when published |
