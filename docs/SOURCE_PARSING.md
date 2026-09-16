@@ -20,4 +20,8 @@ Each source uses an isolated list adapter. A list adapter must preserve only val
 
 `npm run test:live` validates every list adapter for direct URLs, IDs, titles, platforms, and published deadlines. Before changing a parser, run the source-specific live check and add a regression fixture for any new detail pattern. The scheduled full sync runs every ten minutes and uses the same adapters as on-demand search.
 
+## Data provenance
+
+Every stored campaign records the strongest source used for its current values: `list`, `api`, or `detail`. The detail panel exposes this as 목록 수집, 공식 API 수집, or 상세 원본 검증, with the last update time. A later list refresh must not downgrade a campaign already verified from an API or detail page.
+
 Do not turn missing values into future deadlines, fixed quotas, or estimated applicant counts. Remove old rows from a source when its current detail-backed list is authoritative and the old rows have no verifiable deadline.

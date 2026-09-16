@@ -9,6 +9,19 @@ import CoupangBanner from '@/components/CoupangBanner';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
+const campaignDataSourceLabel = (dataSource?: Campaign['dataSource']) => {
+  if (dataSource === 'detail') return '상세 원본 검증';
+  if (dataSource === 'api') return '공식 API 수집';
+  return '목록 수집';
+};
+
+const formatCampaignUpdatedAt = (value?: string) => {
+  if (!value || Number.isNaN(new Date(value).getTime())) return '확인 불가';
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(new Date(value));
+};
+
 interface IconProps {
   className?: string;
   style?: React.CSSProperties;
@@ -3219,6 +3232,14 @@ export default function Home() {
                         ? '구매형 (쿠팡)'
                         : selectedCampaign.location ? `방문 체험 (${selectedCampaign.location})` : '재택/배송형'}
                     </span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>데이터 기준</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{campaignDataSourceLabel(selectedCampaign.dataSource)}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>최근 갱신</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{formatCampaignUpdatedAt(selectedCampaign.updatedAt)}</span>
                   </div>
                 </div>
 

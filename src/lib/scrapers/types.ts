@@ -13,6 +13,7 @@ export interface ScrapedCampaign {
   endDate: string;
   createdAt: string;
   updatedAt: string;
+  dataSource?: 'list' | 'detail' | 'api';
   mission?: string;
 }
 

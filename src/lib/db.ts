@@ -70,6 +70,7 @@ export interface Campaign {
   endDate: string;     // 모집 종료일 (YYYY-MM-DD)
   createdAt: string;   // 수집일 (ISO 8601)
   updatedAt: string;   // 최근 갱신일 (ISO 8601)
+  dataSource?: 'list' | 'detail' | 'api'; // 값 검증 근거
   searchKeywords?: string; // 수집 당시의 검색 키워드 매핑 태그 (예: ",치킨,삼겹살,")
   mission?: string;    // 실제 업체측 리뷰어 미션 안내 / 가이드라인 (예: "지정 키워드 3개 포함, 사진 10장 및 동영상 1개, 지도 첨부 필수")
 }
@@ -140,7 +141,8 @@ async function initializeDB(): Promise<Database> {
       endDate TEXT NOT NULL,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
-      searchKeywords TEXT
+      searchKeywords TEXT,
+      dataSource TEXT DEFAULT 'list'
     );
 
     CREATE TABLE IF NOT EXISTS crawling_logs (
@@ -201,6 +203,10 @@ async function initializeDB(): Promise<Database> {
 
   try {
     await dbInstance.exec('ALTER TABLE campaigns ADD COLUMN mission TEXT');
+  } catch (e) {}
+
+  try {
+    await dbInstance.exec("ALTER TABLE campaigns ADD COLUMN dataSource TEXT DEFAULT 'list'");
   } catch (e) {}
 
   // Empty databases may be seeded; original deadlines must never be extended.
@@ -545,6 +551,10 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
         if (existingDesc && existingDesc !== existingTitle && (!c.description || c.description === c.title || c.description.startsWith(c.title))) {
           finalDesc = existingDesc;
         }
+        const sourceRank: Record<string, number> = { list: 1, api: 2, detail: 3 };
+        const existingSource = globalRef.memoryCampaigns[idx].dataSource || 'list';
+        const incomingSource = c.dataSource || 'list';
+        const finalSource = (sourceRank[existingSource] || 1) > (sourceRank[incomingSource] || 1) ? existingSource : incomingSource;
         
         globalRef.memoryCampaigns[idx] = {
           ...globalRef.memoryCampaigns[idx],
@@ -553,6 +563,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           endDate: c.endDate || globalRef.memoryCampaigns[idx].endDate,
           searchKeywords: finalKeywords,
           mission: c.mission || globalRef.memoryCampaigns[idx].mission,
+          dataSource: finalSource,
           updatedAt: new Date().toISOString()
         };
         updated++;
@@ -578,7 +589,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
   try {
     for (const c of campaigns) {
       if (isDummyCampaignItem(c)) continue;
-      const existing = await db.get('SELECT id, title, description, searchKeywords, endDate FROM campaigns WHERE id = ?', [c.id]);
+      const existing = await db.get('SELECT id, title, description, searchKeywords, endDate, dataSource FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
         let finalKeywords = existing.searchKeywords || '';
@@ -595,20 +606,24 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
         if (existingDesc && existingDesc !== existingTitle && (!c.description || c.description === c.title || c.description.startsWith(c.title))) {
           finalDesc = existingDesc;
         }
+        const sourceRank: Record<string, number> = { list: 1, api: 2, detail: 3 };
+        const existingSource = String(existing.dataSource || 'list');
+        const incomingSource = c.dataSource || 'list';
+        const finalSource = (sourceRank[existingSource] || 1) > (sourceRank[incomingSource] || 1) ? existingSource : incomingSource;
 
         await db.run(
           `UPDATE campaigns SET 
             title = ?, description = ?, platform = ?, category = ?, 
             location = ?, campaignUrl = ?, imageUrl = ?, targetSite = ?, 
             limitCount = ?, applyCount = ?, startDate = ?, endDate = ?, 
-            updatedAt = ?, searchKeywords = ?,
+            updatedAt = ?, searchKeywords = ?, dataSource = ?,
             mission = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE mission END
           WHERE id = ?`,
           [
             c.title, finalDesc, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate || existing.endDate,
-            new Date().toISOString(), finalKeywords,
+            new Date().toISOString(), finalKeywords, finalSource,
             c.mission || null, c.mission || null, c.mission || null,
             c.id
           ]
@@ -619,13 +634,13 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           `INSERT INTO campaigns (
             id, title, description, platform, category, location, 
             campaignUrl, imageUrl, targetSite, limitCount, applyCount, 
-            startDate, endDate, createdAt, updatedAt, searchKeywords, mission
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            startDate, endDate, createdAt, updatedAt, searchKeywords, mission, dataSource
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             c.id, c.title, c.description, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate,
-            c.createdAt, c.updatedAt, c.searchKeywords || null, c.mission || null
+            c.createdAt, c.updatedAt, c.searchKeywords || null, c.mission || null, c.dataSource || 'list'
           ]
         );
         inserted++;

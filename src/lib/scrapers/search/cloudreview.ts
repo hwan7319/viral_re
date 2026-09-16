@@ -36,6 +36,7 @@ async function enrichCampaignDetails(campaigns: Campaign[]): Promise<void> {
           campaign.applyCount = facts.applyCount;
         }
         campaign.platform = facts.platform;
+        campaign.dataSource = 'detail';
       } catch (error: any) {
         console.warn(`[Parallel-Crawl] 클라우드리뷰 상세 ${campaign.id} skipped:`, error.message);
       }

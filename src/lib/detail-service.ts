@@ -20,7 +20,8 @@ export async function refreshCampaignDetail(id: string) {
       scrapeDetailBenefit(campaign.campaignUrl, campaign.targetSite),
       scrapeDetailCounts(campaign.campaignUrl, campaign.targetSite, campaign.title),
     ]);
-    await insertOrUpdateCampaigns([{ ...campaign, mission: mission || campaign.mission, description: realBenefit || campaign.description, applyCount: counts.applyCount ?? campaign.applyCount, limitCount: counts.limitCount ?? campaign.limitCount }]);
+    const hasVerifiedDetail = Boolean(mission || realBenefit || counts.applyCount !== undefined || counts.limitCount !== undefined);
+    await insertOrUpdateCampaigns([{ ...campaign, mission: mission || campaign.mission, description: realBenefit || campaign.description, applyCount: counts.applyCount ?? campaign.applyCount, limitCount: counts.limitCount ?? campaign.limitCount, dataSource: hasVerifiedDetail ? 'detail' : campaign.dataSource }]);
     const data = { success: true, mission: mission || campaign.mission || null, realBenefit: realBenefit || campaign.description || null, applyCount: counts.applyCount ?? campaign.applyCount, limitCount: counts.limitCount ?? campaign.limitCount };
     if (cache.size >= 500) cache.delete(cache.keys().next().value!);
     cache.set(id, { time: now, updatedAt: campaign.updatedAt, data });

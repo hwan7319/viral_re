@@ -31,6 +31,7 @@ async function enrichDeadlines(campaigns: ScrapedCampaign[]): Promise<void> {
         const response = await axios.get(campaign.campaignUrl, { headers: HEADERS, timeout: 6000 });
         const endDate = parseReviewPlaceDeadline(String(response.data || ''));
         if (endDate) campaign.endDate = endDate;
+        campaign.dataSource = 'detail';
       } catch (error: any) {
         console.warn(`[ReviewPlace] 상세 마감일 ${campaign.id} skipped:`, error.message);
       }

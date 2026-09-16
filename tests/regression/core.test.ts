@@ -73,6 +73,11 @@ test('regression suite', async t => {
     await db.insertOrUpdateCampaigns([fixture('concurrent-0', { endDate: '' })]);
     assert.equal((await db.getCampaignById('concurrent-0'))?.endDate, '2099-12-31');
   });
+  await t.test('detail provenance is retained when a later list sync arrives', async () => {
+    await db.insertOrUpdateCampaigns([fixture('provenance', { dataSource: 'detail' })]);
+    await db.insertOrUpdateCampaigns([fixture('provenance', { dataSource: 'list' })]);
+    assert.equal((await db.getCampaignById('provenance'))?.dataSource, 'detail');
+  });
   await t.test('sync fails closed and rejects malformed objects', async () => {
     const req = (body: unknown, token = '') => new NextRequest('http://localhost:3000/api/sync', { method: 'POST', headers: { authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     assert.equal((await sync(req({ campaigns: [] }))).status, 503);
