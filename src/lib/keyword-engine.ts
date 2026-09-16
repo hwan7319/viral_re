@@ -324,7 +324,9 @@ export async function GET(request: Request) {
 
     const [blogRes, mainStats, adRes] = await Promise.all([
       fetchBlogMain(query, clientId, clientSecret),
-      fetchBlogStats(query, clientId, clientSecret, 10),
+      // Three pages retain a meaningful recent publishing sample while avoiding
+      // ten sequential Naver Blog API calls on every uncached search.
+      fetchBlogStats(query, clientId, clientSecret, 3),
 
       (async () => {
         if (!customerId || !searchAdApiKey || !searchAdSecretKey) return null;
@@ -355,9 +357,11 @@ export async function GET(request: Request) {
               subWords.push(detectedCategoryAnchor);
             }
 
-            for (const subW of subWords) {
+            // Sub-word hints are independent. Keep this fan-out small to avoid
+            // SearchAd rate limiting while removing needless serial latency.
+            const subResults = await Promise.all(subWords.slice(0, 3).map(async subW => {
               const cleanSub = subW.replace(/\s+/g, '');
-              if (!cleanSub || cleanSub === cleanHintQuery) continue;
+              if (!cleanSub || cleanSub === cleanHintQuery) return [];
               try {
                 const ts2 = Date.now().toString();
                 const sig2 = generateSearchAdSignature(ts2, method, uri, searchAdSecretKey);
@@ -372,15 +376,12 @@ export async function GET(request: Request) {
                   timeout: 2000,
                   httpsAgent,
                 });
-                const subList = subRes.data?.keywordList || [];
-                subList.forEach((sk: any) => {
-                  if (sk && sk.relKeyword && !list.some((existing: any) => existing.relKeyword === sk.relKeyword)) {
-                    list.push(sk);
-                  }
-                });
-                if (list.length >= 30) break;
-              } catch (e) {}
-            }
+                return subRes.data?.keywordList || [];
+              } catch (e) { return []; }
+            }));
+            subResults.flat().forEach((sk: any) => {
+              if (list.length < 30 && sk?.relKeyword && !list.some((existing: any) => existing.relKeyword === sk.relKeyword)) list.push(sk);
+            });
           }
 
           return { data: { keywordList: list } };
@@ -669,22 +670,19 @@ export async function GET(request: Request) {
     const missingZeroVolCandidates = filteredCandidatesList.filter(item => item.total === 0 && (item.priority === 1 || item.priority === 2));
     if (missingZeroVolCandidates.length > 0) {
       const targets = missingZeroVolCandidates;
-      const chunkSize = 5;
-      for (let i = 0; i < targets.length; i += chunkSize) {
-        const chunk = targets.slice(i, i + chunkSize);
-        const batchMap = await fetchSearchAdBatch(chunk.map(c => c.keyword), customerId, searchAdApiKey, searchAdSecretKey);
-        chunk.forEach(item => {
-          const key = item.keyword.replace(/\s+/g, '').toLowerCase();
-          const adData = batchMap.get(key);
-          if (adData && adData.total > 0) {
-            item.pc = adData.pc;
-            item.mobile = adData.mobile;
-            item.total = adData.total;
-          }
-        });
-        if (i + chunkSize < targets.length) {
-          await new Promise(r => setTimeout(r, 40));
-        }
+      const chunkSize = 10;
+      for (let i = 0; i < targets.length; i += chunkSize * 3) {
+        await Promise.all(targets.slice(i, i + chunkSize * 3).reduce<any[][]>((chunks, item, index) => {
+          const bucket = Math.floor(index / chunkSize);
+          (chunks[bucket] ||= []).push(item);
+          return chunks;
+        }, []).map(async chunk => {
+          const batchMap = await fetchSearchAdBatch(chunk.map(c => c.keyword), customerId, searchAdApiKey, searchAdSecretKey);
+          chunk.forEach(item => {
+            const adData = batchMap.get(item.keyword.replace(/\s+/g, '').toLowerCase());
+            if (adData && adData.total > 0) { item.pc = adData.pc; item.mobile = adData.mobile; item.total = adData.total; }
+          });
+        }));
       }
     }
 
@@ -703,11 +701,13 @@ export async function GET(request: Request) {
     });
 
     // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
-    const candidateKeywordsList = filteredCandidatesList.slice(0, 100);
+    // The page displays the leading results first. Enriching the top 40 keeps
+    // the ranking useful while preventing up to 100 separate Blog API calls.
+    const candidateKeywordsList = filteredCandidatesList.slice(0, 40);
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 5;
+    const chunkSize = 10;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);
@@ -775,9 +775,7 @@ export async function GET(request: Request) {
         })
       );
       chunkResultsRaw.push(...chunkRes);
-      if (i + chunkSize < candidateKeywordsList.length) {
-        await new Promise(r => setTimeout(r, 200));
-      }
+      if (i + chunkSize < candidateKeywordsList.length) await new Promise(r => setTimeout(r, 60));
     }
 
     const relatedListRaw = chunkResultsRaw.filter(Boolean);
