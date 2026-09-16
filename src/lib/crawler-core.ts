@@ -1,7 +1,7 @@
 import { deadlineFromText } from './campaign-values';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { insertOrUpdateCampaigns, Campaign } from './db';
+import { insertOrUpdateCampaigns, logCrawling, Campaign } from './db';
 import { collectCampaigns, collectCampaignsWithReport, detectPlatform } from './crawler-parallel';
 import { fetchRevuLiveCampaigns } from './revu_live_scraper';
 import { getMibleSessionCookie } from './mible_auth';
@@ -884,7 +884,16 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
   // The scheduled bulk job must refresh every maintained source, not only the
   // sources implemented inline above. Source adapters may have richer list or
   // detail fields, so retain an existing non-placeholder value when merging.
-  const { campaigns: parallelCampaigns, sources } = await collectCampaignsWithReport('', true);
+  // These three sources are already collected above with broader pagination or
+  // richer mission data. Skip their narrower parallel adapters to avoid a
+  // second request for the same source on every ten-minute scheduled run.
+  const inlineSites = ['강남맛집', '디너의여왕', '레뷰'] as const;
+  const inlineHealth = inlineSites.map(targetSite => {
+    const collectedCount = allCampaigns.filter(campaign => campaign.targetSite === targetSite).length;
+    return { targetSite, status: collectedCount ? 'SUCCESS' as const : 'EMPTY' as const, collectedCount };
+  });
+  await Promise.all(inlineHealth.map(source => logCrawling(source.targetSite, source.status, source.collectedCount)));
+  const { campaigns: parallelCampaigns, sources } = await collectCampaignsWithReport('', true, inlineSites);
   console.log(`[Core] Source health: ${sources.map(source => `${source.targetSite}=${source.status}(${source.collectedCount})`).join(', ')}`);
   const merged = new Map(allCampaigns.map(campaign => [campaign.id, campaign]));
   for (const campaign of parallelCampaigns) {

@@ -31,12 +31,13 @@ export type SourceCollectionResult = {
   errorMessage?: string;
 };
 
-export async function collectCampaignsWithReport(keyword: string, recordHealth = false): Promise<{ campaigns: Campaign[]; sources: SourceCollectionResult[] }> {
+export async function collectCampaignsWithReport(keyword: string, recordHealth = false, excludedSites: readonly string[] = []): Promise<{ campaigns: Campaign[]; sources: SourceCollectionResult[] }> {
   const outcomes: SourceCollectionResult[] = [];
   const collected = new Map<string, Campaign>();
+  const scheduledScrapers = scrapers.filter(([targetSite]) => !excludedSites.includes(targetSite));
   // Limit concurrent sites, not the number of returned campaigns.
-  for (let offset = 0; offset < scrapers.length; offset += 3) {
-    const results = await Promise.all(scrapers.slice(offset, offset + 3).map(async ([targetSite, scrape]) => {
+  for (let offset = 0; offset < scheduledScrapers.length; offset += 3) {
+    const results = await Promise.all(scheduledScrapers.slice(offset, offset + 3).map(async ([targetSite, scrape]) => {
       const started = Date.now();
       try {
         const campaigns = await scrape(keyword);
