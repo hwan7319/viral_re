@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
+import { detectPlatform } from '../scraper-utils';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -28,10 +29,9 @@ export const ReviewPlaceScraper: SiteScraper = {
       const numMatch = href.match(/id=(\d+)/);
       const cpId = numMatch ? numMatch[1] : `${i}`;
 
-      let platform = 'blog';
-      if (rawTitle.includes('인스타') || rawTitle.includes('릴스')) platform = 'instagram';
-      else if (rawTitle.includes('기자단')) platform = 'reporter';
-      else if (rawTitle.includes('스마트스토어') || rawTitle.includes('구매평')) platform = 'coupang';
+      // 제목에 표시된 참여 매체를 그대로 사용한다. 쿠팡 구매평과 블로그가 함께
+      // 요구되는 공고도 구매형으로 분류해 카드와 체험 방식이 실제 모집 형태를 따른다.
+      const platform = detectPlatform(rawTitle);
 
       if (rawTitle && rawTitle.length > 3) {
         collected.push({

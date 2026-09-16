@@ -3189,7 +3189,11 @@ export default function Home() {
                 }}>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 정원</span>
-                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{selectedCampaign.limitCount}명 (현재 {selectedCampaign.applyCount}명 신청)</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>
+                      {selectedCampaign.limitCount > 0
+                        ? `${selectedCampaign.limitCount}명 (현재 ${selectedCampaign.applyCount}명 신청)`
+                        : '확인 불가'}
+                    </span>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>수집 플랫폼</span>
@@ -3197,7 +3201,7 @@ export default function Home() {
                   </div>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>모집 마감일</span>
-                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{selectedCampaign.endDate}</span>
+                    <span style={{ fontWeight: 400, fontSize: '0.875rem' }}>{selectedCampaign.endDate || '확인 불가'}</span>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block' }}>체험 방식</span>
