@@ -51,6 +51,14 @@ export const ReviewPlaceScraper: SiteScraper = {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li, tr');
       let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      // The card link includes live countdown and applicant UI text. They are
+      // not part of the campaign title and previously leaked false-looking
+      // values such as "0 / 5명" into search results.
+      rawTitle = rawTitle
+        .replace(/\s*D\s*-\s*\d+\s*신청\b/gi, ' ')
+        .replace(/\s*(?:신청|지원)\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
