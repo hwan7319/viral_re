@@ -2,6 +2,47 @@ import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+
+type CloudReviewDetail = Pick<Campaign, 'endDate' | 'applyCount' | 'limitCount' | 'platform'>;
+
+export function parseCloudReviewDetail(text: string, fallbackPlatform: Campaign['platform']): CloudReviewDetail {
+  const $ = cheerio.load(text);
+  $('script, style, noscript').remove();
+  const normalized = $('body').text().replace(/\s+/g, ' ').trim();
+  const period = normalized.match(/모집\s*기간\s*(?:20)?(\d{2})[.년\-/\s]+(\d{1,2})[.월\-/\s]+(\d{1,2})\s*(?:일)?\s*[~～-]\s*(?:20)?(\d{2})[.년\-/\s]+(\d{1,2})[.월\-/\s]+(\d{1,2})/i);
+  const applicants = normalized.match(/신청자?\s*([\d,]+)\s*\/\s*([\d,]+)/i);
+  const type = normalized.match(/캠페인\s*타입\s*([^\s]+)/i)?.[1] || '';
+
+  return {
+    endDate: period
+      ? `20${period[4]}-${period[5].padStart(2, '0')}-${period[6].padStart(2, '0')}`
+      : '',
+    applyCount: applicants ? Number(applicants[1].replace(/,/g, '')) : 0,
+    limitCount: applicants ? Number(applicants[2].replace(/,/g, '')) : 0,
+    platform: type ? detectPlatform(type, type) : fallbackPlatform,
+  };
+}
+
+async function enrichCampaignDetails(campaigns: Campaign[]): Promise<void> {
+  const concurrency = 4;
+  for (let offset = 0; offset < campaigns.length; offset += concurrency) {
+    await Promise.all(campaigns.slice(offset, offset + concurrency).map(async campaign => {
+      try {
+        const response = await axios.get(campaign.campaignUrl, { headers: HEADERS, timeout: 6000 });
+        const facts = parseCloudReviewDetail(String(response.data || ''), campaign.platform);
+        if (facts.endDate) campaign.endDate = facts.endDate;
+        if (facts.limitCount > 0) {
+          campaign.limitCount = facts.limitCount;
+          campaign.applyCount = facts.applyCount;
+        }
+        campaign.platform = facts.platform;
+      } catch (error: any) {
+        console.warn(`[Parallel-Crawl] 클라우드리뷰 상세 ${campaign.id} skipped:`, error.message);
+      }
+    }));
+  }
+}
+
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -61,6 +102,7 @@ await (async () => {
       } catch (err: any) {
         console.warn('[Parallel-Crawl] 클라우드리뷰 failed:', err.message);
       }
-    })();
+})();
+await enrichCampaignDetails(collected);
 return collected;
 }

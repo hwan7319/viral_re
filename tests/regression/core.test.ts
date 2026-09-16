@@ -22,6 +22,7 @@ test('regression suite', async t => {
   const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
+  const { parseCloudReviewDetail } = await import('../../src/lib/scrapers/search/cloudreview');
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
@@ -115,8 +116,13 @@ test('regression suite', async t => {
     const lowerBound = summarizeAvailableMonthlyPosts(10000, [
       { postdate: '20260914' }, { postdate: '20260913' }, { postdate: '20260912' },
     ], new Date('2026-09-14'));
-    assert.equal(lowerBound.monthlyPosts, 3);
-    assert.equal(lowerBound.monthlyPostsIsLowerBound, true);
+    assert.equal(lowerBound.monthlyPosts, 13);
+    assert.equal(lowerBound.monthlyPostsIsLowerBound, false);
+    assert.equal(lowerBound.monthlyPostsEstimated, true);
+  });
+  await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
+    const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');
+    assert.deepEqual(detail, { endDate: '2026-09-21', applyCount: 672, limitCount: 10, platform: 'blog' });
   });
   await t.test('upstream failures produce unavailable keyword metrics, not invented counts', async () => {
     const original = axios.get;

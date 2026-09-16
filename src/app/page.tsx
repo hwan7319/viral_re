@@ -768,7 +768,7 @@ export default function Home() {
   const [isHistoryEnabled, setIsHistoryEnabled] = useState(true); // 최근 검색 기록 허용 여부
   const [isTypeOpen, setIsTypeOpen] = useState(false); // 모집유형 상세검색 아코디언 토글
   const [isPlatformOpen, setIsPlatformOpen] = useState(false); // 플랫폼 상세검색 아코디언 토글
-  const [trendingKeywords, setTrendingKeywords] = useState<{ rank: number; word: string; isNew?: boolean }[]>([]); // 🔑 실시간 인기 검색어 상태
+  const [trendingKeywords, setTrendingKeywords] = useState<{ rank: number; word: string; isNew?: boolean; tagType?: 'new' | 'up' | 'down' | 'same'; tagLabel?: string }[]>([]); // 🔑 실시간 인기 검색어 상태
   const [activePlatform, setActivePlatform] = useState('all');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeLocation, setActiveLocation] = useState('all');
@@ -1877,6 +1877,11 @@ export default function Home() {
     }).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    const interval = window.setInterval(fetchTrendingKeywords, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const handleSocialLogin = (provider: string) => {
     window.location.assign(`/api/auth/login/${encodeURIComponent(provider)}`);
   };
@@ -2513,7 +2518,7 @@ export default function Home() {
                       <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right', flex: '0 1 auto' }}>
                         {trendingKeywords[currentTrendIndex]?.word}
                       </span>
-                      {trendingKeywords[currentTrendIndex]?.isNew && (
+                      {trendingKeywords[currentTrendIndex]?.isNew ? (
                         <span 
                           style={{
                             fontSize: '0.6rem',
@@ -2533,7 +2538,11 @@ export default function Home() {
                         >
                           NEW
                         </span>
-                      )}
+                      ) : trendingKeywords[currentTrendIndex]?.tagType === 'up' || trendingKeywords[currentTrendIndex]?.tagType === 'down' ? (
+                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: trendingKeywords[currentTrendIndex]?.tagType === 'up' ? '#3b82f6' : '#ef4444', flexShrink: 0 }}>
+                          {trendingKeywords[currentTrendIndex]?.tagLabel}
+                        </span>
+                      ) : null}
                     </div>
                   ) : (
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>인기 검색어 로딩 중...</span>
@@ -2604,15 +2613,15 @@ export default function Home() {
                         <span style={{ color: 'var(--text-primary)', fontWeight: item.rank <= 3 ? 600 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                           {item.word}
                         </span>
-                        {(item as any).tagType === 'hot' ? (
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#ef4444', flexShrink: 0, marginLeft: 'auto' }}>
-                            🔥 HOT
-                          </span>
-                        ) : (item as any).tagType === 'up' ? (
+                        {item.tagType === 'up' ? (
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3b82f6', flexShrink: 0, marginLeft: 'auto' }}>
-                            {(item as any).tagLabel || '▲'}
+                            {item.tagLabel || '▲'}
                           </span>
-                        ) : (item as any).tagType === 'new' ? (
+                        ) : item.tagType === 'down' ? (
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#ef4444', flexShrink: 0, marginLeft: 'auto' }}>
+                            {item.tagLabel || '▼'}
+                          </span>
+                        ) : item.tagType === 'new' ? (
                           <span 
                             style={{
                               fontSize: '0.6rem',
@@ -3471,11 +3480,11 @@ export default function Home() {
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월 블로그 포스팅 수</span>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
-                          (최근 30일 확인 발행량)
+                          {keywordData.monthlyPostsEstimated ? '(최근 발행 추이 기반 자체 추정)' : '(최근 30일 확인 발행량)'}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
                           <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10b981', fontVariantNumeric: 'tabular-nums' }}>
-                            {displayMetric(keywordData.monthlyPosts)}{keywordData.monthlyPostsIsLowerBound ? '+' : ''}
+                            {displayMetric(keywordData.monthlyPosts)}
                           </span>
                           <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10b981' }}>건/월</span>
                         </div>
@@ -3690,7 +3699,7 @@ export default function Home() {
                                 {displayMetric(item.totalSearchVolume)}회
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {displayMetric(item.monthlyPosts)}건{item.monthlyPostsIsLowerBound ? ' 이상' : ''}/월
+                                {displayMetric(item.monthlyPosts)}건/월{item.monthlyPostsEstimated ? ' (추정)' : ''}
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: 'var(--text-secondary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {displayMetric(item.totalPosts)}건
@@ -3770,7 +3779,7 @@ export default function Home() {
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>월 포스팅: </span>
-                              <strong style={{ color: '#10b981' }}>{displayMetric(item.monthlyPosts)}건{item.monthlyPostsIsLowerBound ? ' 이상' : ''}</strong>
+                              <strong style={{ color: '#10b981' }}>{displayMetric(item.monthlyPosts)}건{item.monthlyPostsEstimated ? ' (추정)' : ''}</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>누적 포스팅: </span>

@@ -180,6 +180,12 @@ async function initializeDB(): Promise<Database> {
       searchedAt TEXT DEFAULT (datetime('now', 'localtime'))
     );
 
+    CREATE TABLE IF NOT EXISTS trending_rank_snapshots (
+      keyword TEXT PRIMARY KEY,
+      rank INTEGER NOT NULL,
+      seenAt TEXT NOT NULL
+    );
+
     -- 속도 향상을 위한 인덱스 생성
     CREATE INDEX IF NOT EXISTS idx_campaigns_search ON campaigns (title, description);
     CREATE INDEX IF NOT EXISTS idx_campaigns_filters ON campaigns (platform, category, targetSite);
@@ -823,6 +829,55 @@ export async function getTrendingKeywords(): Promise<{ word: string; count: numb
   }
 
   return ranked;
+}
+
+export type TrendingKeyword = {
+  word: string;
+  count: number;
+  rank: number;
+  tagType: 'new' | 'up' | 'down' | 'same';
+  tagLabel: string;
+  isNew: boolean;
+};
+
+// Compare the current ranking with the last response saved by this instance.
+// Seed words are only a no-data fallback and never presented as newly trending.
+export async function getTrendingKeywordsWithChanges(): Promise<TrendingKeyword[]> {
+  const ranked = await getTrendingKeywords();
+  const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER);
+  const previous = new Map<string, number>();
+
+  if (isServerless) {
+    const snapshots = globalRef.trendingRankSnapshots || {};
+    Object.entries(snapshots).forEach(([word, rank]) => previous.set(word, Number(rank)));
+    globalRef.trendingRankSnapshots = Object.fromEntries(ranked.map((item, index) => [item.word, index + 1]));
+  } else {
+    const db = await getDB();
+    const rows = await db.all<{ keyword: string; rank: number }[]>('SELECT keyword, rank FROM trending_rank_snapshots');
+    rows.forEach(row => previous.set(row.keyword, row.rank));
+    await db.exec('BEGIN IMMEDIATE');
+    try {
+      await db.run('DELETE FROM trending_rank_snapshots');
+      const seenAt = new Date().toISOString();
+      for (let index = 0; index < ranked.length; index += 1) {
+        await db.run('INSERT INTO trending_rank_snapshots (keyword, rank, seenAt) VALUES (?, ?, ?)', [ranked[index].word, index + 1, seenAt]);
+      }
+      await db.exec('COMMIT');
+    } catch (error) {
+      await db.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  return ranked.map((item, index) => {
+    const rank = index + 1;
+    const priorRank = previous.get(item.word);
+    const isOrganic = item.count > 0;
+    if (isOrganic && priorRank === undefined) return { ...item, rank, tagType: 'new', tagLabel: 'NEW', isNew: true };
+    if (isOrganic && priorRank && priorRank > rank) return { ...item, rank, tagType: 'up', tagLabel: `▲ ${priorRank - rank}`, isNew: false };
+    if (isOrganic && priorRank && priorRank < rank) return { ...item, rank, tagType: 'down', tagLabel: `▼ ${rank - priorRank}`, isNew: false };
+    return { ...item, rank, tagType: 'same', tagLabel: '-', isNew: false };
+  });
 }
 
 export async function getTotalCampaignCount(): Promise<number> {

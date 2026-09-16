@@ -4,6 +4,7 @@ export interface BlogStats {
   totalPosts: number;
   monthlyPosts: number | null;
   monthlyPostsIsLowerBound: boolean;
+  monthlyPostsEstimated: boolean;
   recentDate: string;
   available: boolean;
 }
@@ -31,6 +32,7 @@ export function summarizeBlogSample(total: number, items: BlogItem[], now = new 
     totalPosts: total,
     monthlyPosts: complete ? dates.filter(date => date >= cutoff).length : null,
     monthlyPostsIsLowerBound: false,
+    monthlyPostsEstimated: false,
     recentDate: recent ? `${recent.slice(0, 4)}.${recent.slice(4, 6)}.${recent.slice(6, 8)}` : '-',
     available: true,
   };
@@ -47,10 +49,24 @@ export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[],
   }).length;
   if (observedRecentPosts === 0) return exact;
 
+  // Naver returns newest posts first and caps a query at 1,000 results. When
+  // the 30-day boundary is outside that window, estimate a 30-day run rate
+  // from the observed publishing cadence. A seven-day minimum window avoids
+  // turning a single busy day into an implausibly large monthly value.
+  const observedDates = items
+    .map(item => parsePostDate(item.postdate || ''))
+    .filter((timestamp): timestamp is number => Number.isFinite(timestamp));
+  const newest = Math.max(...observedDates);
+  const oldest = Math.min(...observedDates);
+  const observedDays = Math.max(1, Math.floor((newest - oldest) / DAY_MS) + 1);
+  const estimationWindowDays = Math.max(7, observedDays);
+  const monthlyEstimate = Math.min(total, Math.max(observedRecentPosts, Math.round((observedRecentPosts * 30) / estimationWindowDays)));
+
   return {
     ...exact,
-    monthlyPosts: observedRecentPosts,
-    monthlyPostsIsLowerBound: true,
+    monthlyPosts: monthlyEstimate,
+    monthlyPostsIsLowerBound: false,
+    monthlyPostsEstimated: true,
   };
 }
 
@@ -117,6 +133,7 @@ export async function fetchBlogStats(
     totalPosts: 0,
     monthlyPosts: null,
     monthlyPostsIsLowerBound: false,
+    monthlyPostsEstimated: false,
     recentDate: '-',
     available: false,
   };
