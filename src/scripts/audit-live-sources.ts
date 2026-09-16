@@ -16,7 +16,7 @@ import { ReviewPlaceScraper } from '../lib/scrapers/06_reviewplace';
 const keyword = process.argv[2] === '--all' ? '' : (process.argv[2] || '맛집');
 const timeoutMs = 45_000;
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
-const sources: Array<[string, string, (keyword: string) => Promise<Campaign[]>]> = [
+const sources: Array<[string, string, (keyword: string) => Promise<Campaign[]>, number?]> = [
   ['강남맛집', 'gangnam', gangnam],
   ['디너의여왕', 'dinnerqueen', dinnerqueen],
   ['포블로그', 'fourblog', fourblog],
@@ -24,7 +24,9 @@ const sources: Array<[string, string, (keyword: string) => Promise<Campaign[]>]>
   ['클라우드리뷰', 'cloudreview', cloudreview],
   ['레뷰', 'revu', revu],
   ['미블', 'mible', mible],
-  ['링블', 'ringble_categories', ringble],
+  // Ringble verifies deadlines from each detail page (up to 20 category pages),
+  // so it has a larger but bounded source-specific budget than list-only sites.
+  ['링블', 'ringble_categories', ringble, 90_000],
   ['놀러와체험단', 'cometoplay', cometoplay],
   ['모블', 'modublog', modublog],
   ['아싸뷰', 'assaview_pages', assaview],
@@ -37,12 +39,13 @@ function validHttpUrl(value: string) {
   catch { return false; }
 }
 
-async function audit([site, module, scrape]: typeof sources[number]) {
+async function audit([site, module, scrape, sourceTimeoutMs]: typeof sources[number]) {
   const started = Date.now();
+  const limit = sourceTimeoutMs || timeoutMs;
   try {
     const rows = await Promise.race([
       scrape(keyword),
-      new Promise<Campaign[]>((_, reject) => setTimeout(() => reject(new Error(`timeout after ${timeoutMs}ms`)), timeoutMs)),
+      new Promise<Campaign[]>((_, reject) => setTimeout(() => reject(new Error(`timeout after ${limit}ms`)), limit)),
     ]);
     const uniqueIds = new Set(rows.map(row => row.id));
     const valid = rows.filter(row => row.id && row.title && validHttpUrl(row.campaignUrl));
