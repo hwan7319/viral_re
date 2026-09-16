@@ -24,4 +24,8 @@ Each source uses an isolated list adapter. A list adapter must preserve only val
 
 Every stored campaign records the strongest source used for its current values: `list`, `api`, or `detail`. The detail panel exposes this as 목록 수집, 공식 API 수집, or 상세 원본 검증, with the last update time. A later list refresh must not downgrade a campaign already verified from an API or detail page.
 
+## Scheduled source health
+
+Each full synchronization writes one health record per source to `crawling_logs`: `SUCCESS`, `EMPTY`, or `FAILED`, together with item count, duration in the server log, and any error message. Read the latest result for every source from `GET /api/source-health`. On-demand keyword searches do not alter this health record.
+
 Do not turn missing values into future deadlines, fixed quotas, or estimated applicant counts. Remove old rows from a source when its current detail-backed list is authoritative and the old rows have no verifiable deadline.

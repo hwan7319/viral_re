@@ -2,7 +2,7 @@ import { deadlineFromText } from './campaign-values';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { insertOrUpdateCampaigns, Campaign } from './db';
-import { collectCampaigns, detectPlatform } from './crawler-parallel';
+import { collectCampaigns, collectCampaignsWithReport, detectPlatform } from './crawler-parallel';
 import { fetchRevuLiveCampaigns } from './revu_live_scraper';
 import { getMibleSessionCookie } from './mible_auth';
 
@@ -884,7 +884,8 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
   // The scheduled bulk job must refresh every maintained source, not only the
   // sources implemented inline above. Source adapters may have richer list or
   // detail fields, so retain an existing non-placeholder value when merging.
-  const parallelCampaigns = await collectCampaigns('');
+  const { campaigns: parallelCampaigns, sources } = await collectCampaignsWithReport('', true);
+  console.log(`[Core] Source health: ${sources.map(source => `${source.targetSite}=${source.status}(${source.collectedCount})`).join(', ')}`);
   const merged = new Map(allCampaigns.map(campaign => [campaign.id, campaign]));
   for (const campaign of parallelCampaigns) {
     const existing = merged.get(campaign.id);

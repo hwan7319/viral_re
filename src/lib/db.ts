@@ -676,7 +676,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
 }
 
 // 크롤링 로그 기록 저장
-export async function logCrawling(targetSite: string, status: 'SUCCESS' | 'FAILED', collectedCount: number, errorMessage?: string): Promise<void> {
+export async function logCrawling(targetSite: string, status: 'SUCCESS' | 'EMPTY' | 'FAILED', collectedCount: number, errorMessage?: string): Promise<void> {
   try {
     const db = await getDB();
     await db.run(
@@ -687,6 +687,28 @@ export async function logCrawling(targetSite: string, status: 'SUCCESS' | 'FAILE
   } catch (error) {
     console.error('Failed to log crawling history:', error);
   }
+}
+
+export interface CrawlingHealth {
+  targetSite: string;
+  status: 'SUCCESS' | 'EMPTY' | 'FAILED';
+  collectedCount: number;
+  errorMessage: string | null;
+  executedAt: string;
+}
+
+export async function getCrawlingHealth(): Promise<CrawlingHealth[]> {
+  const db = await getDB();
+  return db.all<CrawlingHealth[]>(`
+    SELECT l.targetSite, l.status, l.collectedCount, l.errorMessage, l.executedAt
+    FROM crawling_logs l
+    INNER JOIN (
+      SELECT targetSite, MAX(id) AS latestId
+      FROM crawling_logs
+      GROUP BY targetSite
+    ) latest ON latest.latestId = l.id
+    ORDER BY l.targetSite ASC
+  `);
 }
 
 // 🔑 회원 정보 Upsert

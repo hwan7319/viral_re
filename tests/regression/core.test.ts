@@ -41,6 +41,15 @@ test('regression suite', async t => {
     assert.deepEqual(ranked[0], { word: '신규인기검색어', count: 2 });
     assert.equal(ranked.length, 10);
   });
+  await t.test('source health retains the latest result for each source', async () => {
+    await db.logCrawling('테스트 출처', 'FAILED', 0, 'temporary upstream error');
+    await db.logCrawling('테스트 출처', 'SUCCESS', 12);
+    const health = await db.getCrawlingHealth();
+    assert.deepEqual(health.find(item => item.targetSite === '테스트 출처'), {
+      targetSite: '테스트 출처', status: 'SUCCESS', collectedCount: 12, errorMessage: null,
+      executedAt: health.find(item => item.targetSite === '테스트 출처')?.executedAt,
+    });
+  });
   await t.test('expired campaigns retain their original deadline and are excluded', async () => {
     assert.equal((await db.getCampaignById('expired'))?.endDate, '2020-01-01');
     assert.equal((await db.queryCampaigns({})).some(c => c.id === 'expired'), false);
