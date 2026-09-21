@@ -889,7 +889,12 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
   // second request for the same source on every ten-minute scheduled run.
   const inlineSites = ['강남맛집', '디너의여왕', '레뷰'] as const;
   const inlineHealth = inlineSites.map(targetSite => {
-    const collectedCount = allCampaigns.filter(campaign => campaign.targetSite === targetSite).length;
+    // The official REVU adapter labels stored rows as "레뷰 (REVU)". Match
+    // by its stable source ID prefix so health reporting cannot mark a
+    // successful collection as EMPTY because of a display-name difference.
+    const collectedCount = allCampaigns.filter(campaign =>
+      targetSite === '레뷰' ? campaign.id.startsWith('revu-') : campaign.targetSite === targetSite
+    ).length;
     return { targetSite, status: collectedCount ? 'SUCCESS' as const : 'EMPTY' as const, collectedCount };
   });
   await Promise.all(inlineHealth.map(source => logCrawling(source.targetSite, source.status, source.collectedCount)));

@@ -25,6 +25,7 @@ test('regression suite', async t => {
   const { parseCloudReviewDetail } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseReviewPlaceApplicantCounts } = await import('../../src/lib/scrapers/06_reviewplace');
+  const { cleanReviewPlaceTitle } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
@@ -153,6 +154,10 @@ test('regression suite', async t => {
   await t.test('ReviewPlace detail keeps its published applicant and quota counts', () => {
     const html = '<li id="cmp_reviewer">신청한 리뷰어 <em id="cmp_curr_num">0/2</em></li>';
     assert.deepEqual(parseReviewPlaceApplicantCounts(html), { applyCount: 0, limitCount: 2 });
+  });
+  await t.test('ReviewPlace card badges are excluded from the campaign title', () => {
+    assert.equal(cleanReviewPlaceTitle('NEW [기자단] 폰가비 소개 1 / 20명+ 10,000P'), 'NEW [기자단] 폰가비 소개');
+    assert.equal(cleanReviewPlaceTitle('NEW [쿠팡] 가글 오늘마감 10,000P'), 'NEW [쿠팡] 가글 10,000P');
   });
   await t.test('ComeToPlay detail keeps its published reviewer application end date', () => {
     const html = '<span><em>리뷰어 신청</em> 09.16 ~ 09.21</span><script>var austDay = new Date(1790002799000);</script>';

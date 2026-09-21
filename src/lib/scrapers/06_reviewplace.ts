@@ -35,6 +35,17 @@ export function parseReviewPlaceApplicantCounts(html: string): { applyCount: num
   return Number.isFinite(applyCount) && Number.isFinite(limitCount) && limitCount > 0 ? { applyCount, limitCount } : null;
 }
 
+export function cleanReviewPlaceTitle(value: string): string {
+  return value
+    .replace(/\s*D\s*-\s*\d+\s*신청/gi, ' ')
+    .replace(/\s*(?:오늘\s*마감|마감\s*임박)\s*/gi, ' ')
+    // Card-only live applicant/reward badges are not part of the title.
+    .replace(/\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*명?(?:\s*\+\s*[\d,]+\s*P)?\s*$/i, ' ')
+    .replace(/\s*(?:신청|지원)\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function enrichDeadlines(campaigns: ScrapedCampaign[]): Promise<void> {
   const concurrency = 4;
   for (let offset = 0; offset < campaigns.length; offset += concurrency) {
@@ -73,12 +84,7 @@ export const ReviewPlaceScraper: SiteScraper = {
       // The card link includes live countdown and applicant UI text. They are
       // not part of the campaign title and previously leaked false-looking
       // values such as "0 / 5명" into search results.
-      rawTitle = rawTitle
-        .replace(/\s*D\s*-\s*\d+\s*신청/gi, ' ')
-        .replace(/\s*0\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
-        .replace(/\s*(?:신청|지원)\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*명?/gi, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      rawTitle = cleanReviewPlaceTitle(rawTitle);
       if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
