@@ -2200,7 +2200,7 @@ export default function Home() {
                     <span style={{ fontSize: '0.9rem' }}>⚖️</span> <span><strong style={{ color: '#4ade80' }}>경쟁비율 & 등급</strong> (🟢황금 / 🟡보통 / 🔴포화)</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '0.9rem' }}>🔗</span> <span><strong style={{ color: '#fbbf24' }}>네이버 공식 연관검색어</strong> 실데이터 수집</span>
+                    <span style={{ fontSize: '0.9rem' }}>🔗</span> <span><strong style={{ color: '#fbbf24' }}>검색광고·자동완성 기반 연관어</strong> 및 추천 근거 표시</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '0.9rem' }}>🥇</span> <span><strong style={{ color: '#f472b6' }}>상위 노출 블로그</strong> TOP 10 실시간 분석</span>
@@ -3715,7 +3715,7 @@ export default function Home() {
                                   {item.rank}위
                                 </span>
                               </td>
-                              <td style={{ padding: '10px 12px', verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <td style={{ padding: '10px 12px', verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 <button
                                   type="button"
                                   onClick={() => analyzeKeyword(item.keyword)}
@@ -3728,6 +3728,11 @@ export default function Home() {
                                 >
                                   {item.keyword}
                                 </button>
+                                {item.sourceLabels?.length > 0 && (
+                                  <div title={`추천 근거: ${item.sourceLabels.join(', ')}`} style={{ marginTop: '4px', fontSize: '0.67rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+                                    {item.sourceLabels.join(' · ')}
+                                  </div>
+                                )}
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {displayMetric(item.totalSearchVolume)}회
@@ -3794,6 +3799,11 @@ export default function Home() {
                               >
                                 {item.keyword}
                               </button>
+                              {item.sourceLabels?.length > 0 && (
+                                <span title={`추천 근거: ${item.sourceLabels.join(', ')}`} style={{ fontSize: '0.66rem', color: 'var(--text-tertiary)' }}>
+                                  {item.sourceLabels.join(' · ')}
+                                </span>
+                              )}
                             </div>
                             <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>
                               {item.recentDate || '오늘'}

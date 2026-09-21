@@ -22,6 +22,7 @@ test('regression suite', async t => {
   const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
+  const { calculateRecommendationScore } = await import('../../src/lib/keyword-engine');
   const { parseCloudReviewDetail } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseReviewPlaceApplicantCounts } = await import('../../src/lib/scrapers/06_reviewplace');
@@ -143,6 +144,13 @@ test('regression suite', async t => {
     assert.equal(lowerBound.monthlyPosts, 13);
     assert.equal(lowerBound.monthlyPostsIsLowerBound, false);
     assert.equal(lowerBound.monthlyPostsEstimated, true);
+  });
+  await t.test('related keyword rank favors relevance and source quality over raw volume alone', () => {
+    const directAutocomplete = calculateRecommendationScore('삼겹살', '삼겹살 맛집', 1200, ['autocomplete']);
+    const broadContext = calculateRecommendationScore('삼겹살', '음식 추천', 500000, ['context']);
+    const directSearchAd = calculateRecommendationScore('삼겹살', '삼겹살 맛집', 1200, ['searchAd']);
+    assert.ok(directAutocomplete > broadContext);
+    assert.ok(directSearchAd > directAutocomplete);
   });
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');

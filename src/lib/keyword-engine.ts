@@ -18,6 +18,42 @@ if (!globalRef.keywordApiCache) globalRef.keywordApiCache = new Map<string, { ti
 if (!globalRef.singleAdCache) globalRef.singleAdCache = new Map<string, { timestamp: number; data: any }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10분
 
+export type KeywordCandidateSource = 'searchAd' | 'autocomplete' | 'preset' | 'context';
+
+const SOURCE_LABELS: Record<KeywordCandidateSource, string> = {
+  searchAd: '검색광고 연관',
+  autocomplete: '네이버 자동완성',
+  preset: '주제 확장',
+  context: '문맥 확장',
+};
+
+const SOURCE_WEIGHTS: Record<KeywordCandidateSource, number> = {
+  searchAd: 1,
+  autocomplete: 0.88,
+  preset: 0.60,
+  context: 0.45,
+};
+
+/**
+ * Keep ranking explainable: relevance is the main signal, while source
+ * reliability and confirmed search volume only refine otherwise useful terms.
+ */
+export function calculateRecommendationScore(
+  query: string,
+  keyword: string,
+  totalSearchVolume: number,
+  sources: Iterable<KeywordCandidateSource>,
+): number {
+  const sourceList = Array.from(sources);
+  const sourceWeight = Math.max(...sourceList.map(source => SOURCE_WEIGHTS[source]), 0);
+  const relevance = calculateKeywordRelevance(query, keyword);
+  const directMatch = keyword.replace(/\s+/g, '').toLowerCase().includes(query.replace(/\s+/g, '').toLowerCase()) ? 0.12 : 0;
+  // log scale prevents a broad, high-volume term from displacing a much more
+  // relevant term solely because of its absolute volume.
+  const volumeScore = Math.min(1, Math.log10(Math.max(0, totalSearchVolume) + 1) / 6);
+  return Number((relevance * 0.55 + sourceWeight * 0.25 + volumeScore * 0.20 + directMatch).toFixed(4));
+}
+
 function generateSearchAdSignature(timestamp: string, method: string, uri: string, secretKey: string) {
   const message = `${timestamp}.${method}.${uri}`;
   return crypto.createHmac('sha256', secretKey).update(message).digest('base64');
@@ -463,11 +499,20 @@ export async function GET(request: Request) {
     }
 
     // 🔑 3. 스마트 4대 엔티티 분류 기반 후보 키워드 추출 알고리즘
-    const candidateMap = new Map<string, { keyword: string; pc: number; mobile: number; total: number; priority: number }>();
+    const candidateMap = new Map<string, {
+      keyword: string; pc: number; mobile: number; total: number; priority: number;
+      sources: Set<KeywordCandidateSource>;
+    }>();
 
     const FOOD_RECIPE_TERMS = ['고춧가루', '고추가루', '라자냐', '바질페스토', '돈까스', '돈가스', '치아바타', '피자', '스파게티', '파스타', '샌드위치', '리조또', '스테이크', '떡볶이', '짜장면', '짬뽕', '생바질', '바질가루', '레시피', '샐러드', '파스타소스', '토마토'];
 
-    const safeAddCandidate = (kwStr: string, pc: number = 0, mobile: number = 0, priority: number = 2) => {
+    const safeAddCandidate = (
+      kwStr: string,
+      pc: number = 0,
+      mobile: number = 0,
+      priority: number = 2,
+      source: KeywordCandidateSource = 'context',
+    ) => {
       if (!kwStr) return;
       const cleanKw = kwStr.trim();
       if (!cleanKw || cleanKw === query || cleanKw.toLowerCase() === query.toLowerCase()) return;
@@ -485,8 +530,18 @@ export async function GET(request: Request) {
       }
 
       const key = cleanKw.replace(/\s+/g, '').toLowerCase();
-      if (!candidateMap.has(key)) {
-        candidateMap.set(key, { keyword: cleanKw, pc, mobile, total: pc + mobile, priority });
+      const existing = candidateMap.get(key);
+      if (existing) {
+        existing.sources.add(source);
+        existing.priority = Math.min(existing.priority, priority);
+        // Prefer a confirmed measurement over a prior zero-valued placeholder.
+        if (pc + mobile > existing.total) {
+          existing.pc = pc;
+          existing.mobile = mobile;
+          existing.total = pc + mobile;
+        }
+      } else {
+        candidateMap.set(key, { keyword: cleanKw, pc, mobile, total: pc + mobile, priority, sources: new Set([source]) });
       }
     };
 
@@ -517,7 +572,7 @@ export async function GET(request: Request) {
         const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
         const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
         const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-        safeAddCandidate(bp, pc, mobile, 1);
+        safeAddCandidate(bp, pc, mobile, 1, 'preset');
       });
     }
 
@@ -528,7 +583,7 @@ export async function GET(request: Request) {
           const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
           const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
           const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-          safeAddCandidate(bp, pc, mobile, 1);
+          safeAddCandidate(bp, pc, mobile, 1, 'preset');
         });
       }
     });
@@ -539,7 +594,7 @@ export async function GET(request: Request) {
         const adMatch = adRelatedItems.find((k: any) => k.relKeyword && k.relKeyword.replace(/\s+/g, '').toLowerCase() === key);
         const pc = adMatch ? parseSearchAdVolume(adMatch.monthlyPcQcCnt) : 0;
         const mobile = adMatch ? parseSearchAdVolume(adMatch.monthlyMobileQcCnt) : 0;
-        safeAddCandidate(kw, pc, mobile, 1);
+        safeAddCandidate(kw, pc, mobile, 1, 'autocomplete');
       }
     });
 
@@ -654,7 +709,7 @@ export async function GET(request: Request) {
       const mobile = parseSearchAdVolume(k.monthlyMobileQcCnt);
 
       const isDirectRelevant = relScore >= 0.7 || hasTargetWord(kw);
-      safeAddCandidate(kw, pc, mobile, isDirectRelevant ? 1 : 2);
+      safeAddCandidate(kw, pc, mobile, isDirectRelevant ? 1 : 2, 'searchAd');
     });
 
     const rawCandidatesList = Array.from(candidateMap.values());
@@ -686,9 +741,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // 🔑 방식 1 정렬 알고리즘:
-    // 1차: 타겟 키워드 포함어 / 1순위 자동완성 / 핀포인트 연관어 (Group 1) -> 검색량 내림차순
-    // 2차: 문맥 연관어 (Group 2, 유사도 >= 0.25) -> 검색량 내림차순
+    // 후보 선별은 관련성·출처 신뢰도·확인된 검색량을 함께 사용한다.
     filteredCandidatesList.sort((a, b) => {
       const aDirect = hasTargetWord(a.keyword) || a.priority === 1;
       const bDirect = hasTargetWord(b.keyword) || b.priority === 1;
@@ -696,8 +749,9 @@ export async function GET(request: Request) {
       if (aDirect && !bDirect) return -1;
       if (!aDirect && bDirect) return 1;
 
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return b.total - a.total;
+      const scoreA = calculateRecommendationScore(query, a.keyword, a.total, a.sources);
+      const scoreB = calculateRecommendationScore(query, b.keyword, b.total, b.sources);
+      return scoreB - scoreA || b.total - a.total;
     });
 
     // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
@@ -755,7 +809,10 @@ export async function GET(request: Request) {
             return {
               keyword: item.keyword,
               priority: item.priority || 3,
-              isOfficial: true,
+              sources: Array.from(item.sources),
+              sourceLabels: Array.from(item.sources).map(source => SOURCE_LABELS[source]),
+              relevanceScore: Number(calculateKeywordRelevance(query, item.keyword).toFixed(2)),
+              recommendationScore: calculateRecommendationScore(query, item.keyword, kwTotalVol, item.sources),
               pcSearchVolume: hasSearchVolume ? kwPc : null,
               mobileSearchVolume: hasSearchVolume ? kwMobile : null,
               totalSearchVolume: hasSearchVolume ? kwTotalVol : null,
@@ -791,8 +848,13 @@ export async function GET(request: Request) {
       !item.keyword.includes('>')
     );
 
-    // 🔑 2. 최우선 순위: 검색한 단어('세계명작' 등)가 직접 포함된 타겟 확장 키워드를 최상단 그룹으로 상위 배치
-    validListRaw.sort((a: any, b: any) => (b.totalSearchVolume ?? -1) - (a.totalSearchVolume ?? -1) || a.keyword.localeCompare(b.keyword));
+    // The displayed rank is a recommendation rank. Users can still choose
+    // explicit search-volume ordering in the table.
+    validListRaw.sort((a: any, b: any) =>
+      (b.recommendationScore ?? -1) - (a.recommendationScore ?? -1) ||
+      (b.totalSearchVolume ?? -1) - (a.totalSearchVolume ?? -1) ||
+      a.keyword.localeCompare(b.keyword)
+    );
     const final100List = validListRaw;
 
     const relatedKeywords = final100List.map((item: any, index: number) => ({
