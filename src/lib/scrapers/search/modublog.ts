@@ -2,6 +2,7 @@ import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+import { deadlineFromText } from '../../campaign-values';
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -42,13 +43,14 @@ await (async () => {
               const recruitMatch = recruitText.match(/신청(\d+)\/(\d+)/);
               const applyCount = recruitMatch ? parseInt(recruitMatch[1], 10) : 0;
               const limitCount = recruitMatch ? parseInt(recruitMatch[2], 10) : 0;
+              const endDate = deadlineFromText($(el).find('.deadline').text().trim());
 
               collected.push({
                 id: `modublog-${cpId}`, title: cleanTitle.slice(0, 80), description: cleanDesc,
                 platform: detectPlatform(platformText, fullSearchText), category: detectCategory(fullSearchText, fullSearchText),
                 campaignUrl: `https://www.modublog.co.kr/product/${cpId}`, imageUrl: img || 'https://viral-re.co.kr/icon.png',
                 targetSite: '모블', limitCount, applyCount,
-                startDate: now.toISOString().split('T')[0], endDate: '', createdAt: now.toISOString(), updatedAt: now.toISOString()
+                startDate: now.toISOString().split('T')[0], endDate, createdAt: now.toISOString(), updatedAt: now.toISOString()
               });
             });
           } catch (e) {

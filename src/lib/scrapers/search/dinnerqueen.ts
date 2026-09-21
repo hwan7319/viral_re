@@ -21,7 +21,10 @@ await (async () => {
           const campaignUrl = linkEl.attr('href') || '';
           const imgEl = $(element).find('.qz-dq-card__link__img img');
           const imageUrl = imgEl.attr('src') || '';
-          const ddayText = $(element).find('.layer-primary p.qz-caption-kr--line strong').text().trim();
+          // Current cards publish the application deadline as "N일 남음" in
+          // the countdown row. The old selector targeted a retired layout.
+          const ddayText = $(element).find('.qz-dq-card__countdown-row > p strong').first().text().trim()
+            || $(element).find('.layer-primary p.qz-caption-kr--line strong').first().text().trim();
           const endDate = parseDdayToDate(ddayText);
           const badgesText = $(element).find('.qz-wrap').text();
           const platform = detectPlatform(title, badgesText);
