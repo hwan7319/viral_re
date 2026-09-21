@@ -7,4 +7,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://viral-re.vercel.app/sitemap.xml
+Sitemap: https://viral-re.co.kr/sitemap.xml

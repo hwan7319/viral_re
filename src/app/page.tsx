@@ -3968,6 +3968,12 @@ export default function Home() {
 
           {/* 약관 & 정책 링크 버튼 */}
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '0.82rem', fontWeight: 600 }}>
+            <a href="/about" style={{ color: 'var(--text-secondary)' }}>서비스 소개</a>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
+            <a href="/guide" style={{ color: 'var(--text-secondary)' }}>체험단 지원 가이드</a>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
+            <a href="/methodology" style={{ color: 'var(--text-secondary)' }}>데이터 수집 원칙</a>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
             <button 
               type="button" 
               onClick={() => setIsTermsModalOpen(true)}
@@ -3975,6 +3981,8 @@ export default function Home() {
             >
               서비스 이용약관
             </button>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
+            <a href="/privacy" style={{ color: 'var(--text-secondary)' }}>개인정보처리방침</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <button 
               type="button" 
