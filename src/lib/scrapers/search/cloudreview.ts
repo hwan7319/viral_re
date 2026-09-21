@@ -23,6 +23,17 @@ export function parseCloudReviewDetail(text: string, fallbackPlatform: Campaign[
   };
 }
 
+/** The list card includes platform icons before the campaign artwork. */
+export function parseCloudReviewMainImage(html: string): string {
+  const $ = cheerio.load(html);
+  const image = $('img').toArray()
+    .map(element => $(element).attr('data-original') || $(element).attr('data-src') || $(element).attr('src') || '')
+    .find(src => /\/campaign\/\d+\/main_image\//i.test(src));
+  if (!image) return '';
+  if (image.startsWith('//')) return `https:${image}`;
+  return image.startsWith('http') ? image : `https://cloudreview.co.kr${image.startsWith('/') ? '' : '/'}${image}`;
+}
+
 async function enrichCampaignDetails(campaigns: Campaign[]): Promise<void> {
   const concurrency = 4;
   for (let offset = 0; offset < campaigns.length; offset += concurrency) {
@@ -30,12 +41,14 @@ async function enrichCampaignDetails(campaigns: Campaign[]): Promise<void> {
       try {
         const response = await axios.get(campaign.campaignUrl, { headers: HEADERS, timeout: 6000 });
         const facts = parseCloudReviewDetail(String(response.data || ''), campaign.platform);
+        const mainImage = parseCloudReviewMainImage(String(response.data || ''));
         if (facts.endDate) campaign.endDate = facts.endDate;
         if (facts.limitCount > 0) {
           campaign.limitCount = facts.limitCount;
           campaign.applyCount = facts.applyCount;
         }
         campaign.platform = facts.platform;
+        if (mainImage) campaign.imageUrl = mainImage;
         campaign.dataSource = 'detail';
       } catch (error: any) {
         console.warn(`[Parallel-Crawl] 클라우드리뷰 상세 ${campaign.id} skipped:`, error.message);

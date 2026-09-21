@@ -8,7 +8,7 @@ const concurrency = 10;
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
 
 function isFallback(url: string) {
-  return !url || url.includes('/icon.png');
+  return !url || url.includes('/icon.png') || /\/static\/new\/image\/(?:insta_symbol|cate\d+)\.png|\/assets\/img\/logo\.png/i.test(url);
 }
 
 function isImagePayload(payload: ArrayBuffer) {

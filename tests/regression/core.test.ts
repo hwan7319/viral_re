@@ -23,7 +23,7 @@ test('regression suite', async t => {
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { calculateRecommendationScore } = await import('../../src/lib/keyword-engine');
-  const { parseCloudReviewDetail } = await import('../../src/lib/scrapers/search/cloudreview');
+  const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseReviewPlaceApplicantCounts } = await import('../../src/lib/scrapers/06_reviewplace');
   const { cleanReviewPlaceTitle } = await import('../../src/lib/scrapers/06_reviewplace');
@@ -155,6 +155,10 @@ test('regression suite', async t => {
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');
     assert.deepEqual(detail, { endDate: '2026-09-21', applyCount: 672, limitCount: 10, platform: 'blog' });
+  });
+  await t.test('CloudReview detail prefers the campaign artwork over a platform icon', () => {
+    const html = '<img src="/static/new/image/insta_symbol.png"><img src="https://api.cloudreview.co.kr/campaign/56372/main_image/main.jpg">';
+    assert.equal(parseCloudReviewMainImage(html), 'https://api.cloudreview.co.kr/campaign/56372/main_image/main.jpg');
   });
   await t.test('ReviewPlace detail keeps its published recruitment end date', () => {
     const html = '<main>모집기간 09.16 ~ 09.28 리뷰어발표 09.29</main>';
