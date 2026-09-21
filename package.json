@@ -10,6 +10,7 @@
     "lint": "eslint",
     "crawl": "tsx src/scripts/crawler.ts",
     "test:live": "tsx src/scripts/audit-live-sources.ts --all",
+    "test:images": "tsx src/scripts/audit-image-urls.ts",
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
