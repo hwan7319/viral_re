@@ -17,6 +17,9 @@ if (!globalRef.blogStatsCache) globalRef.blogStatsCache = new Map<string, { time
 if (!globalRef.keywordApiCache) globalRef.keywordApiCache = new Map<string, { timestamp: number; data: any }>();
 if (!globalRef.singleAdCache) globalRef.singleAdCache = new Map<string, { timestamp: number; data: any }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10분
+// The API only returns candidates after their SearchAd volume is confirmed.
+// Keep a practical ceiling so a broad query cannot exhaust Naver API quotas.
+const MAX_ENRICHED_RELATED_KEYWORDS = 70;
 
 export type KeywordCandidateSource = 'searchAd' | 'autocomplete' | 'preset' | 'context';
 
@@ -759,9 +762,9 @@ export async function GET(request: Request) {
     });
 
     // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
-    // The page displays the leading results first. Enriching the top 40 keeps
-    // the ranking useful while preventing up to 100 separate Blog API calls.
-    const candidateKeywordsList = filteredCandidatesList.slice(0, 40);
+    // The page displays the leading results first. Seventy provides a useful
+    // long-tail list while staying below the former 100-request worst case.
+    const candidateKeywordsList = filteredCandidatesList.slice(0, MAX_ENRICHED_RELATED_KEYWORDS);
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
