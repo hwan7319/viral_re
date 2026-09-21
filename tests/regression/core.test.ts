@@ -157,8 +157,8 @@ test('regression suite', async t => {
     assert.deepEqual(detail, { endDate: '2026-09-21', applyCount: 672, limitCount: 10, platform: 'blog' });
   });
   await t.test('CloudReview detail prefers the campaign artwork over a platform icon', () => {
-    const html = '<img src="/static/new/image/insta_symbol.png"><img src="https://api.cloudreview.co.kr/campaign/56372/main_image/main.jpg">';
-    assert.equal(parseCloudReviewMainImage(html), 'https://api.cloudreview.co.kr/campaign/56372/main_image/main.jpg');
+    const html = '<img src="/static/new/image/insta_symbol.png"><img src="https://api.cloudreview.co.kr/file/17216/main_image/main.jpg">';
+    assert.equal(parseCloudReviewMainImage(html), 'https://api.cloudreview.co.kr/file/17216/main_image/main.jpg');
   });
   await t.test('ReviewPlace detail keeps its published recruitment end date', () => {
     const html = '<main>모집기간 09.16 ~ 09.28 리뷰어발표 09.29</main>';

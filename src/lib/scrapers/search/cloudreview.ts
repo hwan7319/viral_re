@@ -28,7 +28,7 @@ export function parseCloudReviewMainImage(html: string): string {
   const $ = cheerio.load(html);
   const image = $('img').toArray()
     .map(element => $(element).attr('data-original') || $(element).attr('data-src') || $(element).attr('src') || '')
-    .find(src => /\/campaign\/\d+\/main_image\//i.test(src));
+    .find(src => /\/main_image\//i.test(src));
   if (!image) return '';
   if (image.startsWith('//')) return `https:${image}`;
   return image.startsWith('http') ? image : `https://cloudreview.co.kr${image.startsWith('/') ? '' : '/'}${image}`;
