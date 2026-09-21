@@ -34,6 +34,10 @@ const SOURCE_WEIGHTS: Record<KeywordCandidateSource, number> = {
   context: 0.45,
 };
 
+function sortedCandidateSources(sources: Iterable<KeywordCandidateSource>): KeywordCandidateSource[] {
+  return Array.from(sources).sort((a, b) => SOURCE_WEIGHTS[b] - SOURCE_WEIGHTS[a]);
+}
+
 /**
  * Keep ranking explainable: relevance is the main signal, while source
  * reliability and confirmed search volume only refine otherwise useful terms.
@@ -809,8 +813,8 @@ export async function GET(request: Request) {
             return {
               keyword: item.keyword,
               priority: item.priority || 3,
-              sources: Array.from(item.sources),
-              sourceLabels: Array.from(item.sources).map(source => SOURCE_LABELS[source]),
+              sources: sortedCandidateSources(item.sources),
+              sourceLabels: sortedCandidateSources(item.sources).map(source => SOURCE_LABELS[source]),
               relevanceScore: Number(calculateKeywordRelevance(query, item.keyword).toFixed(2)),
               recommendationScore: calculateRecommendationScore(query, item.keyword, kwTotalVol, item.sources),
               pcSearchVolume: hasSearchVolume ? kwPc : null,
