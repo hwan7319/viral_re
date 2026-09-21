@@ -16,7 +16,7 @@ Each source uses an isolated list adapter. A list adapter must preserve only val
 | 모블 | public list | detail refresh | not publicly listed | unavailable unless published |
 | 아싸뷰 | current pages | detail refresh | not publicly listed | detail when published |
 | 오마이블로그 | official API | official API | API end date | API when published |
-| 리뷰플레이스 | public list | all current detail pages | detail `모집기간` | unavailable unless published |
+| 리뷰플레이스 | public list | all current detail pages | detail `모집기간` | detail `#cmp_curr_num` 신청자/정원 |
 
 `npm run test:live` validates every list adapter for direct URLs, IDs, titles, platforms, and published deadlines. Before changing a parser, run the source-specific live check and add a regression fixture for any new detail pattern. The scheduled full sync runs every ten minutes and uses the same adapters as on-demand search.
 

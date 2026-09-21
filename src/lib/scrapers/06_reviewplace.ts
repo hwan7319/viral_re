@@ -23,15 +23,33 @@ export function parseReviewPlaceDeadline(html: string, now = new Date()): string
   return `${year}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
 }
 
+export function parseReviewPlaceApplicantCounts(html: string): { applyCount: number; limitCount: number } | null {
+  const $ = cheerio.load(html);
+  const countText = $('#cmp_curr_num').text().replace(/\s+/g, '')
+    || $('body').text().match(/신청한\s*리뷰어\s*([\d,]+)\s*\/\s*([\d,]+)/i)?.slice(1).join('/')
+    || '';
+  const match = countText.match(/^([\d,]+)\s*\/\s*([\d,]+)$/);
+  if (!match) return null;
+  const applyCount = Number(match[1].replace(/,/g, ''));
+  const limitCount = Number(match[2].replace(/,/g, ''));
+  return Number.isFinite(applyCount) && Number.isFinite(limitCount) && limitCount > 0 ? { applyCount, limitCount } : null;
+}
+
 async function enrichDeadlines(campaigns: ScrapedCampaign[]): Promise<void> {
   const concurrency = 4;
   for (let offset = 0; offset < campaigns.length; offset += concurrency) {
     await Promise.all(campaigns.slice(offset, offset + concurrency).map(async campaign => {
       try {
         const response = await axios.get(campaign.campaignUrl, { headers: HEADERS, timeout: 6000 });
-        const endDate = parseReviewPlaceDeadline(String(response.data || ''));
+        const html = String(response.data || '');
+        const endDate = parseReviewPlaceDeadline(html);
+        const counts = parseReviewPlaceApplicantCounts(html);
         if (endDate) campaign.endDate = endDate;
-        campaign.dataSource = 'detail';
+        if (counts) {
+          campaign.applyCount = counts.applyCount;
+          campaign.limitCount = counts.limitCount;
+        }
+        if (endDate || counts) campaign.dataSource = 'detail';
       } catch (error: any) {
         console.warn(`[ReviewPlace] 상세 마감일 ${campaign.id} skipped:`, error.message);
       }
