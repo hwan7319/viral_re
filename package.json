@@ -13,7 +13,8 @@
     "test:images": "tsx src/scripts/audit-image-urls.ts",
     "backfill:cloudreview-images": "tsx src/scripts/backfill-cloudreview-images.ts",
     "reclassify:travel": "tsx src/scripts/reclassify-travel-campaigns.ts",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:filters": "tsx src/scripts/audit-integrated-filters.ts"
   },
   "dependencies": {
     "axios": "^1.19.0",

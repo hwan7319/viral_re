@@ -160,8 +160,12 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory(title, benefit), 'food-korean');
     assert.equal(detectCategory(title, benefit), 'food-korean');
     assert.equal(classifyCampaignCategory('제주 바다 투어', '관광 입장권'), 'travel');
+    assert.equal(classifyCampaignCategory('새연교바다배낚시', '배낚시 1회 체험권'), 'travel');
     assert.equal(classifyCampaignCategory('위브온라탄공방', '원데이클래스 체험권'), 'hobby');
     assert.equal(classifyCampaignCategory('국립 미술관', '전시 입장권'), 'culture');
+    assert.equal(classifyCampaignCategory('BMW 부산남구전시장', '포인트 지급'), 'etc');
+    assert.equal(classifyCampaignCategory('멋짐 헬스&PT 마린시티점', 'PT 1회 체험권'), 'health-fitness');
+    assert.equal(classifyCampaignCategory('노란꽃돼지 명촌점', '4만 5천원 체험권'), 'food-korean');
   });
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');
