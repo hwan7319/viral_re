@@ -166,6 +166,8 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('BMW 부산남구전시장', '포인트 지급'), 'etc');
     assert.equal(classifyCampaignCategory('멋짐 헬스&PT 마린시티점', 'PT 1회 체험권'), 'health-fitness');
     assert.equal(classifyCampaignCategory('노란꽃돼지 명촌점', '4만 5천원 체험권'), 'food-korean');
+    assert.equal(classifyCampaignCategory('[경기 부천] 꾹스키친', '식사권'), 'etc');
+    assert.equal(classifyCampaignCategory('[부산 금정] 스스키노 부산대점', '식사권'), 'etc');
   });
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');
