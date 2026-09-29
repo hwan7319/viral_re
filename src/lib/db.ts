@@ -24,7 +24,7 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'accommodation': ['accommodation', 'travel-stay'],
   'travel-stay': ['travel-stay', 'accommodation'],
   'travel-leisure': ['travel-leisure', 'travel'],
-  'culture': ['culture', 'travel-leisure'],
+  'culture': ['culture'],
 
   'fashion': ['fashion', 'fashion-clothing', 'fashion-accessory'],
   'fashion-clothing': ['fashion-clothing', 'fashion'],
@@ -37,7 +37,7 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'baby': ['baby', 'life'],
   'pet': ['pet', 'life'],
   'book': ['book', 'life'],
-  'hobby': ['hobby', 'travel-leisure', 'life'],
+  'hobby': ['hobby'],
   'etc': ['etc']
 };
 

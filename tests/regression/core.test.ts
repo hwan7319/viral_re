@@ -22,6 +22,8 @@ test('regression suite', async t => {
   const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
+  const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
+  const { detectCategory } = await import('../../src/lib/crawler-core');
   const { calculateRecommendationScore } = await import('../../src/lib/keyword-engine');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
@@ -151,6 +153,15 @@ test('regression suite', async t => {
     const directSearchAd = calculateRecommendationScore('삼겹살', '삼겹살 맛집', 1200, ['searchAd']);
     assert.ok(directAutocomplete > broadContext);
     assert.ok(directSearchAd > directAutocomplete);
+  });
+  await t.test('generic campaign benefits never classify restaurants as travel', () => {
+    const title = '[경북 포항] 고씨네 효자점';
+    const benefit = '고씨네 시그니처 카레세트 6종 중 택1 + 닭튀김카레 체험권';
+    assert.equal(classifyCampaignCategory(title, benefit), 'food-korean');
+    assert.equal(detectCategory(title, benefit), 'food-korean');
+    assert.equal(classifyCampaignCategory('제주 바다 투어', '관광 입장권'), 'travel');
+    assert.equal(classifyCampaignCategory('위브온라탄공방', '원데이클래스 체험권'), 'hobby');
+    assert.equal(classifyCampaignCategory('국립 미술관', '전시 입장권'), 'culture');
   });
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');

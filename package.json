@@ -12,6 +12,7 @@
     "test:live": "tsx src/scripts/audit-live-sources.ts --all",
     "test:images": "tsx src/scripts/audit-image-urls.ts",
     "backfill:cloudreview-images": "tsx src/scripts/backfill-cloudreview-images.ts",
+    "reclassify:travel": "tsx src/scripts/reclassify-travel-campaigns.ts",
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {

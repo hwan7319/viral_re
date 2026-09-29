@@ -54,7 +54,7 @@ export function classifyCampaignCategory(
   if (/(카페|디저트|베이커리|마카롱|케이크|아인슈페너|원두|로스팅|소금빵)/.test(fullCleanText)) {
     return 'food-cafe';
   }
-  if (/(삼겹살|한우|갈비|치킨|피자|파스타|초밥|스시|뷔페|곱창|족발|보쌈|해물|고기|맛집|식당)/.test(fullCleanText)) {
+  if (/(삼겹살|한우|갈비|치킨|피자|파스타|초밥|스시|뷔페|곱창|족발|보쌈|해물|고기|맛집|식당|카레|감자탕|추어탕|곰탕|국밥|냉면|칼국수|낙지|회|정육점|닭튀김)/.test(fullCleanText)) {
     return 'food-korean';
   }
 
@@ -70,8 +70,16 @@ export function classifyCampaignCategory(
   if (/(숙박|호텔|펜션|풀빌라|리조트|게스트하우스|글램핑|모텔)/.test(fullCleanText)) {
     return 'accommodation';
   }
-  if (/(여행|레저|관광|티켓|입장권|스튜디오|렌트카|투어)/.test(fullCleanText)) {
+  if (/(여행|레저|관광|입장권|테마파크|놀이공원|아쿠아리움|렌트카|투어|서핑|요트|스키|스노보드|패러글라이딩|캠핑카)/.test(fullCleanText)) {
     return 'travel';
+  }
+
+  if (/(공연|전시|박물관|미술관|연극|뮤지컬|콘서트|영화관)/.test(fullCleanText)) {
+    return 'culture';
+  }
+
+  if (/(원데이클래스|공방|도예|가죽공예|뜨개|드로잉|베이킹클래스|쿠킹클래스|사진촬영|가족사진|프로필사진)/.test(fullCleanText)) {
+    return 'hobby';
   }
 
   // Food & Health Supplies
@@ -84,10 +92,10 @@ export function classifyCampaignCategory(
     return 'fashion-clothing';
   }
 
-  // Life & Appliances (Default for living, digital, bike, soap, etc.)
+  // Life & Appliances
   if (/(주방세제|세제|치약|가습기|청소기|휴지|바이크|자전거|유아|반려|펫|가전|디지털|생활)/.test(fullCleanText)) {
     return 'life-goods';
   }
 
-  return 'life-goods';
+  return 'etc';
 }
