@@ -81,7 +81,7 @@ export function classifyCampaignCategory(
     return 'hobby';
   }
 
-  if (/(여행|레저|관광|입장권|테마파크|놀이공원|아쿠아리움|렌트카|투어|서핑|요트|스키|스노보드|패러글라이딩|캠핑카|스키장|스키\s|스키체험|스쿠버|다이빙|낚시)/.test(fullCleanText)) {
+  if (/(여행|레저|관광|입장권|테마파크|놀이공원|아쿠아리움|렌트카|투어|서핑|요트|스노보드|패러글라이딩|캠핑카|스키장|스키\s|스키체험|스쿠버|다이빙|낚시)/.test(fullCleanText)) {
     return 'travel';
   }
 
