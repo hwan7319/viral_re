@@ -77,6 +77,19 @@ export function parseSearchAdVolume(val: any): number {
 }
 
 // 🔑 키워드 연관성 정밀 측정 엔진 (Levenshtein/Containment/n-Gram 유사도 산출 - Option B Threshold)
+export function isDirectKeywordMatch(query: string, candidate: string): boolean {
+  const queryWords = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const candidateNormalized = candidate.replace(/\s+/g, '').toLowerCase();
+  const queryNormalized = queryWords.join('');
+  if (!queryNormalized) return false;
+  if (candidateNormalized.includes(queryNormalized)) return true;
+  // A multi-word query describes a single intent. Matching one common word
+  // (for example, "맛집") must not promote a different location.
+  return queryWords.length > 1
+    ? queryWords.every(word => candidateNormalized.includes(word))
+    : candidateNormalized.includes(queryWords[0]);
+}
+
 export function calculateKeywordRelevance(query: string, candidate: string): number {
   if (!query || !candidate) return 0;
   const qNorm = query.replace(/\s+/g, '').toLowerCase();
@@ -684,14 +697,7 @@ export async function GET(request: Request) {
       safeAddCandidate(expKw, pc, mobile, 1);
     });
 
-    const cleanQueryNorm = cleanHintQuery.toLowerCase();
-    const queryWordsList = query.toLowerCase().split(/\s+/).filter(w => w.length >= 1);
-
-    const hasTargetWord = (kwStr: string) => {
-      const normKw = kwStr.replace(/\s+/g, '').toLowerCase();
-      if (normKw.includes(cleanQueryNorm)) return true;
-      return queryWordsList.some(w => normKw.includes(w));
-    };
+    const hasTargetWord = (kwStr: string) => isDirectKeywordMatch(query, kwStr);
 
     // 3-3. 검색광고 연관키워드 중 관련도(Option B Threshold >= 0.25) 검증 키워드 추가
     adRelatedItems.forEach((k: any) => {

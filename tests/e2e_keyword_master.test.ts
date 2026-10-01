@@ -593,9 +593,10 @@ async function runTier5() {
 
   // T5.1: 2nd Hint Batch Fetcher Unit Test (fetchSearchAdBatch)
   try {
-    const customerId = '4483791';
-    const searchAdApiKey = '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
-    const searchAdSecretKey = 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
+    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '';
+    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '';
+    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || '';
+    assert(customerId && searchAdApiKey && searchAdSecretKey, 'SearchAd test credentials must be provided through environment variables');
 
     const testBatchKeywords = ['속초중앙시장', '강릉중앙시장', '대패삼겹살', '컴포즈커피', '제주도맛집'];
     const batchMap = await fetchSearchAdBatch(testBatchKeywords, customerId, searchAdApiKey, searchAdSecretKey);
@@ -618,9 +619,10 @@ async function runTier5() {
 
   // T5.2: 2nd Hint Single Keyword Fetcher Unit Test (fetchSingleKeywordAd)
   try {
-    const customerId = '4483791';
-    const searchAdApiKey = '01000000002e29685d306d24ac398cf6c1e5651423d5f52e0fde2be9fe21d4ae5ecf4b4536';
-    const searchAdSecretKey = 'AQAAAAAuKWhdMG0krDmM9sHlZRQjyLQLlwgpeeGV/GL98ZKmNA==';
+    const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '';
+    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '';
+    const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || '';
+    assert(customerId && searchAdApiKey && searchAdSecretKey, 'SearchAd test credentials must be provided through environment variables');
 
     await sleep(200);
     const singleData = await fetchSingleKeywordAd('메가커피', customerId, searchAdApiKey, searchAdSecretKey);

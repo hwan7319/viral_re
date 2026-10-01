@@ -24,7 +24,7 @@ test('regression suite', async t => {
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
-  const { calculateRecommendationScore } = await import('../../src/lib/keyword-engine');
+  const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseReviewPlaceApplicantCounts } = await import('../../src/lib/scrapers/06_reviewplace');
@@ -153,6 +153,8 @@ test('regression suite', async t => {
     const directSearchAd = calculateRecommendationScore('삼겹살', '삼겹살 맛집', 1200, ['searchAd']);
     assert.ok(directAutocomplete > broadContext);
     assert.ok(directSearchAd > directAutocomplete);
+    assert.equal(isDirectKeywordMatch('강남 맛집', '신세계 강남 맛집'), true);
+    assert.equal(isDirectKeywordMatch('강남 맛집', '여수맛집'), false);
   });
   await t.test('generic campaign benefits never classify restaurants as travel', () => {
     const title = '[경북 포항] 고씨네 효자점';
