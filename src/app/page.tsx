@@ -3983,6 +3983,7 @@ export default function Home() {
             <a href="/guide" style={{ color: 'var(--text-secondary)' }}>체험단 지원 가이드</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <a href="/methodology" style={{ color: 'var(--text-secondary)' }}>데이터 수집 원칙</a>
+            <a href="/faq" style={{ color: 'var(--text-secondary)' }}>자주 묻는 질문</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <button 
               type="button" 
