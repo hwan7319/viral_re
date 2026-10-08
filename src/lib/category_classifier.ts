@@ -1,104 +1,47 @@
 /**
- * 🎯 Precision Category Classification Engine
- * Solves city branch name substring collisions (e.g. 청주점, 광주점, 파주점, 제주점 containing '주점')
- * and single-character collisions (e.g. '바' matching 바디, 바이크, 바질).
+ * Source-independent category classifier.
+ *
+ * Categories returned here are the same canonical keys used by the filter UI.
+ * Keep this conservative: an unknown campaign belongs in `etc`, never in an
+ * attractive but unsupported category.
  */
 export function classifyCampaignCategory(
-  title: string = '',
-  description: string = '',
-  rawCategoryArray: string[] = []
+  title = '',
+  description = '',
+  rawCategoryArray: string[] = [],
 ): string {
-  const catText = (rawCategoryArray || []).join(' ');
-  const titleText = (title || '').trim();
-  const descText = (description || '').trim();
+  const sourceCategory = rawCategoryArray.join(' ').replace(/(청주점|광주점|원주점|전주점|진주점|경주점|파주점|제주점|공주점|나주점|충주점|양주점|영주점|상주점|여주점)/g, '');
+  const cleanTitle = title.replace(/(청주점|광주점|원주점|전주점|진주점|경주점|파주점|제주점|공주점|나주점|충주점|양주점|영주점|상주점|여주점)/g, '');
+  const text = `${cleanTitle} ${description} ${sourceCategory}`.toLowerCase();
+  const has = (pattern: RegExp) => pattern.test(text);
 
-  // 1. Sanitize city branch names that contain '주점' (e.g. 청주점, 광주점, 원주점, 전주점, 파주점, 제주점)
-  const cleanTitle = titleText.replace(/(청주점|광주점|원주점|전주점|진주점|경주점|파주점|제주점|공주점|나주점|충주점|양주점|영주점|상주점|여주점)/g, '');
-  const cleanCatText = catText.replace(/(청주점|광주점|원주점|전주점|진주점|경주점|파주점|제주점|공주점|나주점|충주점|양주점|영주점|상주점|여주점)/g, '');
-  const fullCleanText = `${cleanTitle} ${descText} ${cleanCatText}`.toLowerCase();
+  // Explicit source categories are trusted when they are sufficiently specific.
+  if (has(/(?:주점|술집|이자카야|포차|와인바|칵테일바|펍)/)) return 'food-pub';
+  if (has(/(?:카페|디저트|베이커리|제과|커피)/)) return 'food-cafe';
+  if (has(/(?:일식|일본식|스시|초밥|사시미|라멘|돈카츠)/)) return 'food-japanese';
+  if (has(/(?:중식|중국식|마라탕|마라샹궈|짜장|짬뽕|훠궈)/)) return 'food-chinese';
+  if (has(/(?:양식|이탈리안|파스타|피자|스테이크|브런치|버거)/)) return 'food-western';
+  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|고기집|고깃집|돼지|치킨)/)) return 'food-korean';
 
-  // 2. Explicit Revu category tags (Highest priority)
-  if (cleanCatText.includes('주점') || cleanCatText.includes('술집') || cleanCatText.includes('이자카야') || cleanCatText.includes('포차') || cleanCatText.includes('바(bar)')) {
-    return 'food-pub';
-  }
-  if (cleanCatText.includes('카페') || cleanCatText.includes('디저트') || cleanCatText.includes('베이커리')) {
-    return 'food-cafe';
-  }
-  if (cleanCatText.includes('맛집') || cleanCatText.includes('식당') || cleanCatText.includes('음식점')) {
-    return 'food-korean';
-  }
-  if (cleanCatText.includes('스킨케어') || cleanCatText.includes('화장품') || cleanCatText.includes('뷰티') || cleanCatText.includes('메이크업')) {
-    return 'beauty-cosmetics';
-  }
-  if (cleanCatText.includes('헤어') || cleanCatText.includes('미용실') || cleanCatText.includes('네일') || cleanCatText.includes('에스테틱')) {
-    return 'beauty-salon';
-  }
-  if (cleanCatText.includes('숙박') || cleanCatText.includes('호텔') || cleanCatText.includes('펜션') || cleanCatText.includes('풀빌라')) {
-    return 'accommodation';
-  }
-  if (cleanCatText.includes('주방용품') || cleanCatText.includes('생활용품') || cleanCatText.includes('디지털') || cleanCatText.includes('가전') || cleanCatText.includes('잡화')) {
-    return 'life-goods';
-  }
-  if (cleanCatText.includes('농수산물') || cleanCatText.includes('식품') || cleanCatText.includes('밀키트')) {
-    return 'health-fresh';
-  }
-  if (cleanCatText.includes('패션') || cleanCatText.includes('의류') || cleanCatText.includes('신발') || cleanCatText.includes('가방')) {
-    return 'fashion-clothing';
-  }
+  if (has(/(?:필라테스|피트니스|헬스장|헬스|pt\b|요가|수영|테니스|골프|운동)/i)) return 'health-fitness';
+  if (has(/(?:영양제|유산균|비타민|홍삼|건강식품|프로바이오틱스|단백질)/)) return 'health-food';
+  if (has(/(?:피부관리|에스테틱|왁싱|속눈썹|마사지|스파)/)) return 'beauty-spa';
+  if (has(/(?:미용실|헤어|염색|펌|네일|두피)/)) return 'beauty-salon';
+  if (has(/(?:화장품|스킨케어|메이크업|토너|크림|앰플|세럼|마스크팩|클렌징|선크림|립스틱|쿠션)/)) return 'beauty-cosmetics';
 
-  // 3. Keyword-based matching with strict boundary/context checking
-  // Food & Pub
-  if (/(술집|주점|이자카야|포차|수제맥주|와인바|칵테일바|감성바|위스키|하이볼|요리주점|다이닝바|호프집)/.test(fullCleanText)) {
-    return 'food-pub';
-  }
-  if (/(카페|디저트|베이커리|마카롱|케이크|아인슈페너|원두|로스팅|소금빵)/.test(fullCleanText)) {
-    return 'food-cafe';
-  }
-  if (/(헬스|피트니스|필라테스|요가|발레|유도|태권도|운동|골프|테니스|수영|pt\b|헬스장)/i.test(fullCleanText)) {
-    return 'health-fitness';
-  }
-  if (/(삼겹살|한우|갈비|치킨|피자|파스타|초밥|스시|뷔페|곱창|족발|보쌈|해물|고기|맛집|식당|카레|감자탕|추어탕|곰탕|국밥|냉면|칼국수|낙지|생선회|물회|횟집|정육점|닭튀김|돼지|한돈)/.test(fullCleanText)) {
-    return 'food-korean';
-  }
+  if (has(/(?:도서|베스트셀러|소설|에세이|인터넷강의|인강|교육|학습지|학원|교재|워크북)/)) return 'book';
+  if (has(/(?:호텔|펜션|풀빌라|리조트|글램핑|게스트하우스|모텔|숙박|스테이)/)) return 'accommodation';
+  if (has(/(?:공연|전시(?!장)|박물관|미술관|연극|뮤지컬|콘서트|영화관)/)) return 'culture';
+  if (has(/(?:여행|관광|투어|레저|테마파크|놀이공원|아쿠아리움|렌트카|서핑|요트|스노보드|패러글라이딩|캠핑카|스키(?:장|체험|\s)|스쿠버|다이빙|낚시)/)) return 'travel';
+  if (has(/(?:원데이클래스|공방|도예|가죽공예|뜨개|드로잉|베이킹클래스|쿠킹클래스|사진촬영|방탈출)/)) return 'hobby';
 
-  // Beauty & Skin & Hair
-  if (/(화장품|뷰티|스킨케어|토너|패드|크림|앰플|세럼|마스크팩|마스크|클렌징|바디워시|바디로션|샴푸|선크림|쿠션|립스틱)/.test(fullCleanText)) {
-    return 'beauty-cosmetics';
-  }
-  if (/(헤어|미용실|염색|두피|속눈썹|네일|왁싱|에스테틱)/.test(fullCleanText)) {
-    return 'beauty-salon';
-  }
-
-  // Accommodation & Travel
-  if (/(숙박|호텔|펜션|풀빌라|리조트|게스트하우스|글램핑|모텔)/.test(fullCleanText)) {
-    return 'accommodation';
-  }
-  if (/(공연|전시(?!장)|박물관|미술관|연극|뮤지컬|콘서트|영화관)/.test(fullCleanText)) {
-    return 'culture';
-  }
-
-  if (/(원데이클래스|공방|도예|가죽공예|뜨개|드로잉|베이킹클래스|쿠킹클래스|사진촬영|가족사진|프로필사진|방탈출)/.test(fullCleanText)) {
-    return 'hobby';
-  }
-
-  if (/(여행|레저|관광|입장권|테마파크|놀이공원|아쿠아리움|렌트카|투어|서핑|요트|스노보드|패러글라이딩|캠핑카|스키장|스키\s|스키체험|스쿠버|다이빙|낚시)/.test(fullCleanText)) {
-    return 'travel';
-  }
-
-  // Food & Health Supplies
-  if (/(밀키트|반찬|과일|신선식품|영양제|유산균|홍삼|비타민)/.test(fullCleanText)) {
-    return 'health-fresh';
-  }
-
-  // Fashion
-  if (/(의류|패션|가방|신발|악세사리|주얼리|지갑|백팩|미니백)/.test(fullCleanText)) {
-    return 'fashion-clothing';
-  }
-
-  // Life & Appliances
-  if (/(주방세제|세제|치약|가습기|청소기|휴지|바이크|자전거|유아|반려|펫|가전|디지털|생활)/.test(fullCleanText)) {
-    return 'life-goods';
-  }
-
+  if (has(/(?:유아|아동|아기|육아|기저귀|분유|젖병|유모차|카시트|베이비)/)) return 'baby';
+  if (has(/(?:강아지|고양이|애견|반려동물|펫|사료|개껌|캣)/)) return 'pet';
+  if (has(/(?:의류|패션|자켓|코트|셔츠|티셔츠|원피스|니트|바지|치마|아우터|아동복)/)) return 'fashion-clothing';
+  if (has(/(?:가방|백팩|숄더백|신발|구두|운동화|스니커즈|모자|액세서리|악세사리|귀걸이|목걸이|시계|주얼리)/)) return 'fashion-accessory';
+  if (has(/(?:가전|청소기|모니터|키보드|마우스|가습기|이어폰|헤드폰|스마트폰|충전기|디지털|안마기)/)) return 'life-appliances';
+  if (has(/(?:밀키트|신선식품|반찬|과일|조미료|가공식품|식품|커피원두)/)) return 'health-fresh';
+  if (has(/(?:세제|섬유유연제|치약|칫솔|화장지|물티슈|침구|베개|가구|인테리어|식기|생활용품|수건|디퓨저)/)) return 'life-goods';
+  if (has(/(?:맛집|식당|음식점|레스토랑|뷔페|샤브|카레|해물|생선회|물회|횟집)/)) return 'food-korean';
   return 'etc';
 }

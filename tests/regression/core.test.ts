@@ -26,9 +26,7 @@ test('regression suite', async t => {
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
-  const { parseReviewPlaceDeadline } = await import('../../src/lib/scrapers/06_reviewplace');
-  const { parseReviewPlaceApplicantCounts } = await import('../../src/lib/scrapers/06_reviewplace');
-  const { cleanReviewPlaceTitle } = await import('../../src/lib/scrapers/06_reviewplace');
+  const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
@@ -186,6 +184,15 @@ test('regression suite', async t => {
   await t.test('ReviewPlace detail keeps its published applicant and quota counts', () => {
     const html = '<li id="cmp_reviewer">신청한 리뷰어 <em id="cmp_curr_num">0/2</em></li>';
     assert.deepEqual(parseReviewPlaceApplicantCounts(html), { applyCount: 0, limitCount: 2 });
+  });
+  await t.test('category classifier keeps restaurant nationalities separate', () => {
+    assert.equal(classifyCampaignCategory('성수 이탈리안 파스타', '2인 식사권'), 'food-western');
+    assert.equal(classifyCampaignCategory('스시 오마카세', '식사권'), 'food-japanese');
+    assert.equal(classifyCampaignCategory('마라탕 전문점', '3만원 이용권'), 'food-chinese');
+    assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
+  });
+  await t.test('ReviewPlace detail benefit is independent from its title', () => {
+    assert.equal(parseReviewPlaceBenefit('<dl><dt>제공내역</dt><dd>5만원 상당 식사권</dd></dl>'), '5만원 상당 식사권');
   });
   await t.test('ReviewPlace card badges are excluded from the campaign title', () => {
     assert.equal(cleanReviewPlaceTitle('NEW [기자단] 폰가비 소개 1 / 20명+ 10,000P'), 'NEW [기자단] 폰가비 소개');

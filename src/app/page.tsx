@@ -720,6 +720,9 @@ export default function Home() {
     sortBy: 'latest'
   });
 
+  // Each query/filter change advances this token. Responses from an older query
+  // must never replace the cards for the query the user is currently viewing.
+  const searchGenerationRef = useRef(0);
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
   const loadedCountRef = useRef(60);
@@ -729,7 +732,8 @@ export default function Home() {
     setIsSyncingData(true);
     setNextSyncTimestamp();
     try {
-      const currentFilters = filterRef.current;
+      const currentFilters = { ...filterRef.current };
+      const generation = searchGenerationRef.current;
       const params = new URLSearchParams({
         search: currentFilters.search,
         platform: currentFilters.platform,
@@ -742,7 +746,6 @@ export default function Home() {
       });
 
       params.set('crawl', 'false');
-      const generation = JSON.stringify(filterRef.current);
       const refreshed: Campaign[] = [];
       let offset: number | null = 0;
       const wanted = Math.max(60, loadedCountRef.current);
@@ -751,11 +754,11 @@ export default function Home() {
         const page = await fetchCampaignPage(params);
         refreshed.push(...page.data);
         offset = page.nextOffset;
-        if (generation !== JSON.stringify(filterRef.current)) return;
+        if (generation !== searchGenerationRef.current) return;
         setMatchedCount(page.totalCount);
       }
-      if (generation !== JSON.stringify(filterRef.current)) return;
-      setCampaigns(refreshed);
+      if (generation !== searchGenerationRef.current) return;
+      setCampaigns(Array.from(new Map(refreshed.map(campaign => [campaign.id, campaign])).values()));
       setNextOffset(offset);
 
     } catch (e) {
@@ -819,7 +822,9 @@ export default function Home() {
         setIsMissionLoading(true);
       }
 
-      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}&title=${encodeURIComponent(selectedCampaign.title)}`)
+      const requestedCampaignId = selectedCampaign.id;
+      const controller = new AbortController();
+      fetch(`/api/campaign-detail?url=${encodeURIComponent(selectedCampaign.campaignUrl)}&targetSite=${encodeURIComponent(selectedCampaign.targetSite)}&id=${encodeURIComponent(selectedCampaign.id)}&title=${encodeURIComponent(selectedCampaign.title)}`, { signal: controller.signal })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -828,13 +833,13 @@ export default function Home() {
             const newBenefit = data.realBenefit || undefined;
             const newMission = data.mission || undefined;
 
-            setSelectedCampaign(prev => prev ? {
+            setSelectedCampaign(prev => prev && prev.id === requestedCampaignId ? {
               ...prev,
               mission: newMission || prev.mission,
               description: (newBenefit && newBenefit !== prev.title) ? newBenefit : prev.description,
               applyCount: newApply !== undefined ? newApply : prev.applyCount,
               limitCount: newLimit !== undefined ? newLimit : prev.limitCount
-            } : null);
+            } : prev);
 
             // 🔑 목록 카드 state (campaigns) 도 실시간 100% 동기화 갱신하여 목록 수치와 상세 수치 일치 보장!
             setCampaigns(prevList => prevList.map(item => {
@@ -851,8 +856,9 @@ export default function Home() {
             }));
           }
         })
-        .catch(err => console.error('Failed to load detail mission:', err))
-        .finally(() => setIsMissionLoading(false));
+        .catch(err => { if (err.name !== 'AbortError') console.error('Failed to load detail mission:', err); })
+        .finally(() => { if (!controller.signal.aborted) setIsMissionLoading(false); });
+      return () => controller.abort();
     }
   }, [selectedCampaign?.id]);
   
@@ -1939,6 +1945,8 @@ export default function Home() {
   const [matchedCount, setMatchedCount] = useState(0);
   const makeSearchParams = () => new URLSearchParams({ search: searchTerm, platform: activePlatform, category: activeCategory, location: activeLocation, targetSite: activeSite, sortBy, type: activeType });
   const fetchCampaigns = async () => {
+    const generation = ++searchGenerationRef.current;
+    const params = makeSearchParams();
     searchRequestRef.current?.abort();
     const controller = new AbortController();
     searchRequestRef.current = controller;
@@ -1946,31 +1954,37 @@ export default function Home() {
     setLoading(true);
     setNextOffset(null);
     try {
-      const result = await fetchCampaignPage(makeSearchParams(), controller.signal);
-      if (controller.signal.aborted) return;
+      const result = await fetchCampaignPage(params, controller.signal);
+      if (controller.signal.aborted || generation !== searchGenerationRef.current) return;
       setCampaigns(result.data);
       setMatchedCount(result.totalCount);
       setNextOffset(result.nextOffset);
       setVisibleCount(12);
     } catch (error) {
-      if (!controller.signal.aborted) showToast('데이터를 가져오는데 실패했습니다.', 'error');
-    } finally { if (!controller.signal.aborted) setLoading(false); }
+      if (!controller.signal.aborted && generation === searchGenerationRef.current) showToast('데이터를 가져오는데 실패했습니다.', 'error');
+    } finally {
+      if (!controller.signal.aborted && generation === searchGenerationRef.current) setLoading(false);
+    }
   };
   useEffect(() => {
     if (loading || pageRequestRef.current || nextOffset === null || visibleCount < campaigns.length) return;
     const controller = searchRequestRef.current;
+    const generation = searchGenerationRef.current;
     if (!controller) return;
     pageRequestRef.current = true;
     const params = makeSearchParams();
     params.set('offset', String(nextOffset));
     params.set('crawl', 'false');
     fetchCampaignPage(params, controller.signal).then(result => {
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted || generation !== searchGenerationRef.current) return;
       setCampaigns(previous => Array.from(new Map([...previous, ...result.data].map(c => [c.id, c])).values()));
       setMatchedCount(result.totalCount);
       setNextOffset(result.nextOffset);
-    }).catch(() => { if (!controller.signal.aborted) showToast('추가 결과를 불러오지 못했습니다. 다시 스크롤해주세요.', 'error'); })
-      .finally(() => { if (!controller.signal.aborted) pageRequestRef.current = false; });
+    }).catch(() => {
+      if (!controller.signal.aborted && generation === searchGenerationRef.current) showToast('추가 결과를 불러오지 못했습니다. 다시 스크롤해주세요.', 'error');
+    }).finally(() => {
+      if (generation === searchGenerationRef.current) pageRequestRef.current = false;
+    });
   }, [visibleCount, campaigns.length, nextOffset, loading]);
   useEffect(() => () => searchRequestRef.current?.abort(), []);
 
@@ -2100,7 +2114,7 @@ export default function Home() {
     '세종': ['세종특별자치시']
   };
   // 출처 사이트 목록 (실제 온디맨드 크롤링 수집 및 테스트가 완료된 핵심 5대 매체)
-  const TARGET_SITES = ['레뷰 (REVU)', '디너의여왕', '리뷰노트', '포블로그', '강남맛집'];
+  const TARGET_SITES = ['레뷰 (REVU)', '디너의여왕', '리뷰노트', '포블로그', '강남맛집', '클라우드리뷰', '리뷰플레이스', '링블', '놀러와체험단', '미블', '아싸뷰', '모블', '오마이블로그'];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -3336,7 +3350,7 @@ export default function Home() {
               <a 
                 href={getValidCampaignUrl(selectedCampaign.campaignUrl, selectedCampaign.targetSite)} 
                 target="_blank" 
-                rel="noopener noreferrer"
+                rel="noopener"
                 className="premium-button-primary"
                 style={{ flex: 2, padding: '12px', fontSize: '0.9rem', fontWeight: 700 }}
               >

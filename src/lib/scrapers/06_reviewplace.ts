@@ -35,6 +35,26 @@ export function parseReviewPlaceApplicantCounts(html: string): { applyCount: num
   return Number.isFinite(applyCount) && Number.isFinite(limitCount) && limitCount > 0 ? { applyCount, limitCount } : null;
 }
 
+export function parseReviewPlaceBenefit(html: string): string {
+  const $ = cheerio.load(html);
+  $('script, style, noscript').remove();
+  let benefit = '';
+  $('dt, th, div, td, p, span').each((_, el) => {
+    const label = $(el).clone().children().remove().end().text().trim();
+    if (label === '제공내역' || label.startsWith('제공내역')) {
+      const candidate = ($(el).next().text() || $(el).parent().find('dd, td, .txt, .desc, p, span').not($(el)).first().text())
+        .replace(/[\w-]+\s*\{[^}]*\}/g, '').replace(/@media[^{]+\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
+      if (candidate && candidate !== '제공내역' && !candidate.includes('{') && candidate.length > benefit.length) benefit = candidate;
+    }
+  });
+  if (!benefit) {
+    const bodyText = $('body').text().replace(/\s+/g, ' ');
+    const match = bodyText.match(/제공내역\s*([^방문주소제목키워드본문키워드캠페인안내리뷰어미션]*)/i);
+    if (match?.[1]) benefit = match[1].trim().slice(0, 150);
+  }
+  return benefit.replace(/-->|<!--/g, '').replace(/리뷰\s*신청하기.*$/g, '').trim();
+}
+
 export function cleanReviewPlaceTitle(value: string): string {
   return value
     .replace(/\s*D\s*-\s*\d+\s*신청/gi, ' ')
@@ -55,7 +75,9 @@ async function enrichDeadlines(campaigns: ScrapedCampaign[]): Promise<void> {
         const html = String(response.data || '');
         const endDate = parseReviewPlaceDeadline(html);
         const counts = parseReviewPlaceApplicantCounts(html);
+        const benefit = parseReviewPlaceBenefit(html);
         if (endDate) campaign.endDate = endDate;
+        if (benefit) campaign.description = benefit;
         if (counts) {
           campaign.applyCount = counts.applyCount;
           campaign.limitCount = counts.limitCount;
@@ -124,56 +146,8 @@ export const ReviewPlaceScraper: SiteScraper = {
   async scrapeDetailBenefit(url: string): Promise<string | undefined> {
     try {
       const res = await axios.get(url, { headers: HEADERS, timeout: 6000 });
-      const $ = cheerio.load(res.data);
-
-      $('script, style, iframe, header, footer, nav, #hd, #ft, .header_wrap, .footer_wrap').remove();
-
-      // 1. Receipt / Hotdeal coupon card
-      const couponCard = $('.rp-receipt-detail__coupon-card').text().replace(/\s+/g, ' ').trim();
-      if (couponCard) {
-        const targetMatch = couponCard.match(/할인대상\s*:?\s*([^이용방법쿠폰]*)/i);
-        const benefitMatch = couponCard.match(/핫딜\s*혜택\s*:?\s*([^매장명할인대상]*)/i);
-        
-        const targetText = targetMatch ? targetMatch[1].trim() : '';
-        const benefitText = benefitMatch ? benefitMatch[1].trim() : '';
-        
-        if (targetText && benefitText) return `${benefitText} (${targetText})`;
-        if (benefitText) return benefitText;
-        if (targetText) return targetText;
-      }
-
-      // 2. Standard ReviewPlace campaign: 제공내역
-      let benefit = '';
-
-      $('dt, th, div, td, p, span').each((_, el) => {
-        const text = $(el).clone().children().remove().end().text().trim();
-        if (text === '제공내역' || text.startsWith('제공내역')) {
-          let next = $(el).next().text().trim() || $(el).parent().find('dd, td, .txt, .desc, p, span').not($(el)).first().text().trim();
-          next = next.replace(/[\w-]+\s*\{[^}]*\}/g, '').replace(/@media[^{]+\{[^}]*\}/g, '').trim();
-          if (next && next !== '제공내역' && !next.includes('{') && (!benefit || next.length > benefit.length)) {
-            benefit = next.replace(/\s+/g, ' ').trim();
-          }
-        }
-      });
-
-      if (!benefit) {
-        const bodyText = $('body').text().replace(/[\w-]+\s*\{[^}]*\}/g, '').replace(/\s+/g, ' ');
-        const match = bodyText.match(/제공내역\s*([^방문주소제목키워드본문키워드캠페인안내리뷰어미션]*)/i);
-        if (match && match[1]) {
-          benefit = match[1].trim().slice(0, 150);
-        }
-      }
-
-      if (benefit) {
-        benefit = benefit
-          .replace(/-->|<!--/g, '')
-          .replace(/[\w-]+\s*\{[^}]*\}/g, '')
-          .replace(/리뷰\s*신청하기.*$/g, '')
-          .trim();
-      }
-
-      return benefit || undefined;
-    } catch (e) {
+      return parseReviewPlaceBenefit(String(res.data || '')) || undefined;
+    } catch {
       return undefined;
     }
   },

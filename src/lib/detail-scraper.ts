@@ -466,11 +466,12 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
       'SELECT title, description FROM campaigns WHERE (campaignUrl = ? OR id = ? OR id = ? OR id = ?) AND length(COALESCE(title, description, "")) > 2',
       [url, url, cidMatch ? `cr-${cidMatch}` : url, cidMatch ? `mb-${cidMatch}` : url]
     );
-    if (dbRow && (dbRow.title || dbRow.description)) {
-      const bText = dbRow.title || dbRow.description;
-      if (bText && bText.length > 2 && !bText.includes('바로가기')) {
-        return bText.split('*')[0].trim();
-      }
+    // The database is only a fallback. Returning the title here made a
+    // missing benefit look like a real benefit and prevented detail parsing.
+    const savedBenefit = dbRow?.description?.trim() || '';
+    const savedTitle = dbRow?.title?.trim() || '';
+    if (savedBenefit.length > 2 && savedBenefit !== savedTitle && !savedBenefit.startsWith(savedTitle) && !savedBenefit.endsWith(' 체험 혜택') && !savedBenefit.includes('바로가기')) {
+      return savedBenefit.split('*')[0].trim();
     }
   } catch (e) {}
 
