@@ -348,11 +348,11 @@ export async function queryCampaigns(filters: {
     // 5-1. 방문/배송 구분 필터
     if (filters.type && filters.type !== 'all') {
       result = result.filter(c => {
-        const hasLocation = !!c.location?.trim();
+        const hasVisitEvidence = !!c.location?.trim() || /방문\s*안내|방문\s*가능|매장\s*위치|방문\s*주소/.test(c.mission || '');
         const isDelivery = isDeliveryCampaign(c);
         // An unknown type is excluded from both filters. It must never be
         // silently promoted to delivery merely because a list card omitted an address.
-        return filters.type === 'visit' ? hasLocation && !isDelivery : isDelivery;
+        return filters.type === 'visit' ? hasVisitEvidence && !isDelivery : isDelivery;
       });
     }
 
@@ -468,7 +468,7 @@ export async function queryCampaigns(filters: {
   // 5-1. 방문/배송 구분 필터
   if (filters.type && filters.type !== 'all') {
     if (filters.type === 'visit') {
-      query += ` AND location IS NOT NULL AND TRIM(location) != '' AND NOT ${DELIVERY_SQL}`;
+      query += ` AND (location IS NOT NULL AND TRIM(location) != '' OR COALESCE(mission, '') LIKE '%방문 안내%' OR COALESCE(mission, '') LIKE '%방문 가능%' OR COALESCE(mission, '') LIKE '%매장 위치%' OR COALESCE(mission, '') LIKE '%방문 주소%') AND NOT ${DELIVERY_SQL}`;
     } else if (filters.type === 'delivery') {
       query += ` AND ${DELIVERY_SQL}`;
     }
