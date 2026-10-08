@@ -6,7 +6,7 @@
 import { CATEGORY_GROUP_MAP, getDB, queryCampaigns, type Campaign } from '../lib/db';
 
 const sidos = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '제주', '충북', '충남', '전북', '전남', '경북', '경남', '세종'];
-const platforms = ['blog', 'clip', 'blog+clip', 'instagram', 'blog+instagram', 'youtube', 'coupang', 'etc'];
+const platforms = ['blog', 'clip', 'blog+clip', 'instagram', 'blog+instagram', 'youtube', 'tiktok', 'coupang', 'etc'];
 const issues: string[] = [];
 
 function active(c: Campaign) {
@@ -21,7 +21,7 @@ function matchesPlatform(c: Campaign, requested: string) {
 }
 function isVisit(c: Campaign) {
   const location = (c.location || '').trim();
-  return !!location && !/(배송|전국|재택|택배|온라인)/.test(location);
+  return !!location && !/(배송|전국|재택|택배|온라인)/.test(`${c.title} ${c.description} ${location} ${c.mission || ''}`);
 }
 function matchesLocation(c: Campaign, requested: string) {
   const location = (c.location || '').toLowerCase();
@@ -49,7 +49,7 @@ async function main() {
   })));
   const recruitment = Object.fromEntries(await Promise.all(['visit', 'delivery'].map(async type => {
     const rows = await queryCampaigns({ type });
-    return [type, audit(`type:${type}`, rows, row => type === 'visit' ? isVisit(row) : !isVisit(row))];
+    return [type, audit(`type:${type}`, rows, row => type === 'visit' ? isVisit(row) : /(배송|전국|재택|택배|온라인)/.test(`${row.title} ${row.description} ${row.location || ''} ${row.mission || ''}`))];
   })));
   const regions = Object.fromEntries(await Promise.all(sidos.map(async location => {
     const rows = await queryCampaigns({ location });

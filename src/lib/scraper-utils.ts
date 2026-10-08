@@ -70,7 +70,7 @@ export const parseCountText = (text: string): { applyCount: number; limitCount: 
   return { applyCount: 0, limitCount: 0 };
 };
 
-export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'blog+instagram' | 'instagram' | 'youtube' | 'coupang' | 'etc' => {
+export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' | 'clip' | 'blog+clip' | 'blog+instagram' | 'instagram' | 'youtube' | 'tiktok' | 'coupang' | 'etc' => {
   const t = (title || '').toLowerCase();
   const p = (rawPlatformText || '').toLowerCase();
   const combined = `${t} ${p}`;
@@ -96,17 +96,20 @@ export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' 
     return 'blog+instagram';
   }
 
-  // 3. Instagram / Reels
+  // 3. TikTok
+  if (combined.includes('틱톡') || combined.includes('tiktok')) return 'tiktok';
+
+  // 4. Instagram / Reels
   if (hasInsta) {
     return 'instagram';
   }
 
-  // 4. YouTube / Shorts
+  // 5. YouTube / Shorts
   if (combined.includes('쇼츠') || combined.includes('유튜브') || combined.includes('youtube') || combined.includes('shorts')) {
     return 'youtube';
   }
 
-  // 5. Naver Clip / Blog
+  // 6. Naver Clip / Blog
   if (hasBlog && hasClip) return 'blog+clip';
   if (hasClip) return 'clip';
   if (hasBlog) return 'blog';

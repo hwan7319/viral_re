@@ -1425,6 +1425,11 @@ export default function Home() {
                     </svg>
                   )
                 },
+                {
+                  key: 'tiktok',
+                  label: '틱톡',
+                  icon: <span style={{ fontSize: '25px', fontWeight: 900, color: '#111827' }}>♪</span>
+                },
                 { 
                   key: 'coupang', 
                   label: '쿠팡 체험단', 

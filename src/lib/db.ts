@@ -54,6 +54,10 @@ if (!globalRef.memoryLogs) {
   globalRef.memoryLogs = [];
 }
 
+
+const DELIVERY_SQL = `(COALESCE(title, '') LIKE '%배송%' OR COALESCE(title, '') LIKE '%택배%' OR COALESCE(title, '') LIKE '%재택%' OR COALESCE(title, '') LIKE '%온라인%' OR COALESCE(title, '') LIKE '%전국%' OR COALESCE(description, '') LIKE '%배송%' OR COALESCE(description, '') LIKE '%택배%' OR COALESCE(description, '') LIKE '%재택%' OR COALESCE(description, '') LIKE '%온라인%' OR COALESCE(description, '') LIKE '%전국%' OR COALESCE(location, '') LIKE '%배송%' OR COALESCE(location, '') LIKE '%택배%' OR COALESCE(location, '') LIKE '%재택%' OR COALESCE(location, '') LIKE '%온라인%' OR COALESCE(location, '') LIKE '%전국%' OR COALESCE(mission, '') LIKE '%배송%' OR COALESCE(mission, '') LIKE '%택배%' OR COALESCE(mission, '') LIKE '%재택%' OR COALESCE(mission, '') LIKE '%온라인%' OR COALESCE(mission, '') LIKE '%전국%')`;
+const isDeliveryCampaign = (campaign: Campaign) => /배송|택배|재택|온라인|전국/.test(`${campaign.title} ${campaign.description} ${campaign.location || ''} ${campaign.mission || ''}`);
+
 export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
   title: string;       // 캠페인 제목
@@ -344,16 +348,11 @@ export async function queryCampaigns(filters: {
     // 5-1. 방문/배송 구분 필터
     if (filters.type && filters.type !== 'all') {
       result = result.filter(c => {
-        const hasLoc = c.location && c.location.trim().length > 0;
-        const isDeliveryText = c.location && (
-          c.location.includes('배송') || 
-          c.location.includes('전국') || 
-          c.location.includes('재택') || 
-          c.location.includes('택배') || 
-          c.location.includes('온라인')
-        );
-        const isVisit = hasLoc && !isDeliveryText;
-        return filters.type === 'visit' ? isVisit : !isVisit;
+        const hasLocation = !!c.location?.trim();
+        const isDelivery = isDeliveryCampaign(c);
+        // An unknown type is excluded from both filters. It must never be
+        // silently promoted to delivery merely because a list card omitted an address.
+        return filters.type === 'visit' ? hasLocation && !isDelivery : isDelivery;
       });
     }
 
@@ -469,9 +468,9 @@ export async function queryCampaigns(filters: {
   // 5-1. 방문/배송 구분 필터
   if (filters.type && filters.type !== 'all') {
     if (filters.type === 'visit') {
-      query += " AND location IS NOT NULL AND TRIM(location) != '' AND location NOT LIKE '%배송%' AND location NOT LIKE '%전국%' AND location NOT LIKE '%재택%' AND location NOT LIKE '%택배%' AND location NOT LIKE '%온라인%'";
+      query += ` AND location IS NOT NULL AND TRIM(location) != '' AND NOT ${DELIVERY_SQL}`;
     } else if (filters.type === 'delivery') {
-      query += " AND (location IS NULL OR TRIM(location) = '' OR location LIKE '%배송%' OR location LIKE '%전국%' OR location LIKE '%재택%' OR location LIKE '%택배%' OR location LIKE '%온라인%')";
+      query += ` AND ${DELIVERY_SQL}`;
     }
   }
 
