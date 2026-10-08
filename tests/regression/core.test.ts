@@ -97,12 +97,23 @@ test('regression suite', async t => {
     assert.equal((await db.getCampaignById('thumbnail'))?.imageUrl, 'https://images.example.com/original.jpg');
   });
   await t.test('sync fails closed and rejects malformed objects', async () => {
+    const previousSyncSecret = process.env.SYNC_SECRET_KEY;
+    const previousCronSecret = process.env.CRON_SECRET;
     const req = (body: unknown, token = '') => new NextRequest('http://localhost:3000/api/sync', { method: 'POST', headers: { authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    assert.equal((await sync(req({ campaigns: [] }))).status, 503);
-    process.env.SYNC_SECRET_KEY = 'test-only-sync-secret';
-    assert.equal((await sync(req({ campaigns: [] }))).status, 401);
-    assert.equal((await sync(req({ campaigns: [{ id: 'bad' }] }, 'Bearer test-only-sync-secret'))).status, 400);
-    assert.equal((await sync(req({ campaigns: [fixture('synced')] }, 'Bearer test-only-sync-secret'))).status, 200);
+    delete process.env.SYNC_SECRET_KEY;
+    delete process.env.CRON_SECRET;
+    try {
+      assert.equal((await sync(req({ campaigns: [] }))).status, 503);
+      process.env.SYNC_SECRET_KEY = 'test-only-sync-secret';
+      assert.equal((await sync(req({ campaigns: [] }))).status, 401);
+      assert.equal((await sync(req({ campaigns: [{ id: 'bad' }] }, 'Bearer test-only-sync-secret'))).status, 400);
+      assert.equal((await sync(req({ campaigns: [fixture('synced')] }, 'Bearer test-only-sync-secret'))).status, 200);
+    } finally {
+      if (previousSyncSecret === undefined) delete process.env.SYNC_SECRET_KEY;
+      else process.env.SYNC_SECRET_KEY = previousSyncSecret;
+      if (previousCronSecret === undefined) delete process.env.CRON_SECRET;
+      else process.env.CRON_SECRET = previousCronSecret;
+    }
   });
   await t.test('client-supplied identities and tampered/expired sessions are rejected', async () => {
     assert.equal((await session()).status, 401);
