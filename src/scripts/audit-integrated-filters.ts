@@ -21,7 +21,8 @@ function matchesPlatform(c: Campaign, requested: string) {
 }
 function isVisit(c: Campaign) {
   const location = (c.location || '').trim();
-  return !!location && !/(배송|전국|재택|택배|온라인)/.test(`${c.title} ${c.description} ${location} ${c.mission || ''}`);
+  const hasVisitEvidence = !!location || /방문\s*안내|방문\s*가능|매장\s*위치|방문\s*주소/.test(c.mission || '');
+  return hasVisitEvidence && !/(배송|전국|재택|택배|온라인)/.test(`${c.title} ${c.description} ${location} ${c.mission || ''}`);
 }
 function matchesLocation(c: Campaign, requested: string) {
   const location = (c.location || '').toLowerCase();
