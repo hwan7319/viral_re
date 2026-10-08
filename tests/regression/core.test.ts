@@ -190,6 +190,8 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('스시 오마카세', '식사권'), 'food-japanese');
     assert.equal(classifyCampaignCategory('마라탕 전문점', '3만원 이용권'), 'food-chinese');
     assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
+    assert.equal(classifyCampaignCategory('그리즐리', '10만원 시술권 / 전시술 가능'), 'beauty-salon');
+    assert.equal(classifyCampaignCategory('맛있는전시회', '3만원 체험권'), 'food-korean');
   });
   await t.test('ReviewPlace detail benefit is independent from its title', () => {
     assert.equal(parseReviewPlaceBenefit('<dl><dt>제공내역</dt><dd>5만원 상당 식사권</dd></dl>'), '5만원 상당 식사권');

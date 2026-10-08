@@ -15,7 +15,8 @@
     "reclassify:travel": "tsx src/scripts/reclassify-travel-campaigns.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "test:filters": "tsx src/scripts/audit-integrated-filters.ts",
-    "backfill:source-quality": "tsx src/scripts/backfill-source-quality.ts"
+    "backfill:source-quality": "tsx src/scripts/backfill-source-quality.ts",
+    "reclassify:active": "tsx src/scripts/reclassify-active-categories.ts"
   },
   "dependencies": {
     "axios": "^1.19.0",
