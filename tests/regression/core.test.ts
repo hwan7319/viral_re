@@ -87,6 +87,20 @@ test('regression suite', async t => {
     assert.equal(other.some(campaign => campaign.id === 'legacy-general'), true);
     assert.equal(db.CATEGORY_GROUP_MAP.etc.includes('general'), true);
   });
+  await t.test('multi-select filters OR within a group and AND across groups', async () => {
+    await db.insertOrUpdateCampaigns([
+      fixture('multi-food-visit', { category: 'food-korean', platform: 'blog', location: '서울 강남구', targetSite: '레뷰', title: '방문 한식' }),
+      fixture('multi-beauty-delivery', { category: 'beauty-salon', platform: 'instagram', location: '경기 수원시', targetSite: '리뷰노트', title: '배송 헤어 제품', description: '택배 제공' }),
+      fixture('multi-unmatched', { category: 'culture', platform: 'youtube', location: '부산 중구', targetSite: '미블', title: '방문 공연' }),
+    ]);
+    const union = await db.queryCampaigns({ category: ['food-korean', 'beauty-salon'], platform: 'blog,instagram', location: ['서울', '경기'], targetSite: ['레뷰', '리뷰노트'] });
+    assert.deepEqual(union.filter(c => c.id.startsWith('multi-')).map(c => c.id).sort(), ['multi-beauty-delivery', 'multi-food-visit']);
+    const intersection = await db.queryCampaigns({ category: 'food-korean,beauty-salon', platform: 'instagram', type: ['visit', 'delivery'], targetSite: '리뷰노트,레뷰' });
+    assert.deepEqual(intersection.filter(c => c.id.startsWith('multi-')).map(c => c.id), ['multi-beauty-delivery']);
+    const response = await (await campaigns(new NextRequest('http://localhost:3000/api/campaigns?crawl=false&category=food-korean&category=beauty-salon&platform=blog,instagram&targetSite=%EB%A0%88%EB%B7%B0&targetSite=%EB%A6%AC%EB%B7%B0%EB%85%B8%ED%8A%B8'))).json();
+    assert.ok(response.data.some((c: Campaign) => c.id === 'multi-food-visit'));
+    assert.ok(response.data.some((c: Campaign) => c.id === 'multi-beauty-delivery'));
+  });
   await t.test('concurrent upserts serialize transactions and preserve known deadlines', async () => {
     await Promise.all(Array.from({ length: 10 }, (_, i) => db.insertOrUpdateCampaigns([fixture(`concurrent-${i}`)])));
     await db.insertOrUpdateCampaigns([fixture('concurrent-0', { endDate: '' })]);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
-import { queryCampaigns, getTotalCampaignCount, logSearchQuery } from '@/lib/db';
+import { filterValues, queryCampaigns, getTotalCampaignCount, logSearchQuery } from '@/lib/db';
 import { reserveKeywordCrawl, runKeywordCrawl } from '@/lib/crawl-jobs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -10,8 +10,9 @@ export async function GET(request: NextRequest) {
     const limit = Number(params.get('limit') || 60);
     const offset = Number(params.get('offset') || 0);
     if (search.length > 100 || !Number.isInteger(limit) || limit < 1 || limit > 300 || !Number.isSafeInteger(offset) || offset < 0) return NextResponse.json({ success: false, error: 'Invalid search or pagination' }, { status: 400 });
-    const filters = Object.fromEntries(['platform', 'category', 'location', 'targetSite', 'sortBy', 'type'].map(key => [key, params.get(key) || 'all']));
-    if (!['all', 'visit', 'delivery'].includes(filters.type) || !['all', 'latest', 'endDate', 'popular'].includes(filters.sortBy)) return NextResponse.json({ success: false, error: 'Invalid filter' }, { status: 400 });
+    const filters = Object.fromEntries(['platform', 'category', 'location', 'targetSite', 'sortBy', 'type'].map(key => [key, key === 'sortBy' ? (params.get(key) || 'all') : params.getAll(key)]));
+    const selectedTypes = filterValues(filters.type);
+    if (selectedTypes.some(type => !['visit', 'delivery'].includes(type)) || !['all', 'latest', 'endDate', 'popular'].includes(filters.sortBy as string)) return NextResponse.json({ success: false, error: 'Invalid filter' }, { status: 400 });
     const campaigns = await queryCampaigns({ ...filters, search });
     // Only the first page can schedule work. Failed/empty searches obey the same cooldown.
     const isCrawlingTriggered = offset === 0 && params.get('crawl') !== 'false' && !!search && reserveKeywordCrawl(search);

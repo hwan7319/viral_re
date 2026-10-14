@@ -10,6 +10,23 @@ import TrustContent from '@/components/TrustContent';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
+// The API accepts comma-separated selections. A value within one group is ORed;
+// different groups remain ANDed on the server.
+const selectedFilterValues = (value: string) => value === 'all' ? [] : value.split(',').filter(Boolean);
+const hasFilterValue = (value: string, option: string) => selectedFilterValues(value).includes(option);
+const toggleFilterValue = (value: string, option: string) => {
+  const current = selectedFilterValues(value);
+  return current.includes(option) ? (current.filter(item => item !== option).join(',') || 'all') : [...current, option].join(',');
+};
+const filterSummary = (value: string, labels: Record<string, string>, fallback: string) => {
+  const selected = selectedFilterValues(value);
+  if (!selected.length) return fallback;
+  return selected.length === 1 ? (labels[selected[0]] || selected[0]) : `${labels[selected[0]] || selected[0]} 외 ${selected.length - 1}`;
+};
+const TYPE_LABELS = { visit: '방문형', delivery: '배송형' };
+const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스', etc: '기타' };
+const PLATFORM_LABELS: Record<string, string> = { blog: '네이버 블로그', clip: '네이버 클립', 'blog+instagram': '네이버&인스타', instagram: '인스타그램', youtube: '유튜브', tiktok: '틱톡', coupang: '쿠팡 체험단' };
+
 const fallbackThumbnail = (title: string, targetSite: string) => {
   const safeTitle = title.replace(/[<>&]/g, '').slice(0, 32);
   const safeSite = targetSite.replace(/[<>&]/g, '').slice(0, 20);
@@ -997,8 +1014,7 @@ export default function Home() {
                 </svg>
               </span>
               <span>
-                {activeType === 'all' ? '모집 유형' :
-                  activeType === 'visit' ? '방문형' : '배송형'}
+                {filterSummary(activeType, TYPE_LABELS, '모집 유형')}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isTypeOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1036,32 +1052,7 @@ export default function Home() {
                 </svg>
               </span>
               <span>
-                {activeCategory === 'all' ? '카테고리' :
-                  activeCategory === 'food-korean' ? '한식' :
-                  activeCategory === 'food-western' ? '양식' :
-                  activeCategory === 'food-japanese' ? '일식' :
-                  activeCategory === 'food-chinese' ? '중식' :
-                  activeCategory === 'food-restaurant' ? '한식/맛집' :
-                  activeCategory === 'food-foreign' ? '양식/일식/중식' :
-                  activeCategory === 'food-cafe' ? '카페/디저트' :
-                  activeCategory === 'food-pub' ? '술집/주점' :
-                  activeCategory === 'beauty-cosmetics' ? '화장품' :
-                  activeCategory === 'beauty-salon' ? '헤어/네일' :
-                  activeCategory === 'beauty-spa' ? '피부/에스테틱' :
-                  activeCategory === 'health-fitness' ? '헬스/피트니스' :
-                  activeCategory === 'health-food' ? '영양제/건강식품' :
-                  activeCategory === 'accommodation' ? '숙박' :
-                  activeCategory === 'travel' ? '여행/레저' :
-                  activeCategory === 'culture' ? '문화/공연' :
-                  activeCategory === 'fashion-clothing' ? '의류/패션' :
-                  activeCategory === 'fashion-accessory' ? '패션잡화' :
-                  activeCategory === 'baby' ? '유아/육아' :
-                  activeCategory === 'life-goods' ? '생활용품' :
-                  activeCategory === 'health-fresh' ? '밀키트/식품' :
-                  activeCategory === 'life-appliances' ? '가전/디지털' :
-                  activeCategory === 'pet' ? '반려동물' :
-                  activeCategory === 'book' ? '도서/교육' :
-                  activeCategory === 'hobby' ? '취미/클래스' : '기타'}
+                {filterSummary(activeCategory, CATEGORY_LABELS, '카테고리')}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isCategoryOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1097,13 +1088,7 @@ export default function Home() {
                 </svg>
               </span>
               <span>
-                {activePlatform === 'all' ? '플랫폼' :
-                  activePlatform === 'blog' ? '네이버 블로그' :
-                  activePlatform === 'clip' ? '네이버 클립' :
-                  activePlatform === 'blog+instagram' ? '네이버&인스타' :
-                  activePlatform === 'instagram' ? '인스타그램' :
-                  activePlatform === 'youtube' ? '유튜브' :
-                  activePlatform === 'coupang' ? '쿠팡 체험단' : '플랫폼'}
+                {filterSummary(activePlatform, PLATFORM_LABELS, '플랫폼')}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isPlatformOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1139,8 +1124,7 @@ export default function Home() {
                 </svg>
               </span>
               <span>
-                {activeLocation === 'all' ? '지역 검색' :
-                  selectedSigungu !== 'all' ? `${selectedSido} ${selectedSigungu}` : selectedSido}
+                {filterSummary(activeLocation, {}, '지역 검색')}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isLocationOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1176,7 +1160,7 @@ export default function Home() {
                 </svg>
               </span>
               <span>
-                {activeSite === 'all' ? '출처 사이트' : activeSite}
+                {filterSummary(activeSite, {}, '출처 사이트')}
               </span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transition: 'transform 0.2s', transform: isSiteOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -1248,7 +1232,7 @@ export default function Home() {
                   )
                 }
               ].map(t => (
-                <button type="button" key={t.key} className={`filter-desktop-icon ${activeType === t.key ? 'active' : ''}`} onClick={() => { setActiveType(activeType === t.key ? 'all' : t.key); setIsTypeOpen(false); }}>
+                <button type="button" key={t.key} className={`filter-desktop-icon ${t.key === 'all' ? activeType === 'all' : hasFilterValue(activeType, t.key) ? 'active' : ''}`} onClick={() => setActiveType(t.key === 'all' ? 'all' : toggleFilterValue(activeType, t.key))}>
                   <span className="filter-desktop-icon-img">{t.icon}</span>
                   <span className="filter-desktop-icon-text">{t.label}</span>
                 </button>
@@ -1281,7 +1265,7 @@ export default function Home() {
                     { key: 'food-cafe', label: '카페/디저트' },
                     { key: 'food-pub', label: '술집/주점' },
                   ].map(c => (
-                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
                       <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
@@ -1301,7 +1285,7 @@ export default function Home() {
                     { key: 'health-fitness', label: '헬스/피트니스' },
                     { key: 'health-food', label: '영양제/건강식품' },
                   ].map(c => (
-                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
                       <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
@@ -1319,7 +1303,7 @@ export default function Home() {
                     { key: 'travel', label: '여행/레저/관광' },
                     { key: 'culture', label: '문화/공연/전시' },
                   ].map(c => (
-                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
                       <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
@@ -1344,7 +1328,7 @@ export default function Home() {
                     { key: 'hobby', label: '취미/클래스' },
                     { key: 'etc', label: '기타' },
                   ].map(c => (
-                    <button type="button" key={c.key} className={`filter-desktop-icon ${activeCategory === c.key ? 'active' : ''}`} onClick={() => { setActiveCategory(activeCategory === c.key ? 'all' : c.key); setIsCategoryOpen(false); }}>
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
                       <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>
                     </button>
@@ -1443,7 +1427,7 @@ export default function Home() {
                   )
                 }
               ].map(p => (
-                <button type="button" key={p.key} className={`filter-desktop-icon ${activePlatform === p.key ? 'active' : ''}`} onClick={() => { setActivePlatform(activePlatform === p.key ? 'all' : p.key); setIsPlatformOpen(false); }}>
+                <button type="button" key={p.key} className={`filter-desktop-icon ${p.key === 'all' ? activePlatform === 'all' : hasFilterValue(activePlatform, p.key) ? 'active' : ''}`} onClick={() => setActivePlatform(p.key === 'all' ? 'all' : toggleFilterValue(activePlatform, p.key))}>
                   <span className="filter-desktop-icon-img">
                     {p.icon}
                   </span>
@@ -1469,7 +1453,7 @@ export default function Home() {
                 <div className="region-sido-list" onMouseLeave={() => setHoveredSido(selectedSido !== 'all' ? selectedSido : 'all')}>
                   <button
                     type="button"
-                    className={`region-sido-btn ${selectedSido === 'all' ? 'active' : ''}`}
+                    className={`region-sido-btn ${activeLocation === 'all' ? 'active' : ''}`}
                     onClick={() => { setSelectedSido('all'); setSelectedSigungu('all'); setIsLocationOpen(false); }}
                   >
                     전국
@@ -1481,7 +1465,7 @@ export default function Home() {
                     <button
                       type="button"
                       key={sido}
-                      className={`region-sido-btn ${selectedSido === sido ? 'active' : ''}`}
+                      className={`region-sido-btn ${hasFilterValue(activeLocation, sido) ? 'active' : ''}`}
                       onMouseEnter={() => {
                         if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
                           setHoveredSido(sido);
@@ -1491,9 +1475,7 @@ export default function Home() {
                         setSelectedSido(sido);
                         setHoveredSido(sido);
                         setSelectedSigungu('all');
-                        if (!LOCATIONS_MAP[sido] || LOCATIONS_MAP[sido].length === 0) {
-                          setIsLocationOpen(false);
-                        }
+                        setActiveLocation(toggleFilterValue(activeLocation, sido));
                       }}
                     >
                       {sido}
@@ -1519,7 +1501,11 @@ export default function Home() {
                         type="button"
                         className={`filter-chip ${selectedSigungu === 'all' ? 'active' : ''}`}
                         style={{ fontSize: '0.82rem', padding: '5px 12px' }}
-                        onClick={() => { setSelectedSigungu('all'); setIsLocationOpen(false); }}
+                        onClick={() => {
+                          const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
+                          setSelectedSigungu('all');
+                          setActiveLocation(targetSido === 'all' ? 'all' : toggleFilterValue(activeLocation, targetSido));
+                        }}
                       >
                         {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
                       </button>
@@ -1530,13 +1516,13 @@ export default function Home() {
                         <button
                           type="button"
                           key={sigungu}
-                          className={`filter-chip ${selectedSigungu === sigungu && selectedSido === (hoveredSido !== 'all' ? hoveredSido : selectedSido) ? 'active' : ''}`}
+                          className={`filter-chip ${hasFilterValue(activeLocation, `${hoveredSido !== 'all' ? hoveredSido : selectedSido} ${sigungu}`) ? 'active' : ''}`}
                           style={{ fontSize: '0.82rem', padding: '5px 12px' }}
                           onClick={() => {
                             const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
                             setSelectedSido(targetSido);
                             setSelectedSigungu(sigungu);
-                            setIsLocationOpen(false);
+                            setActiveLocation(toggleFilterValue(activeLocation, `${targetSido} ${sigungu}`));
                           }}
                         >
                           {sigungu}
@@ -1583,21 +1569,20 @@ export default function Home() {
                 <button
                   type="button"
                   key={s.key}
-                  className={`filter-chip ${activeSite === s.key ? 'active' : ''}`}
+                  className={`filter-chip ${s.key === 'all' ? activeSite === 'all' : hasFilterValue(activeSite, s.key) ? 'active' : ''}`}
                   onClick={() => {
-                    setActiveSite(s.key);
-                    setIsSiteOpen(false);
+                    setActiveSite(s.key === 'all' ? 'all' : toggleFilterValue(activeSite, s.key));
                   }}
                   style={{
                     padding: '8px 16px',
                     fontSize: '0.85rem',
-                    fontWeight: activeSite === s.key ? 800 : 500,
+                    fontWeight: (s.key === 'all' ? activeSite === 'all' : hasFilterValue(activeSite, s.key)) ? 800 : 500,
                     borderRadius: 'var(--radius-full)',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    backgroundColor: activeSite === s.key ? 'var(--accent)' : 'var(--bg-tertiary)',
-                    color: activeSite === s.key ? '#ffffff' : 'var(--text-primary)',
-                    border: activeSite === s.key ? '1px solid var(--accent)' : '1px solid var(--border-color)'
+                    backgroundColor: (s.key === 'all' ? activeSite === 'all' : hasFilterValue(activeSite, s.key)) ? 'var(--accent)' : 'var(--bg-tertiary)',
+                    color: (s.key === 'all' ? activeSite === 'all' : hasFilterValue(activeSite, s.key)) ? '#ffffff' : 'var(--text-primary)',
+                    border: (s.key === 'all' ? activeSite === 'all' : hasFilterValue(activeSite, s.key)) ? '1px solid var(--accent)' : '1px solid var(--border-color)'
                   }}
                 >
                   {s.label}
@@ -1866,18 +1851,7 @@ export default function Home() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 광역시도/시군구 선택이 바뀔 때 activeLocation 상태 동기화 처리
-  useEffect(() => {
-    if (selectedSido === 'all') {
-      setActiveLocation('all');
-    } else {
-      if (selectedSigungu === 'all') {
-        setActiveLocation(selectedSido);
-      } else {
-        setActiveLocation(`${selectedSido} ${selectedSigungu}`);
-      }
-    }
-  }, [selectedSido, selectedSigungu]);
+  // 지역 선택 UI의 탐색 상태와 실제 복수 선택값을 분리한다.
 
   // 컴포넌트 마운트 시 초기 설정
   useEffect(() => {
@@ -2094,10 +2068,7 @@ export default function Home() {
   };
 
   // 필터링 적용된 최종 리스트 (출처 사이트 필터 처리)
-  const displayedCampaigns = useMemo(() => {
-    if (activeSite === 'all') return campaigns;
-    return campaigns.filter(c => c.targetSite && (c.targetSite.includes(activeSite) || activeSite.includes(c.targetSite)));
-  }, [campaigns, activeSite]);
+  const displayedCampaigns = useMemo(() => campaigns, [campaigns]);
 
   // 지역 목록 목록 데이터 (광역시도 및 시군구 상세 세분화)
   const LOCATIONS_MAP: Record<string, string[]> = {

@@ -59,6 +59,40 @@ if (!globalRef.memoryLogs) {
 
 const DELIVERY_SQL = `(COALESCE(title, '') LIKE '%배송%' OR COALESCE(title, '') LIKE '%택배%' OR COALESCE(title, '') LIKE '%재택%' OR COALESCE(title, '') LIKE '%온라인%' OR COALESCE(title, '') LIKE '%전국%' OR COALESCE(description, '') LIKE '%배송%' OR COALESCE(description, '') LIKE '%택배%' OR COALESCE(description, '') LIKE '%재택%' OR COALESCE(description, '') LIKE '%온라인%' OR COALESCE(description, '') LIKE '%전국%' OR COALESCE(location, '') LIKE '%배송%' OR COALESCE(location, '') LIKE '%택배%' OR COALESCE(location, '') LIKE '%재택%' OR COALESCE(location, '') LIKE '%온라인%' OR COALESCE(location, '') LIKE '%전국%' OR COALESCE(mission, '') LIKE '%배송%' OR COALESCE(mission, '') LIKE '%택배%' OR COALESCE(mission, '') LIKE '%재택%' OR COALESCE(mission, '') LIKE '%온라인%' OR COALESCE(mission, '') LIKE '%전국%')`;
 const isDeliveryCampaign = (campaign: Campaign) => /배송|택배|재택|온라인|전국/.test(`${campaign.title} ${campaign.description} ${campaign.location || ''} ${campaign.mission || ''}`);
+type FilterValue = string | string[] | undefined;
+
+/** Comma-separated URL values and repeated query parameters both mean OR. */
+export function filterValues(value: FilterValue): string[] {
+  const values = Array.isArray(value) ? value : [value || ''];
+  return [...new Set(values.flatMap(item => item.split(',')).map(item => item.trim()).filter(item => item && item !== 'all'))];
+}
+
+function platformMatches(platform: string, selected: string[]) {
+  return selected.some(value => {
+    if (value === 'blog') return ['blog', 'blog+clip', 'blog+instagram', 'naver+instagram'].includes(platform);
+    if (value === 'clip') return ['clip', 'blog+clip'].includes(platform);
+    if (value === 'instagram') return ['instagram', 'blog+instagram', 'naver+instagram'].includes(platform);
+    if (value === 'blog+instagram' || value === 'naver+instagram') return ['blog+instagram', 'naver+instagram'].includes(platform);
+    return platform === value;
+  });
+}
+
+function locationMatches(location: string | undefined, selected: string[]) {
+  const normalized = (location || '').toLowerCase();
+  return selected.some(value => {
+    const parts = value.toLowerCase().split(/\s+/);
+    const sido = parts[0].replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
+    if (!normalized.includes(sido)) return false;
+    if (parts.length < 2) return true;
+    const sigungu = parts[1];
+    const stem = sigungu.replace(/(구|군|시)$/, '');
+    return normalized.includes(sigungu) || (stem.length >= 2 && normalized.includes(stem));
+  });
+}
+
+function isVisitCampaign(campaign: Campaign) {
+  return (!!campaign.location?.trim() || /방문\s*안내|방문\s*가능|매장\s*위치|방문\s*주소/.test(campaign.mission || '')) && !isDeliveryCampaign(campaign);
+}
 
 export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
@@ -239,12 +273,12 @@ async function initializeDB(): Promise<Database> {
 // 캠페인 데이터 조건 검색 조회 (검색 키워드 태그 조건 및 방문/배송 필터 추가)
 export async function queryCampaigns(filters: {
   search?: string;
-  platform?: string;
-  category?: string;
-  location?: string;
-  targetSite?: string;
+  platform?: FilterValue;
+  category?: FilterValue;
+  location?: FilterValue;
+  targetSite?: FilterValue;
   sortBy?: string;
-  type?: string; // 'all' | 'visit' | 'delivery'
+  type?: FilterValue; // 'visit' | 'delivery', multiple values are ORed
 }): Promise<Campaign[]> {
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER || globalRef.isMockDb);
 
@@ -301,62 +335,24 @@ export async function queryCampaigns(filters: {
         });
       }
     }
-    // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 네이버&인스타 복합 매칭 지원)
-    if (filters.platform && filters.platform !== 'all') {
-      if (filters.platform === 'blog') {
-        result = result.filter(c => c.platform === 'blog' || c.platform === 'blog+clip' || c.platform === 'blog+instagram' || c.platform === 'naver+instagram');
-      } else if (filters.platform === 'clip') {
-        result = result.filter(c => c.platform === 'clip' || c.platform === 'blog+clip');
-      } else if (filters.platform === 'instagram') {
-        result = result.filter(c => c.platform === 'instagram' || c.platform === 'blog+instagram' || c.platform === 'naver+instagram');
-      } else if (filters.platform === 'blog+instagram' || filters.platform === 'naver+instagram') {
-        result = result.filter(c => c.platform === 'blog+instagram' || c.platform === 'naver+instagram');
-      } else if (filters.platform === 'blog+clip') {
-        result = result.filter(c => c.platform === 'blog+clip');
-      } else {
-        result = result.filter(c => c.platform === filters.platform);
-      }
+    // Each selected value within a filter is ORed; filter groups remain ANDed.
+    const platforms = filterValues(filters.platform);
+    if (platforms.length) result = result.filter(c => platformMatches(c.platform, platforms));
+
+    const categories = filterValues(filters.category);
+    if (categories.length) {
+      const matches = new Set(categories.flatMap(category => CATEGORY_GROUP_MAP[category] || [category]));
+      result = result.filter(c => matches.has(c.category));
     }
-    // 3. 카테고리 필터 (그룹 맵핑 기반 멀티 매칭 보증)
-    if (filters.category && filters.category !== 'all') {
-      const targetMatches = CATEGORY_GROUP_MAP[filters.category] || [filters.category];
-      result = result.filter(c => targetMatches.includes(c.category));
-    }
-    // 4. 지역 필터 (구/군/시 접미사 생략 지명까지 유연 매칭 지원)
-    if (filters.location && filters.location !== 'all') {
-      const parts = filters.location.trim().split(/\s+/);
-      if (parts.length > 1) {
-        const sigungu = parts[1].toLowerCase();
-        const stem = sigungu.replace(/(구|군|시)$/, '');
-        result = result.filter(c => c.location && c.location.toLowerCase().includes(parts[0].toLowerCase().replace(/(특별자치시|특별자치도|광역시|특별시|도|시)$/, '')) && (c.location.toLowerCase().includes(sigungu) || (stem.length >= 2 && c.location.toLowerCase().includes(stem))));
-      } else {
-        const loc = parts[0].toLowerCase();
-        const sidoStem = loc.replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
-        const stem = loc.replace(/(시|도)$/, '');
-        result = result.filter(c => c.location && (
-          c.location.toLowerCase().includes(loc) || 
-          (stem.length >= 2 && c.location.toLowerCase().includes(stem)) ||
-          (sidoStem.length >= 2 && c.location.toLowerCase().includes(sidoStem))
-        ));
-      }
-    }
-    // 5. 출처 사이트 필터 (유연한 상호 매칭 지원)
-    if (filters.targetSite && filters.targetSite !== 'all') {
-      const ts = filters.targetSite.trim();
-      result = result.filter(c => c.targetSite && (
-        c.targetSite.includes(ts) || ts.includes(c.targetSite)
-      ));
-    }
-    // 5-1. 방문/배송 구분 필터
-    if (filters.type && filters.type !== 'all') {
-      result = result.filter(c => {
-        const hasVisitEvidence = !!c.location?.trim() || /방문\s*안내|방문\s*가능|매장\s*위치|방문\s*주소/.test(c.mission || '');
-        const isDelivery = isDeliveryCampaign(c);
-        // An unknown type is excluded from both filters. It must never be
-        // silently promoted to delivery merely because a list card omitted an address.
-        return filters.type === 'visit' ? hasVisitEvidence && !isDelivery : isDelivery;
-      });
-    }
+
+    const locations = filterValues(filters.location);
+    if (locations.length) result = result.filter(c => locationMatches(c.location, locations));
+
+    const targetSites = filterValues(filters.targetSite);
+    if (targetSites.length) result = result.filter(c => targetSites.some(site => c.targetSite && (c.targetSite.includes(site) || site.includes(c.targetSite))));
+
+    const types = filterValues(filters.type);
+    if (types.length) result = result.filter(c => types.some(type => type === 'visit' ? isVisitCampaign(c) : type === 'delivery' && isDeliveryCampaign(c)));
 
     // 6. 정렬
     const nowStr = koreanDate();
@@ -402,78 +398,58 @@ export async function queryCampaigns(filters: {
     }
   }
 
-  // 2. 플랫폼 필터 (네이버 블로그, 네이버 클립, 네이버&인스타 복합 매칭 지원)
-  if (filters.platform && filters.platform !== 'all') {
-    if (filters.platform === 'blog') {
-      query += " AND (platform = 'blog' OR platform = 'blog+clip' OR platform = 'blog+instagram' OR platform = 'naver+instagram')";
-    } else if (filters.platform === 'clip') {
-      query += " AND (platform = 'clip' OR platform = 'blog+clip')";
-    } else if (filters.platform === 'instagram') {
-      query += " AND (platform = 'instagram' OR platform = 'blog+instagram' OR platform = 'naver+instagram')";
-    } else if (filters.platform === 'blog+instagram' || filters.platform === 'naver+instagram') {
-      query += " AND (platform = 'blog+instagram' OR platform = 'naver+instagram')";
-    } else if (filters.platform === 'blog+clip') {
-      query += " AND platform = 'blog+clip'";
-    } else {
-      query += ' AND platform = ?';
-      params.push(filters.platform);
-    }
+  // Each selected value within a filter is ORed; different filter groups remain ANDed.
+  const platforms = filterValues(filters.platform);
+  if (platforms.length) {
+    const values = [...new Set(platforms.flatMap(value => {
+      if (value === 'blog') return ['blog', 'blog+clip', 'blog+instagram', 'naver+instagram'];
+      if (value === 'clip') return ['clip', 'blog+clip'];
+      if (value === 'instagram') return ['instagram', 'blog+instagram', 'naver+instagram'];
+      if (value === 'blog+instagram' || value === 'naver+instagram') return ['blog+instagram', 'naver+instagram'];
+      return [value];
+    }))];
+    query += ` AND platform IN (${values.map(() => '?').join(', ')})`;
+    params.push(...values);
   }
 
-  // 3. 카테고리 필터 (그룹 맵핑 기반 멀티 매칭 보증)
-  if (filters.category && filters.category !== 'all') {
-    const targetMatches = CATEGORY_GROUP_MAP[filters.category] || [filters.category];
-    const placeholders = targetMatches.map(() => '?').join(', ');
-    query += " AND category IN (" + placeholders + ")";
-    params.push(...targetMatches);
+  const categories = filterValues(filters.category);
+  if (categories.length) {
+    const values = [...new Set(categories.flatMap(category => CATEGORY_GROUP_MAP[category] || [category]))];
+    query += ` AND category IN (${values.map(() => '?').join(', ')})`;
+    params.push(...values);
   }
 
-  // 4. 지역 필터 (구/군/시 접미사 생략 지명까지 유연 매칭 지원)
-  if (filters.location && filters.location !== 'all') {
-    const parts = filters.location.trim().split(/\s+/);
-    if (parts.length > 1) {
-      const sigungu = parts[1];
-      query += ' AND location LIKE ?';
-      params.push(`%${parts[0].replace(/(특별자치시|특별자치도|광역시|특별시|도|시)$/, '')}%`);
-      const stem = sigungu.replace(/(구|군|시)$/, '');
-      if (stem.length >= 2 && stem !== sigungu) {
-        query += ' AND (location LIKE ? OR location LIKE ?)';
-        params.push(`%${sigungu}%`, `%${stem}%`);
+  const locations = filterValues(filters.location);
+  if (locations.length) {
+    const clauses: string[] = [];
+    for (const value of locations) {
+      const parts = value.split(/\s+/);
+      const sido = parts[0].replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
+      if (parts.length < 2) {
+        clauses.push('location LIKE ?');
+        params.push(`%${sido}%`);
       } else {
-        query += ' AND location LIKE ?';
-        params.push(`%${sigungu}%`);
-      }
-    } else {
-      const loc = parts[0];
-      const sidoStem = loc.replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
-      const stem = loc.replace(/(시|도)$/, '');
-      if (sidoStem.length >= 2 && sidoStem !== loc) {
-        query += ' AND (location LIKE ? OR location LIKE ? OR location LIKE ?)';
-        params.push(`%${loc}%`, `%${stem}%`, `%${sidoStem}%`);
-      } else if (stem.length >= 2 && stem !== loc) {
-        query += ' AND (location LIKE ? OR location LIKE ?)';
-        params.push(`%${loc}%`, `%${stem}%`);
-      } else {
-        query += ' AND location LIKE ?';
-        params.push(`%${loc}%`);
+        const sigungu = parts[1];
+        const stem = sigungu.replace(/(구|군|시)$/, '');
+        clauses.push(`(location LIKE ? AND (location LIKE ? OR location LIKE ?))`);
+        params.push(`%${sido}%`, `%${sigungu}%`, `%${stem}%`);
       }
     }
+    query += ` AND (${clauses.join(' OR ')})`;
   }
 
-  // 5. 출처 사이트 필터 (유연한 상호 매칭 지원)
-  if (filters.targetSite && filters.targetSite !== 'all') {
-    const ts = filters.targetSite.trim();
-    query += ' AND (targetSite LIKE ? OR ? LIKE "%" || targetSite || "%")';
-    params.push(`%${ts}%`, ts);
+  const targetSites = filterValues(filters.targetSite);
+  if (targetSites.length) {
+    query += ` AND (${targetSites.map(() => '(targetSite LIKE ? OR ? LIKE "%" || targetSite || "%")').join(' OR ')})`;
+    targetSites.forEach(site => params.push(`%${site}%`, site));
   }
 
-  // 5-1. 방문/배송 구분 필터
-  if (filters.type && filters.type !== 'all') {
-    if (filters.type === 'visit') {
-      query += ` AND (location IS NOT NULL AND TRIM(location) != '' OR COALESCE(mission, '') LIKE '%방문 안내%' OR COALESCE(mission, '') LIKE '%방문 가능%' OR COALESCE(mission, '') LIKE '%매장 위치%' OR COALESCE(mission, '') LIKE '%방문 주소%') AND NOT ${DELIVERY_SQL}`;
-    } else if (filters.type === 'delivery') {
-      query += ` AND ${DELIVERY_SQL}`;
-    }
+  const types = filterValues(filters.type);
+  if (types.length) {
+    const typeClauses = types.flatMap(type => type === 'visit'
+      ? [`((location IS NOT NULL AND TRIM(location) != '') OR COALESCE(mission, '') LIKE '%방문 안내%' OR COALESCE(mission, '') LIKE '%방문 가능%' OR COALESCE(mission, '') LIKE '%매장 위치%' OR COALESCE(mission, '') LIKE '%방문 주소%') AND NOT ${DELIVERY_SQL}`]
+      : type === 'delivery' ? [DELIVERY_SQL] : []);
+    if (typeClauses.length) query += ` AND (${typeClauses.join(' OR ')})`;
   }
 
   // 6. 정렬
