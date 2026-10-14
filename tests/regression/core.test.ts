@@ -25,6 +25,7 @@ test('regression suite', async t => {
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
+  const { ensureFilterValue, toggleFilterValue } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
@@ -100,6 +101,12 @@ test('regression suite', async t => {
     const response = await (await campaigns(new NextRequest('http://localhost:3000/api/campaigns?crawl=false&category=food-korean&category=beauty-salon&platform=blog,instagram&targetSite=%EB%A0%88%EB%B7%B0&targetSite=%EB%A6%AC%EB%B7%B0%EB%85%B8%ED%8A%B8'))).json();
     assert.ok(response.data.some((c: Campaign) => c.id === 'multi-food-visit'));
     assert.ok(response.data.some((c: Campaign) => c.id === 'multi-beauty-delivery'));
+  });
+  await t.test('province 전체 confirms an existing region selection instead of clearing it', () => {
+    const selectedGyeonggi = toggleFilterValue('all', '경기');
+    assert.equal(selectedGyeonggi, '경기');
+    assert.equal(ensureFilterValue(selectedGyeonggi, '경기'), '경기');
+    assert.equal(ensureFilterValue(selectedGyeonggi, '서울'), '경기,서울');
   });
   await t.test('concurrent upserts serialize transactions and preserve known deadlines', async () => {
     await Promise.all(Array.from({ length: 10 }, (_, i) => db.insertOrUpdateCampaigns([fixture(`concurrent-${i}`)])));

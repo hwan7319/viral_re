@@ -7,17 +7,12 @@ import { fetchCampaignPage } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
 import TrustContent from '@/components/TrustContent';
+import { ensureFilterValue, hasFilterValue, selectedFilterValues, toggleFilterValue } from '@/lib/filter-selection';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
 // The API accepts comma-separated selections. A value within one group is ORed;
 // different groups remain ANDed on the server.
-const selectedFilterValues = (value: string) => value === 'all' ? [] : value.split(',').filter(Boolean);
-const hasFilterValue = (value: string, option: string) => selectedFilterValues(value).includes(option);
-const toggleFilterValue = (value: string, option: string) => {
-  const current = selectedFilterValues(value);
-  return current.includes(option) ? (current.filter(item => item !== option).join(',') || 'all') : [...current, option].join(',');
-};
 const filterSummary = (value: string, labels: Record<string, string>, fallback: string) => {
   const selected = selectedFilterValues(value);
   if (!selected.length) return fallback;
@@ -1506,9 +1501,7 @@ export default function Home() {
                           setSelectedSigungu('all');
                           // The left-side province row already selects the province. Its
                           // "전체" chip must confirm that selection, not toggle it off.
-                          setActiveLocation(targetSido === 'all' || hasFilterValue(activeLocation, targetSido)
-                            ? activeLocation
-                            : toggleFilterValue(activeLocation, targetSido));
+                          setActiveLocation(ensureFilterValue(activeLocation, targetSido));
                         }}
                       >
                         {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
