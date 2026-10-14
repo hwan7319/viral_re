@@ -38,7 +38,9 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'pet': ['pet', 'life'],
   'book': ['book', 'life'],
   'hobby': ['hobby'],
-  'etc': ['etc']
+  // `general` was emitted by early list scrapers. Keep it here while old
+  // rows are normalised so the visible "기타" filter can never hide them.
+  'etc': ['etc', 'general']
 };
 
 import { open, Database } from 'sqlite';

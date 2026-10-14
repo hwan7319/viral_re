@@ -81,6 +81,12 @@ test('regression suite', async t => {
       finally { delete process.env.VERCEL; }
     }
   });
+  await t.test('legacy general categories stay visible under the 기타 filter until normalisation finishes', async () => {
+    await db.insertOrUpdateCampaigns([fixture('legacy-general', { category: 'general' })]);
+    const other = await db.queryCampaigns({ category: 'etc' });
+    assert.equal(other.some(campaign => campaign.id === 'legacy-general'), true);
+    assert.equal(db.CATEGORY_GROUP_MAP.etc.includes('general'), true);
+  });
   await t.test('concurrent upserts serialize transactions and preserve known deadlines', async () => {
     await Promise.all(Array.from({ length: 10 }, (_, i) => db.insertOrUpdateCampaigns([fixture(`concurrent-${i}`)])));
     await db.insertOrUpdateCampaigns([fixture('concurrent-0', { endDate: '' })]);

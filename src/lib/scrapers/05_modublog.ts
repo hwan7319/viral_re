@@ -35,7 +35,7 @@ export const ModuBlogScraper: SiteScraper = {
           title: rawTitle.slice(0, 60),
           description: '',
           platform: 'blog',
-          category: 'general',
+          category: 'etc',
           campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '모블',

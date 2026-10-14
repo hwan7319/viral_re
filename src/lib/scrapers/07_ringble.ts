@@ -35,7 +35,7 @@ export const RingbleScraper: SiteScraper = {
           title: rawTitle.slice(0, 60),
           description: '', // Force detail scraper enrichment for Ringble
           platform: 'blog',
-          category: 'general',
+          category: 'etc',
           campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '링블',

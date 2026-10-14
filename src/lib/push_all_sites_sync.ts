@@ -25,7 +25,7 @@ async function syncAllRemainingSites() {
       const cpId = numMatch ? numMatch[1] : `${i}`;
       if (rawTitle && rawTitle.length > 3 && !collected.some(c => c.id === `ringble-${cpId}`)) {
         collected.push({
-          id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'general',
+          id: `ringble-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'etc',
           campaignUrl: href.startsWith('http') ? href : `https://www.ringble.co.kr/${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '링블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
@@ -50,7 +50,7 @@ async function syncAllRemainingSites() {
       const cpId = numMatch ? numMatch[1] : `${i}`;
       if (rawTitle && rawTitle.length > 3 && !collected.some(c => c.id === `cometoplay-${cpId}`)) {
         collected.push({
-          id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'general',
+          id: `cometoplay-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'etc',
           campaignUrl: href.startsWith('http') ? href : `https://www.cometoplay.kr/${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '놀러와체험단', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
@@ -75,7 +75,7 @@ async function syncAllRemainingSites() {
       const cpId = numMatch ? numMatch[1] : `${i}`;
       if (rawTitle && rawTitle.length > 3 && !collected.some(c => c.id === `modublog-${cpId}`)) {
         collected.push({
-          id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'general',
+          id: `modublog-${cpId}`, title: rawTitle.slice(0, 60), description: rawTitle, platform: 'blog', category: 'etc',
           campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png', targetSite: '모블', limitCount: 5, applyCount: 0,
           startDate: now.toISOString().split('T')[0], endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],

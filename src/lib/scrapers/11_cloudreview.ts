@@ -45,7 +45,7 @@ export const CloudReviewScraper: SiteScraper = {
           title: cleanTitle,
           description: cleanDesc,
           platform: 'blog',
-          category: 'general',
+          category: 'etc',
           campaignUrl: fullUrl,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '클라우드리뷰',

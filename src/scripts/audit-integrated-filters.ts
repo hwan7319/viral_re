@@ -39,6 +39,13 @@ function audit(name: string, rows: Campaign[], predicate: (row: Campaign) => boo
 async function main() {
   await getDB();
   const all = await queryCampaigns({});
+  // A crawler may introduce a raw category outside the public taxonomy. The
+  // filter-specific checks below would miss it because no UI option queries it.
+  const supportedRawCategories = new Set(Object.values(CATEGORY_GROUP_MAP).flat());
+  const unmappedCategories = [...new Set(all.map(row => row.category).filter(category => !supportedRawCategories.has(category)))];
+  if (unmappedCategories.length) issues.push(`unmapped active categories: ${unmappedCategories.join(', ')}`);
+  const deprecatedCategories = [...new Set(all.map(row => row.category).filter(category => category === 'general'))];
+  if (deprecatedCategories.length) issues.push(`deprecated active categories: ${deprecatedCategories.join(', ')}`);
   const categories = Object.fromEntries(await Promise.all(Object.keys(CATEGORY_GROUP_MAP).map(async category => {
     const rows = await queryCampaigns({ category });
     const allowed = new Set(CATEGORY_GROUP_MAP[category] || [category]);

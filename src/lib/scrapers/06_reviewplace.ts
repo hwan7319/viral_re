@@ -125,7 +125,7 @@ export const ReviewPlaceScraper: SiteScraper = {
           title: rawTitle.slice(0, 70),
           description: '',
           platform,
-          category: 'general',
+          category: 'etc',
           campaignUrl: href.startsWith('http') ? href : `https://www.reviewplace.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '리뷰플레이스',
