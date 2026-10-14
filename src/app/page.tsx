@@ -6,6 +6,7 @@ import { koreanDate } from '@/lib/campaign-values';
 import { fetchCampaignPage } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
+import TrustContent from '@/components/TrustContent';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
@@ -2142,6 +2143,22 @@ export default function Home() {
             }}
             onClick={() => window.location.reload()}
           />
+          <a
+            href="/insights"
+            className="header-guide-link"
+            aria-label="체험단 이용 가이드 보기"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '7px',
+              minHeight: '36px', padding: '0 12px', borderRadius: '999px',
+              border: '1px solid color-mix(in srgb, var(--accent) 28%, var(--border-color))',
+              background: 'color-mix(in srgb, var(--accent) 8%, var(--bg-secondary))',
+              color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 850,
+              textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all .2s ease'
+            }}
+          >
+            <span aria-hidden="true" style={{ fontSize: '1rem' }}>✦</span>
+            <span>이용 가이드</span>
+          </a>
 
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
@@ -3978,6 +3995,8 @@ export default function Home() {
         </div>
       )}
 
+      <TrustContent />
+
       {/* 7. Footer (정식 실서비스 법적 고지 및 약관 연결 푸터) */}
       <footer style={{
         marginTop: 'auto', padding: '40px 24px 32px 24px',
@@ -4000,6 +4019,8 @@ export default function Home() {
             <a href="/about" style={{ color: 'var(--text-secondary)' }}>서비스 소개</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <a href="/guide" style={{ color: 'var(--text-secondary)' }}>체험단 지원 가이드</a>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
+            <a href="/insights" style={{ color: 'var(--text-secondary)' }}>체험단 이용 자료</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <a href="/methodology" style={{ color: 'var(--text-secondary)' }}>데이터 수집 원칙</a>
             <a href="/faq" style={{ color: 'var(--text-secondary)' }}>자주 묻는 질문</a>

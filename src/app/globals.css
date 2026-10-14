@@ -1816,3 +1816,16 @@ input, select {
 .progress-bar-fill.high {
   background: var(--danger);
 }
+
+.header-guide-link:hover {
+  transform: translateY(-1px);
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+@media (max-width: 640px) {
+  .header-guide-link { min-height: 32px !important; padding: 0 9px !important; font-size: .74rem !important; }
+  .header-guide-link span:first-child { display: none; }
+}

@@ -1,14 +1,20 @@
 import Link from 'next/link';
+import styles from './ContentPage.module.css';
 
 export function ContentPage({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return <main style={{ maxWidth: 860, margin: '0 auto', padding: '48px 24px 72px', lineHeight: 1.8 }}>
-    <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 700 }}>← 바이럴리 체험단 검색</Link>
-    <h1 style={{ margin: '28px 0 8px', fontSize: '2rem' }}>{title}</h1>
-    <p style={{ color: '#475569', fontSize: '1.05rem', marginTop: 0 }}>{description}</p>
-    <nav aria-label="안내 페이지" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: 20, fontSize: '.95rem' }}>
-      <Link href="/about">서비스 소개</Link><Link href="/guide">지원 가이드</Link><Link href="/methodology">수집 원칙</Link><Link href="/faq">자주 묻는 질문</Link>
-    </nav>
-    <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 28, paddingTop: 12 }}>{children}</div>
-    <footer style={{ marginTop: 48, borderTop: '1px solid #e2e8f0', paddingTop: 20, color: '#64748b', fontSize: '.9rem' }}>바이럴리 · 문의: <a href="mailto:official@viral-re.com">official@viral-re.com</a></footer>
+  return <main className={styles.page}>
+    <div className={styles.container}>
+      <Link href="/" className={styles.back}>← 체험단 검색으로 돌아가기</Link>
+      <header className={styles.hero}>
+        <span className={styles.eyebrow}>VIRALRE RESOURCE</span>
+        <h1 className={styles.title}>{title}</h1>
+        <p className={styles.description}>{description}</p>
+        <nav aria-label="안내 페이지" className={styles.nav}>
+          <Link href="/about">서비스 소개</Link><Link href="/guide">지원 가이드</Link><Link href="/methodology">수집 원칙</Link><Link href="/faq">자주 묻는 질문</Link><Link href="/insights">체험단 이용 자료</Link>
+        </nav>
+      </header>
+      <article className={styles.content}>{children}</article>
+      <footer className={styles.footer}><span>바이럴리 · 공개 공고 비교를 위한 정보 탐색 서비스</span><a href="mailto:official@viral-re.com">official@viral-re.com</a></footer>
+    </div>
   </main>;
 }

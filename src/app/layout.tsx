@@ -24,10 +24,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://viral-re.co.kr'),
   title: 'viral_re (바이럴리) | 블로그 & SNS 체험단 통합 검색 플랫폼',
   description: '주요 체험단 사이트의 공개 공고를 카테고리, 지역, 플랫폼, 마감일 기준으로 비교하는 통합 탐색 서비스입니다.',
   keywords: ['체험단', '블로그체험단', '인스타그램체험단', '체험단모아보기', '체험단 검색', '체험단 가이드', '바이럴리'],
-  authors: [{ name: 'viral_re Team' }],
+  authors: [{ name: '바이럴리' }],
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+  openGraph: { type: 'website', locale: 'ko_KR', url: '/', siteName: '바이럴리', title: '바이럴리 | 체험단 통합 검색', description: '공개 체험단 공고를 조건별로 비교하는 정보 탐색 서비스입니다.' },
   other: {
     'google-adsense-account': 'ca-pub-7845901609549313',
   },
