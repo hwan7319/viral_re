@@ -1504,7 +1504,11 @@ export default function Home() {
                         onClick={() => {
                           const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
                           setSelectedSigungu('all');
-                          setActiveLocation(targetSido === 'all' ? 'all' : toggleFilterValue(activeLocation, targetSido));
+                          // The left-side province row already selects the province. Its
+                          // "전체" chip must confirm that selection, not toggle it off.
+                          setActiveLocation(targetSido === 'all' || hasFilterValue(activeLocation, targetSido)
+                            ? activeLocation
+                            : toggleFilterValue(activeLocation, targetSido));
                         }}
                       >
                         {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
