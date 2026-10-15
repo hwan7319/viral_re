@@ -258,6 +258,9 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('네이처헤어 상계백병원점', '커트 또는 펌 체험권'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('다비치안경 건대병원사거리점', '안경테와 렌즈 제공'), 'fashion-accessory');
     assert.equal(classifyCampaignCategory('한일의료기 전기장판', '크림라떼 색상 전기장판'), 'life-appliances');
+    assert.equal(classifyCampaignCategory('부유방 림프순환 관리', '50분 관리 체험'), 'beauty-body');
+    assert.equal(classifyCampaignCategory('어린이 스마트학습 영자신문', '3개월 이용권'), 'book');
+    assert.equal(classifyCampaignCategory('라운데이 데일리 타올', '키친타월처럼 뜯고 행주처럼 사용'), 'life-goods');
     assert.equal(classifyCampaignCategory('원킬 피어싱', '25,000원 이용권'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('우리끼리 파티룸', '8시간 이용권'), 'hobby');
     assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
