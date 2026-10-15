@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
+import { classifyCampaignCategory } from '../category_classifier';
 import { detectPlatform } from '../scraper-utils';
 
 const HEADERS = {
@@ -125,7 +126,7 @@ export const ReviewPlaceScraper: SiteScraper = {
           title: rawTitle.slice(0, 70),
           description: '',
           platform,
-          category: 'etc',
+          category: classifyCampaignCategory(rawTitle, ''),
           campaignUrl: href.startsWith('http') ? href : `https://www.reviewplace.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '리뷰플레이스',

@@ -88,6 +88,16 @@ test('regression suite', async t => {
     assert.equal(other.some(campaign => campaign.id === 'legacy-general'), true);
     assert.equal(db.CATEGORY_GROUP_MAP.etc.includes('general'), true);
   });
+  await t.test('known categories cannot remain under 기타 after any source upsert', async () => {
+    await db.insertOrUpdateCampaigns([
+      fixture('legacy-chinese', { title: '마라탕 식사권', description: '', category: 'etc' }),
+      fixture('legacy-salon', { title: '헤어 염색 체험', description: '', category: 'general' }),
+    ]);
+    assert.equal((await db.getCampaignById('legacy-chinese'))?.category, 'food-chinese');
+    assert.equal((await db.getCampaignById('legacy-salon'))?.category, 'beauty-salon');
+    const other = await db.queryCampaigns({ category: 'etc' });
+    assert.equal(other.some(campaign => ['legacy-chinese', 'legacy-salon'].includes(campaign.id)), false);
+  });
   await t.test('multi-select filters OR within a group and AND across groups', async () => {
     await db.insertOrUpdateCampaigns([
       fixture('multi-food-visit', { category: 'food-korean', platform: 'blog', location: '서울 강남구', targetSite: '레뷰', title: '방문 한식' }),

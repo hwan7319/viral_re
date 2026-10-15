@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
+import { classifyCampaignCategory } from '../category_classifier';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -35,7 +36,7 @@ export const ModuBlogScraper: SiteScraper = {
           title: rawTitle.slice(0, 60),
           description: '',
           platform: 'blog',
-          category: 'etc',
+          category: classifyCampaignCategory(rawTitle, ''),
           campaignUrl: href.startsWith('http') ? href : `https://www.modublog.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '모블',

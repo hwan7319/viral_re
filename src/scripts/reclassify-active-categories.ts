@@ -12,7 +12,7 @@ async function main() {
   for (const row of rows) {
     const category = classifyCampaignCategory(row.title, row.description);
     if (category !== row.category) {
-      await db.run('UPDATE campaigns SET category = ?, updatedAt = ? WHERE id = ?', [category, new Date().toISOString(), row.id]);
+      await db.run('UPDATE campaigns SET category = ? WHERE id = ?', [category, row.id]);
       changed++;
     }
   }

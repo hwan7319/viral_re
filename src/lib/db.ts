@@ -1,4 +1,5 @@
 import { koreanDate } from './campaign-values';
+import { classifyCampaignCategory } from './category_classifier';
 export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-foreign', '맛집'],
   'food-korean': ['food-korean', 'food-restaurant', 'food'],
@@ -501,6 +502,14 @@ function isDummyCampaignItem(c: Campaign): boolean {
   return false;
 }
 
+// 목록 수집기는 제목만으로도 원래 분류를 알 수 있는 경우가 많다. `etc`와 과거 `general`은
+// 최후의 보류값으로만 남기고, 업서트 경계에서 한 번 더 표준 분류를 적용한다.
+function normalizeCampaignCategory(campaign: Campaign): Campaign {
+  if (campaign.category !== 'etc' && campaign.category !== 'general') return campaign;
+  const inferred = classifyCampaignCategory(campaign.title, campaign.description);
+  return inferred === 'etc' ? { ...campaign, category: 'etc' } : { ...campaign, category: inferred };
+}
+
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
 async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
   const isServerless = !!(process.env.VERCEL || process.env.NOW_BUILDER || globalRef.isMockDb);
@@ -510,7 +519,8 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
     let inserted = 0;
     let updated = 0;
     
-    for (const c of campaigns) {
+    for (const input of campaigns) {
+      const c = normalizeCampaignCategory(input);
       if (isDummyCampaignItem(c)) continue;
       const idx = globalRef.memoryCampaigns.findIndex((x: Campaign) => x.id === c.id);
       if (idx > -1) {
@@ -564,7 +574,8 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
   await db.run('BEGIN TRANSACTION');
 
   try {
-    for (const c of campaigns) {
+    for (const input of campaigns) {
+      const c = normalizeCampaignCategory(input);
       if (isDummyCampaignItem(c)) continue;
       const existing = await db.get('SELECT id, title, description, imageUrl, searchKeywords, endDate, dataSource FROM campaigns WHERE id = ?', [c.id]);
 
