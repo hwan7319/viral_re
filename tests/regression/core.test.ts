@@ -83,7 +83,7 @@ test('regression suite', async t => {
     }
   });
   await t.test('legacy general categories stay visible under the 기타 filter until normalisation finishes', async () => {
-    await db.insertOrUpdateCampaigns([fixture('legacy-general', { category: 'general' })]);
+    await db.insertOrUpdateCampaigns([fixture('legacy-general', { title: '분류 근거 없음', description: '', category: 'general' })]);
     const other = await db.queryCampaigns({ category: 'etc' });
     assert.equal(other.some(campaign => campaign.id === 'legacy-general'), true);
     assert.equal(db.CATEGORY_GROUP_MAP.etc.includes('general'), true);
@@ -214,8 +214,8 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('BMW 부산남구전시장', '포인트 지급'), 'etc');
     assert.equal(classifyCampaignCategory('멋짐 헬스&PT 마린시티점', 'PT 1회 체험권'), 'health-fitness');
     assert.equal(classifyCampaignCategory('노란꽃돼지 명촌점', '4만 5천원 체험권'), 'food-korean');
-    assert.equal(classifyCampaignCategory('[경기 부천] 꾹스키친', '식사권'), 'etc');
-    assert.equal(classifyCampaignCategory('[부산 금정] 스스키노 부산대점', '식사권'), 'etc');
+    assert.equal(classifyCampaignCategory('[경기 부천] 꾹스키친', '식사권'), 'food-restaurant');
+    assert.equal(classifyCampaignCategory('[부산 금정] 스스키노 부산대점', '식사권'), 'food-restaurant');
   });
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');
@@ -241,6 +241,9 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('떡볶이 분식', '2인 이용권'), 'food-snack');
     assert.equal(classifyCampaignCategory('자동차 엔진오일', '교환권'), 'life-auto');
     assert.equal(classifyCampaignCategory('체형 관리 프로그램', '관리 1회'), 'beauty-body');
+    assert.equal(classifyCampaignCategory('상호 미공개', '5만원 식사권'), 'food-restaurant');
+    assert.equal(classifyCampaignCategory('원킬 피어싱', '25,000원 이용권'), 'beauty-salon');
+    assert.equal(classifyCampaignCategory('우리끼리 파티룸', '8시간 이용권'), 'hobby');
     assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
     assert.equal(classifyCampaignCategory('그리즐리', '10만원 시술권 / 전시술 가능'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('맛있는전시회', '3만원 체험권'), 'food-korean');
