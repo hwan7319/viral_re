@@ -16,7 +16,7 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food-meat': ['food-meat'],
   'food-omakase': ['food-omakase'],
 
-  'beauty': ['beauty', 'beauty-cosmetic', 'beauty-cosmetics', 'beauty-hair', 'beauty-salon', 'beauty-skin', 'beauty-spa', 'beauty-body', 'health-fitness', 'health-food'],
+  'beauty': ['beauty', 'beauty-cosmetic', 'beauty-cosmetics', 'beauty-hair', 'beauty-salon', 'beauty-skin', 'beauty-spa', 'beauty-body', 'health-fitness', 'health-food', 'health-medical'],
   'beauty-cosmetics': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
   'beauty-cosmetic': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
   'beauty-salon': ['beauty-salon', 'beauty-hair'],
@@ -26,6 +26,7 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'beauty-body': ['beauty-body'],
   'health-fitness': ['health-fitness', 'health'],
   'health-food': ['health-food', 'health-fresh', 'health'],
+  'health-medical': ['health-medical'],
 
   'travel': ['travel', 'travel-leisure'],
   'accommodation': ['accommodation', 'travel-stay'],
@@ -46,6 +47,7 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'pet': ['pet', 'life'],
   'book': ['book', 'life'],
   'hobby': ['hobby'],
+  'service-fortune': ['service-fortune'],
   // `general` was emitted by early list scrapers. Keep it here while old
   // rows are normalised so the visible "기타" filter can never hide them.
   'etc': ['etc', 'general']

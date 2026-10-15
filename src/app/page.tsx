@@ -19,7 +19,7 @@ const filterSummary = (value: string, labels: Record<string, string>, fallback: 
   return selected.length === 1 ? (labels[selected[0]] || selected[0]) : `${labels[selected[0]] || selected[0]} 외 ${selected.length - 1}`;
 };
 const TYPE_LABELS = { visit: '방문형', delivery: '배송형' };
-const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'food-snack': '분식', 'food-meat': '육류/구이', 'food-omakase': '오마카세', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'beauty-body': '다이어트/체형', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', 'life-auto': '자동차', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스', etc: '기타' };
+const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'food-snack': '분식', 'food-meat': '육류/구이', 'food-omakase': '오마카세', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'beauty-body': '다이어트/체형', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', 'health-medical': '병원/의료', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', 'life-auto': '자동차', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스/공간', 'service-fortune': '사주/타로', etc: '기타' };
 const PLATFORM_LABELS: Record<string, string> = { blog: '네이버 블로그', clip: '네이버 클립', 'blog+instagram': '네이버&인스타', instagram: '인스타그램', youtube: '유튜브', tiktok: '틱톡', coupang: '쿠팡 체험단' };
 
 const fallbackThumbnail = (title: string, targetSite: string) => {
@@ -255,6 +255,8 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7zM8.5 8.5l7 7" />
     </svg>
   ),
+  'health-medical': <span role="img" aria-label="병원 의료" style={{ fontSize: '20px', lineHeight: 1 }}>🩺</span>,
+  'service-fortune': <span role="img" aria-label="사주 타로" style={{ fontSize: '20px', lineHeight: 1 }}>🔮</span>,
   'life-auto': <span role="img" aria-label="자동차" style={{ fontSize: '20px', lineHeight: 1 }}>🚗</span>,
   'accommodation': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1321,7 +1323,22 @@ export default function Home() {
                     { key: 'beauty-body', label: '다이어트/체형' },
                     { key: 'health-fitness', label: '헬스/피트니스' },
                     { key: 'health-food', label: '영양제/건강식품' },
+                    { key: 'health-medical', label: '병원/의료' },
                   ].map(c => (
+                    <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
+                      <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
+                      <span className="filter-desktop-icon-text">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* 상담 서비스 */}
+              <div style={{ width: '100%', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
+                  🔮 상담 / 서비스
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
+                  {[{ key: 'service-fortune', label: '사주/타로' }].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
                       <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
                       <span className="filter-desktop-icon-text">{c.label}</span>

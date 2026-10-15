@@ -246,6 +246,11 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('신갈미추어탕생선국수', '3만원 체험권 (2인 기준)'), 'food-korean');
     assert.equal(classifyCampaignCategory('성원정양대창 광안본점', '모듬세트 제공'), 'food-meat');
     assert.equal(classifyCampaignCategory('남애갯마을코다리조림본점', '코다리 알탕 2인분'), 'food-korean');
+    assert.equal(classifyCampaignCategory('태극신당', '1회 신점 상담'), 'service-fortune');
+    assert.equal(classifyCampaignCategory('강남 한의원', '안면비대칭 진료상담'), 'health-medical');
+    assert.equal(classifyCampaignCategory('스텐 원형 거름망', '[생활] 스텐 원형 거름망'), 'life-goods');
+    assert.equal(classifyCampaignCategory('화이트 아이라이너', '[뷰티] 화이트 아이라이너'), 'beauty-cosmetics');
+    assert.equal(classifyCampaignCategory('디어온', '공간대여 체험권'), 'hobby');
     assert.equal(classifyCampaignCategory('원킬 피어싱', '25,000원 이용권'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('우리끼리 파티룸', '8시간 이용권'), 'hobby');
     assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
@@ -257,6 +262,8 @@ test('regression suite', async t => {
     assert.deepEqual(db.CATEGORY_GROUP_MAP['food-omakase'], ['food-omakase']);
     assert.deepEqual(db.CATEGORY_GROUP_MAP['beauty-body'], ['beauty-body']);
     assert.deepEqual(db.CATEGORY_GROUP_MAP['life-auto'], ['life-auto']);
+    assert.deepEqual(db.CATEGORY_GROUP_MAP['health-medical'], ['health-medical']);
+    assert.deepEqual(db.CATEGORY_GROUP_MAP['service-fortune'], ['service-fortune']);
     assert.ok(db.CATEGORY_GROUP_MAP.food.includes('food-meat'));
   });
   await t.test('ReviewPlace detail benefit is independent from its title', () => {
