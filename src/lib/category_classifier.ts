@@ -22,9 +22,9 @@ export function classifyCampaignCategory(
   if (has(/(?:일식|일본식|스시|초밥|사시미|라멘|돈카츠)/)) return 'food-japanese';
   if (has(/(?:중식|중국식|마라탕|마라샹궈|짜장|짬뽕|훠궈)/)) return 'food-chinese';
   if (has(/(?:양식|이탈리안|파스타|피자|스테이크|브런치|버거)/)) return 'food-western';
-  if (has(/(?:삼겹살|갈비|한우|소고기|돼지고기|정육|식육|고기구이|양고기|양꼬치|흑염소)/)) return 'food-meat';
+  if (has(/(?:삼겹살|갈비|한우|소고기|돼지고기|정육|식육|고기구이|양고기|양꼬치|흑염소|막창|대창|양대창|뒷고기|목살|생고기)/)) return 'food-meat';
   if (has(/(?:떡볶이|분식|김밥|순대|닭발)/)) return 'food-snack';
-  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|고기집|고깃집|전집|맛있는전시회|돼지|치킨|떡볶이|분식|김밥|순대|닭발|닭도리탕|육회|식육|정육|불고기|제육|쭈꾸미|쭈꾸미|돈육|소고기|샤브샤브|쌀국수)/)) return 'food-korean';
+  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|고기집|고깃집|전집|맛있는전시회|돼지|치킨|떡볶이|분식|김밥|순대|닭발|닭도리탕|육회|식육|정육|불고기|제육|쭈꾸미|돈육|소고기|샤브샤브|쌀국수|추어탕|미꾸라지|생선국수|어탕|곰탕|매운탕|알탕|코다리|찜닭|삼계탕|닭한마리|막국수|옹심이|수육)/)) return 'food-korean';
   // A meal voucher is a reliable restaurant signal, but never enough to infer
   // a cuisine. Keep it in the neutral restaurant bucket.
   if (has(/(?:식사\s*권|식사\s*이용권|음식\s*이용권|다이닝|디너\s*\d|메뉴\s*(?:제공|체험|이용))/)) return 'food-restaurant';
