@@ -223,6 +223,9 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M8 22h8M12 15v7M17 3l-5 7-5-7h10z" />
     </svg>
   ),
+  'food-snack': <span role="img" aria-label="분식" style={{ fontSize: '20px', lineHeight: 1 }}>🍢</span>,
+  'food-meat': <span role="img" aria-label="육류 구이" style={{ fontSize: '20px', lineHeight: 1 }}>🥩</span>,
+  'food-omakase': <span role="img" aria-label="오마카세" style={{ fontSize: '20px', lineHeight: 1 }}>🍣</span>,
   'beauty-cosmetics': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -241,6 +244,7 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   ),
+  'beauty-body': <span role="img" aria-label="다이어트 체형" style={{ fontSize: '20px', lineHeight: 1 }}>🧘</span>,
   'health-fitness': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6.5 6.5h11M6.5 17.5h11M3 10v4M21 10v4M6.5 4v16M17.5 4v16" />
@@ -251,6 +255,7 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7zM8.5 8.5l7 7" />
     </svg>
   ),
+  'life-auto': <span role="img" aria-label="자동차" style={{ fontSize: '20px', lineHeight: 1 }}>🚗</span>,
   'accommodation': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 4v16M2 8h20v12M2 17h20M6 8v9" />
