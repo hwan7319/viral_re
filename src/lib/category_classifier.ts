@@ -24,7 +24,7 @@ export function classifyCampaignCategory(
   if (has(/(?:양식|이탈리안|파스타|피자|피제리아|스테이크|브런치|버거|커리|샌드위치)/)) return 'food-western';
   if (has(/(?:삼겹살|갈비|한우|소고기|돼지고기|정육|식육|고기구이|양고기|흑염소|막창|대창|양대창|뒷고기|목살|생고기|바베큐|훈제)/)) return 'food-meat';
   if (has(/(?:떡볶이|분식|김밥|순대|닭발)/)) return 'food-snack';
-  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|고기집|고깃집|전집|맛있는전시회|돼지|치킨|떡볶이|분식|김밥|순대|닭발|닭도리탕|육회|식육|정육|불고기|제육|쭈꾸미|돈육|소고기|샤브샤브|쌀국수|추어탕|미꾸라지|생선국수|어탕|곰탕|매운탕|알탕|코다리|찜닭|삼계탕|닭한마리|막국수|옹심이|수육|두부|순두부|낙지|아구|게장|조개|복어|장어|생선회|수산|해물)/)) return 'food-korean';
+  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|고기집|고깃집|전집|맛있는전시회|돼지|치킨|떡볶이|분식|김밥|순대|닭발|닭도리탕|육회|식육|정육|불고기|제육|쭈꾸미|돈육|소고기|샤브샤브|쌀국수|추어탕|미꾸라지|생선국수|어탕|곰탕|매운탕|알탕|코다리|찜닭|삼계탕|닭한마리|막국수|옹심이|수육|두부|순두부|낙지|아구|게장|조개|복어|장어|생선회|수산|해물|도시락|샐러드|멸치|죽)/)) return 'food-korean';
   // A meal voucher is a reliable restaurant signal, but never enough to infer
   // a cuisine. Keep it in the neutral restaurant bucket.
   if (has(/(?:식사\s*권|식사\s*이용권|음식\s*이용권|다이닝|디너\s*\d|메뉴\s*(?:제공|체험|이용))/)) return 'food-restaurant';
@@ -33,13 +33,15 @@ export function classifyCampaignCategory(
   // Veterinary campaigns belong to the pet category; products with a brand
   // containing "의료기" are household appliances, not medical services.
   if (has(/(?:반려견|반려묘|반려동물|강아지|고양이|애견|펫|사료|개껌|캣)/)) return 'pet';
+  if (has(/(?:미용실|헤어|염색|펌|네일|두피|시술|커트|탈색|피어싱|눈썹|반영구|타투)/)) return 'beauty-salon';
+  if (has(/(?:안경|안경테|안경렌즈|콘택트렌즈)/)) return 'fashion-accessory';
   if (has(/(?:병원|치과|한의원|의원|의료(?!기)|진료|임플란트|도수치료|검진)/)) return 'health-medical';
   if (has(/(?:필라테스|피트니스|헬스장|헬스|pt\b|요가|수영|테니스|골프|운동)/i)) return 'health-fitness';
   if (has(/(?:영양제|유산균|비타민|홍삼|건강식품|프로바이오틱스|단백질|이노시톨|꿀|허니스틱)/)) return 'health-food';
   if (has(/(?:다이어트\s*관리|체형\s*관리|슬리밍|비만\s*관리)/)) return 'beauty-body';
   if (has(/(?:피부관리|에스테틱|왁싱|속눈썹|마사지|스파|풋케어|발관리|슬리밍|다이어트관리|윤곽관리|작은얼굴|태닝|탈모|족욕|테라피)/)) return 'beauty-spa';
   if (has(/(?:미용실|헤어|염색|펌|네일|두피|시술|커트|탈색|피어싱|눈썹|반영구|타투)/)) return 'beauty-salon';
-  if (has(/(?:\[\s*뷰티\s*\]|화장품|스킨케어|메이크업|토너|크림(?!치즈)|앰플|세럼|마스크팩|클렌징|선크림|선스크린|립스틱|쿠션|샴푸|바디워시|향수|네일폴리시|톤업|자외선|로션|미스트|립틴트|아이라이너|마스카라|파운데이션|멀티밤|스크럽|워시)/)) return 'beauty-cosmetics';
+  if (has(/(?:\[\s*뷰티\s*\]|화장품|스킨케어|메이크업|토너|크림(?!치즈|라떼)|앰플|세럼|마스크팩|클렌징|선크림|선스크린|립스틱|쿠션|샴푸|바디워시|향수|네일폴리시|톤업|자외선|로션|미스트|립틴트|아이라이너|마스카라|파운데이션|멀티밤|스크럽|워시)/)) return 'beauty-cosmetics';
 
   if (has(/(?:도서|베스트셀러|소설|에세이|인터넷강의|인강|교육|학습지|학원|교재|워크북)/)) return 'book';
   if (has(/(?:호텔|펜션|풀빌라|리조트|글램핑|게스트하우스|모텔|숙박|스테이)/)) return 'accommodation';
