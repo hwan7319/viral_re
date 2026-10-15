@@ -450,7 +450,7 @@ const formatMissionText = (text: string): string => {
   const lines = cleaned.split('\n');
   const formattedLines: string[] = [];
 
-  for (let line of lines) {
+  for (const line of lines) {
     let trimmed = line.trim();
     if (!trimmed) continue;
 
@@ -703,7 +703,7 @@ export default function Home() {
 
   const getRemainingSyncSeconds = useCallback(() => {
     if (typeof window === 'undefined') return SYNC_INTERVAL_SEC;
-    let targetStr = localStorage.getItem('viral_re_next_sync_target');
+    const targetStr = localStorage.getItem('viral_re_next_sync_target');
     let target = targetStr ? parseInt(targetStr, 10) : 0;
     
     if (!target || isNaN(target)) {

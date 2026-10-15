@@ -69,7 +69,7 @@ await (async () => {
           const href = $(el).attr('href') || '';
           const parent = $(el).closest('div.relative, article, div.campaign-image').parent();
           
-          let mainTitle = parent.find('div.text-sm.px-3.pt-3 a, h3').text().trim().replace(/\s+/g, ' ') || $(el).text().trim().replace(/\s+/g, ' ');
+          const mainTitle = parent.find('div.text-sm.px-3.pt-3 a, h3').text().trim().replace(/\s+/g, ' ') || $(el).text().trim().replace(/\s+/g, ' ');
           let subDesc = parent.find('div.truncate.pl-1, div.px-3 div.text-xs').text().trim().replace(/\s+/g, ' ');
           subDesc = subDesc.replace(/\d+인\s*모집.*$/g, '').trim();
 

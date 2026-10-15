@@ -19,7 +19,7 @@ export const RingbleScraper: SiteScraper = {
     $('a[href*="detail.php"]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';

@@ -67,7 +67,7 @@ export const AssaViewScraper: SiteScraper = {
           const iconSrc = parent.find('.review_type_icon').attr('src') || '';
 
           let title = subjectText || optNameText;
-          let description = optNameText || subjectText;
+          const description = optNameText || subjectText;
 
           if (!title || title === '참여 조건') {
             const rawText = parent.find('.details').text().replace(/\s+/g, ' ').trim();
@@ -150,7 +150,7 @@ export const AssaViewScraper: SiteScraper = {
         const bodyText = $('body').text().replace(/\s+/g, ' ');
         const match = bodyText.match(/진행옵션\s*(\d+명\s*모집)?\s*([^\n\r]*?)(?=\s*옵션을|공유하기|신청|최소|$)/i);
         if (match && match[2]) {
-          let clean = match[2].replace(/\d+명\s*모집/g, '').replace(/옵션을 선택.*$/g, '').trim();
+          const clean = match[2].replace(/\d+명\s*모집/g, '').replace(/옵션을 선택.*$/g, '').trim();
           if (clean && clean.length > 2 && !clean.includes('개인정보')) {
             benefit = clean;
           }
@@ -171,7 +171,7 @@ export const AssaViewScraper: SiteScraper = {
           const text = $(el).clone().children().remove().end().text().trim();
           if (text.includes('원 상당]') || text.includes('배송비 포함') || text.includes('이용권') || text.includes('식사권')) {
             if (!benefit || (text.length > 5 && text.length < 150)) {
-              let clean = text.replace(/옵션을 선택해주세요|선택하세요|-->/g, '').trim();
+              const clean = text.replace(/옵션을 선택해주세요|선택하세요|-->/g, '').trim();
               if (clean && !clean.includes('개인정보') && !clean.includes('function')) {
                 benefit = clean;
               }
@@ -267,7 +267,7 @@ export const AssaViewScraper: SiteScraper = {
 
         if (isMissionSection) {
           if (l.includes('✓') || l.includes('공유하기') || l.includes('url 복사')) continue;
-          let clean = l.replace(/^[\-\*•\:]\s*/, '').trim();
+          const clean = l.replace(/^[\-\*•\:]\s*/, '').trim();
           if (clean && clean.length > 2) {
             missionLines.push(clean.startsWith('•') || clean.startsWith('[') || /^\d+\./.test(clean) ? clean : `• ${clean}`);
           }

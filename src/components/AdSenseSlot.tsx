@@ -34,7 +34,6 @@ export default function AdSenseSlot({
     if (!slot || isLoaded.current) return;
 
     let frameId = 0;
-    let observer: ResizeObserver | undefined;
     const loadAd = () => {
       const element = adRef.current;
       if (!element || isLoaded.current || element.clientWidth === 0 || element.dataset.adsbygoogleStatus) return;
@@ -49,7 +48,7 @@ export default function AdSenseSlot({
       }
     };
 
-    observer = new ResizeObserver(loadAd);
+    const observer = new ResizeObserver(loadAd);
     if (adRef.current) observer.observe(adRef.current);
     frameId = window.requestAnimationFrame(loadAd);
     return () => {

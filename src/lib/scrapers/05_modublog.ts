@@ -19,7 +19,7 @@ export const ModuBlogScraper: SiteScraper = {
     $('a[href*="/product/"]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
@@ -92,7 +92,7 @@ export const ModuBlogScraper: SiteScraper = {
           if (/^(?:체험\s*방법|체험\s*시간|유의\s*사항|미션\s*사항|키워드|안내\s*사항|주의\s*사항)/i.test(line)) {
             break;
           }
-          let clean = line.replace(/^[\-\*•\:]\s*/, '').replace(/\[클릭\]|\[참고\]/g, '').trim();
+          const clean = line.replace(/^[\-\*•\:]\s*/, '').replace(/\[클릭\]|\[참고\]/g, '').trim();
           if (clean) {
             benefitLines.push(clean);
           }
@@ -149,12 +149,12 @@ export const ModuBlogScraper: SiteScraper = {
         }
 
         if (currentSection) {
-          let clean = line.replace(/^[\-\*•\:]\s*/, '').replace(/\[클릭\]|\[참고\]/g, '').trim();
+          const clean = line.replace(/^[\-\*•\:]\s*/, '').replace(/\[클릭\]|\[참고\]/g, '').trim();
           if (clean) {
             currentSection.lines.push(`• ${clean}`);
           }
         } else {
-          let clean = line.replace(/^[\-\*•\:]\s*/, '').replace(/\[클릭\]|\[참고\]/g, '').trim();
+          const clean = line.replace(/^[\-\*•\:]\s*/, '').replace(/\[클릭\]|\[참고\]/g, '').trim();
           if (clean && clean.length > 3) {
             if (!currentSection) {
               currentSection = { title: '📌 [상세 안내 및 가이드라인]', lines: [] };

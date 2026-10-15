@@ -13,6 +13,17 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Existing crawler integrations use third-party payloads and legacy React flows.
+  // Keep them visible as warnings while CI blocks new parser/type errors.
+  {
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-require-imports': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react/no-unescaped-entities': 'warn',
+    },
+  },
 ]);
 
 export default eslintConfig;

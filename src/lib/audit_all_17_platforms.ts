@@ -94,13 +94,13 @@ export async function runFullAudit() {
       issues.push(`Counts scraper threw error: ${e.message}`);
     }
 
-    let missionResult: AuditResult['missionResult'] = mission.length > 10 ? 'SUCCESS' : 'EMPTY';
+    const missionResult: AuditResult['missionResult'] = mission.length > 10 ? 'SUCCESS' : 'EMPTY';
     if (missionResult === 'EMPTY') {
       issues.push('Mission & guidelines text is empty or could not be extracted');
     }
 
-    let benefitResult: AuditResult['benefitResult'] = benefit.length > 0 ? 'SUCCESS' : 'EMPTY';
-    let countsResult: AuditResult['countsResult'] = counts.applyCount !== undefined || counts.limitCount !== undefined ? 'SUCCESS' : 'DEFAULT';
+    const benefitResult: AuditResult['benefitResult'] = benefit.length > 0 ? 'SUCCESS' : 'EMPTY';
+    const countsResult: AuditResult['countsResult'] = counts.applyCount !== undefined || counts.limitCount !== undefined ? 'SUCCESS' : 'DEFAULT';
 
     results.push({
       site: siteName,

@@ -46,8 +46,8 @@ async function runFilterTests() {
     const elapsedMs = Date.now() - start;
 
     let status = '✅ 통과';
-    let sampleTitle = res.length > 0 ? res[0].title.slice(0, 35) : '결과 없음';
-    let sampleLoc = res.length > 0 ? (res[0].location || '배송/재택') : '-';
+    const sampleTitle = res.length > 0 ? res[0].title.slice(0, 35) : '결과 없음';
+    const sampleLoc = res.length > 0 ? (res[0].location || '배송/재택') : '-';
 
     if (tc.params.type === 'visit' && res.some(c => !c.location || c.location.includes('배송') || c.location.includes('전국'))) {
       status = '❌ 방문형 조건 이탈';

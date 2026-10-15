@@ -17,7 +17,7 @@ async function syncAllRemainingSites() {
     $('a[href*="detail.php"]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
       if (img && img.startsWith('//')) img = 'https:' + img;
       if (img && !img.startsWith('http')) img = `https://www.ringble.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
@@ -42,7 +42,7 @@ async function syncAllRemainingSites() {
     $('a[href*="item.php"]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
       if (img && img.startsWith('//')) img = 'https:' + img;
       if (img && !img.startsWith('http')) img = `https://www.cometoplay.kr${img.startsWith('/') ? '' : '/'}${img}`;
@@ -67,7 +67,7 @@ async function syncAllRemainingSites() {
     $('a[href*="/product/"]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
       if (img && img.startsWith('//')) img = 'https:' + img;
       if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;

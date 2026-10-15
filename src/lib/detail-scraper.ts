@@ -45,7 +45,7 @@ export function formatRevuMission(item: any): string {
     reward = `[${venueName}] ${reward}`;
   }
 
-  let parts: string[] = [];
+  const parts: string[] = [];
 
   if (venue && (venue.name || venue.addressFirst)) {
     let locStr = `📍 [체험 장소 및 방문 주소 안내]\n• 매장명: ${venue.name || '상세 주소 참고'}`;
@@ -97,7 +97,7 @@ export function formatReviewNoteMission(item: any): string {
     ? '네이버 클립 (숏폼 영상)' 
     : '네이버 블로그 (정성 리뷰 포스팅)';
 
-  let parts: string[] = [];
+  const parts: string[] = [];
   if (locStr) {
     parts.push(`📍 [체험 장소 및 위치]\n• 위치/지역: ${locStr}`);
   }
@@ -123,7 +123,7 @@ export function formatReviewNoteMission(item: any): string {
 export function formatMibleMission(text: string, title?: string, url?: string): string {
   if (!text) return '';
 
-  let cleanText = text
+  const cleanText = text
     .replace(/D-Day/g, '')
     .replace(/[0-9]+일\s*남음/g, '')
     .replace(/신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명/g, '')
@@ -266,7 +266,7 @@ export function formatMissionText(text: string): string {
   const lines = cleaned.split('\n');
   const formattedLines: string[] = [];
 
-  for (let line of lines) {
+  for (const line of lines) {
     let trimmed = line.trim();
     if (!trimmed) continue;
 
@@ -438,8 +438,8 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
       fullText.match(/신청\s*([\d,]+)\s*\/?\s*([\d,]+)\s*명/i);
 
     if (generalMatch) {
-      let first = parseInt(generalMatch[1].replace(/,/g, ''), 10);
-      let second = generalMatch[2] ? parseInt(generalMatch[2].replace(/,/g, ''), 10) : undefined;
+      const first = parseInt(generalMatch[1].replace(/,/g, ''), 10);
+      const second = generalMatch[2] ? parseInt(generalMatch[2].replace(/,/g, ''), 10) : undefined;
       
       // If regex was 모집 N / 신청 M format, swap first & second
       if (fullText.match(/모집\s*([\d,]+)\s*(?:명)?\s*[\/\,\~]\s*신청자?\s*([\d,]+)/i)) {
@@ -624,7 +624,7 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
           const text = $(el).text().replace(/\s+/g, ' ').trim();
           if (classAttr.includes('text-gray-500') || classAttr.includes('neutral-200') || text.includes('제공') || text.includes('원 상당')) {
             if (text.length > 5 && text.length < 250 && !text.includes('Copyright') && !text.includes('로그인')) {
-              let clean = text
+              const clean = text
                 .replace(/^\[[^\]]+\]\s*/, '')
                 .replace(/제공\s*0원\s*상당.*$/g, '')
                 .replace(/사장님의\s*통큰\s*배려.*$/g, '')
@@ -773,7 +773,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
       });
 
       const rawGuideHtml = $('#cmp_guide').html() || $('dd#cmp_guide').html() || $('.guide_box').html() || '';
-      let rawGuideText = rawGuideHtml
+      const rawGuideText = rawGuideHtml
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/(p|li|div|dd)>/gi, '\n')
         .replace(/<[^>]+>/g, '')
@@ -781,7 +781,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
         .replace(/\n{3,}/g, '\n\n')
         .trim();
 
-      let parts: string[] = [];
+      const parts: string[] = [];
       if (keywordsStr) {
         parts.push(`📌 [지정 필수 키워드]\n${keywordsStr}`);
       }
@@ -1021,7 +1021,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
           const d = apiRes.data?.data;
           if (d) {
             const detail = d.detail || d;
-            let kwParts: string[] = [];
+            const kwParts: string[] = [];
 
             const guide = detail.keywordGuide || d.appDe_keywordGuide;
             if (guide) kwParts.push(guide);
@@ -1041,7 +1041,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
               kwParts.push(`\n📌 [해시태그]\n${hash}`);
             }
 
-            let parts: string[] = [];
+            const parts: string[] = [];
             if (kwParts.length > 0) parts.push(kwParts.join('\n'));
             const mission = detail.additionalMission || d.appDe_additionalMission;
             if (mission) parts.push(`📌 [업체 상세 미션 & 가이드라인]\n${mission}`);
@@ -1096,7 +1096,7 @@ export async function scrapeDetailMission(url: string, targetSite: string): Prom
     else if (siteLower.includes('놀러와체험단') || url.includes('cometoplay.kr')) {
       const items: string[] = [];
 
-      let tabHtml = $('#tab1').html() || $('.tab-cont').first().html() || '';
+      const tabHtml = $('#tab1').html() || $('.tab-cont').first().html() || '';
       if (tabHtml) {
         const $tab = cheerio.load(tabHtml);
         $tab('script, style, iframe, button, .etc_list2, .etc_list').remove();

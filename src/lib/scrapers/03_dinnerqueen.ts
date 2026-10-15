@@ -49,7 +49,7 @@ export const DinnerQueenScraper: SiteScraper = {
       const cpId = cpIdMatch ? cpIdMatch[1] : '';
 
       const title = $(el).find('p.qz-body2-kr.ellipsis.color-title').text().trim().replace(/\s+/g, ' ');
-      let offerBenefit = $(el).find('p.qz-caption-kr.color-placeholder.ellipsis').text().trim().replace(/\s+/g, ' ');
+      const offerBenefit = $(el).find('p.qz-caption-kr.color-placeholder.ellipsis').text().trim().replace(/\s+/g, ' ');
 
       if (title && title.length > 2 && cpId) {
         if (keyword && !title.toLowerCase().includes(keyword.toLowerCase())) return;

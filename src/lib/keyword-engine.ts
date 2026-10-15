@@ -404,7 +404,7 @@ export async function GET(request: Request) {
             httpsAgent,
           });
 
-          let list: any[] = primaryRes.data?.keywordList || [];
+          const list: any[] = primaryRes.data?.keywordList || [];
 
           // 🔑 힌트 결과가 5개 미만인 니치/복합 키워드인 경우 서브 단어 및 카테고리 앵커 릴레이 서치
           if (list.length < 5) {

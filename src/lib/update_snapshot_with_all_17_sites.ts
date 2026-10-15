@@ -379,7 +379,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
 
           const text = $(el).text().trim();
           if (text && text.length > 2 && !/\d+일\s*남음|D-Day|신청|모집/.test(text)) {
-            let clean = text
+            const clean = text
               .replace(/^블로그\s*/gi, '')
               .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
               .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
@@ -427,7 +427,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
 
           const parent = $(el).closest('li, div.item, div.box, tr, td, div');
           const itNameText = parent.find('.it_name').text().trim().replace(/\s+/g, ' ');
-          let rawTitle = itNameText || $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+          const rawTitle = itNameText || $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
 
           let realImg = '';
           parent.find('img').each((_, imgEl) => {
@@ -521,7 +521,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
     $('a[href*="/product/"]').each((i, el) => {
       const href = $(el).attr('href') || '';
       const parent = $(el).closest('div, li, tr, td');
-      let rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       let img = $(el).find('img').attr('src') || parent.find('img').attr('src') || '';
       if (img && img.startsWith('//')) img = 'https:' + img;
       if (img && !img.startsWith('http')) img = `https://www.modublog.co.kr${img.startsWith('/') ? '' : '/'}${img}`;
@@ -536,7 +536,7 @@ export async function scrapeAll17SitesDeep(): Promise<any[]> {
       const cleanTitle = rawTitle.replace(/\s*신청\s*\d+.*$/gi, '').trim();
       const linkTitle = $(el).text().trim().replace(/\s+/g, ' ');
       const parentFull = parent.text().replace(/\s+/g, ' ').trim();
-      let cleanDesc = parentFull.replace(linkTitle, '').replace(/블로그|릴스|쇼츠|인스타|신청\s*\d+\s*\/?\s*\d*\s*명?|\d+일\s*남음|오늘마감|바로체험|P\s*[\d,]+/gi, '').trim();
+      const cleanDesc = parentFull.replace(linkTitle, '').replace(/블로그|릴스|쇼츠|인스타|신청\s*\d+\s*\/?\s*\d*\s*명?|\d+일\s*남음|오늘마감|바로체험|P\s*[\d,]+/gi, '').trim();
       const title = linkTitle || cleanTitle.slice(0, 60);
       const description = cleanDesc.length > 2 ? cleanDesc : title;
 

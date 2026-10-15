@@ -24,7 +24,7 @@ async function fixAllTitleAndDescription() {
 
     // 1. 미블 (Mible) 특수 정제
     if (targetSite === '미블') {
-      let rawText = item.title || item.description || '';
+      const rawText = item.title || item.description || '';
       if (rawText.includes('**')) {
         const parts = rawText.split('**');
         const benefitPart = parts[0].trim();

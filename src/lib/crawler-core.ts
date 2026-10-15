@@ -443,7 +443,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
               const applyCount = applyMatch ? parseInt(applyMatch[1], 10) : 0;
               const limitCount = limitMatch ? parseInt(limitMatch[1], 10) : 0;
 
-              let cleanText = rawText
+              const cleanText = rawText
                 .replace(/D-Day/g, '')
                 .replace(/[0-9]+일\s*남음/g, '')
                 .replace(/신청\s*[0-9]+명\s*\/\s*모집\s*[0-9]+명/g, '')
@@ -530,7 +530,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
       const href = $cr(element).attr('href') || '';
       const parent = $cr(element).closest('div.relative, article, div.campaign-image').parent();
       
-      let mainTitle = parent.find('div.text-sm.px-3.pt-3 a, h3').text().trim().replace(/\s+/g, ' ') || $cr(element).text().trim().replace(/\s+/g, ' ');
+      const mainTitle = parent.find('div.text-sm.px-3.pt-3 a, h3').text().trim().replace(/\s+/g, ' ') || $cr(element).text().trim().replace(/\s+/g, ' ');
       let subDesc = parent.find('div.truncate.pl-1, div.px-3 div.text-xs').text().trim().replace(/\s+/g, ' ');
       subDesc = subDesc.replace(/\d+인\s*모집.*$/g, '').trim();
 
@@ -586,7 +586,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
     $ring('a[href*="detail.php"]').each((i, el) => {
       const href = $ring(el).attr('href') || '';
       const parent = $ring(el).closest('div, li');
-      let rawTitle = $ring(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $ring(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
       let img = $ring(el).find('img').attr('src') || parent.find('img').attr('src') || '';
@@ -620,7 +620,7 @@ export async function crawlKeywordOnDemand(keyword: string): Promise<number> {
     $play('a[href*="item.php"]').each((i, el) => {
       const href = $play(el).attr('href') || '';
       const parent = $play(el).closest('div, li');
-      let rawTitle = $play(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+      const rawTitle = $play(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
       if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
       let img = $play(el).find('img').attr('src') || parent.find('img').attr('src') || '';

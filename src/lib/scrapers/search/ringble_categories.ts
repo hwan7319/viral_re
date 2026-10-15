@@ -125,7 +125,7 @@ await (async () => {
 
                 const text = $(el).text().trim();
                 if (text && text.length > 2 && !/\d+일\s*남음|D-Day|신청|모집/.test(text)) {
-                  let cleanTitle = text
+                  const cleanTitle = text
                     .replace(/^블로그\s*/gi, '')
                     .replace(/(?:오늘\s*마감|\d+\s*일\s*남음|D-Day|D-\d+|\d+\s*시간\s*남음)?\s*신청\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')
                     .replace(/\s*(?:신청|지원)\s*\d+\s*(?:명)?\s*[\/\,\~]\s*모집\s*\d+\s*(?:명)?/gi, '')

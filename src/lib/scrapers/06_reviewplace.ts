@@ -264,7 +264,7 @@ export const ReviewPlaceScraper: SiteScraper = {
 
         if (isGuideSection) {
           if (line.includes('공정위 대가성') || line.includes('키워드 중 1개를') || line.includes('상세 이미지 더보기')) continue;
-          let clean = line.replace(/^[\-\*•\:]\s*/, '').trim();
+          const clean = line.replace(/^[\-\*•\:]\s*/, '').trim();
           if (clean && clean.length > 2) {
             guideLines.push(clean.startsWith('•') || /^\d+\./.test(clean) ? clean : `• ${clean}`);
           }
@@ -272,7 +272,7 @@ export const ReviewPlaceScraper: SiteScraper = {
 
         if (isMissionSection) {
           if (line.includes('키워드') || line.includes('링크 삽입') || line.includes('1,000자 이상') || line.includes('15장 이상') || line.includes('동영상 첨부') || line.includes('미션이 지켜지지 않을')) continue;
-          let clean = line.replace(/^[\-\*•\:]\s*/, '').trim();
+          const clean = line.replace(/^[\-\*•\:]\s*/, '').trim();
           if (clean && clean.length > 2) {
             missionLines.push(clean.startsWith('•') || clean.startsWith('[') || /^\d+\./.test(clean) ? clean : `• ${clean}`);
           }

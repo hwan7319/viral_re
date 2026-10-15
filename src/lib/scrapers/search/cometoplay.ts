@@ -46,7 +46,7 @@ await (async () => {
 
               const parent = $(el).closest('li, div.item, div.box, tr, td, div');
               const itNameText = parent.find('.it_name').text().trim().replace(/\s+/g, ' ');
-              let rawTitle = itNameText || $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
+              const rawTitle = itNameText || $(el).text().trim().replace(/\s+/g, ' ') || parent.text().trim().replace(/\s+/g, ' ');
               if (keyword && !rawTitle.toLowerCase().includes(keyword.toLowerCase())) return;
 
               let realImg = '';

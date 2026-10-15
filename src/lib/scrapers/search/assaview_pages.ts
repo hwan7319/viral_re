@@ -33,7 +33,7 @@ await (async () => {
               const iconSrc = parent.find('.review_type_icon').attr('src') || '';
 
               let title = subjectText || optNameText;
-              let description = optNameText || subjectText;
+              const description = optNameText || subjectText;
 
               if (!title || title === '참여 조건' || title === '참여조건') {
                 const rawText = parent.find('.details').text().replace(/\s+/g, ' ').trim();

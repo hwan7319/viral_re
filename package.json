@@ -7,7 +7,7 @@
     "test": "tsx --test tests/regression/*.test.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint . --max-warnings=340",
     "crawl": "tsx src/scripts/crawler.ts",
     "test:live": "tsx src/scripts/audit-live-sources.ts --all",
     "test:images": "tsx src/scripts/audit-image-urls.ts",
