@@ -800,7 +800,6 @@ export default function Home() {
   }, [getRemainingSyncSeconds, setNextSyncTimestamp, triggerManualSync]);
   
   // 검색 & 필터 상태
-  const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState(''); // 사용자가 타이핑 중인 입력창 상태
   const [isSearchFocused, setIsSearchFocused] = useState(false); // 검색창 포커스 여부
   const [currentTrendIndex, setCurrentTrendIndex] = useState(0); // 롤링 중인 검색어 인덱스
@@ -822,6 +821,29 @@ export default function Home() {
 
   const [isCategoryOpen, setIsCategoryOpen] = useState(false); // 카테고리 상세검색 아코디언 토글
   const [sortBy, setSortBy] = useState('latest');
+  // 상세 조건은 먼저 임시로 선택하고, 검색을 눌렀을 때만 appliedFilters로 확정한다.
+  // 이 분리로 여러 조건을 고르는 중 목록이 계속 다시 조회되는 것을 막는다.
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '', platform: 'all', category: 'all', location: 'all',
+    targetSite: 'all', type: 'all', sortBy: 'latest'
+  });
+  const applyCurrentSearch = (nextSearch = searchInput) => {
+    const search = nextSearch.trim();
+    setSearchInput(nextSearch);
+    setAppliedFilters({
+      search, platform: activePlatform, category: activeCategory, location: activeLocation,
+      targetSite: activeSite, type: activeType, sortBy
+    });
+    setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false);
+    setIsLocationOpen(false); setIsSiteOpen(false);
+  };
+  const hasPendingSearch = searchInput.trim() !== appliedFilters.search
+    || activePlatform !== appliedFilters.platform
+    || activeCategory !== appliedFilters.category
+    || activeLocation !== appliedFilters.location
+    || activeSite !== appliedFilters.targetSite
+    || activeType !== appliedFilters.type
+    || sortBy !== appliedFilters.sortBy;
 
   // 상세 모달 상태
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -1162,7 +1184,18 @@ export default function Home() {
               </svg>
             </button>
 
-            {/* 전체 초기화 단추 */}
+            {/* 선택한 상세 조건은 이 버튼 또는 상단 검색 버튼을 눌렀을 때만 결과에 반영한다. */}
+            {hasPendingSearch && (
+              <button
+                type="button"
+                className="premium-button-primary"
+                onClick={() => applyCurrentSearch()}
+                style={{ padding: '8px 16px', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', whiteSpace: 'nowrap' }}
+              >
+                선택 조건 검색
+              </button>
+            )}
+            {/* 전체 초기화는 선택 중인 조건만 지우며, 결과는 검색을 누를 때 갱신한다. */}
             {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all' || activeSite !== 'all') && (
               <button
                 type="button"
@@ -1175,7 +1208,7 @@ export default function Home() {
                 }}
                 style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
               >
-                <span>초기화</span>
+                <span>선택 초기화</span>
               </button>
             )}
           </div>
@@ -1920,7 +1953,7 @@ export default function Home() {
   const pageRequestRef = useRef(false);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [matchedCount, setMatchedCount] = useState(0);
-  const makeSearchParams = () => new URLSearchParams({ search: searchTerm, platform: activePlatform, category: activeCategory, location: activeLocation, targetSite: activeSite, sortBy, type: activeType });
+  const makeSearchParams = () => new URLSearchParams(appliedFilters);
   const fetchCampaigns = async () => {
     const generation = ++searchGenerationRef.current;
     const params = makeSearchParams();
@@ -1965,19 +1998,11 @@ export default function Home() {
   }, [visibleCount, campaigns.length, nextOffset, loading]);
   useEffect(() => () => searchRequestRef.current?.abort(), []);
 
-  // 검색 및 필터 파라미터가 변경될 때마다 자동 페칭 및 filterRef 동기화
+  // 확정된 검색 조건만 조회와 자동 동기화에 사용한다. 상세 패널의 선택 상태는 여기서 제외한다.
   useEffect(() => {
-    filterRef.current = {
-      search: searchTerm,
-      platform: activePlatform,
-      category: activeCategory,
-      location: activeLocation,
-      type: activeType,
-      targetSite: activeSite,
-      sortBy: sortBy
-    };
+    filterRef.current = { ...appliedFilters };
     fetchCampaigns();
-  }, [searchTerm, activePlatform, activeCategory, activeLocation, activeType, activeSite, sortBy]);
+  }, [appliedFilters]);
 
 
 
@@ -2300,7 +2325,7 @@ export default function Home() {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  setSearchTerm(searchInput);
+                  applyCurrentSearch();
                   addSearchHistory(searchInput);
                   setIsSearchFocused(false);
                   if (document.activeElement instanceof HTMLElement) {
@@ -2344,7 +2369,6 @@ export default function Home() {
                     type="button"
                     onClick={() => {
                       setSearchInput('');
-                      setSearchTerm('');
                     }}
                     style={{ color: 'var(--text-tertiary)', marginRight: '6px', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer' }}
                     title="검색어 초기화"
@@ -2419,8 +2443,7 @@ export default function Home() {
                             }}
                             className="dropdown-item-hover"
                             onClick={() => {
-                              setSearchInput(hist);
-                              setSearchTerm(hist);
+                              applyCurrentSearch(hist);
                               addSearchHistory(hist);
                               setIsSearchFocused(false);
                             }}
@@ -2522,8 +2545,7 @@ export default function Home() {
                       onClick={() => {
                         const item = trendingKeywords[currentTrendIndex];
                         if (item) {
-                          setSearchInput(item.word);
-                          setSearchTerm(item.word);
+                          applyCurrentSearch(item.word);
                           addSearchHistory(item.word);
                         }
                       }}
@@ -2617,8 +2639,7 @@ export default function Home() {
                           transition: 'background 0.15s'
                         }}
                         onClick={() => {
-                          setSearchInput(item.word);
-                          setSearchTerm(item.word);
+                          applyCurrentSearch(item.word);
                           addSearchHistory(item.word);
                           setIsTrendDropdownOpen(false);
                         }}
@@ -2898,7 +2919,6 @@ export default function Home() {
             </p>
             <button 
               onClick={() => {
-                setSearchTerm('');
                 setSearchInput('');
                 setActiveType('all');
                 setActiveCategory('all');
@@ -2907,6 +2927,8 @@ export default function Home() {
                 setSelectedSido('all');
                 setSelectedSigungu('all');
                 setActiveSite('all');
+                setSortBy('latest');
+                setAppliedFilters({ search: '', platform: 'all', category: 'all', location: 'all', targetSite: 'all', type: 'all', sortBy: 'latest' });
               }}
               className="premium-button-primary"
               style={{ margin: '0 auto', padding: '10px 24px', fontSize: '0.9rem' }}
