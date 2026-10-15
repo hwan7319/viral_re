@@ -235,11 +235,22 @@ test('regression suite', async t => {
   });
   await t.test('category classifier keeps restaurant nationalities separate', () => {
     assert.equal(classifyCampaignCategory('성수 이탈리안 파스타', '2인 식사권'), 'food-western');
-    assert.equal(classifyCampaignCategory('스시 오마카세', '식사권'), 'food-japanese');
+    assert.equal(classifyCampaignCategory('스시 오마카세', '식사권'), 'food-omakase');
     assert.equal(classifyCampaignCategory('마라탕 전문점', '3만원 이용권'), 'food-chinese');
+    assert.equal(classifyCampaignCategory('한우 갈비 구이', '식사권'), 'food-meat');
+    assert.equal(classifyCampaignCategory('떡볶이 분식', '2인 이용권'), 'food-snack');
+    assert.equal(classifyCampaignCategory('자동차 엔진오일', '교환권'), 'life-auto');
+    assert.equal(classifyCampaignCategory('체형 관리 프로그램', '관리 1회'), 'beauty-body');
     assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
     assert.equal(classifyCampaignCategory('그리즐리', '10만원 시술권 / 전시술 가능'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('맛있는전시회', '3만원 체험권'), 'food-korean');
+  });
+  await t.test('detail category filters do not expand into their parent category', () => {
+    assert.deepEqual(db.CATEGORY_GROUP_MAP['food-meat'], ['food-meat']);
+    assert.deepEqual(db.CATEGORY_GROUP_MAP['food-omakase'], ['food-omakase']);
+    assert.deepEqual(db.CATEGORY_GROUP_MAP['beauty-body'], ['beauty-body']);
+    assert.deepEqual(db.CATEGORY_GROUP_MAP['life-auto'], ['life-auto']);
+    assert.ok(db.CATEGORY_GROUP_MAP.food.includes('food-meat'));
   });
   await t.test('ReviewPlace detail benefit is independent from its title', () => {
     assert.equal(parseReviewPlaceBenefit('<dl><dt>제공내역</dt><dd>5만원 상당 식사권</dd></dl>'), '5만원 상당 식사권');

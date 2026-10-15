@@ -1,7 +1,7 @@
 import { koreanDate } from './campaign-values';
 import { classifyCampaignCategory } from './category_classifier';
 export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
-  'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-foreign', '맛집'],
+  'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-snack', 'food-meat', 'food-omakase', 'food-foreign', '맛집'],
   'food-korean': ['food-korean', 'food-restaurant', 'food'],
   'food-western': ['food-western', 'food-foreign', 'food'],
   'food-japanese': ['food-japanese', 'food-foreign', 'food'],
@@ -10,14 +10,20 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food-foreign': ['food-foreign', 'food-western', 'food-japanese', 'food-chinese', 'food'],
   'food-cafe': ['food-cafe', '디저트'],
   'food-pub': ['food-pub', '주점', '술집'],
+  // A detail filter must stay narrow. Parents include their details above;
+  // details must never expand back to every Korean/Japanese restaurant.
+  'food-snack': ['food-snack'],
+  'food-meat': ['food-meat'],
+  'food-omakase': ['food-omakase'],
 
-  'beauty': ['beauty', 'beauty-cosmetic', 'beauty-cosmetics', 'beauty-hair', 'beauty-salon', 'beauty-skin', 'beauty-spa', 'health-fitness', 'health-food'],
+  'beauty': ['beauty', 'beauty-cosmetic', 'beauty-cosmetics', 'beauty-hair', 'beauty-salon', 'beauty-skin', 'beauty-spa', 'beauty-body', 'health-fitness', 'health-food'],
   'beauty-cosmetics': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
   'beauty-cosmetic': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
   'beauty-salon': ['beauty-salon', 'beauty-hair'],
   'beauty-hair': ['beauty-hair', 'beauty-salon'],
   'beauty-skin': ['beauty-skin', 'beauty-spa'],
   'beauty-spa': ['beauty-spa', 'beauty-skin'],
+  'beauty-body': ['beauty-body'],
   'health-fitness': ['health-fitness', 'health'],
   'health-food': ['health-food', 'health-fresh', 'health'],
 
@@ -31,9 +37,10 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'fashion-clothing': ['fashion-clothing', 'fashion'],
   'fashion-accessory': ['fashion-accessory', 'fashion'],
 
-  'life': ['life', 'life-goods', 'life-appliances', 'health-fresh', 'baby', 'pet', 'book', 'hobby'],
+  'life': ['life', 'life-goods', 'life-appliances', 'life-auto', 'health-fresh', 'baby', 'pet', 'book', 'hobby'],
   'life-goods': ['life-goods', 'life'],
   'life-appliances': ['life-appliances', 'life'],
+  'life-auto': ['life-auto'],
   'health-fresh': ['health-fresh', 'food'],
   'baby': ['baby', 'life'],
   'pet': ['pet', 'life'],

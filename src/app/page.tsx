@@ -19,7 +19,7 @@ const filterSummary = (value: string, labels: Record<string, string>, fallback: 
   return selected.length === 1 ? (labels[selected[0]] || selected[0]) : `${labels[selected[0]] || selected[0]} 외 ${selected.length - 1}`;
 };
 const TYPE_LABELS = { visit: '방문형', delivery: '배송형' };
-const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스', etc: '기타' };
+const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'food-snack': '분식', 'food-meat': '육류/구이', 'food-omakase': '오마카세', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'beauty-body': '다이어트/체형', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', 'life-auto': '자동차', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스', etc: '기타' };
 const PLATFORM_LABELS: Record<string, string> = { blog: '네이버 블로그', clip: '네이버 클립', 'blog+instagram': '네이버&인스타', instagram: '인스타그램', youtube: '유튜브', tiktok: '틱톡', coupang: '쿠팡 체험단' };
 
 const fallbackThumbnail = (title: string, targetSite: string) => {
@@ -1292,6 +1292,9 @@ export default function Home() {
                     { key: 'food-chinese', label: '중식' },
                     { key: 'food-cafe', label: '카페/디저트' },
                     { key: 'food-pub', label: '술집/주점' },
+                    { key: 'food-snack', label: '분식' },
+                    { key: 'food-meat', label: '육류/구이' },
+                    { key: 'food-omakase', label: '오마카세' },
                   ].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
                       <span className="filter-desktop-icon-img">{CategorySvgIcons[c.key]}</span>
@@ -1310,6 +1313,7 @@ export default function Home() {
                     { key: 'beauty-cosmetics', label: '화장품/스킨케어' },
                     { key: 'beauty-salon', label: '헤어/네일/속눈썹' },
                     { key: 'beauty-spa', label: '피부/에스테틱' },
+                    { key: 'beauty-body', label: '다이어트/체형' },
                     { key: 'health-fitness', label: '헬스/피트니스' },
                     { key: 'health-food', label: '영양제/건강식품' },
                   ].map(c => (
@@ -1351,6 +1355,7 @@ export default function Home() {
                     { key: 'life-goods', label: '생활용품/인테리어' },
                     { key: 'health-fresh', label: '밀키트/신선식품' },
                     { key: 'life-appliances', label: '가전/디지털' },
+                    { key: 'life-auto', label: '자동차' },
                     { key: 'pet', label: '반려동물/애견' },
                     { key: 'book', label: '도서/교육' },
                     { key: 'hobby', label: '취미/클래스' },
