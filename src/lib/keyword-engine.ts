@@ -774,7 +774,10 @@ export async function GET(request: Request) {
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
-    const chunkSize = 10;
+    // Blog-stat lookups are independent and each has its own timeout. Twenty
+    // concurrent requests cuts broad-keyword latency without the 70-request
+    // burst that previously caused upstream throttling.
+    const chunkSize = 20;
 
     for (let i = 0; i < candidateKeywordsList.length; i += chunkSize) {
       const chunk = candidateKeywordsList.slice(i, i + chunkSize);

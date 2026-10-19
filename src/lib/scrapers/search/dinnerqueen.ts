@@ -57,14 +57,18 @@ await (async () => {
           }
         });
 
-        // ⚡ 상세 혜택 원본 병렬 사전 수집 (Concurrent Pre-scrape)
-        await Promise.all(dqItems.map(async (item) => {
-          const realBenefit = await scrapeDetailBenefit(item.campaignUrl, '디너의여왕');
-          if (realBenefit && realBenefit !== item.title) {
-            item.description = realBenefit;
-          }
-          collected.push(item);
-        }));
+        // Upstream becomes unstable when every detail page is requested at
+        // once. Small parallel batches keep the list response predictable.
+        for (let offset = 0; offset < dqItems.length; offset += 5) {
+          const chunk = dqItems.slice(offset, offset + 5);
+          await Promise.all(chunk.map(async (item) => {
+            const realBenefit = await scrapeDetailBenefit(item.campaignUrl, '디너의여왕');
+            if (realBenefit && realBenefit !== item.title) {
+              item.description = realBenefit;
+            }
+          }));
+          collected.push(...chunk);
+        }
       } catch (err: any) {
         console.error('[Parallel-Crawl] 디너의여왕 failed:', err.message);
       }

@@ -1,9 +1,9 @@
 import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+import { HEADERS, detectCategory, detectPlatform, inferCampaignLocation } from '../../scraper-utils';
 
-type CloudReviewDetail = Pick<Campaign, 'endDate' | 'applyCount' | 'limitCount' | 'platform'>;
+type CloudReviewDetail = Pick<Campaign, 'endDate' | 'applyCount' | 'limitCount' | 'platform' | 'location'>;
 
 export function parseCloudReviewDetail(text: string, fallbackPlatform: Campaign['platform']): CloudReviewDetail {
   const $ = cheerio.load(text);
@@ -12,6 +12,7 @@ export function parseCloudReviewDetail(text: string, fallbackPlatform: Campaign[
   const period = normalized.match(/모집\s*기간\s*(?:20)?(\d{2})[.년\-/\s]+(\d{1,2})[.월\-/\s]+(\d{1,2})\s*(?:일)?\s*[~～-]\s*(?:20)?(\d{2})[.년\-/\s]+(\d{1,2})[.월\-/\s]+(\d{1,2})/i);
   const applicants = normalized.match(/신청자?\s*([\d,]+)\s*\/\s*([\d,]+)/i);
   const type = normalized.match(/캠페인\s*타입\s*([^\s]+)/i)?.[1] || '';
+  const address = normalized.match(/(?:방문\s*주소|체험\s*주소|매장\s*주소)\s*:?\s*([^\n|]{2,80})/i)?.[1]?.trim() || '';
 
   return {
     endDate: period
@@ -20,6 +21,7 @@ export function parseCloudReviewDetail(text: string, fallbackPlatform: Campaign[
     applyCount: applicants ? Number(applicants[1].replace(/,/g, '')) : 0,
     limitCount: applicants ? Number(applicants[2].replace(/,/g, '')) : 0,
     platform: type ? detectPlatform(type, type) : fallbackPlatform,
+    location: /(?:배송|구매)/.test(type) ? '재택' : inferCampaignLocation(normalized, '', fallbackPlatform, address),
   };
 }
 
@@ -48,6 +50,7 @@ async function enrichCampaignDetails(campaigns: Campaign[]): Promise<void> {
           campaign.applyCount = facts.applyCount;
         }
         campaign.platform = facts.platform;
+        if (facts.location) campaign.location = facts.location;
         if (mainImage) campaign.imageUrl = mainImage;
         campaign.dataSource = 'detail';
       } catch (error: any) {
@@ -94,13 +97,15 @@ await (async () => {
             if (collected.some(item => item.id === `cr-${cpId}`)) return;
             const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
             const category = detectCategory(fullSearchText, fullSearchText);
+            const platform = detectPlatform(fullSearchText, fullSearchText);
 
             collected.push({
               id: `cr-${cpId}`,
               title: cleanTitle,
               description: cleanDesc,
-              platform: detectPlatform(fullSearchText, fullSearchText),
+              platform,
               category,
+              location: inferCampaignLocation(cleanTitle, cleanDesc, platform),
               campaignUrl: fullUrl,
               imageUrl: img || 'https://viral-re.co.kr/icon.png',
               targetSite: '클라우드리뷰',

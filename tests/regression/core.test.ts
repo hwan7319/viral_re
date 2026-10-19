@@ -25,6 +25,7 @@ test('regression suite', async t => {
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
+  const { inferCampaignLocation } = await import('../../src/lib/scraper-utils');
   const { ensureFilterValue, toggleFilterValue } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
@@ -123,10 +124,25 @@ test('regression suite', async t => {
     await db.insertOrUpdateCampaigns([fixture('concurrent-0', { endDate: '' })]);
     assert.equal((await db.getCampaignById('concurrent-0'))?.endDate, '2099-12-31');
   });
+  await t.test('trending snapshot writes serialize with campaign upserts', async () => {
+    await Promise.all([
+      ...Array.from({ length: 8 }, (_, i) => db.insertOrUpdateCampaigns([fixture(`queue-${i}`)])),
+      ...Array.from({ length: 8 }, () => db.getTrendingKeywordsWithChanges()),
+    ]);
+    assert.equal((await db.queryCampaigns({ search: 'queue-' })).length, 8);
+  });
   await t.test('detail provenance is retained when a later list sync arrives', async () => {
     await db.insertOrUpdateCampaigns([fixture('provenance', { dataSource: 'detail' })]);
     await db.insertOrUpdateCampaigns([fixture('provenance', { dataSource: 'list' })]);
     assert.equal((await db.getCampaignById('provenance'))?.dataSource, 'detail');
+  });
+  await t.test('list refresh cannot erase verified quota or location', async () => {
+    await db.insertOrUpdateCampaigns([fixture('verified-fields', { location: '서울 강남구', limitCount: 8, applyCount: 12, dataSource: 'detail' })]);
+    await db.insertOrUpdateCampaigns([fixture('verified-fields', { location: undefined, limitCount: 0, applyCount: 0, dataSource: 'list' })]);
+    const saved = await db.getCampaignById('verified-fields');
+    assert.equal(saved?.location, '서울 강남구');
+    assert.equal(saved?.limitCount, 8);
+    assert.equal(saved?.applyCount, 12);
   });
   await t.test('a missing thumbnail from a later sync does not erase a saved source image', async () => {
     await db.insertOrUpdateCampaigns([fixture('thumbnail', { imageUrl: 'https://images.example.com/original.jpg' })]);
@@ -189,7 +205,7 @@ test('regression suite', async t => {
     const lowerBound = summarizeAvailableMonthlyPosts(10000, [
       { postdate: '20260914' }, { postdate: '20260913' }, { postdate: '20260912' },
     ], new Date('2026-09-14'));
-    assert.equal(lowerBound.monthlyPosts, 13);
+    assert.equal(lowerBound.monthlyPosts, 30);
     assert.equal(lowerBound.monthlyPostsIsLowerBound, false);
     assert.equal(lowerBound.monthlyPostsEstimated, true);
   });
@@ -219,7 +235,7 @@ test('regression suite', async t => {
   });
   await t.test('CloudReview detail keeps its published deadline and applicant counts', () => {
     const detail = parseCloudReviewDetail('캠페인 타입 배송형 모집 기간 26.09.07~26.09.21일 신청자 672/10', 'blog');
-    assert.deepEqual(detail, { endDate: '2026-09-21', applyCount: 672, limitCount: 10, platform: 'blog' });
+    assert.deepEqual(detail, { endDate: '2026-09-21', applyCount: 672, limitCount: 10, platform: 'blog', location: '재택' });
   });
   await t.test('CloudReview detail prefers the campaign artwork over a platform icon', () => {
     const html = '<img src="/static/new/image/insta_symbol.png"><img src="https://api.cloudreview.co.kr/file/17216/main_image/main.jpg">';
@@ -258,6 +274,14 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('네이처헤어 상계백병원점', '커트 또는 펌 체험권'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('다비치안경 건대병원사거리점', '안경테와 렌즈 제공'), 'fashion-accessory');
     assert.equal(classifyCampaignCategory('한일의료기 전기장판', '크림라떼 색상 전기장판'), 'life-appliances');
+    assert.equal(classifyCampaignCategory('노바호-대마도 1박 2 패키지', '대마도 승선권'), 'travel');
+    assert.equal(classifyCampaignCategory('멀티롤러장 고고랜드', '롤러장 2인 체험권'), 'hobby');
+    assert.equal(classifyCampaignCategory('무인 옷가게', '1만원 이용권'), 'fashion-clothing');
+    assert.equal(classifyCampaignCategory('두잉왓 볼륨 스타일링 매트 왁스', '스타일링 왁스'), 'beauty-cosmetics');
+    assert.equal(classifyCampaignCategory('제주 곁 서울혼술바', '칵테일 2잔 제공'), 'food-pub');
+    assert.equal(classifyCampaignCategory('프리미엄 EMS 다이어트 체험', '체성분 분석'), 'beauty-body');
+    assert.equal(inferCampaignLocation('NEW [서울/서초] 헤어 체험', '', 'blog'), '서울 서초');
+    assert.equal(inferCampaignLocation('[블로그/쿠팡] 주방용품', '', 'coupang'), '재택');
     assert.equal(classifyCampaignCategory('부유방 림프순환 관리', '50분 관리 체험'), 'beauty-body');
     assert.equal(classifyCampaignCategory('어린이 스마트학습 영자신문', '3개월 이용권'), 'book');
     assert.equal(classifyCampaignCategory('라운데이 데일리 타올', '키친타월처럼 뜯고 행주처럼 사용'), 'life-goods');

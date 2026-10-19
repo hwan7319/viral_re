@@ -1,6 +1,6 @@
 import type { Campaign } from '../../db';
 import axios from 'axios';
-import { detectCategory, detectPlatform, HEADERS } from '../../scraper-utils';
+import { detectCategory, detectPlatform, HEADERS, inferCampaignLocation } from '../../scraper-utils';
 
 const ORIGIN = 'https://ohmyblog.co.kr';
 
@@ -19,10 +19,12 @@ export async function scrape(keyword: string): Promise<Campaign[]> {
         const description = String(item.supplyItem || item.app_companyName || title).trim();
         if (!title || (keyword && !(title + ' ' + description).toLowerCase().includes(keyword.toLowerCase()))) continue;
         const platformText = String(item.sns_platforms || item.content_type || item.app_type_text || '');
+        const platform = detectPlatform(title, platformText);
         const thumbnail = String(item.thumbnail || '');
         rows.push({
           id: 'ohmy-' + item.app_seq, title, description,
-          platform: detectPlatform(title, platformText), category: detectCategory(title, description),
+          platform, category: detectCategory(title, description),
+          location: inferCampaignLocation(title, description, platform),
           campaignUrl: ORIGIN + '/user/productDetail.apsl?app_seq=' + item.app_seq,
           imageUrl: thumbnail ? (thumbnail.startsWith('http') ? thumbnail : ORIGIN + (thumbnail.startsWith('/') ? '' : '/') + thumbnail) : 'https://viral-re.co.kr/icon.png',
           targetSite: '오마이블로그',

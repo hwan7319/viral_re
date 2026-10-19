@@ -1,7 +1,7 @@
 import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+import { HEADERS, detectCategory, detectPlatform, inferCampaignLocation } from '../../scraper-utils';
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -75,6 +75,7 @@ await (async () => {
                 description: description || title,
                 platform,
                 category: detectCategory(title, description),
+                location: inferCampaignLocation(title, `${description} ${chipText}`, platform),
                 campaignUrl: `https://assaview.co.kr/campaign.php?cp_id=${cpId}`,
                 imageUrl: img || 'https://viral-re.co.kr/icon.png',
                 targetSite: '아싸뷰',

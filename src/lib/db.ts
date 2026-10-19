@@ -2,10 +2,10 @@ import { koreanDate } from './campaign-values';
 import { classifyCampaignCategory } from './category_classifier';
 export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-snack', 'food-meat', 'food-omakase', 'food-foreign', '맛집'],
-  'food-korean': ['food-korean', 'food-restaurant', 'food'],
-  'food-western': ['food-western', 'food-foreign', 'food'],
-  'food-japanese': ['food-japanese', 'food-foreign', 'food'],
-  'food-chinese': ['food-chinese', 'food-foreign', 'food'],
+  'food-korean': ['food-korean'],
+  'food-western': ['food-western'],
+  'food-japanese': ['food-japanese'],
+  'food-chinese': ['food-chinese'],
   'food-restaurant': ['food-restaurant', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food'],
   'food-foreign': ['food-foreign', 'food-western', 'food-japanese', 'food-chinese', 'food'],
   'food-cafe': ['food-cafe', '디저트'],
@@ -17,15 +17,15 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food-omakase': ['food-omakase'],
 
   'beauty': ['beauty', 'beauty-cosmetic', 'beauty-cosmetics', 'beauty-hair', 'beauty-salon', 'beauty-skin', 'beauty-spa', 'beauty-body', 'health-fitness', 'health-food', 'health-medical'],
-  'beauty-cosmetics': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
-  'beauty-cosmetic': ['beauty-cosmetics', 'beauty-cosmetic', 'beauty'],
+  'beauty-cosmetics': ['beauty-cosmetics', 'beauty-cosmetic'],
+  'beauty-cosmetic': ['beauty-cosmetics', 'beauty-cosmetic'],
   'beauty-salon': ['beauty-salon', 'beauty-hair'],
   'beauty-hair': ['beauty-hair', 'beauty-salon'],
   'beauty-skin': ['beauty-skin', 'beauty-spa'],
   'beauty-spa': ['beauty-spa', 'beauty-skin'],
   'beauty-body': ['beauty-body'],
   'health-fitness': ['health-fitness', 'health'],
-  'health-food': ['health-food', 'health-fresh', 'health'],
+  'health-food': ['health-food'],
   'health-medical': ['health-medical'],
 
   'travel': ['travel', 'travel-leisure'],
@@ -35,17 +35,17 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'culture': ['culture'],
 
   'fashion': ['fashion', 'fashion-clothing', 'fashion-accessory'],
-  'fashion-clothing': ['fashion-clothing', 'fashion'],
-  'fashion-accessory': ['fashion-accessory', 'fashion'],
+  'fashion-clothing': ['fashion-clothing'],
+  'fashion-accessory': ['fashion-accessory'],
 
   'life': ['life', 'life-goods', 'life-appliances', 'life-auto', 'health-fresh', 'baby', 'pet', 'book', 'hobby'],
-  'life-goods': ['life-goods', 'life'],
-  'life-appliances': ['life-appliances', 'life'],
+  'life-goods': ['life-goods'],
+  'life-appliances': ['life-appliances'],
   'life-auto': ['life-auto'],
-  'health-fresh': ['health-fresh', 'food'],
-  'baby': ['baby', 'life'],
-  'pet': ['pet', 'life'],
-  'book': ['book', 'life'],
+  'health-fresh': ['health-fresh'],
+  'baby': ['baby'],
+  'pet': ['pet'],
+  'book': ['book'],
   'hobby': ['hobby'],
   'service-fortune': ['service-fortune'],
   // `general` was emitted by early list scrapers. Keep it here while old
@@ -140,6 +140,13 @@ const DB_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'review-moa.db');
 
 let dbInstance: Database | null = null;
+let writeQueue: Promise<unknown> = Promise.resolve();
+
+function serializeWrite<T>(operation: () => Promise<T>): Promise<T> {
+  const task = writeQueue.then(operation);
+  writeQueue = task.catch(() => undefined);
+  return task;
+}
 
 // SQLite DB 초기화 및 연결
 async function initializeDB(): Promise<Database> {
@@ -171,7 +178,7 @@ async function initializeDB(): Promise<Database> {
     throw new Error('Database initialization failed.');
   }
 
-  await dbInstance.exec('PRAGMA busy_timeout = 10000; PRAGMA foreign_keys = ON;');
+  await dbInstance.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA busy_timeout = 10000; PRAGMA foreign_keys = ON;');
 
   // 스키마 초기 설정
   await dbInstance.exec(`
@@ -551,11 +558,16 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
         const existingSource = globalRef.memoryCampaigns[idx].dataSource || 'list';
         const incomingSource = c.dataSource || 'list';
         const finalSource = (sourceRank[existingSource] || 1) > (sourceRank[incomingSource] || 1) ? existingSource : incomingSource;
+        const finalLimitCount = c.limitCount > 0 ? c.limitCount : globalRef.memoryCampaigns[idx].limitCount;
+        const finalApplyCount = c.limitCount > 0 || c.applyCount > 0 ? c.applyCount : globalRef.memoryCampaigns[idx].applyCount;
         
         globalRef.memoryCampaigns[idx] = {
           ...globalRef.memoryCampaigns[idx],
           ...c,
           description: finalDesc,
+          location: c.location || globalRef.memoryCampaigns[idx].location,
+          limitCount: finalLimitCount,
+          applyCount: finalApplyCount,
           endDate: c.endDate || globalRef.memoryCampaigns[idx].endDate,
           searchKeywords: finalKeywords,
           mission: c.mission || globalRef.memoryCampaigns[idx].mission,
@@ -586,7 +598,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
     for (const input of campaigns) {
       const c = normalizeCampaignCategory(input);
       if (isDummyCampaignItem(c)) continue;
-      const existing = await db.get('SELECT id, title, description, imageUrl, searchKeywords, endDate, dataSource FROM campaigns WHERE id = ?', [c.id]);
+      const existing = await db.get('SELECT id, title, description, imageUrl, searchKeywords, endDate, dataSource, location, limitCount, applyCount FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
         let finalKeywords = existing.searchKeywords || '';
@@ -611,6 +623,8 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
         const finalImageUrl = incomingImageIsFallback && existing.imageUrl && !existing.imageUrl.includes('/icon.png')
           ? existing.imageUrl
           : c.imageUrl;
+        const finalLimitCount = c.limitCount > 0 ? c.limitCount : Number(existing.limitCount || 0);
+        const finalApplyCount = c.limitCount > 0 || c.applyCount > 0 ? c.applyCount : Number(existing.applyCount || 0);
 
         await db.run(
           `UPDATE campaigns SET 
@@ -622,8 +636,8 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           WHERE id = ?`,
           [
             c.title, finalDesc, c.platform, c.category,
-            c.location || null, c.campaignUrl, finalImageUrl, c.targetSite,
-            c.limitCount, c.applyCount, c.startDate || null, c.endDate || existing.endDate,
+            c.location || existing.location || null, c.campaignUrl, finalImageUrl, c.targetSite,
+            finalLimitCount, finalApplyCount, c.startDate || null, c.endDate || existing.endDate,
             new Date().toISOString(), finalKeywords, finalSource,
             c.mission || null, c.mission || null, c.mission || null,
             c.id
@@ -893,18 +907,20 @@ export async function getTrendingKeywordsWithChanges(): Promise<TrendingKeyword[
     const db = await getDB();
     const rows = await db.all<{ keyword: string; rank: number }[]>('SELECT keyword, rank FROM trending_rank_snapshots');
     rows.forEach(row => previous.set(row.keyword, row.rank));
-    await db.exec('BEGIN IMMEDIATE');
-    try {
-      await db.run('DELETE FROM trending_rank_snapshots');
-      const seenAt = new Date().toISOString();
-      for (let index = 0; index < ranked.length; index += 1) {
-        await db.run('INSERT INTO trending_rank_snapshots (keyword, rank, seenAt) VALUES (?, ?, ?)', [ranked[index].word, index + 1, seenAt]);
+    await serializeWrite(async () => {
+      await db.exec('BEGIN IMMEDIATE');
+      try {
+        await db.run('DELETE FROM trending_rank_snapshots');
+        const seenAt = new Date().toISOString();
+        for (let index = 0; index < ranked.length; index += 1) {
+          await db.run('INSERT INTO trending_rank_snapshots (keyword, rank, seenAt) VALUES (?, ?, ?)', [ranked[index].word, index + 1, seenAt]);
+        }
+        await db.exec('COMMIT');
+      } catch (error) {
+        await db.exec('ROLLBACK');
+        throw error;
       }
-      await db.exec('COMMIT');
-    } catch (error) {
-      await db.exec('ROLLBACK');
-      throw error;
-    }
+    });
   }
 
   return ranked.map((item, index) => {
@@ -936,13 +952,10 @@ let dbReady: Promise<Database> | undefined;
 export function getDB(): Promise<Database> {
   return dbReady ??= initializeDB().catch(error => { dbReady = undefined; dbInstance = null; throw error; });
 }
-let writeQueue: Promise<unknown> = Promise.resolve();
 export function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
-  const task = writeQueue.then(async () => {
+  return serializeWrite(async () => {
     if (!process.env.VERCEL && !process.env.NOW_BUILDER) await getDB();
     else await queryCampaigns({});
     return writeCampaigns(campaigns);
   });
-  writeQueue = task.catch(() => {});
-  return task;
 }

@@ -4,6 +4,7 @@ export interface ScrapedCampaign {
   description: string;
   platform: string;
   category: string;
+  location?: string;
   campaignUrl: string;
   imageUrl: string;
   targetSite: string;

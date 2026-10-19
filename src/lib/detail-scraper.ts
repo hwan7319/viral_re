@@ -457,6 +457,7 @@ export async function scrapeDetailCounts(url: string, targetSite: string, title?
 }
 export async function scrapeDetailBenefit(url: string, targetSite: string): Promise<string | undefined> {
   if (!url) return undefined;
+  const siteLower = (targetSite || '').toLowerCase();
 
   // 🔑 0. SQLite DB 사전 등록 혜택 최우선 검출 (< 2ms Fast Cache Lookup)
   try {
@@ -475,21 +476,30 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
     }
   } catch (e) {}
 
+  // These adapters fetch and parse their own source page. Running the generic
+  // request first doubled upstream traffic and made DinnerQueen/ReviewPlace
+  // time out under a parallel crawl.
+  if (siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) {
+    return DinnerQueenScraper.scrapeDetailBenefit?.(url);
+  }
+  if (siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) {
+    return ReviewPlaceScraper.scrapeDetailBenefit?.(url);
+  }
+  if (siteLower.includes('모블') || url.includes('modublog.co.kr')) {
+    return ModuBlogScraper.scrapeDetailBenefit?.(url);
+  }
+  if (siteLower.includes('아싸뷰') || url.includes('assaview.co.kr')) {
+    return AssaViewScraper.scrapeDetailBenefit?.(url);
+  }
+
   try {
     const res = await axios.get(url, { headers: HEADERS, timeout: 5000 });
     const html = res.data;
     if (typeof html !== 'string') return undefined;
 
     const $ = cheerio.load(html);
-    const siteLower = (targetSite || '').toLowerCase();
-
-    // 1. 디너의여왕
-    if ((siteLower.includes('디너의여왕') || url.includes('dinnerqueen')) && DinnerQueenScraper.scrapeDetailBenefit) {
-      const dqBenefit = await DinnerQueenScraper.scrapeDetailBenefit(url);
-      if (dqBenefit) return dqBenefit;
-    }
-    // 2. 강남맛집 -> dd.sub_tit
-    else if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
+    // 1. 강남맛집 -> dd.sub_tit
+    if (siteLower.includes('강남맛집') || url.includes('939au0g4vj8sq')) {
       let bText = $('dd.sub_tit').first().text().trim() || $('.sub_tit').text().trim();
       bText = bText.replace(/가이드라인\s*참고.*$/gi, '').trim();
       if (bText && bText.length > 1) return bText;
@@ -682,21 +692,6 @@ export async function scrapeDetailBenefit(url: string, targetSite: string): Prom
         const b = $('.etc_list2').text().replace(/\s+/g, ' ').trim();
         if (b) return b.replace(/^제공내역\s*/, '');
       } catch (e) {}
-    }
-    // 11. 리뷰플레이스 (reviewplace.co.kr)
-    else if ((siteLower.includes('리뷰플레이스') || url.includes('reviewplace.co.kr')) && ReviewPlaceScraper.scrapeDetailBenefit) {
-      const rpBenefit = await ReviewPlaceScraper.scrapeDetailBenefit(url);
-      if (rpBenefit) return rpBenefit;
-    }
-    // 12. 모블 (modublog.co.kr)
-    else if ((siteLower.includes('모블') || url.includes('modublog.co.kr')) && ModuBlogScraper.scrapeDetailBenefit) {
-      const mbBenefit = await ModuBlogScraper.scrapeDetailBenefit(url);
-      if (mbBenefit) return mbBenefit;
-    }
-    // 13. 아싸뷰 (assaview.co.kr)
-    else if ((siteLower.includes('아싸뷰') || url.includes('assaview.co.kr')) && AssaViewScraper.scrapeDetailBenefit) {
-      const avBenefit = await AssaViewScraper.scrapeDetailBenefit(url);
-      if (avBenefit) return avBenefit;
     }
   } catch (err: any) {
     console.warn(`[Detail-Benefit-Scraper] Failed for ${url}:`, err.message);

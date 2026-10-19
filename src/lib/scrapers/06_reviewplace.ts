@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
 import { classifyCampaignCategory } from '../category_classifier';
-import { detectPlatform } from '../scraper-utils';
+import { detectPlatform, inferCampaignLocation } from '../scraper-utils';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -119,6 +119,8 @@ export const ReviewPlaceScraper: SiteScraper = {
       // 제목에 표시된 참여 매체를 그대로 사용한다. 쿠팡 구매평과 블로그가 함께
       // 요구되는 공고도 구매형으로 분류해 카드와 체험 방식이 실제 모집 형태를 따른다.
       const platform = detectPlatform(rawTitle);
+      const location = inferCampaignLocation(rawTitle, '', platform)
+        || (/^\s*(?:NEW\s*)?\[(?:블로그|인스타|릴스|틱톡|클립|유튜브)/i.test(rawTitle) ? '재택' : undefined);
 
       if (rawTitle && rawTitle.length > 3) {
         collected.push({
@@ -127,6 +129,7 @@ export const ReviewPlaceScraper: SiteScraper = {
           description: '',
           platform,
           category: classifyCampaignCategory(rawTitle, ''),
+          location,
           campaignUrl: href.startsWith('http') ? href : `https://www.reviewplace.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '리뷰플레이스',

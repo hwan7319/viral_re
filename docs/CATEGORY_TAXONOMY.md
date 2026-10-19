@@ -19,4 +19,4 @@
 
 ## 변경 절차
 
-새 키를 추가할 때는 `category_classifier.ts`, `CATEGORY_GROUP_MAP`, 화면 라벨, 회귀 테스트를 함께 수정한다. 배포 후 `src/scripts/reclassify-active-categories.ts`로 활성 공고를 재분류하고, 상위·세부 필터가 각각 의도한 집합만 반환하는지 QA한다.
+새 키를 추가할 때는 `category_classifier.ts`, `CATEGORY_GROUP_MAP`, 화면 라벨, 회귀 테스트를 함께 수정한다. 배포 후 `src/scripts/reclassify-active-categories.ts`로 `etc`/`general` 활성 공고만 보강하고, 상위·세부 필터가 각각 의도한 집합만 반환하는지 QA한다. 출처가 준 구체 카테고리는 이 스크립트로 일괄 덮어쓰지 않는다.

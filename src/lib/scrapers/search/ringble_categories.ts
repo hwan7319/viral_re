@@ -1,7 +1,7 @@
 import { getDB, type Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { HEADERS, detectCategory, detectPlatform } from '../../scraper-utils';
+import { HEADERS, detectCategory, detectPlatform, inferCampaignLocation } from '../../scraper-utils';
 
 const deadlineCache = new Map<string, string>();
 
@@ -139,6 +139,8 @@ await (async () => {
                     item.description = cleanTitle;
                     item.platform = detectPlatform(cleanTitle, cleanTitle);
                     item.category = detectCategory(cleanTitle, cleanTitle);
+                    item.location = inferCampaignLocation(cleanTitle, cleanTitle, item.platform)
+                      || (cat === 832 ? '방문' : undefined);
                   }
                 }
               });

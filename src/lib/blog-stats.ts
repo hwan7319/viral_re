@@ -51,16 +51,15 @@ export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[],
 
   // Naver returns newest posts first and caps a query at 1,000 results. When
   // the 30-day boundary is outside that window, estimate a 30-day run rate
-  // from the observed publishing cadence. A seven-day minimum window avoids
-  // turning a single busy day into an implausibly large monthly value.
+  // from the actual span covered by the sample. A fixed seven-day floor made
+  // unrelated popular keywords collapse to the same 1,286 value (300*30/7).
   const observedDates = items
     .map(item => parsePostDate(item.postdate || ''))
     .filter((timestamp): timestamp is number => Number.isFinite(timestamp));
   const newest = Math.max(...observedDates);
   const oldest = Math.min(...observedDates);
   const observedDays = Math.max(1, Math.floor((newest - oldest) / DAY_MS) + 1);
-  const estimationWindowDays = Math.max(7, observedDays);
-  const monthlyEstimate = Math.min(total, Math.max(observedRecentPosts, Math.round((observedRecentPosts * 30) / estimationWindowDays)));
+  const monthlyEstimate = Math.min(total, Math.max(observedRecentPosts, Math.round((observedRecentPosts * 30) / observedDays)));
 
   return {
     ...exact,

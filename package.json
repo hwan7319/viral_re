@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "test": "tsx --test tests/regression/*.test.ts",
+    "test": "node --import tsx --test tests/regression/*.test.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=340",

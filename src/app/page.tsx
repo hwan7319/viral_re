@@ -746,6 +746,8 @@ export default function Home() {
   const [syncCountdown, setSyncCountdown] = useState<number>(SYNC_INTERVAL_SEC);
   const [isSyncingData, setIsSyncingData] = useState<boolean>(false);
   const loadedCountRef = useRef(60);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const [matchedCount, setMatchedCount] = useState(0);
   useEffect(() => { loadedCountRef.current = campaigns.length; }, [campaigns.length]);
 
   const triggerManualSync = useCallback(async () => {
@@ -1978,8 +1980,6 @@ export default function Home() {
 
   const searchRequestRef = useRef<AbortController | null>(null);
   const pageRequestRef = useRef(false);
-  const [nextOffset, setNextOffset] = useState<number | null>(null);
-  const [matchedCount, setMatchedCount] = useState(0);
   const makeSearchParams = () => new URLSearchParams(appliedFilters);
   const fetchCampaigns = async () => {
     const generation = ++searchGenerationRef.current;

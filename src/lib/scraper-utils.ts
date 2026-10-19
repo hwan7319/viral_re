@@ -1,10 +1,5 @@
 import { deadlineFromText } from './campaign-values';
 import { classifyCampaignCategory } from './category_classifier';
-import axios from 'axios';
-import * as cheerio from 'cheerio';
-
-
-
 // 🔑 크롤링 브라우저 User-Agent 헤더 셋업 (우회 성능 향상)
 export const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -119,6 +114,20 @@ export const detectPlatform = (title: string, rawPlatformText?: string): 'blog' 
 
 export const detectCategory = (title: string, desc: string): string => classifyCampaignCategory(title, desc);
 
+const REGION_PATTERN = '(서울|경기|인천|부산|대구|대전|광주|울산|강원|제주|충북|충남|전북|전남|경북|경남|세종)';
+
+/** Preserve an explicit region and otherwise infer only high-confidence visit/delivery evidence. */
+export function inferCampaignLocation(title = '', description = '', platform = '', explicit = ''): string | undefined {
+  if (explicit.trim()) return explicit.trim().replace(/[\/|]+/g, ' ').replace(/\s+/g, ' ');
+  const text = `${title} ${description}`;
+  const bracketed = text.match(new RegExp(`\\[\\s*${REGION_PATTERN}\\s*[\\/| ]\\s*([^\\]]{1,12})\\]`));
+  if (bracketed) return `${bracketed[1]} ${bracketed[2]}`.replace(/\s+/g, ' ').trim();
+  const region = text.match(new RegExp(`${REGION_PATTERN}\\s*(?:특별자치시|특별자치도|광역시|특별시|도)?[\\s/]+([가-힣]{1,8}(?:구|군|시|동)?)`));
+  if (region) return `${region[1]} ${region[2]}`.trim();
+  if (platform === 'coupang' || /(?:배송형|구매형|구매평|택배|재택|제품\s*배송)/.test(text)) return '재택';
+  return undefined;
+}
+
 export const buildAutoKeywords = (title: string, desc: string): string => {
   const t = (title + ' ' + desc).toLowerCase();
   const keywords: string[] = [];
@@ -128,4 +137,3 @@ export const buildAutoKeywords = (title: string, desc: string): string => {
   if (t.includes('펜션') || t.includes('풀빌라')) keywords.push('펜션');
   return keywords.length > 0 ? `,${keywords.join(',')},` : '';
 };
-

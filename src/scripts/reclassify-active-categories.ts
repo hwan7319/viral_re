@@ -6,12 +6,13 @@ async function main() {
   const db = await getDB();
   const rows = await db.all<{ id: string; title: string; description: string; category: string }[]>(
     `SELECT id, title, description, category FROM campaigns
-     WHERE endDate >= ? OR (endDate = '' AND updatedAt >= datetime('now', '-48 hours'))`, [koreanDate()],
+     WHERE (endDate >= ? OR (endDate = '' AND updatedAt >= datetime('now', '-48 hours')))
+       AND category IN ('etc', 'general')`, [koreanDate()],
   );
   let changed = 0;
   for (const row of rows) {
     const category = classifyCampaignCategory(row.title, row.description);
-    if (category !== row.category) {
+    if (category !== 'etc' && category !== row.category) {
       await db.run('UPDATE campaigns SET category = ? WHERE id = ?', [category, row.id]);
       changed++;
     }
