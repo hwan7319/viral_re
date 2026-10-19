@@ -7,7 +7,7 @@ import { fetchCampaignPage } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
 import TrustContent from '@/components/TrustContent';
-import { ensureFilterValue, hasFilterValue, selectedFilterValues, toggleFilterValue } from '@/lib/filter-selection';
+import { hasFilterValue, selectedFilterValues, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } from '@/lib/filter-selection';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
 
@@ -1532,7 +1532,7 @@ export default function Home() {
                         setSelectedSido(sido);
                         setHoveredSido(sido);
                         setSelectedSigungu('all');
-                        setActiveLocation(toggleFilterValue(activeLocation, sido));
+                        setActiveLocation(toggleScopedLocation(activeLocation, sido));
                       }}
                     >
                       {sido}
@@ -1561,9 +1561,8 @@ export default function Home() {
                         onClick={() => {
                           const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
                           setSelectedSigungu('all');
-                          // The left-side province row already selects the province. Its
-                          // "전체" chip must confirm that selection, not toggle it off.
-                          setActiveLocation(ensureFilterValue(activeLocation, targetSido));
+                          // "전체" replaces only this province's district selections.
+                          setActiveLocation(selectProvinceLocation(activeLocation, targetSido));
                         }}
                       >
                         {hoveredSido !== 'all' ? hoveredSido : selectedSido} 전체
@@ -1581,7 +1580,7 @@ export default function Home() {
                             const targetSido = hoveredSido !== 'all' ? hoveredSido : selectedSido;
                             setSelectedSido(targetSido);
                             setSelectedSigungu(sigungu);
-                            setActiveLocation(toggleFilterValue(activeLocation, `${targetSido} ${sigungu}`));
+                            setActiveLocation(toggleScopedLocation(activeLocation, targetSido, sigungu));
                           }}
                         >
                           {sigungu}

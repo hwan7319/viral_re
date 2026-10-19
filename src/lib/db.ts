@@ -89,6 +89,7 @@ function platformMatches(platform: string, selected: string[]) {
 
 function locationMatches(location: string | undefined, selected: string[]) {
   const normalized = (location || '').toLowerCase();
+  const locationTokens = normalized.replace(/[\/,]/g, ' ').split(/\s+/).filter(Boolean);
   return selected.some(value => {
     const parts = value.toLowerCase().split(/\s+/);
     const sido = parts[0].replace(/(특별자치시|특별자치도|광역시|직할시|특별시|자치도|도|시)$/, '');
@@ -96,7 +97,7 @@ function locationMatches(location: string | undefined, selected: string[]) {
     if (parts.length < 2) return true;
     const sigungu = parts[1];
     const stem = sigungu.replace(/(구|군|시)$/, '');
-    return normalized.includes(sigungu) || (stem.length >= 2 && normalized.includes(stem));
+    return locationTokens.includes(sigungu) || (stem.length >= 2 && locationTokens.includes(stem));
   });
 }
 
@@ -448,8 +449,15 @@ export async function queryCampaigns(filters: {
       } else {
         const sigungu = parts[1];
         const stem = sigungu.replace(/(구|군|시)$/, '');
-        clauses.push(`(location LIKE ? AND (location LIKE ? OR location LIKE ?))`);
-        params.push(`%${sido}%`, `%${sigungu}%`, `%${stem}%`);
+        // Districts must be matched as address tokens. Substring matching makes
+        // 서구 match 달서구 and 중구 match 중랑구. Slashes are normalized because
+        // a few source sites use forms such as "대구/서구".
+        const normalizedLocation = "REPLACE(REPLACE(location, '/', ' '), ',', ' ')";
+        const districtValues = [sigungu, ...(stem.length >= 2 ? [stem] : [])];
+        const districtClauses = districtValues.flatMap(() => [`${normalizedLocation} LIKE ?`, `${normalizedLocation} LIKE ?`]);
+        clauses.push(`(location LIKE ? AND (${districtClauses.join(' OR ')}))`);
+        params.push(`%${sido}%`);
+        for (const district of districtValues) params.push(`% ${district}`, `% ${district} %`);
       }
     }
     query += ` AND (${clauses.join(' OR ')})`;

@@ -26,7 +26,7 @@ test('regression suite', async t => {
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
   const { inferCampaignLocation, parseCountText } = await import('../../src/lib/scraper-utils');
-  const { ensureFilterValue, toggleFilterValue } = await import('../../src/lib/filter-selection');
+  const { ensureFilterValue, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
@@ -118,6 +118,45 @@ test('regression suite', async t => {
     assert.equal(selectedGyeonggi, '경기');
     assert.equal(ensureFilterValue(selectedGyeonggi, '경기'), '경기');
     assert.equal(ensureFilterValue(selectedGyeonggi, '서울'), '경기,서울');
+  });
+  await t.test('district selection replaces only its province-wide location filter', () => {
+    const selectedSeoul = toggleScopedLocation('경기,서울', '서울');
+    assert.equal(selectedSeoul, '경기');
+
+    const gangnam = toggleScopedLocation('경기,서울', '서울', '강남구');
+    assert.equal(gangnam, '경기,서울 강남구');
+
+    const gangnamAndMapo = toggleScopedLocation(gangnam, '서울', '마포구');
+    assert.equal(gangnamAndMapo, '경기,서울 강남구,서울 마포구');
+
+    const wholeSeoul = selectProvinceLocation(gangnamAndMapo, '서울');
+    assert.equal(wholeSeoul, '경기,서울');
+  });
+  await t.test('all province selections keep their scope when a district is selected', () => {
+    const representativeDistricts: Record<string, string> = {
+      서울: '강남구', 경기: '수원시', 인천: '남동구', 부산: '해운대구', 대구: '수성구',
+      대전: '유성구', 광주: '광산구', 울산: '남구', 강원: '강릉시', 충북: '청주시',
+      충남: '천안시', 전북: '전주시', 전남: '여수시', 경북: '포항시', 경남: '창원시',
+      제주: '제주시', 세종: '세종특별자치시',
+    };
+
+    for (const [sido, sigungu] of Object.entries(representativeDistricts)) {
+      const selection = toggleScopedLocation(`경기,${sido}`, sido, sigungu);
+      const selected = selection.split(',');
+      assert.equal(selected.includes(sido), false, `${sido} must not remain as a province-wide filter`);
+      assert.equal(selected.includes(`${sido} ${sigungu}`), true);
+      if (sido !== '경기') assert.equal(selected.includes('경기'), true);
+    }
+  });
+  await t.test('short district names do not match neighbouring districts by one character', async () => {
+    await db.insertOrUpdateCampaigns([
+      fixture('seoul-junggu', { location: '서울 중구' }),
+      fixture('seoul-jungrang', { location: '서울 중랑구' }),
+      fixture('daegu-seogu', { location: '대구 서구' }),
+      fixture('daegu-dalseo', { location: '대구 달서구' }),
+    ]);
+    assert.deepEqual((await db.queryCampaigns({ location: '서울 중구' })).filter(c => c.id.startsWith('seoul-')).map(c => c.id), ['seoul-junggu']);
+    assert.deepEqual((await db.queryCampaigns({ location: '대구 서구' })).filter(c => c.id.startsWith('daegu-')).map(c => c.id), ['daegu-seogu']);
   });
   await t.test('concurrent upserts serialize transactions and preserve known deadlines', async () => {
     await Promise.all(Array.from({ length: 10 }, (_, i) => db.insertOrUpdateCampaigns([fixture(`concurrent-${i}`)])));
