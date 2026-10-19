@@ -10,7 +10,7 @@ type Row = {
   description: string;
   category: string;
   platform: string;
-  location: string;
+  location: string | null;
   campaignUrl: string;
   targetSite: string;
   endDate: string;
@@ -65,7 +65,7 @@ async function main() {
       categoriesFixed++;
     }
 
-    if (!row.location.trim()) {
+    if (!row.location?.trim()) {
       const location = inferCampaignLocation(row.title, row.description, row.platform);
       if (location) {
         await db.run('UPDATE campaigns SET location = ?, updatedAt = ? WHERE id = ?', [location, new Date().toISOString(), row.id]);
