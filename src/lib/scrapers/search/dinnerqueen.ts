@@ -9,12 +9,14 @@ const now = new Date();
 const encodedKeyword = encodeURIComponent(keyword);
 await (async () => {
       try {
-        const dqUrl = `https://dinnerqueen.net/taste?query=${encodedKeyword}`;
-        const response = await axios.get(dqUrl, { headers: HEADERS, timeout: 5000 });
-        const $ = cheerio.load(response.data);
         const dqItems: any[] = [];
+        const seenIds = new Set<string>();
+        const listUrls = ['new', 'hot'].map(order => `https://dinnerqueen.net/taste?query=${encodedKeyword}&order=${order}`);
 
-        $('.qz-dq-card').each((index, element) => {
+        for (const dqUrl of listUrls) {
+          const response = await axios.get(dqUrl, { headers: HEADERS, timeout: 5000 });
+          const $ = cheerio.load(response.data);
+          $('.qz-dq-card').each((index, element) => {
           const linkEl = $(element).find('.qz-dq-card__link');
           const rawTitle = linkEl.attr('title') || '';
           const title = rawTitle.replace(/신청하기$/, '').replace(/보러가기$/, '').trim();
@@ -43,6 +45,8 @@ await (async () => {
             const fullUrl = campaignUrl.startsWith('http') ? campaignUrl : `https://dinnerqueen.net${campaignUrl}`;
             const dqId = fullUrl.split('/').pop() || fullUrl.replace(/[^0-9]/g, '');
             const id = `dq-${dqId}`;
+            if (seenIds.has(id)) return;
+            seenIds.add(id);
 
             const descText = $(element).find('.qz-caption-kr.color-placeholder.ellipsis').text().trim().replace(/\s+/g, ' ');
             const cleanDesc = (descText && descText !== title) ? descText : title.replace(/^\[[^\]]+\]\s*/, '').trim() + ' 체험 혜택';
@@ -55,7 +59,8 @@ await (async () => {
               searchKeywords: `,${keyword},`
             });
           }
-        });
+          });
+        }
 
         // Upstream becomes unstable when every detail page is requested at
         // once. Small parallel batches keep the list response predictable.

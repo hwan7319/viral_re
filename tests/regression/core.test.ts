@@ -200,6 +200,7 @@ test('regression suite', async t => {
     assert.equal(deadlineFromText('D+2'), '');
     assert.equal(deadlineFromText('D-2', new Date('2026-09-13T16:00:00Z')), '2026-09-16');
     assert.equal(deadlineFromText('내일마감', new Date('2026-09-13T16:00:00Z')), '2026-09-15');
+    assert.equal(deadlineFromText('오늘까지', new Date('2026-10-19T03:00:00Z')), '2026-10-19');
     assert.equal(summarizeBlogSample(10000, [{ postdate: '20260914' }], new Date('2026-09-14')).monthlyPosts, null);
     assert.equal(summarizeBlogSample(1, [{ postdate: '20260914' }], new Date('2026-09-14')).monthlyPosts, 1);
     const lowerBound = summarizeAvailableMonthlyPosts(10000, [
