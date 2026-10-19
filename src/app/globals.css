@@ -263,6 +263,22 @@ input, select {
   grid-template-columns: 1fr;
 }
 
+.campaign-card-platform,
+.campaign-card-source {
+  z-index: 2;
+  max-width: calc(50% - 18px);
+}
+
+.campaign-card-platform .badge,
+.campaign-card-source {
+  white-space: nowrap;
+}
+
+.campaign-card-source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (min-width: 640px) {
   .campaign-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -525,16 +541,21 @@ input, select {
   }
 
   /* 썸네일 내부 뱃지들 모바일 컴팩트화 */
-  .premium-card > div:first-child > div:nth-child(2) {
+  .premium-card .campaign-card-platform {
     top: 4px !important;
     left: 4px !important;
+    right: auto !important;
+    max-width: 97px !important;
     transform: scale(0.8) !important;
     transform-origin: top left !important;
   }
 
-  .premium-card > div:first-child > div:nth-child(3) {
-    top: 4px !important;
-    right: 4px !important;
+  .premium-card .campaign-card-source {
+    top: 31px !important;
+    left: 4px !important;
+    right: auto !important;
+    max-width: 97px !important;
+    box-sizing: border-box !important;
     font-size: 0.62rem !important;
     padding: 2px 4px !important;
   }

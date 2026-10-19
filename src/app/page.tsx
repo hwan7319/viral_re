@@ -2999,7 +2999,7 @@ export default function Home() {
                         }}
                         className="card-image-hover"
                       />
-                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                      <div className="campaign-card-platform" style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
                         {c.platform === 'blog' ? (
                           <span className="badge badge-blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             <NaverBlogIcon size={13} />
@@ -3038,7 +3038,7 @@ export default function Home() {
                           </span>
                         )}
                       </div>
-                      <div style={{
+                      <div className="campaign-card-source" title={`출처: ${c.targetSite}`} style={{
                         position: 'absolute', top: '12px', right: '12px',
                         backgroundColor: 'rgba(0,0,0,0.6)', color: '#ffffff',
                         fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: 'var(--radius-sm)'
