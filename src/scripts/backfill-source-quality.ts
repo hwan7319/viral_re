@@ -47,7 +47,7 @@ async function main() {
       try {
         const benefit = await scrapeDetailBenefit(row.campaignUrl, row.targetSite);
         if (benefit && benefit.trim() !== row.title.trim()) {
-          await db.run('UPDATE campaigns SET description = ?, dataSource = ?, updatedAt = ? WHERE id = ?', [benefit.trim(), 'detail', new Date().toISOString(), row.id]);
+          await db.run('UPDATE campaigns SET description = ?, dataSource = ? WHERE id = ?', [benefit.trim(), 'detail', row.id]);
           benefitsFixed++;
         }
       } catch (error) {
@@ -61,14 +61,14 @@ async function main() {
     const nextCategory = classifyCampaignCategory(row.title, row.description);
     // 출처 수집기가 제공한 구체 카테고리는 보존하고 미분류 항목만 보강한다.
     if (RECLASSIFIABLE_CATEGORIES.has(row.category) && nextCategory !== 'etc') {
-      await db.run('UPDATE campaigns SET category = ?, updatedAt = ? WHERE id = ?', [nextCategory, new Date().toISOString(), row.id]);
+      await db.run('UPDATE campaigns SET category = ? WHERE id = ?', [nextCategory, row.id]);
       categoriesFixed++;
     }
 
     if (!row.location?.trim()) {
       const location = inferCampaignLocation(row.title, row.description, row.platform);
       if (location) {
-        await db.run('UPDATE campaigns SET location = ?, updatedAt = ? WHERE id = ?', [location, new Date().toISOString(), row.id]);
+        await db.run('UPDATE campaigns SET location = ? WHERE id = ?', [location, row.id]);
         locationsFixed++;
       }
     }

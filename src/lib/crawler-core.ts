@@ -6,6 +6,7 @@ import { collectCampaigns, collectCampaignsWithReport, detectPlatform } from './
 import { fetchRevuLiveCampaigns } from './revu_live_scraper';
 import { getMibleSessionCookie } from './mible_auth';
 import { classifyCampaignCategory } from './category_classifier';
+import { scrape as scrapeDinnerQueen } from './scrapers/search/dinnerqueen';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -775,62 +776,14 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
     }
   }
 
-  // 디너의여왕 수집 (New & Hot)
-  const dinnerQueenUrls = [
-    'https://dinnerqueen.net/taste?order=new',
-    'https://dinnerqueen.net/taste?order=hot'
-  ];
-
-  for (const targetUrl of dinnerQueenUrls) {
-    try {
-      console.log(`[Core] Crawling dinnerqueen from ${targetUrl}...`);
-      const response = await axios.get(targetUrl, { headers: HEADERS, timeout: 6000 });
-      const $ = cheerio.load(response.data);
-      
-      let dqCount = 0;
-      $('.qz-dq-card').each((index, element) => {
-        const linkEl = $(element).find('.qz-dq-card__link');
-        const rawTitle = linkEl.attr('title') || '';
-        const title = rawTitle.replace(/신청하기$/, '').replace(/보러가기$/, '').trim();
-        const campaignUrl = linkEl.attr('href') || '';
-        const imgEl = $(element).find('.qz-dq-card__link__img img');
-        const imageUrl = imgEl.attr('src') || '';
-        const ddayText = $(element).find('.layer-primary p.qz-caption-kr--line strong').text().trim();
-        const endDate = parseDdayToDate(ddayText);
-        const badgesText = $(element).find('.qz-wrap').text();
-        const platform = badgesText.includes('인스타그램') ? 'instagram' : 'blog';
-        const applyText = $(element).find('.apply_badge .qz-caption-kr').text().trim();
-        const { applyCount, limitCount } = parseCountText(applyText);
-
-        let location = undefined;
-        const isDelivery = badgesText.includes('배송');
-        if (!isDelivery) {
-          const locMatch = title.match(/\[([^\]]+)\]/);
-          location = locMatch ? locMatch[1] : '서울 마포구';
-        }
-        const category = detectCategory(title, badgesText);
-
-        if (title && campaignUrl) {
-          const fullUrl = campaignUrl.startsWith('http') ? campaignUrl : `https://dinnerqueen.net${campaignUrl}`;
-          const dqId = fullUrl.split('/').pop() || fullUrl.replace(/[^0-9]/g, '');
-          const id = `dq-${dqId}`;
-          const autoKws = buildAutoKeywords(title, badgesText);
-
-          allCampaigns.push({
-            id, title, description: title, platform, category, location, campaignUrl: fullUrl,
-            imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
-            startDate: now.toISOString().split('T')[0], endDate,
-            createdAt: now.toISOString(), updatedAt: now.toISOString(),
-            searchKeywords: autoKws || undefined
-          });
-          dqCount++;
-        }
-      });
-      console.log(`[Core] Successfully parsed ${dqCount} campaigns from dinnerqueen`);
-      await new Promise(resolve => setTimeout(resolve, 300));
-    } catch (error: any) {
-      console.error('[Core] Live scraping failed:', error.message);
-    }
+  // Use the same maintained adapter for scheduled and keyword collection so
+  // deadline, location, platform, and benefit parsing cannot drift apart.
+  try {
+    const dinnerQueenCampaigns = await scrapeDinnerQueen('');
+    allCampaigns.push(...dinnerQueenCampaigns);
+    console.log(`[Core] Successfully parsed ${dinnerQueenCampaigns.length} campaigns from dinnerqueen`);
+  } catch (error: any) {
+    console.error('[Core] DinnerQueen scraping failed:', error.message);
   }
 
   // 🔑 레뷰 (REVU) 100% 라이브 원본 공고 수집 파이프라인 (미션 & 가이드라인 포함)
