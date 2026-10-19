@@ -30,7 +30,8 @@ await (async () => {
           const endDate = parseDdayToDate(ddayText);
           const badgesText = $(element).find('.qz-wrap').text();
           const platform = detectPlatform(title, badgesText);
-          const applyText = $(element).find('.apply_badge .qz-caption-kr').text().trim();
+          const applyText = $(element).find('.apply_badge .qz-caption-kr').text().trim()
+            || $(element).text().replace(/\s+/g, ' ').trim();
           const { applyCount, limitCount } = parseCountText(applyText);
           
           let location = undefined;

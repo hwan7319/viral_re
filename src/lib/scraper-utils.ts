@@ -41,6 +41,15 @@ export const parseCountText = (text: string): { applyCount: number; limitCount: 
     };
   }
 
+  // Current DinnerQueen cards use "신청 25/2" without a 모집 label.
+  const compactApplyMatch = cleaned.match(/신청([0-9,]+)\/([0-9,]+)/);
+  if (compactApplyMatch) {
+    return {
+      applyCount: parseInt(compactApplyMatch[1].replace(/,/g, ''), 10) || 0,
+      limitCount: parseInt(compactApplyMatch[2].replace(/,/g, ''), 10) || 0,
+    };
+  }
+
   // 3. 단순 "신청N" 패턴
   const applyOnlyMatch = cleaned.match(/신청([0-9,]+)/);
   // 4. 단순 "모집N" 패턴

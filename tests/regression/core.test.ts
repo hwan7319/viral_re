@@ -25,7 +25,7 @@ test('regression suite', async t => {
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
-  const { inferCampaignLocation } = await import('../../src/lib/scraper-utils');
+  const { inferCampaignLocation, parseCountText } = await import('../../src/lib/scraper-utils');
   const { ensureFilterValue, toggleFilterValue } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
@@ -201,6 +201,7 @@ test('regression suite', async t => {
     assert.equal(deadlineFromText('D-2', new Date('2026-09-13T16:00:00Z')), '2026-09-16');
     assert.equal(deadlineFromText('내일마감', new Date('2026-09-13T16:00:00Z')), '2026-09-15');
     assert.equal(deadlineFromText('오늘까지', new Date('2026-10-19T03:00:00Z')), '2026-10-19');
+    assert.deepEqual(parseCountText('7일 남음 신청 25/2'), { applyCount: 25, limitCount: 2 });
     assert.equal(summarizeBlogSample(10000, [{ postdate: '20260914' }], new Date('2026-09-14')).monthlyPosts, null);
     assert.equal(summarizeBlogSample(1, [{ postdate: '20260914' }], new Date('2026-09-14')).monthlyPosts, 1);
     const lowerBound = summarizeAvailableMonthlyPosts(10000, [
