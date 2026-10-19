@@ -1,9 +1,7 @@
 import { queryCampaigns } from '../lib/db';
+import { REGION_OPTIONS } from '../lib/region-options';
 
-const SIDO_OPTIONS = [
-  '서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원',
-  '충북', '충남', '전북', '전남', '경북', '경남', '제주', '세종',
-];
+const SIDO_OPTIONS = Object.keys(REGION_OPTIONS);
 
 const matchesLocation = (location: string | undefined, value: string) => {
   const normalized = (location || '').toLowerCase();
@@ -17,12 +15,8 @@ const matchesLocation = (location: string | undefined, value: string) => {
 
 async function main() {
   const active = await queryCampaigns({});
-  const observedLocations = [...new Set(active.map(campaign => campaign.location?.trim()).filter((value): value is string => Boolean(value)))];
-  const observedSidos = new Set(observedLocations.map(location => location.split(/\s+/)[0]));
-  const districtFilters = [...new Set(observedLocations
-    .map(location => location.split(/\s+/).slice(0, 2).join(' '))
-    .filter(location => location.split(/\s+/).length === 2))]
-    .filter(location => SIDO_OPTIONS.includes(location.split(/\s+/)[0]));
+  const observedSidos = new Set(active.map(campaign => campaign.location?.trim().split(/[\s/,]+/)[0]).filter(Boolean));
+  const districtFilters = Object.entries(REGION_OPTIONS).flatMap(([sido, districts]) => districts.map(district => `${sido} ${district}`));
 
   const issues: string[] = [];
   const summary: Array<{ filter: string; count: number }> = [];
@@ -44,7 +38,7 @@ async function main() {
   console.log(JSON.stringify({
     activeCampaigns: active.length,
     provinceFiltersChecked: SIDO_OPTIONS.length,
-    observedDistrictFiltersChecked: districtFilters.length,
+    selectableDistrictFiltersChecked: districtFilters.length,
     provinceSummary: summary,
     issueCount: issues.length,
     issues,
