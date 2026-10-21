@@ -21,7 +21,7 @@ test('regression suite', async t => {
   const { POST: session } = await import('../../src/app/api/auth/session/route');
   const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
-  const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
+  const { estimateInitialMonthlyPosts, summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { buildCompositeKeywordHints, calculateRecommendationScore, isDirectKeywordMatch, normalizeKeywordQuery } = await import('../../src/lib/keyword-engine');
@@ -246,18 +246,20 @@ test('regression suite', async t => {
     const lowerBound = summarizeAvailableMonthlyPosts(10000, [
       { postdate: '20260914' }, { postdate: '20260913' }, { postdate: '20260912' },
     ], new Date('2026-09-14'));
-    assert.equal(lowerBound.monthlyPosts, null);
+    assert.ok((lowerBound.monthlyPosts || 0) > 0);
     assert.equal(lowerBound.monthlyPostsIsLowerBound, false);
-    assert.equal(lowerBound.monthlyPostsEstimated, false);
+    assert.equal(lowerBound.monthlyPostsEstimated, true);
     assert.equal(lowerBound.monthlyPostsSampleDays, 3);
 
     const oneDaySample = summarizeAvailableMonthlyPosts(10000, Array.from({ length: 100 }, () => ({ postdate: '20260914' })), new Date('2026-09-14'));
-    assert.equal(oneDaySample.monthlyPosts, null);
+    assert.ok((oneDaySample.monthlyPosts || 0) > 0);
+    assert.notEqual(oneDaySample.monthlyPosts, 3000);
     assert.equal(oneDaySample.monthlyPostsSampleDays, 1);
 
     const weekSample = summarizeAvailableMonthlyPosts(10000, Array.from({ length: 100 }, (_, index) => ({ postdate: `202609${String(14 - (index % 7)).padStart(2, '0')}` })), new Date('2026-09-14'));
     assert.equal(weekSample.monthlyPosts, 429);
     assert.equal(weekSample.monthlyPostsEstimated, true);
+    assert.notEqual(estimateInitialMonthlyPosts(16_500_000, 100, 1), estimateInitialMonthlyPosts(5_000_000, 100, 1));
   });
   await t.test('keyword separators are normalized before cache and upstream lookup', () => {
     assert.equal(normalizeKeywordQuery(' 노원+소고기맛집  '), '노원 소고기맛집');

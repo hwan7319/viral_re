@@ -246,12 +246,22 @@ async function initializeDB(): Promise<Database> {
       seenAt TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS keyword_blog_snapshots (
+      keyword TEXT NOT NULL,
+      observedOn TEXT NOT NULL,
+      totalPosts INTEGER NOT NULL,
+      samplePosts INTEGER NOT NULL,
+      sampleDays INTEGER NOT NULL,
+      PRIMARY KEY (keyword, observedOn)
+    );
+
     -- 속도 향상을 위한 인덱스 생성
     CREATE INDEX IF NOT EXISTS idx_campaigns_search ON campaigns (title, description);
     CREATE INDEX IF NOT EXISTS idx_campaigns_filters ON campaigns (platform, category, targetSite);
     CREATE INDEX IF NOT EXISTS idx_campaigns_end_date ON campaigns (endDate);
     CREATE INDEX IF NOT EXISTS idx_user_bookmarks_user ON user_bookmarks (userId);
     CREATE INDEX IF NOT EXISTS idx_search_logs_keyword ON search_logs (keyword);
+    CREATE INDEX IF NOT EXISTS idx_keyword_blog_snapshots_keyword ON keyword_blog_snapshots (keyword, observedOn);
   `);
 
   // [하이브리드 대응] 기존 테이블에 searchKeywords 컬럼이 없는 구버전 DB 대비 컬럼 안전 추가
@@ -959,6 +969,35 @@ export async function getCampaignById(id: string): Promise<Campaign | undefined>
 let dbReady: Promise<Database> | undefined;
 export function getDB(): Promise<Database> {
   return dbReady ??= initializeDB().catch(error => { dbReady = undefined; dbInstance = null; throw error; });
+}
+
+export interface KeywordBlogSnapshot {
+  observedOn: string;
+  totalPosts: number;
+  samplePosts: number;
+  sampleDays: number;
+}
+
+export async function getKeywordBlogSnapshots(keyword: string, limit = 31): Promise<KeywordBlogSnapshot[]> {
+  if (process.env.VERCEL || process.env.NOW_BUILDER) return [];
+  return (await getDB()).all<KeywordBlogSnapshot[]>(
+    'SELECT observedOn, totalPosts, samplePosts, sampleDays FROM keyword_blog_snapshots WHERE keyword = ? ORDER BY observedOn DESC LIMIT ?',
+    [keyword, Math.max(1, Math.min(90, limit))],
+  );
+}
+
+export function recordKeywordBlogSnapshot(keyword: string, snapshot: KeywordBlogSnapshot): Promise<void> {
+  if (process.env.VERCEL || process.env.NOW_BUILDER) return Promise.resolve();
+  return serializeWrite(async () => {
+    const db = await getDB();
+    await db.run(
+      `INSERT INTO keyword_blog_snapshots (keyword, observedOn, totalPosts, samplePosts, sampleDays)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(keyword, observedOn) DO UPDATE SET
+         totalPosts = excluded.totalPosts, samplePosts = excluded.samplePosts, sampleDays = excluded.sampleDays`,
+      [keyword, snapshot.observedOn, snapshot.totalPosts, snapshot.samplePosts, snapshot.sampleDays],
+    );
+  });
 }
 export function insertOrUpdateCampaigns(campaigns: Campaign[]): Promise<{ inserted: number; updated: number }> {
   return serializeWrite(async () => {

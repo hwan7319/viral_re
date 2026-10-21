@@ -16,6 +16,7 @@ const formatMonthlyPosts = (value: number | null | undefined, sampleDays?: numbe
   if (value != null) return `${value.toLocaleString()}건`;
   return sampleDays != null && sampleDays > 0 && sampleDays < 7 ? '표본 부족' : '확인 불가';
 };
+const monthlyPostsLabel = (method?: string) => method === 'history' ? '자체 관측 보정' : method === 'model' ? '자체 모델 추정' : method === 'sample' ? '발행 표본 추정' : '최근 30일 확인';
 
 // The API accepts comma-separated selections. A value within one group is ORed;
 // different groups remain ANDed on the server.
@@ -3555,7 +3556,7 @@ export default function Home() {
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
                           {keywordData.monthlyPostsEstimated
-                            ? `(최근 ${keywordData.monthlyPostsSampleDays}일 발행 추이 기반 자체 추정)`
+                            ? `(${monthlyPostsLabel(keywordData.monthlyPostsMethod)} · 표본 ${keywordData.monthlyPostsSampleDays}일)`
                             : keywordData.monthlyPosts == null && keywordData.monthlyPostsSampleDays > 0
                               ? `(최근 ${keywordData.monthlyPostsSampleDays}일 표본만 확보: 월간 환산 제외)`
                               : '(최근 30일 확인 발행량)'}
@@ -3782,7 +3783,7 @@ export default function Home() {
                                 {displayMetric(item.totalSearchVolume)}회
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {formatMonthlyPosts(item.monthlyPosts, item.monthlyPostsSampleDays)}{item.monthlyPosts != null ? `/월${item.monthlyPostsEstimated ? ' (추정)' : ''}` : ''}
+                                {formatMonthlyPosts(item.monthlyPosts, item.monthlyPostsSampleDays)}{item.monthlyPosts != null ? `/월${item.monthlyPostsEstimated ? ` (${monthlyPostsLabel(item.monthlyPostsMethod)})` : ''}` : ''}
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: 'var(--text-secondary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {displayMetric(item.totalPosts)}건
@@ -3867,7 +3868,7 @@ export default function Home() {
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>월 포스팅: </span>
-                              <strong style={{ color: '#10b981' }}>{formatMonthlyPosts(item.monthlyPosts, item.monthlyPostsSampleDays)}{item.monthlyPosts != null ? `/월${item.monthlyPostsEstimated ? ' (추정)' : ''}` : ''}</strong>
+                              <strong style={{ color: '#10b981' }}>{formatMonthlyPosts(item.monthlyPosts, item.monthlyPostsSampleDays)}{item.monthlyPosts != null ? `/월${item.monthlyPostsEstimated ? ` (${monthlyPostsLabel(item.monthlyPostsMethod)})` : ''}` : ''}</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>누적 포스팅: </span>

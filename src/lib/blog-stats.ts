@@ -1,10 +1,12 @@
 import axios from 'axios';
+import { getKeywordBlogSnapshots, recordKeywordBlogSnapshot } from './db';
 
 export interface BlogStats {
   totalPosts: number;
   monthlyPosts: number | null;
   monthlyPostsIsLowerBound: boolean;
   monthlyPostsEstimated: boolean;
+  monthlyPostsMethod: 'verified' | 'sample' | 'model' | 'history';
   monthlyPostsSampleDays: number;
   monthlyPostsSampleSize: number;
   recentDate: string;
@@ -33,6 +35,28 @@ const sampleWindow = (items: BlogItem[]) => {
   return { days: Math.max(1, Math.floor((newest - oldest) / DAY_MS) + 1), size: dates.length };
 };
 
+const median = (values: number[]) => {
+  const sorted = values.filter(value => Number.isFinite(value) && value >= 0).sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2);
+};
+
+/**
+ * Initial model for a new keyword. It combines the observed recent cadence
+ * with a corpus-scale prior instead of treating a single 100-item API page as
+ * an entire day. Values are rounded only to tens and always remain labelled
+ * as a Viral-re estimate until daily observations accumulate.
+ */
+export function estimateInitialMonthlyPosts(totalPosts: number, samplePosts: number, sampleDays: number): number {
+  const safeDays = Math.max(1, sampleDays);
+  const sampleMonthly = (samplePosts * 30) / safeDays;
+  const corpusPriorMonthly = Math.max(30, Math.min(50_000, Math.sqrt(Math.max(0, totalPosts)) * 2.25));
+  const sampleWeight = Math.min(0.7, 0.1 + (safeDays / 30));
+  const estimate = sampleMonthly * sampleWeight + corpusPriorMonthly * (1 - sampleWeight);
+  return Math.max(samplePosts, Math.round(estimate / 10) * 10);
+}
+
 // The result is exact only when the sample reaches beyond the 30-day boundary
 // or contains every result returned by Naver.
 export function summarizeBlogSample(total: number, items: BlogItem[], now = new Date()): BlogStats {
@@ -46,6 +70,7 @@ export function summarizeBlogSample(total: number, items: BlogItem[], now = new 
     monthlyPosts: complete ? dates.filter(date => date >= cutoff).length : null,
     monthlyPostsIsLowerBound: false,
     monthlyPostsEstimated: false,
+    monthlyPostsMethod: 'verified',
     monthlyPostsSampleDays: sample.days,
     monthlyPostsSampleSize: sample.size,
     recentDate: recent ? `${recent.slice(0, 4)}.${recent.slice(4, 6)}.${recent.slice(6, 8)}` : '-',
@@ -64,14 +89,15 @@ export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[],
   }).length;
   if (observedRecentPosts === 0) return exact;
 
-  // Naver returns newest posts first and caps a query at 1,000 results. A
-  // one-day sample can turn 100 returned posts into a misleading 3,000/month,
-  // so do not manufacture a monthly figure until the sample spans a week.
+  // Naver returns newest posts first and caps a query at 1,000 results. For a
+  // short sample, use a blended initial model rather than 100 * 30 / 1.
   const sample = sampleWindow(items);
   if (sample.days < 7) {
     return {
       ...exact,
-      monthlyPosts: null,
+      monthlyPosts: estimateInitialMonthlyPosts(total, observedRecentPosts, sample.days),
+      monthlyPostsEstimated: true,
+      monthlyPostsMethod: 'model',
       monthlyPostsSampleDays: sample.days,
       monthlyPostsSampleSize: sample.size,
     };
@@ -84,9 +110,43 @@ export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[],
     monthlyPosts: monthlyEstimate,
     monthlyPostsIsLowerBound: false,
     monthlyPostsEstimated: true,
+    monthlyPostsMethod: 'sample',
     monthlyPostsSampleDays: sample.days,
     monthlyPostsSampleSize: sample.size,
   };
+}
+
+async function applyHistory(keyword: string, stats: BlogStats, now = new Date()): Promise<BlogStats> {
+  if (!stats.available || stats.totalPosts <= 0 || stats.monthlyPosts === null) return stats;
+  const observedOn = now.toISOString().slice(0, 10);
+  try {
+    const history = await getKeywordBlogSnapshots(keyword);
+    const chronological = history.filter(row => row.observedOn < observedOn).reverse();
+    const dailyGrowth = chronological.slice(1).map((row, index) => {
+      const previous = chronological[index];
+      const days = Math.max(1, Math.round((Date.parse(`${row.observedOn}T00:00:00Z`) - Date.parse(`${previous.observedOn}T00:00:00Z`)) / DAY_MS));
+      return (row.totalPosts - previous.totalPosts) / days;
+    }).filter(value => value >= 0);
+    const dailyMedian = dailyGrowth.length >= 3 ? median(dailyGrowth) : null;
+    if (dailyMedian !== null) {
+      const historyMonthly = dailyMedian * 30;
+      stats = {
+        ...stats,
+        monthlyPosts: Math.round(((historyMonthly * 0.7) + (stats.monthlyPosts * 0.3)) / 10) * 10,
+        monthlyPostsEstimated: true,
+        monthlyPostsMethod: 'history',
+      };
+    }
+    void recordKeywordBlogSnapshot(keyword, {
+      observedOn,
+      totalPosts: stats.totalPosts,
+      samplePosts: stats.monthlyPostsSampleSize,
+      sampleDays: stats.monthlyPostsSampleDays,
+    });
+  } catch {
+    // Persistence must not make an external keyword API response fail.
+  }
+  return stats;
 }
 
 async function fetchPage(keyword: string, clientId: string, clientSecret: string, start: number) {
@@ -139,7 +199,7 @@ export async function fetchBlogStats(
         if (summary.monthlyPosts !== null || response.data.items.length < 100) break;
       }
 
-      const data = summarizeAvailableMonthlyPosts(total, items);
+      const data = await applyHistory(keyword, summarizeAvailableMonthlyPosts(total, items));
       if (cache.size >= 1_000) cache.delete(cache.keys().next().value!);
       cache.set(key, { time: now, data });
       return data;
@@ -153,6 +213,7 @@ export async function fetchBlogStats(
     monthlyPosts: null,
     monthlyPostsIsLowerBound: false,
     monthlyPostsEstimated: false,
+    monthlyPostsMethod: 'verified',
     monthlyPostsSampleDays: 0,
     monthlyPostsSampleSize: 0,
     recentDate: '-',
