@@ -11,6 +11,11 @@ import { hasFilterValue, selectedFilterValues, toggleFilterValue, toggleScopedLo
 import { REGION_OPTIONS } from '@/lib/region-options';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
+const normalizeKeywordInput = (value: string) => value.replace(/[+&/_]+/g, ' ').replace(/\s+/g, ' ').trim();
+const formatMonthlyPosts = (value: number | null | undefined, sampleDays?: number) => {
+  if (value != null) return `${value.toLocaleString()}건`;
+  return sampleDays != null && sampleDays > 0 && sampleDays < 7 ? '표본 부족' : '확인 불가';
+};
 
 // The API accepts comma-separated selections. A value within one group is ORed;
 // different groups remain ANDed on the server.
@@ -1819,7 +1824,7 @@ export default function Home() {
 
   // 키워드 분석 실행 함수
   const analyzeKeyword = async (targetQuery: string, contextTitle: string = '', contextCategory: string = '') => {
-    const q = targetQuery.trim();
+    const q = normalizeKeywordInput(targetQuery);
     if (!q) return;
     setKeywordQuery(q);
     setRelatedVisibleCount(20);
@@ -3549,13 +3554,17 @@ export default function Home() {
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월 블로그 포스팅 수</span>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
-                          {keywordData.monthlyPostsEstimated ? '(최근 발행 추이 기반 자체 추정)' : '(최근 30일 확인 발행량)'}
+                          {keywordData.monthlyPostsEstimated
+                            ? `(최근 ${keywordData.monthlyPostsSampleDays}일 발행 추이 기반 자체 추정)`
+                            : keywordData.monthlyPosts == null && keywordData.monthlyPostsSampleDays > 0
+                              ? `(최근 ${keywordData.monthlyPostsSampleDays}일 표본만 확보: 월간 환산 제외)`
+                              : '(최근 30일 확인 발행량)'}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
                           <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10b981', fontVariantNumeric: 'tabular-nums' }}>
-                            {displayMetric(keywordData.monthlyPosts)}
+                            {formatMonthlyPosts(keywordData.monthlyPosts, keywordData.monthlyPostsSampleDays)}
                           </span>
-                          <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10b981' }}>건/월</span>
+                          {keywordData.monthlyPosts != null && <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10b981' }}>건/월</span>}
                         </div>
                       </div>
 
@@ -3773,7 +3782,7 @@ export default function Home() {
                                 {displayMetric(item.totalSearchVolume)}회
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
-                                {displayMetric(item.monthlyPosts)}건/월{item.monthlyPostsEstimated ? ' (추정)' : ''}
+                                {formatMonthlyPosts(item.monthlyPosts, item.monthlyPostsSampleDays)}{item.monthlyPosts != null ? `/월${item.monthlyPostsEstimated ? ' (추정)' : ''}` : ''}
                               </td>
                               <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: 'var(--text-secondary)', verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' }}>
                                 {displayMetric(item.totalPosts)}건
@@ -3858,7 +3867,7 @@ export default function Home() {
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>월 포스팅: </span>
-                              <strong style={{ color: '#10b981' }}>{displayMetric(item.monthlyPosts)}건{item.monthlyPostsEstimated ? ' (추정)' : ''}</strong>
+                              <strong style={{ color: '#10b981' }}>{formatMonthlyPosts(item.monthlyPosts, item.monthlyPostsSampleDays)}{item.monthlyPosts != null ? `/월${item.monthlyPostsEstimated ? ' (추정)' : ''}` : ''}</strong>
                             </div>
                             <div>
                               <span style={{ color: 'var(--text-tertiary)' }}>누적 포스팅: </span>

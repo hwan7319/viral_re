@@ -24,7 +24,7 @@ test('regression suite', async t => {
   const { summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
-  const { calculateRecommendationScore, isDirectKeywordMatch } = await import('../../src/lib/keyword-engine');
+  const { buildCompositeKeywordHints, calculateRecommendationScore, isDirectKeywordMatch, normalizeKeywordQuery } = await import('../../src/lib/keyword-engine');
   const { inferCampaignLocation, parseCountText } = await import('../../src/lib/scraper-utils');
   const { ensureFilterValue, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
@@ -246,9 +246,23 @@ test('regression suite', async t => {
     const lowerBound = summarizeAvailableMonthlyPosts(10000, [
       { postdate: '20260914' }, { postdate: '20260913' }, { postdate: '20260912' },
     ], new Date('2026-09-14'));
-    assert.equal(lowerBound.monthlyPosts, 30);
+    assert.equal(lowerBound.monthlyPosts, null);
     assert.equal(lowerBound.monthlyPostsIsLowerBound, false);
-    assert.equal(lowerBound.monthlyPostsEstimated, true);
+    assert.equal(lowerBound.monthlyPostsEstimated, false);
+    assert.equal(lowerBound.monthlyPostsSampleDays, 3);
+
+    const oneDaySample = summarizeAvailableMonthlyPosts(10000, Array.from({ length: 100 }, () => ({ postdate: '20260914' })), new Date('2026-09-14'));
+    assert.equal(oneDaySample.monthlyPosts, null);
+    assert.equal(oneDaySample.monthlyPostsSampleDays, 1);
+
+    const weekSample = summarizeAvailableMonthlyPosts(10000, Array.from({ length: 100 }, (_, index) => ({ postdate: `202609${String(14 - (index % 7)).padStart(2, '0')}` })), new Date('2026-09-14'));
+    assert.equal(weekSample.monthlyPosts, 429);
+    assert.equal(weekSample.monthlyPostsEstimated, true);
+  });
+  await t.test('keyword separators are normalized before cache and upstream lookup', () => {
+    assert.equal(normalizeKeywordQuery(' 노원+소고기맛집  '), '노원 소고기맛집');
+    assert.equal(normalizeKeywordQuery('노원/소고기맛집_추천'), '노원 소고기맛집 추천');
+    assert.deepEqual(buildCompositeKeywordHints('노원 소고기맛집'), ['노원 맛집', '노원 소고기']);
   });
   await t.test('related keyword rank favors relevance and source quality over raw volume alone', () => {
     const directAutocomplete = calculateRecommendationScore('삼겹살', '삼겹살 맛집', 1200, ['autocomplete']);

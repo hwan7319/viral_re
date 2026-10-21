@@ -23,6 +23,29 @@ const MAX_ENRICHED_RELATED_KEYWORDS = 70;
 
 export type KeywordCandidateSource = 'searchAd' | 'autocomplete' | 'preset' | 'context';
 
+// Treat common separators as word boundaries before every upstream request and
+// cache lookup. Keeping this in one place prevents `노원+소고기맛집` from
+// becoming a different, zero-autocomplete query than `노원 소고기맛집`.
+export function normalizeKeywordQuery(value: string): string {
+  return value.replace(/[+&/_]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+export function buildCompositeKeywordHints(query: string): string[] {
+  const words = normalizeKeywordQuery(query).split(' ').filter(Boolean);
+  if (words.length < 2) return [];
+
+  const area = words[0];
+  const tail = words.at(-1) || '';
+  const suffixMatch = tail.match(/(맛집|카페|고기집|식당|음식점|술집|병원|미용실|학원|호텔|펜션|숙소|여행)$/);
+  if (!suffixMatch) return [];
+
+  const suffix = suffixMatch[1];
+  const stem = tail.slice(0, -suffix.length);
+  return [`${area} ${suffix}`, stem ? `${area} ${stem}` : '']
+    .map(normalizeKeywordQuery)
+    .filter((hint, index, list) => hint && hint !== normalizeKeywordQuery(query) && list.indexOf(hint) === index);
+}
+
 const SOURCE_LABELS: Record<KeywordCandidateSource, string> = {
   searchAd: '검색광고 연관',
   autocomplete: '네이버 자동완성',
@@ -127,7 +150,7 @@ export async function fetchSearchAdBatch(keywords: string[], customerId: string,
     const timestamp = Date.now().toString();
     const uri = '/keywordstool';
     const signature = generateSearchAdSignature(timestamp, 'GET', uri, searchAdSecretKey);
-    const cleanKws = keywords.map(k => k.replace(/\s+/g, '')).filter(Boolean);
+    const cleanKws = keywords.map(k => normalizeKeywordQuery(k).replace(/\s+/g, '')).filter(Boolean);
     const res = await axios.get(`https://api.searchad.naver.com${uri}`, {
       params: { hintKeywords: cleanKws.join(','), showDetail: '1' },
       headers: {
@@ -160,7 +183,8 @@ export async function fetchSearchAdBatch(keywords: string[], customerId: string,
 // 🔑 개별 키워드 네이버 검색광고 실시간 수치 단일 조회기 (메모리 캐시 + 429 백오프 재시도 보장)
 export async function fetchSingleKeywordAd(keyword: string, customerId: string, searchAdApiKey: string, searchAdSecretKey: string, retries = 3) {
   if (!keyword || !customerId || !searchAdApiKey || !searchAdSecretKey) return null;
-  const cleanKey = keyword.trim().toLowerCase().replace(/\s+/g, '');
+  const normalizedKeyword = normalizeKeywordQuery(keyword);
+  const cleanKey = normalizedKeyword.toLowerCase().replace(/\s+/g, '');
   const cached = globalRef.singleAdCache?.get(cleanKey);
   if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
     return cached.data;
@@ -197,7 +221,7 @@ export async function fetchSingleKeywordAd(keyword: string, customerId: string, 
       if (exact) {
         const pc = parseSearchAdVolume(exact.monthlyPcQcCnt);
         const mobile = parseSearchAdVolume(exact.monthlyMobileQcCnt);
-        const data = { keyword: keyword.trim(), pc, mobile, total: pc + mobile };
+        const data = { keyword: normalizedKeyword, pc, mobile, total: pc + mobile };
         globalRef.singleAdCache?.set(cleanKey, { timestamp: Date.now(), data });
         return data;
       }
@@ -297,7 +321,7 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('query')?.trim();
+    const query = normalizeKeywordQuery(searchParams.get('query') || '');
     const contextTitle = searchParams.get('title')?.trim() || '';
     const contextCategory = searchParams.get('category')?.trim() || '';
 
@@ -408,14 +432,17 @@ export async function GET(request: Request) {
 
           // 🔑 힌트 결과가 5개 미만인 니치/복합 키워드인 경우 서브 단어 및 카테고리 앵커 릴레이 서치
           if (list.length < 5) {
-            const subWords = query.replace(/[\[\]\(\)\&\+\/_]/g, ' ').trim().split(/\s+/).filter(w => w.length >= 2);
+            const subWords = query.split(/\s+/).filter(w => w.length >= 2);
+            buildCompositeKeywordHints(query).forEach(hint => {
+              if (!subWords.includes(hint)) subWords.push(hint);
+            });
             if (detectedCategoryAnchor && !subWords.includes(detectedCategoryAnchor)) {
               subWords.push(detectedCategoryAnchor);
             }
 
             // Sub-word hints are independent. Keep this fan-out small to avoid
             // SearchAd rate limiting while removing needless serial latency.
-            const subResults = await Promise.all(subWords.slice(0, 3).map(async subW => {
+            const subResults = await Promise.all(subWords.slice(0, 4).map(async subW => {
               const cleanSub = subW.replace(/\s+/g, '');
               if (!cleanSub || cleanSub === cleanHintQuery) return [];
               try {

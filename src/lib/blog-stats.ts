@@ -5,6 +5,8 @@ export interface BlogStats {
   monthlyPosts: number | null;
   monthlyPostsIsLowerBound: boolean;
   monthlyPostsEstimated: boolean;
+  monthlyPostsSampleDays: number;
+  monthlyPostsSampleSize: number;
   recentDate: string;
   available: boolean;
 }
@@ -21,6 +23,16 @@ const parsePostDate = (value: string): number => {
   return Date.parse(`${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}T00:00:00Z`);
 };
 
+const sampleWindow = (items: BlogItem[]) => {
+  const dates = items
+    .map(item => parsePostDate(item.postdate || ''))
+    .filter((timestamp): timestamp is number => Number.isFinite(timestamp));
+  if (dates.length === 0) return { days: 0, size: 0 };
+  const newest = Math.max(...dates);
+  const oldest = Math.min(...dates);
+  return { days: Math.max(1, Math.floor((newest - oldest) / DAY_MS) + 1), size: dates.length };
+};
+
 // The result is exact only when the sample reaches beyond the 30-day boundary
 // or contains every result returned by Naver.
 export function summarizeBlogSample(total: number, items: BlogItem[], now = new Date()): BlogStats {
@@ -28,11 +40,14 @@ export function summarizeBlogSample(total: number, items: BlogItem[], now = new 
   const dates = items.map(item => item.postdate || '').filter(date => /^\d{8}$/.test(date));
   const complete = total === 0 || total <= items.length || dates.some(date => date < cutoff);
   const recent = dates[0];
+  const sample = sampleWindow(items);
   return {
     totalPosts: total,
     monthlyPosts: complete ? dates.filter(date => date >= cutoff).length : null,
     monthlyPostsIsLowerBound: false,
     monthlyPostsEstimated: false,
+    monthlyPostsSampleDays: sample.days,
+    monthlyPostsSampleSize: sample.size,
     recentDate: recent ? `${recent.slice(0, 4)}.${recent.slice(4, 6)}.${recent.slice(6, 8)}` : '-',
     available: true,
   };
@@ -49,16 +64,19 @@ export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[],
   }).length;
   if (observedRecentPosts === 0) return exact;
 
-  // Naver returns newest posts first and caps a query at 1,000 results. When
-  // the 30-day boundary is outside that window, estimate a 30-day run rate
-  // from the actual span covered by the sample. A fixed seven-day floor made
-  // unrelated popular keywords collapse to the same 1,286 value (300*30/7).
-  const observedDates = items
-    .map(item => parsePostDate(item.postdate || ''))
-    .filter((timestamp): timestamp is number => Number.isFinite(timestamp));
-  const newest = Math.max(...observedDates);
-  const oldest = Math.min(...observedDates);
-  const observedDays = Math.max(1, Math.floor((newest - oldest) / DAY_MS) + 1);
+  // Naver returns newest posts first and caps a query at 1,000 results. A
+  // one-day sample can turn 100 returned posts into a misleading 3,000/month,
+  // so do not manufacture a monthly figure until the sample spans a week.
+  const sample = sampleWindow(items);
+  if (sample.days < 7) {
+    return {
+      ...exact,
+      monthlyPosts: null,
+      monthlyPostsSampleDays: sample.days,
+      monthlyPostsSampleSize: sample.size,
+    };
+  }
+  const observedDays = sample.days;
   const monthlyEstimate = Math.min(total, Math.max(observedRecentPosts, Math.round((observedRecentPosts * 30) / observedDays)));
 
   return {
@@ -66,6 +84,8 @@ export function summarizeAvailableMonthlyPosts(total: number, items: BlogItem[],
     monthlyPosts: monthlyEstimate,
     monthlyPostsIsLowerBound: false,
     monthlyPostsEstimated: true,
+    monthlyPostsSampleDays: sample.days,
+    monthlyPostsSampleSize: sample.size,
   };
 }
 
@@ -133,6 +153,8 @@ export async function fetchBlogStats(
     monthlyPosts: null,
     monthlyPostsIsLowerBound: false,
     monthlyPostsEstimated: false,
+    monthlyPostsSampleDays: 0,
+    monthlyPostsSampleSize: 0,
     recentDate: '-',
     available: false,
   };
