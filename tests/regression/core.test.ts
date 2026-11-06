@@ -26,7 +26,7 @@ test('regression suite', async t => {
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { buildCompositeKeywordHints, calculateRecommendationScore, isDirectKeywordMatch, normalizeKeywordQuery } = await import('../../src/lib/keyword-engine');
   const { inferCampaignLocation, parseCountText } = await import('../../src/lib/scraper-utils');
-  const { ensureFilterValue, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } = await import('../../src/lib/filter-selection');
+  const { ensureFilterValue, hasAllFilterValues, toggleFilterGroup, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
@@ -112,6 +112,21 @@ test('regression suite', async t => {
     const response = await (await campaigns(new NextRequest('http://localhost:3000/api/campaigns?crawl=false&category=food-korean&category=beauty-salon&platform=blog,instagram&targetSite=%EB%A0%88%EB%B7%B0&targetSite=%EB%A6%AC%EB%B7%B0%EB%85%B8%ED%8A%B8'))).json();
     assert.ok(response.data.some((c: Campaign) => c.id === 'multi-food-visit'));
     assert.ok(response.data.some((c: Campaign) => c.id === 'multi-beauty-delivery'));
+  });
+  await t.test('category group selection completes and clears only its own visible categories', async () => {
+    const food = ['food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-cafe', 'food-pub', 'food-snack', 'food-meat', 'food-omakase'];
+    const selected = toggleFilterGroup('beauty-salon,food-korean', food);
+    assert.equal(hasAllFilterValues(selected, food), true);
+    assert.equal(selected.split(',').includes('beauty-salon'), true);
+
+    const cleared = toggleFilterGroup(selected, food);
+    assert.equal(cleared, 'beauty-salon');
+    assert.equal(hasAllFilterValues(cleared, food), false);
+
+    const foodOnly = toggleFilterGroup('all', food);
+    const results = await db.queryCampaigns({ category: foodOnly });
+    assert.equal(results.some(campaign => campaign.id === 'multi-food-visit'), true);
+    assert.equal(results.some(campaign => campaign.id === 'multi-beauty-delivery'), false);
   });
   await t.test('province 전체 confirms an existing region selection instead of clearing it', () => {
     const selectedGyeonggi = toggleFilterValue('all', '경기');

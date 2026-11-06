@@ -7,7 +7,8 @@ import { fetchCampaignPage } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
 import TrustContent from '@/components/TrustContent';
-import { hasFilterValue, selectedFilterValues, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } from '@/lib/filter-selection';
+import ServiceValue from '@/components/ServiceValue';
+import { hasAllFilterValues, hasFilterValue, selectedFilterValues, toggleFilterGroup, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } from '@/lib/filter-selection';
 import { REGION_OPTIONS } from '@/lib/region-options';
 
 const displayMetric = (value: number | null | undefined) => value == null ? '확인 불가' : value.toLocaleString();
@@ -28,6 +29,14 @@ const filterSummary = (value: string, labels: Record<string, string>, fallback: 
 const TYPE_LABELS = { visit: '방문형', delivery: '배송형' };
 const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'food-snack': '분식', 'food-meat': '육류/구이', 'food-omakase': '오마카세', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'beauty-body': '다이어트/체형', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', 'health-medical': '병원/의료', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', 'life-auto': '자동차', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스/공간', 'service-fortune': '사주/타로', etc: '기타' };
 const PLATFORM_LABELS: Record<string, string> = { blog: '네이버 블로그', clip: '네이버 클립', 'blog+instagram': '네이버&인스타', instagram: '인스타그램', youtube: '유튜브', tiktok: '틱톡', coupang: '쿠팡 체험단' };
+
+const CATEGORY_FILTER_GROUPS = [
+  { title: '🍽️ 맛집 / 디저트 / 주점', options: [{ key: 'food-korean', label: '한식' }, { key: 'food-western', label: '양식' }, { key: 'food-japanese', label: '일식' }, { key: 'food-chinese', label: '중식' }, { key: 'food-cafe', label: '카페/디저트' }, { key: 'food-pub', label: '술집/주점' }, { key: 'food-snack', label: '분식' }, { key: 'food-meat', label: '육류/구이' }, { key: 'food-omakase', label: '오마카세' }] },
+  { title: '✨ 뷰티 / 미용 / 헬스', options: [{ key: 'beauty-cosmetics', label: '화장품/스킨케어' }, { key: 'beauty-salon', label: '헤어/네일/속눈썹' }, { key: 'beauty-spa', label: '피부/에스테틱' }, { key: 'beauty-body', label: '다이어트/체형' }, { key: 'health-fitness', label: '헬스/피트니스' }, { key: 'health-food', label: '영양제/건강식품' }, { key: 'health-medical', label: '병원/의료' }] },
+  { title: '🔮 상담 / 서비스', options: [{ key: 'service-fortune', label: '사주/타로' }] },
+  { title: '🧭 여행 / 숙박 / 문화', options: [{ key: 'accommodation', label: '숙박 (호텔/펜션)' }, { key: 'travel', label: '여행/레저/관광' }, { key: 'culture', label: '문화/공연/전시' }] },
+  { title: '🛍️ 패션 / 생활 / 디지털 / 펫 / 기타', options: [{ key: 'fashion-clothing', label: '의류/패션' }, { key: 'fashion-accessory', label: '신발/가방/잡화' }, { key: 'baby', label: '유아동/육아' }, { key: 'life-goods', label: '생활용품/인테리어' }, { key: 'health-fresh', label: '밀키트/신선식품' }, { key: 'life-appliances', label: '가전/디지털' }, { key: 'life-auto', label: '자동차' }, { key: 'pet', label: '반려동물/애견' }, { key: 'book', label: '도서/교육' }, { key: 'hobby', label: '취미/클래스' }, { key: 'etc', label: '기타' }] },
+] as const;
 
 const fallbackThumbnail = (title: string, targetSite: string) => {
   const safeTitle = title.replace(/[<>&]/g, '').slice(0, 32);
@@ -1300,6 +1309,15 @@ export default function Home() {
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🍽️ 맛집 / 디저트 / 주점
                 </span>
+                <button
+                  type="button"
+                  className={`filter-chip ${hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[0].options.map(option => option.key)) ? 'active' : ''}`}
+                  aria-pressed={hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[0].options.map(option => option.key))}
+                  onClick={() => setActiveCategory(toggleFilterGroup(activeCategory, CATEGORY_FILTER_GROUPS[0].options.map(option => option.key)))}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px', marginLeft: '8px', marginBottom: '10px' }}
+                >
+                  {hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[0].options.map(option => option.key)) ? '전체 해제' : '전체 선택'}
+                </button>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
                     { key: 'food-korean', label: '한식' },
@@ -1324,6 +1342,15 @@ export default function Home() {
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   ✨ 뷰티 / 미용 / 헬스
                 </span>
+                <button
+                  type="button"
+                  className={`filter-chip ${hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[1].options.map(option => option.key)) ? 'active' : ''}`}
+                  aria-pressed={hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[1].options.map(option => option.key))}
+                  onClick={() => setActiveCategory(toggleFilterGroup(activeCategory, CATEGORY_FILTER_GROUPS[1].options.map(option => option.key)))}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px', marginLeft: '8px', marginBottom: '10px' }}
+                >
+                  {hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[1].options.map(option => option.key)) ? '전체 해제' : '전체 선택'}
+                </button>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
                     { key: 'beauty-cosmetics', label: '화장품/스킨케어' },
@@ -1346,6 +1373,15 @@ export default function Home() {
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🔮 상담 / 서비스
                 </span>
+                <button
+                  type="button"
+                  className={`filter-chip ${hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[2].options.map(option => option.key)) ? 'active' : ''}`}
+                  aria-pressed={hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[2].options.map(option => option.key))}
+                  onClick={() => setActiveCategory(toggleFilterGroup(activeCategory, CATEGORY_FILTER_GROUPS[2].options.map(option => option.key)))}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px', marginLeft: '8px', marginBottom: '10px' }}
+                >
+                  {hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[2].options.map(option => option.key)) ? '전체 해제' : '전체 선택'}
+                </button>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[{ key: 'service-fortune', label: '사주/타로' }].map(c => (
                     <button type="button" key={c.key} className={`filter-desktop-icon ${hasFilterValue(activeCategory, c.key) ? 'active' : ''}`} onClick={() => setActiveCategory(toggleFilterValue(activeCategory, c.key))}>
@@ -1360,6 +1396,15 @@ export default function Home() {
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🧭 여행 / 숙박 / 문화
                 </span>
+                <button
+                  type="button"
+                  className={`filter-chip ${hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[3].options.map(option => option.key)) ? 'active' : ''}`}
+                  aria-pressed={hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[3].options.map(option => option.key))}
+                  onClick={() => setActiveCategory(toggleFilterGroup(activeCategory, CATEGORY_FILTER_GROUPS[3].options.map(option => option.key)))}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px', marginLeft: '8px', marginBottom: '10px' }}
+                >
+                  {hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[3].options.map(option => option.key)) ? '전체 해제' : '전체 선택'}
+                </button>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
                     { key: 'accommodation', label: '숙박 (호텔/펜션)' },
@@ -1378,6 +1423,15 @@ export default function Home() {
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
                   🛍️ 패션 / 생활 / 디지털 / 펫 / 기타
                 </span>
+                <button
+                  type="button"
+                  className={`filter-chip ${hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[4].options.map(option => option.key)) ? 'active' : ''}`}
+                  aria-pressed={hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[4].options.map(option => option.key))}
+                  onClick={() => setActiveCategory(toggleFilterGroup(activeCategory, CATEGORY_FILTER_GROUPS[4].options.map(option => option.key)))}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px', marginLeft: '8px', marginBottom: '10px' }}
+                >
+                  {hasAllFilterValues(activeCategory, CATEGORY_FILTER_GROUPS[4].options.map(option => option.key)) ? '전체 해제' : '전체 선택'}
+                </button>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
                   {[
                     { key: 'fashion-clothing', label: '의류/패션' },
@@ -2721,6 +2775,8 @@ export default function Home() {
         </div>
       </section>
 
+      <ServiceValue currentCount={matchedCount} />
+
       {/* 3. Main Dashboard Body */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
         
@@ -4026,6 +4082,10 @@ export default function Home() {
           {/* 약관 & 정책 링크 버튼 */}
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '0.82rem', fontWeight: 600 }}>
             <a href="/about" style={{ color: 'var(--text-secondary)' }}>서비스 소개</a>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
+            <a href="/platforms" style={{ color: 'var(--text-secondary)' }}>출처 사이트 비교</a>
+            <span style={{ color: 'var(--border-color)' }}>•</span>
+            <a href="/keyword-guide" style={{ color: 'var(--text-secondary)' }}>키워드 지표 안내</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <a href="/guide" style={{ color: 'var(--text-secondary)' }}>체험단 지원 가이드</a>
             <span style={{ color: 'var(--border-color)' }}>•</span>

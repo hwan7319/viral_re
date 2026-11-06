@@ -1,20 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Noto_Sans_KR } from 'next/font/google';
-import Script from 'next/script';
 import './globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const notoSansKr = Noto_Sans_KR({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '700', '900'],
-  variable: '--font-noto-sans-kr',
-  display: 'swap',
-});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -43,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} ${notoSansKr.variable}`} data-theme="light">
+    <html lang="ko" data-theme="light">
       <head>
         <meta name="google-adsense-account" content="ca-pub-7845901609549313" />
         <script

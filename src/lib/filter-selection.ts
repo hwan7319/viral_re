@@ -8,6 +8,25 @@ export const toggleFilterValue = (value: string, option: string) => {
   return current.includes(option) ? (current.filter(item => item !== option).join(',') || 'all') : [...current, option].join(',');
 };
 
+/**
+ * Toggles every visible option in a filter group while preserving selections
+ * from other groups. A partially selected group is completed on first click.
+ */
+export const toggleFilterGroup = (value: string, options: readonly string[]) => {
+  const group = [...new Set(options)];
+  const current = selectedFilterValues(value);
+  const allSelected = group.length > 0 && group.every(option => current.includes(option));
+
+  if (allSelected) {
+    return current.filter(option => !group.includes(option)).join(',') || 'all';
+  }
+
+  return [...current, ...group.filter(option => !current.includes(option))].join(',');
+};
+
+export const hasAllFilterValues = (value: string, options: readonly string[]) =>
+  options.length > 0 && options.every(option => hasFilterValue(value, option));
+
 /** Select a value if absent, preserving it when a UI control confirms it. */
 export const ensureFilterValue = (value: string, option: string) =>
   option === 'all' || hasFilterValue(value, option) ? value : toggleFilterValue(value, option);

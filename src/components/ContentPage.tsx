@@ -10,7 +10,7 @@ export function ContentPage({ title, description, children }: { title: string; d
         <h1 className={styles.title}>{title}</h1>
         <p className={styles.description}>{description}</p>
         <nav aria-label="안내 페이지" className={styles.nav}>
-          <Link href="/about">서비스 소개</Link><Link href="/guide">지원 가이드</Link><Link href="/methodology">수집 원칙</Link><Link href="/faq">자주 묻는 질문</Link><Link href="/insights">체험단 이용 자료</Link>
+          <Link href="/about">서비스 소개</Link><Link href="/platforms">출처 비교</Link><Link href="/guide">지원 가이드</Link><Link href="/keyword-guide">키워드 지표</Link><Link href="/methodology">수집 원칙</Link><Link href="/faq">자주 묻는 질문</Link><Link href="/insights">체험단 이용 자료</Link>
         </nav>
       </header>
       <article className={styles.content}>{children}</article>
