@@ -1213,9 +1213,8 @@ export default function Home() {
             {hasPendingSearch && (
               <button
                 type="button"
-                className="premium-button-primary"
+                className="filter-tab filter-action-search"
                 onClick={() => applyCurrentSearch()}
-                style={{ padding: '8px 16px', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', whiteSpace: 'nowrap' }}
               >
                 선택 조건 검색
               </button>
@@ -1224,14 +1223,13 @@ export default function Home() {
             {(activeType !== 'all' || activeCategory !== 'all' || activePlatform !== 'all' || activeLocation !== 'all' || activeSite !== 'all') && (
               <button
                 type="button"
-                className="filter-tab"
+                className="filter-tab filter-action-reset"
                 onClick={() => {
                   setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
                   setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
                   setActiveSite('all');
                   setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false); setIsSiteOpen(false);
                 }}
-                style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
               >
                 <span>선택 초기화</span>
               </button>
