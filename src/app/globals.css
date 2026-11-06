@@ -822,6 +822,9 @@ input, select {
   scrollbar-width: none; /* Firefox 숨김 */
   align-items: center;
   width: 100%;
+  /* overflow-x creates a clipping boundary; reserve vertical room for tab shadows. */
+  padding: 8px 0;
+  margin: -8px 0;
 }
 
 .filter-bar-scroll::-webkit-scrollbar {
