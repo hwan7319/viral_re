@@ -7,7 +7,6 @@ import { fetchCampaignPage } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
 import TrustContent from '@/components/TrustContent';
-import ServiceValue from '@/components/ServiceValue';
 import { hasAllFilterValues, hasFilterValue, selectedFilterValues, toggleFilterGroup, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } from '@/lib/filter-selection';
 import { REGION_OPTIONS } from '@/lib/region-options';
 
@@ -2772,8 +2771,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <ServiceValue currentCount={matchedCount} />
 
       {/* 3. Main Dashboard Body */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '40px 24px' }}>
