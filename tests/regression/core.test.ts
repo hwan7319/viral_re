@@ -19,7 +19,9 @@ test('regression suite', async t => {
   const { GET: detail } = await import('../../src/app/api/campaign-detail/route');
   const { POST: sync } = await import('../../src/app/api/sync/route');
   const { POST: session } = await import('../../src/app/api/auth/session/route');
-  const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
+  const { GET: bookmarkedCampaigns, POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
+  const savedSearchRoutes = await import('../../src/app/api/user/saved-searches/route');
+  const { GET: keywordRoute } = await import('../../src/app/api/keyword/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
   const { estimateInitialMonthlyPosts, summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
@@ -236,6 +238,58 @@ test('regression suite', async t => {
     assert.equal((await bookmark(req(process.env.APP_ORIGIN!, `viral_session=${token}`))).status, 200);
     assert.deepEqual(await db.getUserBookmarks('owner'), ['campaign-000']);
     assert.deepEqual(await db.getUserBookmarks('victim'), []);
+    assert.equal((await bookmarkedCampaigns(new NextRequest('http://localhost:3000/api/user/bookmark'))).status, 401);
+    const listed = await (await bookmarkedCampaigns(new NextRequest('http://localhost:3000/api/user/bookmark', { headers: { cookie: `viral_session=${token}` } }))).json();
+    assert.deepEqual(listed.bookmarks, ['campaign-000']);
+    assert.equal(listed.campaigns[0].id, 'campaign-000');
+  });
+  await t.test('saved searches require a signed owner, retain exact filters, and only count new matching campaigns', async () => {
+    const token = auth.signValue({ sub: 'owner', exp: Date.now() + 100000 });
+    const request = (method: string, body: unknown, origin = process.env.APP_ORIGIN!, cookie = `viral_session=${token}`) => new NextRequest('http://localhost:3000/api/user/saved-searches', {
+      method,
+      headers: { origin, cookie, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const payload = {
+      name: '강남 블로그 공고',
+      filters: { search: '  강남  ', platform: 'blog,instagram', category: 'food-korean', location: '서울 강남구', targetSite: '레뷰', type: 'visit' }
+    };
+    assert.equal((await savedSearchRoutes.POST(request('POST', payload, 'https://attacker.example'))).status, 403);
+    assert.equal((await savedSearchRoutes.POST(request('POST', payload, process.env.APP_ORIGIN!, ''))).status, 401);
+    assert.equal((await savedSearchRoutes.POST(request('POST', { name: '빈 조건', filters: { search: '', platform: 'all', category: 'all', location: 'all', targetSite: 'all', type: 'all' } }))).status, 400);
+    assert.equal((await savedSearchRoutes.POST(request('POST', { ...payload, filters: { ...payload.filters, type: 'unknown' } }))).status, 400);
+
+    const created = await (await savedSearchRoutes.POST(request('POST', payload))).json();
+    assert.equal(created.success, true);
+    assert.equal(created.data.search, '강남');
+    assert.equal(created.data.platform, 'blog,instagram');
+    const savedId = created.data.id as string;
+    assert.equal((await savedSearchRoutes.POST(request('POST', { ...payload, name: '중복 조건' }))).status, 400);
+
+    let listed = await (await savedSearchRoutes.GET(request('GET', undefined))).json();
+    assert.equal(listed.data.length, 1);
+    assert.equal(listed.data[0].newCampaignCount, 0);
+
+    await new Promise(resolve => setTimeout(resolve, 2));
+    const newlyCollectedAt = new Date().toISOString();
+    await db.insertOrUpdateCampaigns([fixture('saved-search-new', {
+      title: '강남 한식 신규 공고', category: 'food-korean', platform: 'blog', location: '서울 강남구', targetSite: '레뷰',
+      createdAt: newlyCollectedAt, updatedAt: newlyCollectedAt
+    })]);
+    await db.insertOrUpdateCampaigns([fixture('saved-search-other', {
+      title: '강남 한식 신규 공고', category: 'food-korean', platform: 'youtube', location: '서울 강남구', targetSite: '레뷰',
+      createdAt: newlyCollectedAt, updatedAt: newlyCollectedAt
+    })]);
+    listed = await (await savedSearchRoutes.GET(request('GET', undefined))).json();
+    assert.equal(listed.data[0].newCampaignCount, 1);
+
+    assert.equal((await savedSearchRoutes.PATCH(request('PATCH', { id: savedId, action: 'mark-read' }))).status, 200);
+    listed = await (await savedSearchRoutes.GET(request('GET', undefined))).json();
+    assert.equal(listed.data[0].newCampaignCount, 0);
+    assert.equal((await savedSearchRoutes.DELETE(request('DELETE', { id: savedId }, 'https://attacker.example'))).status, 403);
+    assert.equal((await savedSearchRoutes.DELETE(request('DELETE', { id: savedId }))).status, 200);
+    listed = await (await savedSearchRoutes.GET(request('GET', undefined))).json();
+    assert.equal(listed.data.length, 0);
   });
   await t.test('detail URL cannot overwrite a different campaign', async () => {
     const response = await detail(new NextRequest('http://localhost:3000/api/campaign-detail?id=campaign-000&url=https://www.revu.net/campaign/other'));
@@ -397,6 +451,24 @@ test('regression suite', async t => {
       assert.equal(payload.data.grade, 'UNKNOWN');
       assert.deepEqual(payload.data.relatedKeywords, []);
     } finally { axios.get = original; }
+  });
+  await t.test('missing keyword service settings fail explicitly instead of returning an empty successful analysis', async () => {
+    const keys = ['NAVER_CLIENT_ID', 'NAVER_CLIENT_SECRET', 'NAVER_SEARCHAD_CUSTOMER_ID', 'NAVER_SEARCHAD_API_KEY', 'NAVER_SEARCHAD_ACCESS_LICENSE', 'NAVER_SEARCHAD_SECRET_KEY'] as const;
+    const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+    try {
+      keys.forEach(key => delete process.env[key]);
+      const response = await keywordRoute(new NextRequest('http://localhost:3000/api/keyword?query=삼겹살'));
+      const payload = await response.json();
+      assert.equal(response.status, 503);
+      assert.equal(payload.success, false);
+      assert.match(payload.error, /네이버 블로그 검색 API/);
+      assert.match(payload.error, /네이버 검색광고 API/);
+    } finally {
+      keys.forEach(key => {
+        if (previous[key] === undefined) delete process.env[key];
+        else process.env[key] = previous[key];
+      });
+    }
   });
   await t.test('OAuth requires signed matching state and verifies provider identity', async () => {
     process.env.GOOGLE_OAUTH_CLIENT_ID = 'configured-id';
