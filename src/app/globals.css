@@ -1206,6 +1206,12 @@ input, select {
   background-color: var(--bg-secondary);
 }
 
+/* The desktop action controls stay in the tab row. On mobile they are
+   replaced by one viewport-fixed bar so no action requires horizontal scroll. */
+.mobile-filter-actions {
+  display: none;
+}
+
 /* 📱 모바일 디바이스 최적화 미디어 쿼리 (768px 이하) */
 @media (max-width: 768px) {
   /* 1. 대메뉴 필터 탭바 가로 스크롤 제거 및 4분할 균등 정렬 */
@@ -1250,8 +1256,7 @@ input, select {
 
   .filter-tab.filter-action-search,
   .filter-tab.filter-action-reset {
-    width: auto;
-    min-width: 68px;
+    display: none !important;
   }
   
   .filter-tab-img {
@@ -1286,13 +1291,79 @@ input, select {
     background-color: var(--bg-secondary) !important;
     box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.35) !important;
     /* 모바일 하단 가전/기타 잘림 방지를 위해 바텀 세이프 마진 확보 */
-    padding: 20px 16px 88px 16px !important;
+    padding: 20px 16px 96px 16px !important;
     max-height: 82vh !important;
     overflow-y: auto !important;
     z-index: 3100 !important;
     overscroll-behavior: contain !important; /* 터치 드래그 시 배경 스크롤 밀림 차단 */
     animation: slideUp 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
     border: none !important;
+  }
+
+  /* 카테고리는 항목 수가 많다. 바텀시트와 목록 스크롤을 분리해 iOS/Android
+     모두에서 목록 영역을 직접 드래그할 때 세로 스크롤이 보장되게 한다. */
+  .category-filter-panel {
+    height: 82vh !important;
+    height: 82dvh !important;
+    max-height: 82vh !important;
+    max-height: 82dvh !important;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+  }
+
+  .category-filter-panel .category-filter-scroll {
+    display: flex !important;
+    flex: none !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    padding: 4px 4px 0 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-filter-actions {
+    position: fixed;
+    z-index: 3201;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    box-shadow: 0 -8px 20px rgba(24, 30, 43, .14);
+    box-sizing: border-box;
+  }
+
+  .mobile-filter-actions button {
+    min-width: 0;
+    min-height: 44px;
+    border-radius: 10px;
+    font-size: .84rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .mobile-filter-reset {
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+  }
+
+  .mobile-filter-apply {
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
   }
 
   /* 모바일 바텀시트 전용 헤더 */
@@ -1320,7 +1391,7 @@ input, select {
   }
 
   /* 3. 모바일용 상세 아이템 그리드화 (한 줄에 3개씩 바둑판 형태 정렬) */
-  .filter-chip-row {
+  .filter-chip-row:not(.category-filter-scroll) {
     display: flex !important;
     flex-direction: column !important;
     gap: 16px !important;
@@ -1335,7 +1406,7 @@ input, select {
   }
 
   /* 카테고리별 그리드 컨테이너 4열화 (납작한 형태) */
-  .filter-chip-row > div > div {
+  .filter-chip-row:not(.category-filter-scroll) > div > div {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 6px !important;
@@ -1379,7 +1450,7 @@ input, select {
   }
 
   /* 개별 단축 아이콘 다이어트 (아이콘은 숨겨서 둥근 원을 완전 제거하고, 슬림 캡슐 칩화) */
-  .filter-desktop-icon {
+  .filter-panel-wrap:not(.category-filter-panel) .filter-desktop-icon {
     width: 100% !important;
     height: 38px !important; /* 높이를 38px로 극단적으로 다이어트 */
     padding: 0 4px !important;
@@ -1393,26 +1464,34 @@ input, select {
     justify-content: center !important;
   }
 
-  .filter-desktop-icon:hover {
+  .filter-panel-wrap:not(.category-filter-panel) .filter-desktop-icon:hover {
     background-color: rgba(99, 102, 241, 0.08) !important;
   }
 
-  .filter-desktop-icon.active {
+  .filter-panel-wrap:not(.category-filter-panel) .filter-desktop-icon.active {
     background-color: rgba(99, 102, 241, 0.12) !important;
     border-color: var(--accent) !important;
   }
 
   /* 모바일 상세에서는 SVG/이미지 동그란 원을 완전히 숨김 */
-  .filter-desktop-icon-img {
+  .filter-panel-wrap:not(.category-filter-panel) .filter-desktop-icon-img {
     display: none !important;
   }
 
-  .filter-desktop-icon-text {
+  .filter-panel-wrap:not(.category-filter-panel) .filter-desktop-icon-text {
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
     white-space: normal !important;
     word-break: keep-all !important;
+  }
+
+  /* 카테고리는 PC와 같은 항목·아이콘·그룹 표현을 유지하되,
+     모바일 폭에 맞는 조밀한 3열 카드로만 재배치한다. */
+  .category-filter-panel .category-filter-scroll {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
   }
 
   /* 4. 지역 선택 2열 레이아웃 모바일 최적화 */
@@ -1443,6 +1522,36 @@ input, select {
     box-sizing: border-box !important;
   }
 
+  .category-filter-panel .category-filter-scroll > div > div {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .category-filter-panel .filter-desktop-icon {
+    width: 100% !important;
+    height: 82px !important;
+    min-width: 0 !important;
+    padding: 8px 4px !important;
+    gap: 4px !important;
+    flex-direction: column !important;
+    border-radius: 14px !important;
+  }
+
+  .category-filter-panel .filter-desktop-icon-img {
+    display: flex !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 1.35rem !important;
+  }
+
+  .category-filter-panel .filter-desktop-icon-text {
+    font-size: .72rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+
   .region-sigungu-wrap {
     padding: 12px 10px 48px 10px !important; /* 하단 세이프 패딩 주어 칩이 짤리지 않게 보장 */
     gap: 8px !important;
@@ -1456,13 +1565,13 @@ input, select {
     overscroll-behavior: contain !important;
   }
 
-  .filter-chip {
+  .filter-panel-wrap:not(.category-filter-panel) .filter-chip {
     padding: 8px 10px !important;
     font-size: 0.78rem !important;
   }
 
   /* 카테고리 내부 소제목 */
-  .filter-chip-row > div > span {
+  .filter-chip-row:not(.category-filter-scroll) > div > span {
     font-size: 0.78rem !important;
     margin-bottom: 6px !important;
   }

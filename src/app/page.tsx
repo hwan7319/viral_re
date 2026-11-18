@@ -861,6 +861,11 @@ export default function Home() {
     setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false);
     setIsLocationOpen(false); setIsSiteOpen(false);
   };
+  const resetPendingFilters = () => {
+    setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
+    setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
+    setActiveSite('all');
+  };
   const hasPendingSearch = searchInput.trim() !== appliedFilters.search
     || activePlatform !== appliedFilters.platform
     || activeCategory !== appliedFilters.category
@@ -1224,9 +1229,7 @@ export default function Home() {
                 type="button"
                 className="filter-tab filter-action-reset"
                 onClick={() => {
-                  setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
-                  setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
-                  setActiveSite('all');
+                  resetPendingFilters();
                   setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false); setIsLocationOpen(false); setIsSiteOpen(false);
                 }}
               >
@@ -1293,14 +1296,14 @@ export default function Home() {
 
         {/* 카테고리 상세 패널 */}
         {isCategoryOpen && (
-          <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
+          <div className="filter-panel-wrap category-filter-panel" onMouseEnter={handleFilterAreaEnter}>
             <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 🏷️ 카테고리 선택
               </h3>
               <button type="button" onClick={() => setIsCategoryOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
             </div>
-            <div className="filter-chip-row" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
+            <div className="filter-chip-row category-filter-scroll" style={{ maxWidth: '1200px', margin: '0 auto', justifyContent: 'flex-start', gap: '20px' }}>
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
@@ -1705,6 +1708,20 @@ export default function Home() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Mobile actions apply every pending condition as one query. They are
+            intentionally outside individual panels so users can combine type,
+            category, platform, location and source without horizontal scrolling. */}
+        {hasPendingSearch && (
+          <div className="mobile-filter-actions" aria-label="선택 조건 적용">
+            <button type="button" className="mobile-filter-reset" onClick={resetPendingFilters}>
+              선택 초기화
+            </button>
+            <button type="button" className="mobile-filter-apply" onClick={() => applyCurrentSearch()}>
+              선택 조건 검색
+            </button>
           </div>
         )}
       </div>
