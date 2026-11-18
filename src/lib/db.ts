@@ -567,7 +567,7 @@ export async function queryCampaigns(filters: {
         if (loaded.length > 0) {
           console.log(`[DB-QueryAutoSeed] Seeding ${loaded.length} snapshot campaigns into SQLite DB...`);
           await insertOrUpdateCampaigns(loaded);
-          return db.all<Campaign[]>(query, params);
+          return dedupeSearchResults(await db.all<Campaign[]>(query, params));
         }
       }
     }
