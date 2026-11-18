@@ -1854,6 +1854,8 @@ export default function Home() {
     return list;
   }, [keywordData, keywordSortField, keywordSortOrder]);
 
+  const expandedKeywordCount = keywordData?.expandedKeywords?.length || 0;
+
   // ⚡ 키워드마스터 지표 클릭 도움말 툴팁 팝업 상태 (volume, ratio)
   const [activeKeywordGuideTooltip, setActiveKeywordGuideTooltip] = useState<'volume' | 'ratio' | null>(null);
 
@@ -3699,7 +3701,7 @@ export default function Home() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                          🔍 연관 검색어 랭킹 리스트
+                          🔍 정밀 연관 검색어 랭킹
                         </h4>
                         <div>
                           <span style={{
@@ -3711,7 +3713,7 @@ export default function Home() {
                             color: '#ffffff',
                             display: 'inline-block'
                           }}>
-                            총 {keywordData.relatedKeywords?.length || 0}개 수집
+                            모든 검색어 조건 일치 · {keywordData.relatedKeywords?.length || 0}개
                           </span>
                         </div>
                       </div>
@@ -3977,6 +3979,30 @@ export default function Home() {
                           (현재 {Math.min(relatedVisibleCount, keywordData.relatedKeywords.length)} / {keywordData.relatedKeywords.length}개 표시 중)
                         </span>
                       </button>
+                    )}
+
+                    {expandedKeywordCount > 0 && (
+                      <details style={{ marginTop: '12px', padding: '12px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
+                        <summary style={{ cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.84rem' }}>
+                          확장 탐색어 {expandedKeywordCount}개 보기
+                        </summary>
+                        <p style={{ margin: '9px 0 10px', color: 'var(--text-secondary)', fontSize: '0.74rem', lineHeight: 1.5 }}>
+                          입력한 복합 검색어의 일부 조건만 일치하는 후보입니다. 정밀 연관 검색어 순위에는 포함하지 않습니다.
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+                          {(keywordData.expandedKeywords || []).map((item: any) => (
+                            <button
+                              key={`${item.rank}-${item.keyword}`}
+                              type="button"
+                              onClick={() => analyzeKeyword(item.keyword)}
+                              title={`${item.sourceLabels?.join(' · ') || '확장 탐색'} · 월간 검색량 ${displayMetric(item.totalSearchVolume)}회`}
+                              style={{ border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', borderRadius: 'var(--radius-full)', padding: '6px 10px', cursor: 'pointer', fontSize: '0.76rem', fontWeight: 700 }}
+                            >
+                              {item.keyword} <span style={{ color: 'var(--text-tertiary)', fontWeight: 600 }}>· {displayMetric(item.totalSearchVolume)}회</span>
+                            </button>
+                          ))}
+                        </div>
+                      </details>
                     )}
                   </div>
 

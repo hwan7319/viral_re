@@ -113,6 +113,19 @@ export function isDirectKeywordMatch(query: string, candidate: string): boolean 
     : candidateNormalized.includes(queryWords[0]);
 }
 
+/**
+ * A multi-word query is normally one search intent, not a bag of unrelated
+ * words. The primary related-keyword list therefore requires every meaningful
+ * query token. Candidates matching only a subset remain available as
+ * "expanded exploration" instead of taking a precision ranking slot.
+ */
+export function isPrecisionRelatedKeyword(query: string, candidate: string): boolean {
+  const tokens = normalizeKeywordQuery(query).toLowerCase().split(' ').filter(token => token.length >= 1);
+  if (tokens.length < 2) return true;
+  const normalizedCandidate = normalizeKeywordQuery(candidate).replace(/\s+/g, '').toLowerCase();
+  return tokens.every(token => normalizedCandidate.includes(token));
+}
+
 export function calculateKeywordRelevance(query: string, candidate: string): number {
   if (!query || !candidate) return 0;
   const qNorm = query.replace(/\s+/g, '').toLowerCase();
@@ -340,7 +353,7 @@ export async function GET(request: Request) {
     else if (/(영양제|유산균|비타민|마그네슘|오메가3|홍삼)/.test(fullContextText)) detectedCategoryAnchor = '영양제';
     else if (/(밀키트|간편식|반찬|신선식품)/.test(fullContextText)) detectedCategoryAnchor = '밀키트';
 
-    const cacheKey = `v110_verified_${query.toLowerCase()}_${detectedCategoryAnchor || ''}`;
+    const cacheKey = `v111_precision_related_${query.toLowerCase()}_${detectedCategoryAnchor || ''}`;
     const cachedRes = globalRef.keywordApiCache.get(cacheKey);
     if (cachedRes && (Date.now() - cachedRes.timestamp < CACHE_TTL_MS)) {
       return NextResponse.json(cachedRes.data);
@@ -794,10 +807,18 @@ export async function GET(request: Request) {
       return scoreB - scoreA || b.total - a.total;
     });
 
-    // 🔑 대형/범용 검색어 연관어 풍부함 극대화: 상위 100개 고품질 검증 후보군 추출
-    // The page displays the leading results first. Seventy provides a useful
-    // long-tail list while staying below the former 100-request worst case.
-    const candidateKeywordsList = filteredCandidatesList.slice(0, MAX_ENRICHED_RELATED_KEYWORDS);
+    // A composite query's exact intent and its looser exploration ideas are
+    // intentionally enriched separately. Do not let `곱창` or `노원` outrank
+    // `노원곱창맛집` for a `노원 곱창` analysis just because the single term has
+    // more search volume.
+    const precisionCandidates = filteredCandidatesList.filter(item => isPrecisionRelatedKeyword(query, item.keyword));
+    const expandedCandidates = filteredCandidatesList.filter(item => !isPrecisionRelatedKeyword(query, item.keyword));
+    const candidateKeywordsList = [
+      ...precisionCandidates.slice(0, MAX_ENRICHED_RELATED_KEYWORDS).map(item => ({ ...item, relation: 'precision' as const })),
+      // Keep optional exploration useful without restoring the old 70-item
+      // fan-out for broad, one-token candidates.
+      ...expandedCandidates.slice(0, 20).map(item => ({ ...item, relation: 'expanded' as const })),
+    ];
 
     // 4. 고속 병렬 청크 분석 (20개 단위 병렬 청크 + 메모리 캐시 연동으로 최대 100개 풍부한 연관어 반환)
     const chunkResultsRaw: any[] = [];
@@ -851,6 +872,7 @@ export async function GET(request: Request) {
 
             return {
               keyword: item.keyword,
+              relation: item.relation,
               priority: item.priority || 3,
               sources: sortedCandidateSources(item.sources),
               sourceLabels: sortedCandidateSources(item.sources).map(source => SOURCE_LABELS[source]),
@@ -894,14 +916,16 @@ export async function GET(request: Request) {
 
     // The displayed rank is a recommendation rank. Users can still choose
     // explicit search-volume ordering in the table.
-    validListRaw.sort((a: any, b: any) =>
+    const rankRelatedItems = (items: any[]) => [...items].sort((a: any, b: any) =>
       (b.recommendationScore ?? -1) - (a.recommendationScore ?? -1) ||
       (b.totalSearchVolume ?? -1) - (a.totalSearchVolume ?? -1) ||
       a.keyword.localeCompare(b.keyword)
     );
-    const final100List = validListRaw;
-
-    const relatedKeywords = final100List.map((item: any, index: number) => ({
+    const relatedKeywords = rankRelatedItems(validListRaw.filter((item: any) => item.relation === 'precision')).map((item: any, index: number) => ({
+      rank: index + 1,
+      ...item,
+    }));
+    const expandedKeywords = rankRelatedItems(validListRaw.filter((item: any) => item.relation === 'expanded')).map((item: any, index: number) => ({
       rank: index + 1,
       ...item,
     }));
@@ -951,6 +975,7 @@ export async function GET(request: Request) {
         statusText,
         isRealSearchAdData,
         relatedKeywords,
+        expandedKeywords,
         topPosts,
         timestamp: new Date().toISOString(),
       },

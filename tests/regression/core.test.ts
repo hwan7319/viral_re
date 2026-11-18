@@ -24,7 +24,7 @@ test('regression suite', async t => {
   const { estimateInitialMonthlyPosts, summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
   const { classifyCampaignCategory, resolveCampaignCategory, CATEGORY_RULE_VERSION } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
-  const { buildCompositeKeywordHints, calculateRecommendationScore, isDirectKeywordMatch, normalizeKeywordQuery } = await import('../../src/lib/keyword-engine');
+  const { buildCompositeKeywordHints, calculateRecommendationScore, isDirectKeywordMatch, isPrecisionRelatedKeyword, normalizeKeywordQuery } = await import('../../src/lib/keyword-engine');
   const { inferCampaignLocation, parseCountText } = await import('../../src/lib/scraper-utils');
   const { ensureFilterValue, hasAllFilterValues, toggleFilterGroup, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } = await import('../../src/lib/filter-selection');
   const { parseCloudReviewDetail, parseCloudReviewMainImage, extractCloudReviewSourceCategory } = await import('../../src/lib/scrapers/search/cloudreview');
@@ -303,6 +303,10 @@ test('regression suite', async t => {
     assert.ok(directSearchAd > directAutocomplete);
     assert.equal(isDirectKeywordMatch('강남 맛집', '신세계 강남 맛집'), true);
     assert.equal(isDirectKeywordMatch('강남 맛집', '여수맛집'), false);
+    assert.equal(isPrecisionRelatedKeyword('노원 곱창', '노원곱창맛집'), true);
+    assert.equal(isPrecisionRelatedKeyword('노원 곱창', '곱창'), false);
+    assert.equal(isPrecisionRelatedKeyword('노원 곱창', '노원'), false);
+    assert.equal(isPrecisionRelatedKeyword('선크림', '겨울선크림'), true);
   });
   await t.test('generic campaign benefits never classify restaurants as travel', () => {
     const title = '[경북 포항] 고씨네 효자점';
