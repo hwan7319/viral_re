@@ -861,6 +861,13 @@ export default function Home() {
     setIsTypeOpen(false); setIsCategoryOpen(false); setIsPlatformOpen(false);
     setIsLocationOpen(false); setIsSiteOpen(false);
   };
+  // Sorting never changes which campaigns match. Apply it immediately to the
+  // last confirmed search while keeping any open filter-panel selections as a
+  // draft until the user presses "선택 조건 검색".
+  const applySortImmediately = (nextSort: string) => {
+    setSortBy(nextSort);
+    setAppliedFilters(current => ({ ...current, sortBy: nextSort }));
+  };
   const resetPendingFilters = () => {
     setActiveType('all'); setActiveCategory('all'); setActivePlatform('all');
     setActiveLocation('all'); setSelectedSido('all'); setSelectedSigungu('all');
@@ -871,8 +878,7 @@ export default function Home() {
     || activeCategory !== appliedFilters.category
     || activeLocation !== appliedFilters.location
     || activeSite !== appliedFilters.targetSite
-    || activeType !== appliedFilters.type
-    || sortBy !== appliedFilters.sortBy;
+    || activeType !== appliedFilters.type;
 
   // 상세 모달 상태
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -2926,7 +2932,7 @@ export default function Home() {
             ].map(item => (
               <button
                 key={item.key}
-                onClick={() => setSortBy(item.key)}
+                onClick={() => applySortImmediately(item.key)}
                 style={{
                   fontSize: '0.85rem', padding: '6px 12px', borderRadius: 'var(--radius-sm)',
                   fontWeight: sortBy === item.key ? 700 : 500,
