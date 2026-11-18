@@ -2,7 +2,8 @@ import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { scrapeDetailBenefit } from '../../detail-scraper';
-import { HEADERS, parseDdayToDate, parseCountText, detectCategory, detectPlatform } from '../../scraper-utils';
+import { HEADERS, parseDdayToDate, parseCountText, detectPlatform } from '../../scraper-utils';
+import { resolveCampaignCategory } from '../../category_classifier';
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected: Campaign[] = [];
 const now = new Date();
@@ -40,7 +41,7 @@ await (async () => {
             location = locMatch ? locMatch[1] : undefined;
           }
 
-          const category = detectCategory(title, badgesText);
+          const initialResolution = resolveCampaignCategory({ title, description: badgesText, dataSource: 'list' });
 
           if (title && campaignUrl) {
             const fullUrl = campaignUrl.startsWith('http') ? campaignUrl : `https://dinnerqueen.net${campaignUrl}`;
@@ -53,11 +54,14 @@ await (async () => {
             const cleanDesc = (descText && descText !== title) ? descText : title.replace(/^\[[^\]]+\]\s*/, '').trim() + ' 체험 혜택';
 
             dqItems.push({
-              id, title, description: cleanDesc, platform, category, location, campaignUrl: fullUrl,
+              id, title, description: cleanDesc, platform, category: initialResolution.category, location, campaignUrl: fullUrl,
               imageUrl, targetSite: '디너의여왕', limitCount, applyCount,
               startDate: now.toISOString().split('T')[0], endDate,
               createdAt: now.toISOString(), updatedAt: now.toISOString(),
-              searchKeywords: `,${keyword},`
+              searchKeywords: `,${keyword},`,
+              categoryEvidence: initialResolution.evidence,
+              categoryConfidence: initialResolution.confidence,
+              categoryRuleVersion: initialResolution.ruleVersion,
             });
           }
           });
@@ -71,6 +75,12 @@ await (async () => {
             const realBenefit = await scrapeDetailBenefit(item.campaignUrl, '디너의여왕');
             if (realBenefit && realBenefit !== item.title) {
               item.description = realBenefit;
+              const detailResolution = resolveCampaignCategory({ title: item.title, description: realBenefit, dataSource: 'detail' });
+              item.category = detailResolution.category;
+              item.categoryEvidence = detailResolution.evidence;
+              item.categoryConfidence = detailResolution.confidence;
+              item.categoryRuleVersion = detailResolution.ruleVersion;
+              item.dataSource = 'detail';
             }
           }));
           collected.push(...chunk);

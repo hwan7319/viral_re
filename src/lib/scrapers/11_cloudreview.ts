@@ -1,12 +1,18 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
-import { classifyCampaignCategory } from '../category_classifier';
+import { resolveCampaignCategory } from '../category_classifier';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 };
+
+/** CloudReview publishes product families as leading card tags, e.g. [식품]. */
+export function extractCloudReviewSourceCategory(title: string, description = ''): string | undefined {
+  const match = `${title} ${description}`.match(/\[\s*(식품|생활|리빙|뷰티|화장품|가전|디지털|반려동물|유아|패션)\s*\]/i);
+  return match?.[1];
+}
 
 export const CloudReviewScraper: SiteScraper = {
   siteName: '클라우드리뷰',
@@ -41,12 +47,19 @@ export const CloudReviewScraper: SiteScraper = {
 
         const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
 
+        const sourceCategory = extractCloudReviewSourceCategory(cleanTitle, cleanDesc);
+        const categoryResolution = resolveCampaignCategory({
+          title: cleanTitle,
+          description: cleanDesc,
+          rawCategories: sourceCategory ? [sourceCategory] : [],
+          dataSource: 'list',
+        });
         collected.push({
           id: `cr-${cpId}`,
           title: cleanTitle,
           description: cleanDesc,
           platform: 'blog',
-          category: classifyCampaignCategory(cleanTitle, cleanDesc),
+          category: categoryResolution.category,
           campaignUrl: fullUrl,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
           targetSite: '클라우드리뷰',
@@ -55,7 +68,11 @@ export const CloudReviewScraper: SiteScraper = {
           startDate: now.toISOString().split('T')[0],
           endDate: new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0],
           createdAt: now.toISOString(),
-          updatedAt: now.toISOString()
+          updatedAt: now.toISOString(),
+          sourceCategory,
+          categoryEvidence: categoryResolution.evidence,
+          categoryConfidence: categoryResolution.confidence,
+          categoryRuleVersion: categoryResolution.ruleVersion,
         });
       }
     });

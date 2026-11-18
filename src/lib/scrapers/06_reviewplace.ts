@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
-import { classifyCampaignCategory } from '../category_classifier';
+import { resolveCampaignCategory } from '../category_classifier';
 import { detectPlatform, inferCampaignLocation } from '../scraper-utils';
 
 const HEADERS = {
@@ -83,7 +83,14 @@ async function enrichDeadlines(campaigns: ScrapedCampaign[]): Promise<void> {
           campaign.applyCount = counts.applyCount;
           campaign.limitCount = counts.limitCount;
         }
-        if (endDate || counts) campaign.dataSource = 'detail';
+        if (endDate || counts || benefit) campaign.dataSource = 'detail';
+        // Detail benefit is often the only reliable product/industry clue on
+        // ReviewPlace. Re-resolve only after it has been collected.
+        const resolved = resolveCampaignCategory({ title: campaign.title, description: campaign.description, dataSource: campaign.dataSource });
+        campaign.category = resolved.category;
+        campaign.categoryEvidence = resolved.evidence;
+        campaign.categoryConfidence = resolved.confidence;
+        campaign.categoryRuleVersion = resolved.ruleVersion;
       } catch (error: any) {
         console.warn(`[ReviewPlace] 상세 마감일 ${campaign.id} skipped:`, error.message);
       }
@@ -123,12 +130,13 @@ export const ReviewPlaceScraper: SiteScraper = {
         || (/^\s*(?:NEW\s*)?\[(?:블로그|인스타|릴스|틱톡|클립|유튜브)/i.test(rawTitle) ? '재택' : undefined);
 
       if (rawTitle && rawTitle.length > 3) {
+        const initialCategory = resolveCampaignCategory({ title: rawTitle, dataSource: 'list' });
         collected.push({
           id: `rp-${cpId}`,
           title: rawTitle.slice(0, 70),
           description: '',
           platform,
-          category: classifyCampaignCategory(rawTitle, ''),
+          category: initialCategory.category,
           location,
           campaignUrl: href.startsWith('http') ? href : `https://www.reviewplace.co.kr${href.startsWith('/') ? '' : '/'}${href}`,
           imageUrl: img || 'https://viral-re.co.kr/icon.png',
@@ -138,7 +146,10 @@ export const ReviewPlaceScraper: SiteScraper = {
           startDate: now.toISOString().split('T')[0],
           endDate: '',
           createdAt: now.toISOString(),
-          updatedAt: now.toISOString()
+          updatedAt: now.toISOString(),
+          categoryEvidence: initialCategory.evidence,
+          categoryConfidence: initialCategory.confidence,
+          categoryRuleVersion: initialCategory.ruleVersion
         });
       }
     });

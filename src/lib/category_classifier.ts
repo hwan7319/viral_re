@@ -1,11 +1,57 @@
 /**
- * Source-independent category classifier.
+ * The source may use a different taxonomy, but these labels are specific
+ * enough to be trusted without guessing from a campaign title.
  *
- * Categories returned here are the same canonical keys used by the filter UI.
- * Keep this conservative: an unknown campaign belongs in `etc`, never in an
- * attractive but unsupported category.
+ * Keep this mapping deliberately small. A broad value such as "맛집" or
+ * "뷰티" is useful context, not proof of a leaf category.
  */
-export function classifyCampaignCategory(
+const SOURCE_CATEGORY_RULES: Array<[RegExp, string]> = [
+  [/(?:오마카세)/, 'food-omakase'],
+  [/(?:주점|술집|이자카야|포차|와인바|칵테일바|펍)/, 'food-pub'],
+  [/(?:카페|디저트|베이커리|커피)/, 'food-cafe'],
+  [/(?:일식|일본식|스시|초밥|라멘|돈카츠)/, 'food-japanese'],
+  [/(?:중식|중국식|마라|양꼬치|짜장|짬뽕|훠궈)/, 'food-chinese'],
+  [/(?:양식|이탈리안|파스타|피자|스테이크|브런치)/, 'food-western'],
+  [/(?:육류|구이|한우|갈비|삼겹살|막창|대창)/, 'food-meat'],
+  [/(?:분식|떡볶이|김밥|순대)/, 'food-snack'],
+  [/(?:한식|국밥|찌개|백반|냉면)/, 'food-korean'],
+  [/(?:헤어|네일|속눈썹|미용실)/, 'beauty-salon'],
+  [/(?:피부|에스테틱|스파|왁싱)/, 'beauty-spa'],
+  [/(?:화장품|스킨케어|메이크업)/, 'beauty-cosmetics'],
+  [/(?:다이어트|체형)/, 'beauty-body'],
+  [/(?:피트니스|헬스|필라테스|요가)/, 'health-fitness'],
+  [/(?:영양제|건강식품)/, 'health-food'],
+  [/(?:병원|치과|한의원|의료)/, 'health-medical'],
+  [/(?:숙박|호텔|펜션|풀빌라)/, 'accommodation'],
+  [/(?:여행|관광|레저|투어)/, 'travel'],
+  [/(?:공연|전시|문화)/, 'culture'],
+  [/(?:의류|패션)/, 'fashion-clothing'],
+  [/(?:가방|신발|잡화|액세서리)/, 'fashion-accessory'],
+  [/(?:유아|육아|아동)/, 'baby'],
+  [/(?:식품|밀키트|신선식품)/, 'health-fresh'],
+  [/(?:생활|리빙|주방)/, 'life-goods'],
+  [/(?:가전|디지털)/, 'life-appliances'],
+  [/(?:자동차)/, 'life-auto'],
+  [/(?:반려동물|애견|펫)/, 'pet'],
+  [/(?:도서|교육)/, 'book'],
+  [/(?:취미|클래스|공방)/, 'hobby'],
+  [/(?:사주|타로)/, 'service-fortune'],
+];
+
+export type CategoryEvidence = 'source-category' | 'detail-text' | 'list-text' | 'title' | 'unclassified' | 'legacy';
+export type CategoryConfidence = 'high' | 'medium' | 'low' | 'none';
+
+export interface CategoryResolution {
+  category: string;
+  sourceCategory: string;
+  evidence: CategoryEvidence;
+  confidence: CategoryConfidence;
+  ruleVersion: string;
+}
+
+export const CATEGORY_RULE_VERSION = 'v2';
+
+function classifyFromText(
   title = '',
   description = '',
   rawCategoryArray: string[] = [],
@@ -24,7 +70,7 @@ export function classifyCampaignCategory(
   if (has(/(?:양식|이탈리안|파스타|피자|피제리아|스테이크|브런치|버거|커리|샌드위치)/)) return 'food-western';
   if (has(/(?:삼겹살|갈비|한우|소고기|돼지고기|정육|식육|고기구이|양고기|흑염소|막창|대창|양대창|뒷고기|목살|생고기|바베큐|훈제)/)) return 'food-meat';
   if (has(/(?:떡볶이|분식|김밥|순대|닭발)/)) return 'food-snack';
-  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|고기집|고깃집|전집|맛있는전시회|돼지|치킨|떡볶이|분식|김밥|순대|닭발|닭도리탕|육회|식육|정육|불고기|제육|쭈꾸미|돈육|소고기|샤브샤브|쌀국수|추어탕|미꾸라지|생선국수|어탕|곰탕|매운탕|알탕|코다리|찜닭|삼계탕|닭한마리|막국수|옹심이|수육|두부|순두부|낙지|아구|게장|조개|복어|장어|생선회|수산|해물|도시락|샐러드|멸치|죽)/)) return 'food-korean';
+  if (has(/(?:한식|국밥|갈비|삼겹살|한우|곱창|족발|보쌈|닭갈비|감자탕|냉면|칼국수|해장국|백반|찌개|청국장|고기집|고깃집|전집|맛있는전시회|돼지|치킨|떡볶이|분식|김밥|순대|닭발|닭도리탕|육회|식육|정육|불고기|제육|쭈꾸미|돈육|소고기|샤브샤브|쌀국수|추어탕|미꾸라지|생선국수|어탕|곰탕|매운탕|알탕|코다리|찜닭|삼계탕|닭한마리|막국수|옹심이|수육|두부|순두부|낙지|아구|게장|조개|복어|장어|생선회|수산|해물|도시락|샐러드|멸치|죽)/)) return 'food-korean';
   // A meal voucher is a reliable restaurant signal, but never enough to infer
   // a cuisine. Keep it in the neutral restaurant bucket.
   if (has(/(?:식사\s*권|식사\s*이용권|음식\s*이용권|다이닝|디너\s*\d|메뉴\s*(?:제공|체험|이용))/)) return 'food-restaurant';
@@ -39,24 +85,72 @@ export function classifyCampaignCategory(
   if (has(/(?:필라테스|피트니스|헬스장|헬스|pt\b|요가|수영|테니스|골프|운동)/i)) return 'health-fitness';
   if (has(/(?:영양제|유산균|비타민|홍삼|건강식품|프로바이오틱스|단백질|이노시톨|꿀|허니스틱)/)) return 'health-food';
   if (has(/(?:다이어트(?:\s*관리|\s*체험)?|체형\s*관리|슬리밍|비만\s*관리|부유방|림프순환|ems\b|체성분\s*분석)/i)) return 'beauty-body';
-  if (has(/(?:피부관리|에스테틱|왁싱|속눈썹|마사지|스파|풋케어|발관리|슬리밍|다이어트관리|윤곽관리|작은얼굴|태닝|탈모|족욕|테라피)/)) return 'beauty-spa';
+  if (has(/(?:피부관리|에스테틱|왁싱|속눈썹|마사지|스파|풋케어|발관리|슬리밍|다이어트관리|윤곽관리|작은얼굴|태닝|탈모|족욕|테라피|웨딩관리)/)) return 'beauty-spa';
   if (has(/(?:미용실|헤어|염색|펌|네일|두피|시술|커트|탈색|피어싱|눈썹|반영구|타투)/)) return 'beauty-salon';
-  if (has(/(?:\[\s*뷰티\s*\]|화장품|스킨케어|메이크업|토너|크림(?!치즈|라떼)|앰플|세럼|마스크팩|클렌징|선크림|선스크린|립스틱|쿠션|샴푸|바디워시|향수|네일폴리시|톤업|자외선|로션|미스트|립틴트|아이라이너|마스카라|파운데이션|멀티밤|스크럽|워시|스타일링\s*(?:매트\s*)?왁스|헤어왁스)/)) return 'beauty-cosmetics';
+  if (has(/(?:\[\s*뷰티\s*\]|화장품|스킨케어|메이크업|토너|크림(?!치즈|라떼)|앰플|세럼|에센스|트리트먼트|마스크팩|클렌징|선크림|선스크린|립스틱|쿠션|샴푸|바디워시|향수|네일폴리시|톤업|자외선|로션|미스트|립틴트|아이라이너|마스카라|파운데이션|멀티밤|스크럽|워시|스타일링\s*(?:매트\s*)?왁스|헤어왁스)/)) return 'beauty-cosmetics';
 
   if (has(/(?:도서|베스트셀러|소설|에세이|인터넷강의|인강|교육|학습|학습지|학원|교재|워크북)/)) return 'book';
   if (has(/(?:호텔|펜션|풀빌라|리조트|글램핑|게스트하우스|모텔|숙박|스테이)/)) return 'accommodation';
   if (has(/(?:공연|전시(?:\s|관|회|티켓)|박물관|미술관|연극|뮤지컬|콘서트|영화관)/)) return 'culture';
   if (has(/(?:여행|관광|투어|레저|테마파크|놀이공원|아쿠아리움|렌트카|서핑|요트|스노보드|패러글라이딩|캠핑카|스키(?:장|체험|\s)|스쿠버|다이빙|낚시|대마도|배편|면세점)/)) return 'travel';
-  if (has(/(?:원데이클래스|공방|도예|가죽공예|뜨개|드로잉|베이킹클래스|쿠킹클래스|사진촬영|방탈출|diy|만들기키트|체험키트|스포츠파크|키즈카페|키즈런|파티룸|공간\s*대여|룸\s*대여|키즈룸|셀프사진|사진관|롤러장|보드게임|노래방)/)) return 'hobby';
+  if (has(/(?:원데이클래스|공방|도예|가죽공예|뜨개|드로잉|베이킹클래스|쿠킹클래스|사진촬영|증명사진|프로필사진|우정사진|방탈출|diy|만들기키트|체험키트|스포츠파크|키즈카페|키즈런|파티룸|공간\s*대여|룸\s*대여|키즈룸|셀프사진|사진관|롤러장|보드게임|노래방)/)) return 'hobby';
 
-  if (has(/(?:유아|아동|아기|육아|기저귀|분유|젖병|유모차|카시트|베이비|산후)/)) return 'baby';
+  if (has(/(?:유아|아동|아기|육아|기저귀|분유|젖병|유모차|카시트|베이비|산후|이유식)/)) return 'baby';
   if (has(/(?:강아지|고양이|애견|반려동물|펫|사료|개껌|캣)/)) return 'pet';
-  if (has(/(?:의류|패션|옷가게|쇼룸|자켓|코트|셔츠|티셔츠|원피스|니트|바지|치마|아우터|아동복|파자마|양말)/)) return 'fashion-clothing';
-  if (has(/(?:가방|백팩|숄더백|신발|구두|운동화|스니커즈|모자|액세서리|악세사리|귀걸이|목걸이|시계|주얼리)/)) return 'fashion-accessory';
-  if (has(/(?:자동차|연료첨가제|차량용|블랙박스|타이어|엔진오일|세차|광택|유리발수|물왁스|주차장|발렛)/)) return 'life-auto';
+  if (has(/(?:의류|패션|옷가게|쇼룸|자켓|코트|셔츠|티셔츠|원피스|니트|바지|치마|아우터|아동복|파자마|양말|브라|브래지어|니플패치|니플밴드|맞춤정장|테일러)/)) return 'fashion-clothing';
+  if (has(/(?:가방|백팩|숄더백|크로스백|버킷백|신발|구두|운동화|스니커즈|모자|액세서리|악세사리|귀걸이|목걸이|시계|주얼리)/)) return 'fashion-accessory';
+  if (has(/(?:자동차|전시장\s*.*딜러|(?:bmw|벤츠|랜드로버|렉서스)\s*.*딜러|딜러\s*.*(?:bmw|벤츠|랜드로버|렉서스)|연료첨가제|차량용|블랙박스|타이어|엔진오일|세차|광택|유리발수|물왁스|주차장|발렛)/i)) return 'life-auto';
   if (has(/(?:가전|청소기|모니터|키보드|마우스|가습기|이어폰|헤드폰|스마트폰|충전기|디지털|안마기|태블릿|카메라|보조배터리|전기장판|세탁기)/)) return 'life-appliances';
   if (has(/(?:밀키트|신선식품|반찬|과일|조미료|가공식품|식품|커피원두)/)) return 'health-fresh';
   if (has(/(?:\[\s*생활\s*\]|세제|섬유유연제|치약|칫솔|화장지|물티슈|키친타월|행주|침구|베개|가구|의자|인테리어|식기|생활용품|수건|디퓨저|보온용품|전통과자|한과|주방용품|문구|다이어리|달력|반려용품|김서림|꽃다발|꽃집|플라워)/)) return 'life-goods';
   if (has(/(?:맛집|식당|음식점|레스토랑|뷔페|샤브|카레|해물|생선회|물회|횟집)/)) return 'food-korean';
   return 'etc';
+}
+
+/**
+ * Resolve a canonical category while retaining why that answer was chosen.
+ * A concrete source taxonomy wins; broad source labels only assist text
+ * matching, preventing a source's "맛집" label from becoming false "한식".
+ */
+export function resolveCampaignCategory(input: {
+  title?: string;
+  description?: string;
+  rawCategories?: string[];
+  dataSource?: 'list' | 'detail' | 'api';
+}): CategoryResolution {
+  const title = input.title || '';
+  const description = input.description || '';
+  const rawCategories = (input.rawCategories || []).filter(Boolean);
+  const sourceCategory = rawCategories.join(' > ').replace(/\s+/g, ' ').trim();
+  const sourceText = sourceCategory.toLowerCase();
+
+  for (const [pattern, category] of SOURCE_CATEGORY_RULES) {
+    if (pattern.test(sourceText)) {
+      return { category, sourceCategory, evidence: 'source-category', confidence: 'high', ruleVersion: CATEGORY_RULE_VERSION };
+    }
+  }
+
+  const category = classifyFromText(title, description, rawCategories);
+  if (category === 'etc') {
+    return { category, sourceCategory, evidence: 'unclassified', confidence: 'none', ruleVersion: CATEGORY_RULE_VERSION };
+  }
+
+  const detailLike = input.dataSource === 'detail' || input.dataSource === 'api';
+  const hasDescription = description.trim().length >= 3;
+  return {
+    category,
+    sourceCategory,
+    evidence: detailLike || hasDescription ? (detailLike ? 'detail-text' : 'list-text') : 'title',
+    confidence: detailLike ? 'high' : hasDescription ? 'medium' : 'low',
+    ruleVersion: CATEGORY_RULE_VERSION,
+  };
+}
+
+/** Backwards-compatible category-only facade for existing scrapers. */
+export function classifyCampaignCategory(
+  title = '',
+  description = '',
+  rawCategoryArray: string[] = [],
+): string {
+  return resolveCampaignCategory({ title, description, rawCategories: rawCategoryArray }).category;
 }

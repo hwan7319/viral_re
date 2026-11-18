@@ -62,6 +62,6 @@ await (async () => {
       } catch (err: any) {
         console.warn('[Parallel-Crawl] 모블 (모두의블로그) failed:', err.message);
       }
-    })();
+})();
 return collected;
 }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getRevuAuthToken } from './revu_auth';
-import { classifyCampaignCategory } from './category_classifier';
+import { resolveCampaignCategory } from './category_classifier';
 import { formatRevuMission } from './detail-scraper';
 
 export interface RevuLiveCampaign {
@@ -19,6 +19,10 @@ export interface RevuLiveCampaign {
   createdAt: string;
   updatedAt: string;
   mission?: string;
+  sourceCategory?: string;
+  categoryEvidence?: 'source-category' | 'detail-text' | 'list-text' | 'title' | 'unclassified' | 'legacy';
+  categoryConfidence?: 'high' | 'medium' | 'low' | 'none';
+  categoryRuleVersion?: string;
 }
 
 export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
@@ -132,7 +136,12 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
     }
 
     // Category matching using precision classifier
-    const category = classifyCampaignCategory(rawTitle, reward, item.category || []);
+    const categoryResolution = resolveCampaignCategory({
+      title: rawTitle,
+      description: reward,
+      rawCategories: Array.isArray(item.category) ? item.category : [String(item.category || '')],
+      dataSource: 'api',
+    });
 
     // Location extraction
     let location: string | null = null;
@@ -148,7 +157,7 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
       title: rawTitle,
       description: reward,
       platform,
-      category,
+      category: categoryResolution.category,
       location,
       campaignUrl: `https://www.revu.net/campaign/${id}`,
       imageUrl: thumbnail,
@@ -158,7 +167,11 @@ export async function fetchRevuLiveCampaigns(): Promise<RevuLiveCampaign[]> {
       endDate,
       createdAt: item.createdAt || now.toISOString(),
       updatedAt: item.updatedAt || now.toISOString(),
-      mission: formatRevuMission(item)
+      mission: formatRevuMission(item),
+      sourceCategory: categoryResolution.sourceCategory || undefined,
+      categoryEvidence: categoryResolution.evidence,
+      categoryConfidence: categoryResolution.confidence,
+      categoryRuleVersion: categoryResolution.ruleVersion,
     });
   });
 

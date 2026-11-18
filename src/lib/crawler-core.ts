@@ -807,7 +807,11 @@ export async function runCrawlerCore(): Promise<{ inserted: number; updated: num
         endDate: c.endDate,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
-        mission: c.mission
+        mission: c.mission,
+        sourceCategory: c.sourceCategory,
+        categoryEvidence: c.categoryEvidence,
+        categoryConfidence: c.categoryConfidence,
+        categoryRuleVersion: c.categoryRuleVersion,
       });
     });
     console.log(`[Core] Successfully fetched ${revuLiveList.length} campaigns from REVU`);

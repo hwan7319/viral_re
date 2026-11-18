@@ -22,13 +22,14 @@ test('regression suite', async t => {
   const { POST: bookmark } = await import('../../src/app/api/user/bookmark/route');
   const { koreanDate, deadlineFromText } = await import('../../src/lib/campaign-values');
   const { estimateInitialMonthlyPosts, summarizeBlogSample, summarizeAvailableMonthlyPosts } = await import('../../src/lib/blog-stats');
-  const { classifyCampaignCategory } = await import('../../src/lib/category_classifier');
+  const { classifyCampaignCategory, resolveCampaignCategory, CATEGORY_RULE_VERSION } = await import('../../src/lib/category_classifier');
   const { detectCategory } = await import('../../src/lib/crawler-core');
   const { buildCompositeKeywordHints, calculateRecommendationScore, isDirectKeywordMatch, normalizeKeywordQuery } = await import('../../src/lib/keyword-engine');
   const { inferCampaignLocation, parseCountText } = await import('../../src/lib/scraper-utils');
   const { ensureFilterValue, hasAllFilterValues, toggleFilterGroup, toggleFilterValue, toggleScopedLocation, selectProvinceLocation } = await import('../../src/lib/filter-selection');
-  const { parseCloudReviewDetail, parseCloudReviewMainImage } = await import('../../src/lib/scrapers/search/cloudreview');
+  const { parseCloudReviewDetail, parseCloudReviewMainImage, extractCloudReviewSourceCategory } = await import('../../src/lib/scrapers/search/cloudreview');
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
+  const { extractAssaViewCategoryContext, resolveAssaViewDetailCategory } = await import('../../src/lib/scrapers/search/assaview_pages');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
   const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
@@ -190,6 +191,19 @@ test('regression suite', async t => {
     await db.insertOrUpdateCampaigns([fixture('provenance', { dataSource: 'list' })]);
     assert.equal((await db.getCampaignById('provenance'))?.dataSource, 'detail');
   });
+  await t.test('a weaker list category cannot replace a detail-backed category', async () => {
+    await db.insertOrUpdateCampaigns([fixture('category-provenance', {
+      title: '상호 미공개', description: '마라탕 이용권', category: 'food-chinese', dataSource: 'detail',
+      categoryEvidence: 'detail-text', categoryConfidence: 'high',
+    })]);
+    await db.insertOrUpdateCampaigns([fixture('category-provenance', {
+      title: '상호 미공개', description: '', category: 'food-restaurant', dataSource: 'list',
+      categoryEvidence: 'title', categoryConfidence: 'low',
+    })]);
+    const saved = await db.getCampaignById('category-provenance');
+    assert.equal(saved?.category, 'food-chinese');
+    assert.equal(saved?.categoryEvidence, 'detail-text');
+  });
   await t.test('list refresh cannot erase verified quota or location', async () => {
     await db.insertOrUpdateCampaigns([fixture('verified-fields', { location: '서울 강남구', limitCount: 8, applyCount: 12, dataSource: 'detail' })]);
     await db.insertOrUpdateCampaigns([fixture('verified-fields', { location: undefined, limitCount: 0, applyCount: 0, dataSource: 'list' })]);
@@ -313,6 +327,21 @@ test('regression suite', async t => {
     const html = '<img src="/static/new/image/insta_symbol.png"><img src="https://api.cloudreview.co.kr/file/17216/main_image/main.jpg">';
     assert.equal(parseCloudReviewMainImage(html), 'https://api.cloudreview.co.kr/file/17216/main_image/main.jpg');
   });
+  await t.test('CloudReview published product tag becomes high-confidence source evidence', () => {
+    const sourceCategory = extractCloudReviewSourceCategory('[식품] 흑돼지고추장주물럭 940g');
+    assert.equal(sourceCategory, '식품');
+    const resolved = resolveCampaignCategory({ title: '[식품] 흑돼지고추장주물럭 940g', rawCategories: [sourceCategory!], dataSource: 'list' });
+    assert.equal(resolved.category, 'health-fresh');
+    assert.equal(resolved.evidence, 'source-category');
+    assert.equal(resolved.confidence, 'high');
+  });
+  await t.test('AssaView detail tags provide category context without using page navigation', () => {
+    const context = extractAssaViewCategoryContext('<nav>#맛집</nav><section class="guide_background"><div class="info_box"><div class="head_text">해시태그</div><div class="inner_box">#광고 #니플패치 #니플밴드</div></div></section>');
+    assert.equal(context.includes('#맛집'), false);
+    assert.equal(classifyCampaignCategory('방탄꼭지', context), 'fashion-clothing');
+    assert.equal(resolveAssaViewDetailCategory('방탄꼭지', '', context)?.category, 'fashion-clothing');
+    assert.equal(resolveAssaViewDetailCategory('빨래집게', '', '호주 여행 추천')?.category, undefined);
+  });
   await t.test('ReviewPlace detail keeps its published recruitment end date', () => {
     const html = '<main>모집기간 09.16 ~ 09.28 리뷰어발표 09.29</main>';
     assert.equal(parseReviewPlaceDeadline(html, new Date('2026-09-16T00:00:00+09:00')), '2026-09-28');
@@ -362,6 +391,36 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('키즈 여행 워크북', '교재 1권'), 'book');
     assert.equal(classifyCampaignCategory('그리즐리', '10만원 시술권 / 전시술 가능'), 'beauty-salon');
     assert.equal(classifyCampaignCategory('맛있는전시회', '3만원 체험권'), 'food-korean');
+    assert.equal(classifyCampaignCategory('[실크에센스] 에이지제로', '실크 에센스'), 'beauty-cosmetics');
+    assert.equal(classifyCampaignCategory('결이고은 본사', '웨딩관리'), 'beauty-spa');
+    assert.equal(classifyCampaignCategory('BMW 분당전시장 김태우 딜러', '포인트 지급'), 'life-auto');
+    assert.equal(classifyCampaignCategory('사랑이야기스튜디오', '증명사진, 우정사진, 프로필사진 중 택1'), 'hobby');
+    assert.equal(classifyCampaignCategory('킹스맨테일러 평택점', '고급 맞춤 정장'), 'fashion-clothing');
+    assert.equal(classifyCampaignCategory('랜드로버 부산전시장 이준서 딜러', '포인트 지급'), 'life-auto');
+    assert.equal(classifyCampaignCategory('미니 분당전시장 한승헌 딜러', '포인트 지급'), 'life-auto');
+    assert.equal(classifyCampaignCategory('보리향청국장', '메뉴 3만원 이용권'), 'food-korean');
+    assert.equal(classifyCampaignCategory('에이지제로', '안티링클 바쿠치올 멀티 트리트먼트'), 'beauty-cosmetics');
+    assert.equal(classifyCampaignCategory('홈앤다올', '스웨이드 버킷백'), 'fashion-accessory');
+  });
+  await t.test('category resolution retains source taxonomy and never guesses a leaf from a broad source label', () => {
+    const sourceChinese = resolveCampaignCategory({
+      title: '상호 미공개', description: '3만원 이용권', rawCategories: ['맛집', '중식'], dataSource: 'api',
+    });
+    assert.deepEqual(sourceChinese, {
+      category: 'food-chinese', sourceCategory: '맛집 > 중식', evidence: 'source-category', confidence: 'high', ruleVersion: CATEGORY_RULE_VERSION,
+    });
+
+    const broadFood = resolveCampaignCategory({
+      title: '상호 미공개', description: '3만원 식사권', rawCategories: ['맛집'], dataSource: 'list',
+    });
+    assert.equal(broadFood.category, 'food-restaurant');
+    assert.equal(broadFood.evidence, 'list-text');
+    assert.equal(broadFood.confidence, 'medium');
+
+    const titleOnly = resolveCampaignCategory({ title: '봉곡대구막창', dataSource: 'list' });
+    assert.equal(titleOnly.category, 'food-meat');
+    assert.equal(titleOnly.evidence, 'title');
+    assert.equal(titleOnly.confidence, 'low');
   });
   await t.test('detail category filters do not expand into their parent category', () => {
     assert.deepEqual(db.CATEGORY_GROUP_MAP['food-meat'], ['food-meat']);

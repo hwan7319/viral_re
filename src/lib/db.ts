@@ -1,5 +1,5 @@
 import { koreanDate } from './campaign-values';
-import { classifyCampaignCategory } from './category_classifier';
+import { resolveCampaignCategory } from './category_classifier';
 export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
   'food': ['food', 'food-korean', 'food-western', 'food-japanese', 'food-chinese', 'food-restaurant', 'food-cafe', 'food-pub', 'food-snack', 'food-meat', 'food-omakase', 'food-foreign', '맛집'],
   'food-korean': ['food-korean'],
@@ -122,6 +122,11 @@ export interface Campaign {
   createdAt: string;   // 수집일 (ISO 8601)
   updatedAt: string;   // 최근 갱신일 (ISO 8601)
   dataSource?: 'list' | 'detail' | 'api'; // 값 검증 근거
+  /** Source taxonomy is retained separately from Viral-Re's canonical category. */
+  sourceCategory?: string;
+  categoryEvidence?: 'source-category' | 'detail-text' | 'list-text' | 'title' | 'unclassified' | 'legacy';
+  categoryConfidence?: 'high' | 'medium' | 'low' | 'none';
+  categoryRuleVersion?: string;
   searchKeywords?: string; // 수집 당시의 검색 키워드 매핑 태그 (예: ",치킨,삼겹살,")
   mission?: string;    // 실제 업체측 리뷰어 미션 안내 / 가이드라인 (예: "지정 키워드 3개 포함, 사진 10장 및 동영상 1개, 지도 첨부 필수")
 }
@@ -200,7 +205,11 @@ async function initializeDB(): Promise<Database> {
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       searchKeywords TEXT,
-      dataSource TEXT DEFAULT 'list'
+      dataSource TEXT DEFAULT 'list',
+      sourceCategory TEXT,
+      categoryEvidence TEXT,
+      categoryConfidence TEXT,
+      categoryRuleVersion TEXT
     );
 
     CREATE TABLE IF NOT EXISTS crawling_logs (
@@ -276,6 +285,14 @@ async function initializeDB(): Promise<Database> {
   try {
     await dbInstance.exec("ALTER TABLE campaigns ADD COLUMN dataSource TEXT DEFAULT 'list'");
   } catch (e) {}
+  for (const statement of [
+    'ALTER TABLE campaigns ADD COLUMN sourceCategory TEXT',
+    'ALTER TABLE campaigns ADD COLUMN categoryEvidence TEXT',
+    'ALTER TABLE campaigns ADD COLUMN categoryConfidence TEXT',
+    'ALTER TABLE campaigns ADD COLUMN categoryRuleVersion TEXT',
+  ]) {
+    try { await dbInstance.exec(statement); } catch (e) {}
+  }
 
   // Empty databases may be seeded; original deadlines must never be extended.
   try {
@@ -539,9 +556,39 @@ function isDummyCampaignItem(c: Campaign): boolean {
 // 목록 수집기는 제목만으로도 원래 분류를 알 수 있는 경우가 많다. `etc`와 과거 `general`은
 // 최후의 보류값으로만 남기고, 업서트 경계에서 한 번 더 표준 분류를 적용한다.
 function normalizeCampaignCategory(campaign: Campaign): Campaign {
-  if (campaign.category !== 'etc' && campaign.category !== 'general') return campaign;
-  const inferred = classifyCampaignCategory(campaign.title, campaign.description);
-  return inferred === 'etc' ? { ...campaign, category: 'etc' } : { ...campaign, category: inferred };
+  const rawCategories = (campaign.sourceCategory || '').split(/\s*>\s*|\s*\/\s*/).map(value => value.trim()).filter(Boolean);
+  const resolved = resolveCampaignCategory({
+    title: campaign.title,
+    description: campaign.description,
+    rawCategories,
+    dataSource: campaign.dataSource,
+  });
+  // A specific source taxonomy is stronger than a previous heuristic. For an
+  // already explicit canonical category, preserve it unless a source category
+  // proves a more precise replacement.
+  const shouldReplace = campaign.category === 'etc' || campaign.category === 'general' || resolved.evidence === 'source-category';
+  return {
+    ...campaign,
+    category: shouldReplace ? resolved.category : campaign.category,
+    sourceCategory: campaign.sourceCategory || resolved.sourceCategory || undefined,
+    categoryEvidence: campaign.categoryEvidence || (shouldReplace ? resolved.evidence : 'legacy'),
+    categoryConfidence: campaign.categoryConfidence || (shouldReplace ? resolved.confidence : 'medium'),
+    categoryRuleVersion: campaign.categoryRuleVersion || resolved.ruleVersion,
+  };
+}
+
+const categoryEvidenceRank: Record<string, number> = {
+  unclassified: 0,
+  legacy: 1,
+  title: 2,
+  'list-text': 3,
+  'detail-text': 4,
+  'source-category': 5,
+};
+
+function shouldKeepIncomingCategory(existing: Pick<Campaign, 'categoryEvidence'>, incoming: Pick<Campaign, 'categoryEvidence'>) {
+  return (categoryEvidenceRank[incoming.categoryEvidence || 'unclassified'] || 0)
+    >= (categoryEvidenceRank[existing.categoryEvidence || 'legacy'] || 0);
 }
 
 // 다량의 캠페인 데이터 Upsert (기존 키워드 태그 누적 결합 처리)
@@ -558,6 +605,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
       if (isDummyCampaignItem(c)) continue;
       const idx = globalRef.memoryCampaigns.findIndex((x: Campaign) => x.id === c.id);
       if (idx > -1) {
+        const existingCampaign = globalRef.memoryCampaigns[idx] as Campaign;
         let finalKeywords = globalRef.memoryCampaigns[idx].searchKeywords || '';
         if (c.searchKeywords) {
           const newKeywords = c.searchKeywords.split(',').filter(Boolean);
@@ -566,22 +614,28 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           finalKeywords = currentKeywordsSet.size > 0 ? `,${Array.from(currentKeywordsSet).join(',')},` : '';
         }
 
-        const existingDesc = globalRef.memoryCampaigns[idx].description || '';
-        const existingTitle = globalRef.memoryCampaigns[idx].title || '';
+        const existingDesc = existingCampaign.description || '';
+        const existingTitle = existingCampaign.title || '';
         let finalDesc = c.description;
         if (existingDesc && existingDesc !== existingTitle && (!c.description || c.description === c.title || c.description.startsWith(c.title))) {
           finalDesc = existingDesc;
         }
         const sourceRank: Record<string, number> = { list: 1, api: 2, detail: 3 };
-        const existingSource = globalRef.memoryCampaigns[idx].dataSource || 'list';
+        const existingSource = existingCampaign.dataSource || 'list';
         const incomingSource = c.dataSource || 'list';
         const finalSource = (sourceRank[existingSource] || 1) > (sourceRank[incomingSource] || 1) ? existingSource : incomingSource;
-        const finalLimitCount = c.limitCount > 0 ? c.limitCount : globalRef.memoryCampaigns[idx].limitCount;
-        const finalApplyCount = c.limitCount > 0 || c.applyCount > 0 ? c.applyCount : globalRef.memoryCampaigns[idx].applyCount;
+        const finalLimitCount = c.limitCount > 0 ? c.limitCount : existingCampaign.limitCount;
+        const finalApplyCount = c.limitCount > 0 || c.applyCount > 0 ? c.applyCount : existingCampaign.applyCount;
+        const useIncomingCategory = shouldKeepIncomingCategory(existingCampaign, c);
         
         globalRef.memoryCampaigns[idx] = {
-          ...globalRef.memoryCampaigns[idx],
+          ...existingCampaign,
           ...c,
+          category: useIncomingCategory ? c.category : existingCampaign.category,
+          categoryEvidence: useIncomingCategory ? c.categoryEvidence : existingCampaign.categoryEvidence,
+          categoryConfidence: useIncomingCategory ? c.categoryConfidence : existingCampaign.categoryConfidence,
+          categoryRuleVersion: useIncomingCategory ? c.categoryRuleVersion : existingCampaign.categoryRuleVersion,
+          sourceCategory: c.sourceCategory || existingCampaign.sourceCategory,
           description: finalDesc,
           location: c.location || globalRef.memoryCampaigns[idx].location,
           limitCount: finalLimitCount,
@@ -616,7 +670,7 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
     for (const input of campaigns) {
       const c = normalizeCampaignCategory(input);
       if (isDummyCampaignItem(c)) continue;
-      const existing = await db.get('SELECT id, title, description, imageUrl, searchKeywords, endDate, dataSource, location, limitCount, applyCount FROM campaigns WHERE id = ?', [c.id]);
+      const existing = await db.get('SELECT id, title, description, imageUrl, searchKeywords, endDate, dataSource, location, limitCount, applyCount, category, sourceCategory, categoryEvidence, categoryConfidence, categoryRuleVersion FROM campaigns WHERE id = ?', [c.id]);
 
       if (existing) {
         let finalKeywords = existing.searchKeywords || '';
@@ -643,6 +697,11 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           : c.imageUrl;
         const finalLimitCount = c.limitCount > 0 ? c.limitCount : Number(existing.limitCount || 0);
         const finalApplyCount = c.limitCount > 0 || c.applyCount > 0 ? c.applyCount : Number(existing.applyCount || 0);
+        const useIncomingCategory = shouldKeepIncomingCategory(existing as Campaign, c);
+        const finalCategory = useIncomingCategory ? c.category : existing.category;
+        const finalCategoryEvidence = useIncomingCategory ? c.categoryEvidence : existing.categoryEvidence;
+        const finalCategoryConfidence = useIncomingCategory ? c.categoryConfidence : existing.categoryConfidence;
+        const finalCategoryRuleVersion = useIncomingCategory ? c.categoryRuleVersion : existing.categoryRuleVersion;
 
         await db.run(
           `UPDATE campaigns SET 
@@ -650,14 +709,20 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
             location = ?, campaignUrl = ?, imageUrl = ?, targetSite = ?, 
             limitCount = ?, applyCount = ?, startDate = ?, endDate = ?, 
             updatedAt = ?, searchKeywords = ?, dataSource = ?,
-            mission = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE mission END
+            mission = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE mission END,
+            sourceCategory = COALESCE(?, sourceCategory),
+            categoryEvidence = ?, categoryConfidence = ?, categoryRuleVersion = ?
           WHERE id = ?`,
           [
-            c.title, finalDesc, c.platform, c.category,
+            c.title, finalDesc, c.platform, finalCategory,
             c.location || existing.location || null, c.campaignUrl, finalImageUrl, c.targetSite,
             finalLimitCount, finalApplyCount, c.startDate || null, c.endDate || existing.endDate,
             new Date().toISOString(), finalKeywords, finalSource,
             c.mission || null, c.mission || null, c.mission || null,
+            c.sourceCategory || existing.sourceCategory || null,
+            finalCategoryEvidence || 'legacy',
+            finalCategoryConfidence || 'medium',
+            finalCategoryRuleVersion || null,
             c.id
           ]
         );
@@ -667,13 +732,15 @@ async function writeCampaigns(campaigns: Campaign[]): Promise<{ inserted: number
           `INSERT INTO campaigns (
             id, title, description, platform, category, location, 
             campaignUrl, imageUrl, targetSite, limitCount, applyCount, 
-            startDate, endDate, createdAt, updatedAt, searchKeywords, mission, dataSource
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            startDate, endDate, createdAt, updatedAt, searchKeywords, mission, dataSource,
+            sourceCategory, categoryEvidence, categoryConfidence, categoryRuleVersion
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             c.id, c.title, c.description, c.platform, c.category,
             c.location || null, c.campaignUrl, c.imageUrl, c.targetSite,
             c.limitCount, c.applyCount, c.startDate || null, c.endDate,
-            c.createdAt, c.updatedAt, c.searchKeywords || null, c.mission || null, c.dataSource || 'list'
+            c.createdAt, c.updatedAt, c.searchKeywords || null, c.mission || null, c.dataSource || 'list',
+            c.sourceCategory || null, c.categoryEvidence || 'unclassified', c.categoryConfidence || 'none', c.categoryRuleVersion || null
           ]
         );
         inserted++;

@@ -1,9 +1,15 @@
 import type { Campaign } from '../../db';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { HEADERS, detectCategory, detectPlatform, inferCampaignLocation } from '../../scraper-utils';
+import { HEADERS, detectPlatform, inferCampaignLocation } from '../../scraper-utils';
+import { resolveCampaignCategory } from '../../category_classifier';
 
 type CloudReviewDetail = Pick<Campaign, 'endDate' | 'applyCount' | 'limitCount' | 'platform' | 'location'>;
+
+/** CloudReview's public card tag is a first-party product family, not title noise. */
+export function extractCloudReviewSourceCategory(title: string, description = ''): string | undefined {
+  return `${title} ${description}`.match(/\[\s*(식품|생활|리빙|뷰티|화장품|가전|디지털|반려동물|유아|패션)\s*\]/i)?.[1];
+}
 
 export function parseCloudReviewDetail(text: string, fallbackPlatform: Campaign['platform']): CloudReviewDetail {
   const $ = cheerio.load(text);
@@ -53,6 +59,16 @@ async function enrichCampaignDetails(campaigns: Campaign[]): Promise<void> {
         if (facts.location) campaign.location = facts.location;
         if (mainImage) campaign.imageUrl = mainImage;
         campaign.dataSource = 'detail';
+        const resolved = resolveCampaignCategory({
+          title: campaign.title,
+          description: campaign.description,
+          rawCategories: campaign.sourceCategory ? [campaign.sourceCategory] : [],
+          dataSource: 'detail',
+        });
+        campaign.category = resolved.category;
+        campaign.categoryEvidence = resolved.evidence;
+        campaign.categoryConfidence = resolved.confidence;
+        campaign.categoryRuleVersion = resolved.ruleVersion;
       } catch (error: any) {
         console.warn(`[Parallel-Crawl] 클라우드리뷰 상세 ${campaign.id} skipped:`, error.message);
       }
@@ -96,7 +112,13 @@ await (async () => {
 
             if (collected.some(item => item.id === `cr-${cpId}`)) return;
             const fullUrl = `https://cloudreview.co.kr/campaign/detail/${cpId}`;
-            const category = detectCategory(fullSearchText, fullSearchText);
+            const sourceCategory = extractCloudReviewSourceCategory(cleanTitle, cleanDesc);
+            const resolution = resolveCampaignCategory({
+              title: cleanTitle,
+              description: cleanDesc,
+              rawCategories: sourceCategory ? [sourceCategory] : [],
+              dataSource: 'list',
+            });
             const platform = detectPlatform(fullSearchText, fullSearchText);
 
             collected.push({
@@ -104,7 +126,7 @@ await (async () => {
               title: cleanTitle,
               description: cleanDesc,
               platform,
-              category,
+              category: resolution.category,
               location: inferCampaignLocation(cleanTitle, cleanDesc, platform),
               campaignUrl: fullUrl,
               imageUrl: img || 'https://viral-re.co.kr/icon.png',
@@ -114,7 +136,11 @@ await (async () => {
               startDate: now.toISOString().split('T')[0],
               endDate: '',
               createdAt: now.toISOString(),
-              updatedAt: now.toISOString()
+              updatedAt: now.toISOString(),
+              sourceCategory,
+              categoryEvidence: resolution.evidence,
+              categoryConfidence: resolution.confidence,
+              categoryRuleVersion: resolution.ruleVersion,
             });
           }
         });

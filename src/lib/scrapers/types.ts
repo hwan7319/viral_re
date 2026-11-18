@@ -15,6 +15,11 @@ export interface ScrapedCampaign {
   createdAt: string;
   updatedAt: string;
   dataSource?: 'list' | 'detail' | 'api';
+  /** The site's taxonomy as published; never replace it with our display label. */
+  sourceCategory?: string;
+  categoryEvidence?: 'source-category' | 'detail-text' | 'list-text' | 'title' | 'unclassified' | 'legacy';
+  categoryConfidence?: 'high' | 'medium' | 'low' | 'none';
+  categoryRuleVersion?: string;
   mission?: string;
 }
 

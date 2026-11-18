@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ScrapedCampaign, SiteScraper } from './types';
+import { classifyCampaignCategory } from '../category_classifier';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -18,15 +19,10 @@ function detectPlatform(title: string, desc: string): string {
 }
 
 function detectCategory(title: string, desc: string): string {
-  const text = (title + ' ' + desc).toLowerCase();
-  if (text.includes('카페') || text.includes('디저트') || text.includes('베이커리') || text.includes('빵') || text.includes('음료') || text.includes('커피')) return 'food-cafe';
-  if (text.includes('술집') || text.includes('주점') || text.includes('와인') || text.includes('맥주') || text.includes('하이볼') || text.includes('이자카야')) return 'food-pub';
-  if (text.includes('마라탕') || text.includes('중식') || text.includes('훠궈') || text.includes('짜장') || text.includes('짬뽕')) return 'food-chinese';
-  if (text.includes('일식') || text.includes('초밥') || text.includes('스시') || text.includes('돈까스')) return 'food-japanese';
-  if (text.includes('양식') || text.includes('파스타') || text.includes('스테이크') || text.includes('피자') || text.includes('버거')) return 'food-western';
-  if (text.includes('삼겹살') || text.includes('고기') || text.includes('한식') || text.includes('한우') || text.includes('갈비') || text.includes('치킨') || text.includes('해물') || text.includes('아구찜') || text.includes('식사권') || text.includes('체험권')) return 'food-korean';
-  if (text.includes('화장품') || text.includes('크림') || text.includes('뷰티') || text.includes('피부') || text.includes('에스테틱') || text.includes('헤어') || text.includes('미용실') || text.includes('샴푸')) return 'beauty-skin';
-  return 'life-goods';
+  // Do not maintain a weaker site-local taxonomy. All sources must use the
+  // same conservative classifier so an unknown is visible as `etc`, not
+  // silently presented as 생활용품.
+  return classifyCampaignCategory(title, desc);
 }
 
 function isDummyCampaign(title: string, desc: string): boolean {
