@@ -105,6 +105,39 @@ function isVisitCampaign(campaign: Campaign) {
   return (!!campaign.location?.trim() || /방문\s*안내|방문\s*가능|매장\s*위치|방문\s*주소/.test(campaign.mission || '')) && !isDeliveryCampaign(campaign);
 }
 
+/**
+ * Some sources publish one program as many app IDs (different slots/options).
+ * Keep raw rows for traceability, but show one representative in search when
+ * source, normalized title, and location are identical.
+ */
+function dedupeSearchResults(campaigns: Campaign[]): Campaign[] {
+  const selected = new Map<string, Campaign>();
+  const normalized = (value?: string) => (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const isBetterRepresentative = (candidate: Campaign, current: Campaign) => {
+    const candidateVerified = candidate.dataSource === 'detail' || candidate.dataSource === 'api';
+    const currentVerified = current.dataSource === 'detail' || current.dataSource === 'api';
+    if (candidateVerified !== currentVerified) return candidateVerified;
+    const candidateDescriptionLength = (candidate.description || '').replace(/\s+/g, '').length;
+    const currentDescriptionLength = (current.description || '').replace(/\s+/g, '').length;
+    if (candidateDescriptionLength !== currentDescriptionLength) return candidateDescriptionLength > currentDescriptionLength;
+    const candidateUpdatedAt = Date.parse(candidate.updatedAt || '') || 0;
+    const currentUpdatedAt = Date.parse(current.updatedAt || '') || 0;
+    return candidateUpdatedAt !== currentUpdatedAt ? candidateUpdatedAt > currentUpdatedAt : candidate.id > current.id;
+  };
+  for (const campaign of campaigns) {
+    // The duplicate app-id pattern has been verified for OhMyBlog. Restricting
+    // collapse to this source prevents hiding legitimately separate campaigns
+    // from other providers until each provider has an equivalent contract.
+    const canCollapse = normalized(campaign.targetSite) === '오마이블로그';
+    const key = canCollapse
+      ? [normalized(campaign.targetSite), normalized(campaign.title), normalized(campaign.location)].join('|')
+      : campaign.id;
+    const existing = selected.get(key);
+    if (!existing || isBetterRepresentative(campaign, existing)) selected.set(key, campaign);
+  }
+  return [...selected.values()];
+}
+
 export interface Campaign {
   id: string;          // 고유 ID (예: revu_12345)
   title: string;       // 캠페인 제목
@@ -399,6 +432,7 @@ export async function queryCampaigns(filters: {
     const types = filterValues(filters.type);
     if (types.length) result = result.filter(c => types.some(type => type === 'visit' ? isVisitCampaign(c) : type === 'delivery' && isDeliveryCampaign(c)));
 
+    result = dedupeSearchResults(result);
     // 6. 정렬
     const nowStr = koreanDate();
     if (filters.sortBy === 'endDate') {
@@ -538,7 +572,7 @@ export async function queryCampaigns(filters: {
       }
     }
   }
-  return rows;
+  return dedupeSearchResults(rows);
 }
 
 function isDummyCampaignItem(c: Campaign): boolean {

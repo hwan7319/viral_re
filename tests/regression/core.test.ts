@@ -401,6 +401,19 @@ test('regression suite', async t => {
     assert.equal(classifyCampaignCategory('보리향청국장', '메뉴 3만원 이용권'), 'food-korean');
     assert.equal(classifyCampaignCategory('에이지제로', '안티링클 바쿠치올 멀티 트리트먼트'), 'beauty-cosmetics');
     assert.equal(classifyCampaignCategory('홈앤다올', '스웨이드 버킷백'), 'fashion-accessory');
+    assert.equal(classifyCampaignCategory('남도 생선구이', '3만원 체험권'), 'food-korean');
+    assert.equal(classifyCampaignCategory('자갈치시락국', '씨락국 2그릇 체험권'), 'food-korean');
+  });
+  await t.test('OhMyBlog repeated application slots are collapsed only in search results', async () => {
+    await db.insertOrUpdateCampaigns([
+      fixture('ohmy-slot-a', { title: '동일 프로그램', targetSite: '오마이블로그', location: '서울 강남구', description: '짧은 제공 혜택', dataSource: 'list' }),
+      fixture('ohmy-slot-b', { title: '동일 프로그램', targetSite: '오마이블로그', location: '서울 강남구', description: '더 자세한 제공 혜택과 이용 안내', dataSource: 'detail', updatedAt: '2026-02-01T00:00:00Z' }),
+      fixture('other-source-same-title', { title: '동일 프로그램', targetSite: '다른 출처', location: '서울 강남구', description: '별도 캠페인' }),
+    ]);
+    const results = await db.queryCampaigns({ search: '동일 프로그램' });
+    assert.deepEqual(results.map(campaign => campaign.id).sort(), ['ohmy-slot-b', 'other-source-same-title']);
+    // Search-only dedupe must not delete the separately traceable source rows.
+    assert.equal((await db.getCampaignById('ohmy-slot-a'))?.id, 'ohmy-slot-a');
   });
   await t.test('category resolution retains source taxonomy and never guesses a leaf from a broad source label', () => {
     const sourceChinese = resolveCampaignCategory({
