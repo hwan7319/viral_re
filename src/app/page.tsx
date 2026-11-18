@@ -29,25 +29,12 @@ const TYPE_LABELS = { visit: '방문형', delivery: '배송형' };
 const CATEGORY_LABELS: Record<string, string> = { 'food-korean': '한식', 'food-western': '양식', 'food-japanese': '일식', 'food-chinese': '중식', 'food-restaurant': '한식/맛집', 'food-foreign': '양식/일식/중식', 'food-cafe': '카페/디저트', 'food-pub': '술집/주점', 'food-snack': '분식', 'food-meat': '육류/구이', 'food-omakase': '오마카세', 'beauty-cosmetics': '화장품', 'beauty-salon': '헤어/네일', 'beauty-spa': '피부/에스테틱', 'beauty-body': '다이어트/체형', 'health-fitness': '헬스/피트니스', 'health-food': '영양제/건강식품', 'health-medical': '병원/의료', accommodation: '숙박', travel: '여행/레저', culture: '문화/공연', 'fashion-clothing': '의류/패션', 'fashion-accessory': '패션잡화', baby: '유아/육아', 'life-goods': '생활용품', 'health-fresh': '밀키트/식품', 'life-appliances': '가전/디지털', 'life-auto': '자동차', pet: '반려동물', book: '도서/교육', hobby: '취미/클래스/공간', 'service-fortune': '사주/타로', etc: '기타' };
 const PLATFORM_LABELS: Record<string, string> = { blog: '네이버 블로그', clip: '네이버 클립', 'blog+instagram': '네이버&인스타', instagram: '인스타그램', youtube: '유튜브', tiktok: '틱톡', coupang: '쿠팡 체험단' };
 
-type SavedSearchClient = {
-  id: string;
-  name: string;
-  search: string;
-  platform: string;
-  category: string;
-  location: string;
-  targetSite: string;
-  type: string;
-  lastSeenAt: string;
-  newCampaignCount: number;
-};
-
 const CATEGORY_FILTER_GROUPS = [
-  { title: '맛집 / 디저트 / 주점', options: [{ key: 'food-korean', label: '한식' }, { key: 'food-western', label: '양식' }, { key: 'food-japanese', label: '일식' }, { key: 'food-chinese', label: '중식' }, { key: 'food-cafe', label: '카페/디저트' }, { key: 'food-pub', label: '술집/주점' }, { key: 'food-snack', label: '분식' }, { key: 'food-meat', label: '육류/구이' }, { key: 'food-omakase', label: '오마카세' }] },
-  { title: '뷰티 / 미용 / 헬스', options: [{ key: 'beauty-cosmetics', label: '화장품/스킨케어' }, { key: 'beauty-salon', label: '헤어/네일/속눈썹' }, { key: 'beauty-spa', label: '피부/에스테틱' }, { key: 'beauty-body', label: '다이어트/체형' }, { key: 'health-fitness', label: '헬스/피트니스' }, { key: 'health-food', label: '영양제/건강식품' }, { key: 'health-medical', label: '병원/의료' }] },
-  { title: '상담 / 서비스', options: [{ key: 'service-fortune', label: '사주/타로' }] },
-  { title: '여행 / 숙박 / 문화', options: [{ key: 'accommodation', label: '숙박 (호텔/펜션)' }, { key: 'travel', label: '여행/레저/관광' }, { key: 'culture', label: '문화/공연/전시' }] },
-  { title: '패션 / 생활 / 디지털 / 펫 / 기타', options: [{ key: 'fashion-clothing', label: '의류/패션' }, { key: 'fashion-accessory', label: '신발/가방/잡화' }, { key: 'baby', label: '유아동/육아' }, { key: 'life-goods', label: '생활용품/인테리어' }, { key: 'health-fresh', label: '밀키트/신선식품' }, { key: 'life-appliances', label: '가전/디지털' }, { key: 'life-auto', label: '자동차' }, { key: 'pet', label: '반려동물/애견' }, { key: 'book', label: '도서/교육' }, { key: 'hobby', label: '취미/클래스' }, { key: 'etc', label: '기타' }] },
+  { title: '🍽️ 맛집 / 디저트 / 주점', options: [{ key: 'food-korean', label: '한식' }, { key: 'food-western', label: '양식' }, { key: 'food-japanese', label: '일식' }, { key: 'food-chinese', label: '중식' }, { key: 'food-cafe', label: '카페/디저트' }, { key: 'food-pub', label: '술집/주점' }, { key: 'food-snack', label: '분식' }, { key: 'food-meat', label: '육류/구이' }, { key: 'food-omakase', label: '오마카세' }] },
+  { title: '✨ 뷰티 / 미용 / 헬스', options: [{ key: 'beauty-cosmetics', label: '화장품/스킨케어' }, { key: 'beauty-salon', label: '헤어/네일/속눈썹' }, { key: 'beauty-spa', label: '피부/에스테틱' }, { key: 'beauty-body', label: '다이어트/체형' }, { key: 'health-fitness', label: '헬스/피트니스' }, { key: 'health-food', label: '영양제/건강식품' }, { key: 'health-medical', label: '병원/의료' }] },
+  { title: '🔮 상담 / 서비스', options: [{ key: 'service-fortune', label: '사주/타로' }] },
+  { title: '🧭 여행 / 숙박 / 문화', options: [{ key: 'accommodation', label: '숙박 (호텔/펜션)' }, { key: 'travel', label: '여행/레저/관광' }, { key: 'culture', label: '문화/공연/전시' }] },
+  { title: '🛍️ 패션 / 생활 / 디지털 / 펫 / 기타', options: [{ key: 'fashion-clothing', label: '의류/패션' }, { key: 'fashion-accessory', label: '신발/가방/잡화' }, { key: 'baby', label: '유아동/육아' }, { key: 'life-goods', label: '생활용품/인테리어' }, { key: 'health-fresh', label: '밀키트/신선식품' }, { key: 'life-appliances', label: '가전/디지털' }, { key: 'life-auto', label: '자동차' }, { key: 'pet', label: '반려동물/애견' }, { key: 'book', label: '도서/교육' }, { key: 'hobby', label: '취미/클래스' }, { key: 'etc', label: '기타' }] },
 ] as const;
 
 const fallbackThumbnail = (title: string, targetSite: string) => {
@@ -251,9 +238,9 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M8 22h8M12 15v7M17 3l-5 7-5-7h10z" />
     </svg>
   ),
-  'food-snack': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16M6 5v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V5M9 10h6M9 14h6" /></svg>,
-  'food-meat': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 4c4-2 10 .5 12 5.5 2 5-1 10.5-6 10.5-3.7 0-7-3.1-7-7.2C6 9.1 7 6.2 7 4z" /><circle cx="11" cy="12" r="1.25" /></svg>,
-  'food-omakase': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15c2.5-5.5 13.5-5.5 16 0v3H4z" /><path d="M7 12c.5-2 2-3 5-3s4.5 1 5 3" /></svg>,
+  'food-snack': <span role="img" aria-label="분식" style={{ fontSize: '20px', lineHeight: 1 }}>🍢</span>,
+  'food-meat': <span role="img" aria-label="육류 구이" style={{ fontSize: '20px', lineHeight: 1 }}>🥩</span>,
+  'food-omakase': <span role="img" aria-label="오마카세" style={{ fontSize: '20px', lineHeight: 1 }}>🍣</span>,
   'beauty-cosmetics': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -272,7 +259,7 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   ),
-  'beauty-body': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2" /><path d="M12 7v7M5 11l7 3 7-3M7 20l5-6 5 6" /></svg>,
+  'beauty-body': <span role="img" aria-label="다이어트 체형" style={{ fontSize: '20px', lineHeight: 1 }}>🧘</span>,
   'health-fitness': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6.5 6.5h11M6.5 17.5h11M3 10v4M21 10v4M6.5 4v16M17.5 4v16" />
@@ -283,9 +270,9 @@ const CategorySvgIcons: Record<string, React.ReactNode> = {
       <path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7zM8.5 8.5l7 7" />
     </svg>
   ),
-  'health-medical': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21V3M8 7h8M8 17h8" /><circle cx="12" cy="12" r="8" /></svg>,
-  'service-fortune': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8" /><path d="M8.5 14c1.2-2 2.4-3 3.5-3s2.3 1 3.5 3M9 8.5h.01M15 8.5h.01" /></svg>,
-  'life-auto': <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 16l1.5-6h11L19 16" /><path d="M4 16h16v3H4z" /><circle cx="7" cy="19" r="1" /><circle cx="17" cy="19" r="1" /></svg>,
+  'health-medical': <span role="img" aria-label="병원 의료" style={{ fontSize: '20px', lineHeight: 1 }}>🩺</span>,
+  'service-fortune': <span role="img" aria-label="사주 타로" style={{ fontSize: '20px', lineHeight: 1 }}>🔮</span>,
+  'life-auto': <span role="img" aria-label="자동차" style={{ fontSize: '20px', lineHeight: 1 }}>🚗</span>,
   'accommodation': (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 4v16M2 8h20v12M2 17h20M6 8v9" />
@@ -620,7 +607,7 @@ const FormattedMissionDisplay = ({ rawText }: { rawText: string }) => {
             gap: '6px'
           }}
         >
-          <span className="mission-warning-marker" aria-hidden="true" />
+          <span style={{ flexShrink: 0 }}>⚠️</span>
           <span>{trimmed.replace(/^[★※🚨⚠️]\s*/, '')}</span>
         </div>
       );
@@ -1246,11 +1233,6 @@ export default function Home() {
                 <span>선택 초기화</span>
               </button>
             )}
-            {hasApplicableSavedSearchCriteria() && !hasPendingSearch && (
-              <button type="button" className="filter-tab" onClick={openSaveSearchModal}>
-                <span>조건 저장</span>
-              </button>
-            )}
           </div>
         </div>
 
@@ -1259,7 +1241,7 @@ export default function Home() {
           <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
             <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                모집 유형 선택
+                📋 모집 유형 선택
               </h3>
               <button type="button" onClick={() => setIsTypeOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
             </div>
@@ -1311,10 +1293,10 @@ export default function Home() {
 
         {/* 카테고리 상세 패널 */}
         {isCategoryOpen && (
-          <div className="filter-panel-wrap category-filter-panel" onMouseEnter={handleFilterAreaEnter}>
+          <div className="filter-panel-wrap" onMouseEnter={handleFilterAreaEnter}>
             <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                카테고리 선택
+                🏷️ 카테고리 선택
               </h3>
               <button type="button" onClick={() => setIsCategoryOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
             </div>
@@ -1322,7 +1304,7 @@ export default function Home() {
               {/* 맛집/음식 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
-                  맛집 / 디저트 / 주점
+                  🍽️ 맛집 / 디저트 / 주점
                 </span>
                 <button
                   type="button"
@@ -1355,7 +1337,7 @@ export default function Home() {
               {/* 뷰티/미용/헬스 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
-                  뷰티 / 미용 / 헬스
+                  ✨ 뷰티 / 미용 / 헬스
                 </span>
                 <button
                   type="button"
@@ -1386,7 +1368,7 @@ export default function Home() {
               {/* 상담 서비스 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
-                  상담 / 서비스
+                  🔮 상담 / 서비스
                 </span>
                 <button
                   type="button"
@@ -1409,7 +1391,7 @@ export default function Home() {
               {/* 여행/숙박/문화 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
-                  여행 / 숙박 / 문화
+                  🧭 여행 / 숙박 / 문화
                 </span>
                 <button
                   type="button"
@@ -1436,7 +1418,7 @@ export default function Home() {
               {/* 패션/생활/디지털/기타 */}
               <div style={{ width: '100%', marginBottom: '6px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '4px 12px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px', border: 'none' }}>
-                  패션 / 생활 / 디지털 / 펫 / 기타
+                  🛍️ 패션 / 생활 / 디지털 / 펫 / 기타
                 </span>
                 <button
                   type="button"
@@ -1469,26 +1451,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="mobile-category-actions" aria-label="카테고리 선택 실행">
-              <button
-                type="button"
-                className="mobile-category-reset"
-                disabled={activeCategory === 'all'}
-                onClick={() => setActiveCategory('all')}
-              >
-                카테고리 초기화
-              </button>
-              <button
-                type="button"
-                className="mobile-category-search"
-                onClick={() => {
-                  applyCurrentSearch();
-                  setIsCategoryOpen(false);
-                }}
-              >
-                선택 조건 검색
-              </button>
-            </div>
           </div>
         )}
 
@@ -1497,7 +1459,7 @@ export default function Home() {
           <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column' }} onMouseEnter={handleFilterAreaEnter}>
             <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                플랫폼 선택
+                🌐 플랫폼 선택
               </h3>
               <button type="button" onClick={() => setIsPlatformOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
             </div>
@@ -1699,7 +1661,7 @@ export default function Home() {
           <div className="filter-panel-wrap" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }} onMouseEnter={handleFilterAreaEnter}>
             <div className="mobile-panel-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: 'none', width: '100%' }}>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                출처 체험단 사이트 선택
+                🌐 출처 체험단 사이트 선택
               </h3>
               <button type="button" onClick={() => setIsSiteOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: 'var(--text-tertiary)', cursor: 'pointer', padding: '0 4px' }}>✕</button>
             </div>
@@ -1813,15 +1775,6 @@ export default function Home() {
   const [user, setUser] = useState<{ name: string; email: string; avatar: string; provider: string } | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [savedSearches, setSavedSearches] = useState<SavedSearchClient[]>([]);
-  const [isSavedSearchModalOpen, setIsSavedSearchModalOpen] = useState(false);
-  const [isSaveSearchModalOpen, setIsSaveSearchModalOpen] = useState(false);
-  const [savedSearchName, setSavedSearchName] = useState('');
-  const [isSavedSearchRequesting, setIsSavedSearchRequesting] = useState(false);
-  const [workspaceTab, setWorkspaceTab] = useState<'alerts' | 'bookmarks'>('alerts');
-  const [bookmarkIds, setBookmarkIds] = useState<string[]>([]);
-  const [bookmarkedCampaigns, setBookmarkedCampaigns] = useState<Campaign[]>([]);
-  const [bookmarkRequestingId, setBookmarkRequestingId] = useState<string | null>(null);
 
   // 프론트엔드 성능 최적화: 초기 노출 카드 제한 및 더보기 페이징
   const [visibleCount, setVisibleCount] = useState(12);
@@ -1908,7 +1861,7 @@ export default function Home() {
 
   // 🔒 모달 오픈 시 배경 윈도우 스크롤 차단 (Body Scroll Lock)
   useEffect(() => {
-    if (isKeywordModalOpen || selectedCampaign || isSavedSearchModalOpen || isSaveSearchModalOpen) {
+    if (isKeywordModalOpen || selectedCampaign) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -1916,7 +1869,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isKeywordModalOpen, selectedCampaign, isSavedSearchModalOpen, isSaveSearchModalOpen]);
+  }, [isKeywordModalOpen, selectedCampaign]);
 
   // 키워드 연관검색어 랭킹 더보기 상태 (기본 20개 노출, 더보기 클릭 시 +20개씩 증단)
   const [relatedVisibleCount, setRelatedVisibleCount] = useState(20);
@@ -2046,12 +1999,7 @@ export default function Home() {
     fetchCampaigns();
 
     fetch('/api/auth/session').then(res => res.json()).then(result => {
-      if (result.success) {
-        setUser(result.user);
-        setBookmarkIds(Array.isArray(result.bookmarks) ? result.bookmarks : []);
-        loadSavedSearches();
-        loadBookmarks();
-      }
+      if (result.success) setUser(result.user);
     }).catch(() => {});
   }, []);
 
@@ -2215,152 +2163,6 @@ export default function Home() {
     }, 3500);
   };
 
-  const savedSearchFilters = () => ({
-    search: appliedFilters.search,
-    platform: appliedFilters.platform,
-    category: appliedFilters.category,
-    location: appliedFilters.location,
-    targetSite: appliedFilters.targetSite,
-    type: appliedFilters.type,
-  });
-
-  const hasApplicableSavedSearchCriteria = () => {
-    const filters = savedSearchFilters();
-    return Boolean(filters.search || [filters.platform, filters.category, filters.location, filters.targetSite, filters.type].some(value => value !== 'all'));
-  };
-
-  const describeSavedSearch = (filters = savedSearchFilters()) => {
-    const parts = [filters.search, filterSummary(filters.category, CATEGORY_LABELS, ''), filterSummary(filters.platform, PLATFORM_LABELS, ''), filterSummary(filters.location, {}, '')]
-      .filter(value => value && value !== '');
-    return parts.length ? parts.join(' · ').slice(0, 40) : '내 체험단 조건';
-  };
-
-  const loadSavedSearches = async () => {
-    try {
-      const response = await fetch('/api/user/saved-searches');
-      if (response.status === 401) {
-        setSavedSearches([]);
-        return;
-      }
-      const result = await response.json();
-      if (result.success) setSavedSearches(result.data);
-    } catch {
-      showToast('저장 조건을 불러오지 못했습니다.', 'error');
-    }
-  };
-
-  const loadBookmarks = async () => {
-    try {
-      const response = await fetch('/api/user/bookmark');
-      if (response.status === 401) {
-        setBookmarkIds([]);
-        setBookmarkedCampaigns([]);
-        return;
-      }
-      const result = await response.json();
-      if (result.success) {
-        setBookmarkIds(Array.isArray(result.bookmarks) ? result.bookmarks : []);
-        setBookmarkedCampaigns(Array.isArray(result.campaigns) ? result.campaigns : []);
-      }
-    } catch {
-      showToast('관심 공고를 불러오지 못했습니다.', 'error');
-    }
-  };
-
-  const toggleBookmark = async (campaign: Campaign) => {
-    if (!user) {
-      showToast('관심 공고는 로그인 후 저장할 수 있습니다.', 'info');
-      return;
-    }
-    if (bookmarkRequestingId) return;
-    setBookmarkRequestingId(campaign.id);
-    try {
-      const response = await fetch('/api/user/bookmark', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campaignId: campaign.id })
-      });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || '관심 공고 저장에 실패했습니다.');
-      setBookmarkIds(Array.isArray(result.bookmarks) ? result.bookmarks : []);
-      if (result.active) {
-        setBookmarkedCampaigns(previous => [campaign, ...previous.filter(item => item.id !== campaign.id)]);
-        showToast('관심 공고에 저장했습니다.', 'success');
-      } else {
-        setBookmarkedCampaigns(previous => previous.filter(item => item.id !== campaign.id));
-        showToast('관심 공고에서 제거했습니다.', 'info');
-      }
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : '관심 공고 저장에 실패했습니다.', 'error');
-    } finally {
-      setBookmarkRequestingId(null);
-    }
-  };
-
-  const openSaveSearchModal = () => {
-    if (!user) {
-      showToast('저장 조건과 새 공고 알림은 로그인 후 이용할 수 있습니다.', 'info');
-      return;
-    }
-    if (!hasApplicableSavedSearchCriteria()) {
-      showToast('검색어 또는 상세 조건을 적용한 뒤 저장해주세요.', 'info');
-      return;
-    }
-    setSavedSearchName(describeSavedSearch());
-    setIsSaveSearchModalOpen(true);
-  };
-
-  const saveCurrentSearch = async () => {
-    if (isSavedSearchRequesting) return;
-    setIsSavedSearchRequesting(true);
-    try {
-      const response = await fetch('/api/user/saved-searches', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: savedSearchName, filters: savedSearchFilters() })
-      });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || '저장에 실패했습니다.');
-      setIsSaveSearchModalOpen(false);
-      showToast('조건을 저장했습니다. 이후 새 공고를 알림함에서 확인할 수 있습니다.', 'success');
-      await loadSavedSearches();
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : '조건 저장에 실패했습니다.', 'error');
-    } finally {
-      setIsSavedSearchRequesting(false);
-    }
-  };
-
-  const openSavedSearch = async (savedSearch: SavedSearchClient) => {
-    setSearchInput(savedSearch.search);
-    setActivePlatform(savedSearch.platform); setActiveCategory(savedSearch.category);
-    setActiveLocation(savedSearch.location); setActiveSite(savedSearch.targetSite); setActiveType(savedSearch.type);
-    setSortBy('latest');
-    setAppliedFilters({ ...savedSearchFilters(), ...savedSearch, sortBy: 'latest' });
-    setIsSavedSearchModalOpen(false);
-    if (savedSearch.newCampaignCount > 0) {
-      await fetch('/api/user/saved-searches', {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: savedSearch.id, action: 'mark-read' })
-      });
-      await loadSavedSearches();
-    }
-  };
-
-  const deleteSavedSearch = async (savedSearchId: string) => {
-    if (isSavedSearchRequesting) return;
-    setIsSavedSearchRequesting(true);
-    try {
-      const response = await fetch('/api/user/saved-searches', {
-        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: savedSearchId })
-      });
-      if (!response.ok) throw new Error('삭제에 실패했습니다.');
-      await loadSavedSearches();
-      showToast('저장 조건을 삭제했습니다.', 'info');
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : '삭제에 실패했습니다.', 'error');
-    } finally {
-      setIsSavedSearchRequesting(false);
-    }
-  };
-
   // 남은 마감일 계산 함수 (D-Day)
   const calculateDday = (endDateStr: string) => {
     if (!endDateStr) return '마감일 확인 필요';
@@ -2385,8 +2187,7 @@ export default function Home() {
       {/* 1. Header (글래스모피즘 헤더) */}
       <header className="glass-panel" style={{
         position: 'sticky', top: 0, zIndex: 9999,
-        padding: '10px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderLeft: 'none', borderRight: 'none', borderTop: 'none'
+        padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img 
@@ -2414,6 +2215,7 @@ export default function Home() {
               textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all .2s ease'
             }}
           >
+            <span aria-hidden="true" style={{ fontSize: '1rem' }}>✦</span>
             <span>이용 가이드</span>
           </a>
 
@@ -2446,7 +2248,7 @@ export default function Home() {
                 transform: isKeywordBtnHovered ? 'translateY(-1px) scale(1.02)' : 'none'
               }}
             >
-              <span>키워드 분석</span>
+              <span>🔑 키워드마스터</span>
             </button>
 
             {/* ⚡ 키워드마스터 전용 최상단 100% 선명 스마트 툴팁 팝업 (키워드마스터 버튼 호버 시에만 단독 동작) */}
@@ -2481,57 +2283,31 @@ export default function Home() {
                 }} />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                  <span style={{ fontWeight: 900, fontSize: '0.88rem', color: '#a5b4fc', letterSpacing: '-0.01em' }}>키워드 분석 안내</span>
+                  <span style={{ fontSize: '1rem' }}>🔑</span>
+                  <span style={{ fontWeight: 900, fontSize: '0.88rem', color: '#a5b4fc', letterSpacing: '-0.01em' }}>키워드마스터 주요 기능</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: '#f1f5f9', lineHeight: 1.45 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span><strong style={{ color: '#38bdf8' }}>월간 총 검색량</strong> (PC / 모바일 실시간)</span>
+                    <span style={{ fontSize: '0.9rem' }}>🔍</span> <span><strong style={{ color: '#38bdf8' }}>월간 총 검색량</strong> (PC / 모바일 실시간)</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span><strong style={{ color: '#4ade80' }}>경쟁비율 & 등급</strong> (낮음 / 보통 / 높음)</span>
+                    <span style={{ fontSize: '0.9rem' }}>⚖️</span> <span><strong style={{ color: '#4ade80' }}>경쟁비율 & 등급</strong> (🟢황금 / 🟡보통 / 🔴포화)</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span><strong style={{ color: '#fbbf24' }}>검색광고·자동완성 기반 연관어</strong> 및 추천 근거 표시</span>
+                    <span style={{ fontSize: '0.9rem' }}>🔗</span> <span><strong style={{ color: '#fbbf24' }}>검색광고·자동완성 기반 연관어</strong> 및 추천 근거 표시</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span><strong style={{ color: '#f472b6' }}>상위 노출 블로그</strong> TOP 10 실시간 분석</span>
+                    <span style={{ fontSize: '0.9rem' }}>🥇</span> <span><strong style={{ color: '#f472b6' }}>상위 노출 블로그</strong> TOP 10 실시간 분석</span>
                   </div>
                 </div>
 
                 <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #334155', fontSize: '0.72rem', color: '#cbd5e1', textAlign: 'center', fontWeight: 700 }}>
-                  클릭하면 세부 키워드 분석을 엽니다.
+                  👉 클릭 시 세부 키워드 분석 모달 열기
                 </div>
               </div>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (!user) {
-                showToast('저장 조건과 새 공고 알림은 로그인 후 이용할 수 있습니다.', 'info');
-                return;
-              }
-              setWorkspaceTab('alerts');
-              setIsSavedSearchModalOpen(true);
-              loadSavedSearches();
-              loadBookmarks();
-            }}
-            aria-label="내 저장 조건, 새 공고 알림, 관심 공고 보기"
-            style={{
-              position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '36px',
-              padding: '0 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
-              background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.82rem', fontWeight: 800,
-              cursor: 'pointer', whiteSpace: 'nowrap'
-            }}
-          >
-            <span>내 활동</span>
-            {(savedSearches.reduce((total, item) => total + item.newCampaignCount, 0) + bookmarkIds.length) > 0 && (
-              <span style={{ minWidth: '18px', height: '18px', padding: '0 4px', borderRadius: '999px', background: 'var(--danger)', color: '#fff', fontSize: '0.67rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                {Math.min(99, savedSearches.reduce((total, item) => total + item.newCampaignCount, 0) + bookmarkIds.length)}
-              </span>
-            )}
-          </button>
           <div style={{ position: 'relative' }}>
             <div 
               className="mobile-hide-sync-badge"
@@ -2565,7 +2341,7 @@ export default function Home() {
                   <span style={{ color: '#93c5fd' }}>동기화 중...</span>
                 ) : (
                   <>
-                    자동 동기화 <strong style={{ color: '#34d399', fontWeight: 900, fontSize: '0.88rem' }}>{syncCountdown}초 전</strong>
+                    자동 동기화 <strong style={{ color: '#34d399', fontWeight: 900, fontSize: '0.88rem' }}>{syncCountdown}초 전</strong> 🟢
                   </>
                 )}
               </span>
@@ -2591,24 +2367,21 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Search workspace */}
+      {/* 2. Hero Section - compact & modern */}
       <section style={{
-        padding: '56px 24px 32px',
+        padding: '48px 24px 28px',
         textAlign: 'center',
-        background: 'var(--bg-primary)',
-        borderBottom: 'none',
+        background: 'linear-gradient(to bottom, var(--bg-secondary) 0%, transparent 100%)',
+        borderBottom: '1px solid var(--border-color)',
         position: 'relative',
         zIndex: 200
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-          <p style={{ margin: '0 0 10px', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 850, letterSpacing: '.12em', textTransform: 'uppercase' }}>
-            Campaign discovery
-          </p>
-          <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)', fontWeight: 800, marginBottom: '10px', lineHeight: 1.18, letterSpacing: '-.045em', wordBreak: 'keep-all' }}>
-            지금 지원할 공고를 <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>한 번에 비교하세요</span>
+          <h2 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
+            블로그 & SNS 체험단 <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>실시간 모아보기</span>
           </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.98rem' }}>
-            플랫폼, 혜택, 마감일, 경쟁률을 같은 기준으로 확인할 수 있습니다.
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '1rem' }}>
+            여러 플랫폼의 활성 체험단을 한 곳에서 찾아보세요.
           </p>
 
           {/* 검색 & 실시간 검색어 가로 정렬 영역 - 포커스 시 zIndex 99999 격상 */}
@@ -2915,7 +2688,7 @@ export default function Home() {
                   }}
                 >
                   <div style={{ padding: '0 16px 8px 16px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    실시간 인기 검색어
+                    <span>🔥</span> 실시간 인기 검색어
                   </div>
                   <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                     {trendingKeywords.slice(0, 10).map((item, idx) => (
@@ -2946,8 +2719,8 @@ export default function Home() {
                           borderRadius: '4px',
                           fontSize: '0.7rem',
                           fontWeight: 900,
-                          background: item.rank <= 3 ? 'var(--accent-light)' : 'var(--bg-tertiary)',
-                          color: item.rank <= 3 ? 'var(--accent)' : 'var(--text-secondary)',
+                          background: item.rank === 1 ? 'linear-gradient(135deg,#ffd700,#ffa500)' : item.rank === 2 ? 'linear-gradient(135deg,#c0c0c0,#a9a9a9)' : item.rank === 3 ? 'linear-gradient(135deg,#cd7f32,#b87333)' : 'var(--bg-tertiary)',
+                          color: item.rank === 3 ? '#fff' : '#000',
                           flexShrink: 0
                         }}>
                           {item.rank}
@@ -2969,7 +2742,7 @@ export default function Home() {
                               fontSize: '0.6rem',
                               fontWeight: 900,
                               color: '#ffffff',
-                              background: 'var(--success)',
+                              background: 'linear-gradient(135deg, #10b981, #059669)',
                               padding: '1px 5px',
                               borderRadius: '9999px',
                               letterSpacing: '0.5px',
@@ -3184,17 +2957,23 @@ export default function Home() {
               height: '100px',
               margin: '0 auto 24px auto',
               borderRadius: '50%',
-              background: 'var(--accent-light)',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(236, 72, 153, 0.12) 100%)',
               border: '1px solid rgba(99, 102, 241, 0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: 'none'
+              boxShadow: '0 12px 32px rgba(99, 102, 241, 0.15)'
             }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'url(#grad-empty-search)' }}>
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
                 <line x1="8" y1="11" x2="14" y2="11" />
+                <defs>
+                  <linearGradient id="grad-empty-search" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#ec4899" />
+                  </linearGradient>
+                </defs>
               </svg>
             </div>
             <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)' }}>
@@ -3278,19 +3057,23 @@ export default function Home() {
                           </span>
                         ) : c.platform === 'instagram' ? (
                           <span className="badge badge-instagram" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <span>Instagram</span>
+                            <span>📸</span>
+                            <span>Insta</span>
                           </span>
                         ) : c.platform === 'youtube' ? (
                           <span className="badge badge-youtube" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span>▶️</span>
                             <span>YouTube</span>
                           </span>
                         ) : c.platform === 'coupang' ? (
                           <span className="badge badge-coupang" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#e11d48', color: '#ffffff' }}>
+                            <span>🛒</span>
                             <span>쿠팡</span>
                           </span>
                         ) : (
                           <span className={`badge badge-${c.platform}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <span>기타 플랫폼</span>
+                            <span>🌐</span>
+                            <span>Etc</span>
                           </span>
                         )}
                       </div>
@@ -3301,20 +3084,7 @@ export default function Home() {
                       }}>
                         {c.targetSite}
                       </div>
-                      <button
-                        type="button"
-                        className={`campaign-bookmark-button ${bookmarkIds.includes(c.id) ? 'is-bookmarked' : ''}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          toggleBookmark(c);
-                        }}
-                        disabled={bookmarkRequestingId === c.id}
-                        aria-label={bookmarkIds.includes(c.id) ? '관심 공고에서 제거' : '관심 공고에 저장'}
-                        title={bookmarkIds.includes(c.id) ? '관심 공고에서 제거' : '관심 공고에 저장'}
-                      >
-                        <Icons.Heart filled={bookmarkIds.includes(c.id)} style={{ width: '1rem', height: '1rem' }} />
-                      </button>
-                      <div className="campaign-card-deadline" style={{
+                      <div style={{
                         position: 'absolute', bottom: '12px', left: '12px',
                         backgroundColor: ddayColor, color: '#ffffff',
                         fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: 'var(--radius-full)'
@@ -3342,7 +3112,7 @@ export default function Home() {
                           alignItems: 'flex-start',
                           gap: '8px',
                           border: '1px solid rgba(99, 102, 241, 0.22)',
-                          background: 'var(--accent-light)'
+                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%)'
                         }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent)', display: 'block', marginBottom: '2px', letterSpacing: '0.3px' }}>
@@ -3511,18 +3281,22 @@ export default function Home() {
                     </span>
                   ) : selectedCampaign.platform === 'instagram' ? (
                     <span className="badge badge-instagram" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>📸</span>
                       <span>인스타그램</span>
                     </span>
                   ) : selectedCampaign.platform === 'youtube' ? (
                     <span className="badge badge-youtube" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>▶️</span>
                       <span>유튜브</span>
                     </span>
                   ) : selectedCampaign.platform === 'coupang' ? (
                     <span className="badge badge-coupang" style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#e11d48', color: '#ffffff' }}>
+                      <span>🛒</span>
                       <span>쿠팡 체험단</span>
                     </span>
                   ) : (
                     <span className={`badge badge-${selectedCampaign.platform}`} style={{ marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>🌐</span>
                       <span>{selectedCampaign.platform}</span>
                     </span>
                   )}
@@ -3582,8 +3356,8 @@ export default function Home() {
                   border: '1px solid var(--border-color)',
                   boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)'
                 }}>
-                  <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    업체 원본 미션 & 가이드라인
+                  <h4 style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--accent)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>📋</span> 업체 원본 필수 미션 & 가이드라인
                   </h4>
                   {isMissionLoading && !selectedCampaign.mission ? (
                     <div style={{ fontSize: '0.83rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 0' }}>
@@ -3627,7 +3401,7 @@ export default function Home() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <span>이 공고의 키워드 분석 보기</span>
+                  <span>⚡ 이 공고 네이버 황금키워드 & 검색량 분석하기</span>
                 </button>
 
               </div>
@@ -3667,106 +3441,9 @@ export default function Home() {
         </div>
       )}
 
-      {isSaveSearchModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(15, 23, 42, 0.56)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={() => setIsSaveSearchModalOpen(false)}>
-          <div className="glass-panel saved-search-modal" style={{ width: '100%', maxWidth: '480px', padding: '24px', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }} onClick={event => event.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--text-primary)' }}>현재 조건 저장</h3>
-                <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5 }}>새로 수집된 일치 공고만 내 알림에서 알려드립니다.</p>
-              </div>
-              <button type="button" onClick={() => setIsSaveSearchModalOpen(false)} style={{ border: 0, background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', height: '28px' }} aria-label="닫기"><Icons.Close /></button>
-            </div>
-            <label style={{ display: 'block', marginTop: '20px', fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              조건 이름
-              <input value={savedSearchName} maxLength={40} onChange={event => setSavedSearchName(event.target.value)} style={{ display: 'block', boxSizing: 'border-box', marginTop: '8px', width: '100%', padding: '11px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.9rem' }} />
-            </label>
-            <div style={{ marginTop: '14px', padding: '12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', fontSize: '0.8rem', lineHeight: 1.55 }}>
-              <strong style={{ color: 'var(--text-primary)' }}>저장되는 조건</strong><br />{describeSavedSearch()}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
-              <button type="button" className="premium-button-secondary" onClick={() => setIsSaveSearchModalOpen(false)} style={{ padding: '10px 14px' }}>취소</button>
-              <button type="button" className="premium-button-primary" disabled={isSavedSearchRequesting || !savedSearchName.trim()} onClick={saveCurrentSearch} style={{ padding: '10px 14px', opacity: isSavedSearchRequesting || !savedSearchName.trim() ? 0.6 : 1 }}>
-                {isSavedSearchRequesting ? '저장 중...' : '조건 저장'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isSavedSearchModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(15, 23, 42, 0.56)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={() => setIsSavedSearchModalOpen(false)}>
-          <div className="glass-panel saved-search-modal" style={{ width: '100%', maxWidth: '580px', maxHeight: '82vh', overflow: 'auto', padding: '24px', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }} onClick={event => event.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--text-primary)' }}>내 활동</h3>
-                <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)', fontSize: '0.84rem' }}>저장 조건의 새 공고와 관심 공고를 한곳에서 관리하세요.</p>
-              </div>
-              <button type="button" onClick={() => setIsSavedSearchModalOpen(false)} style={{ border: 0, background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', height: '28px' }} aria-label="닫기"><Icons.Close /></button>
-            </div>
-            <div className="personal-workspace-tabs" role="tablist" aria-label="내 활동 메뉴" style={{ display: 'flex', gap: '6px', marginTop: '20px', padding: '4px', borderRadius: '10px', background: 'var(--bg-tertiary)' }}>
-              <button type="button" role="tab" aria-selected={workspaceTab === 'alerts'} className={workspaceTab === 'alerts' ? 'active' : ''} onClick={() => setWorkspaceTab('alerts')}>
-                저장 조건 {savedSearches.reduce((total, item) => total + item.newCampaignCount, 0) > 0 ? `(${savedSearches.reduce((total, item) => total + item.newCampaignCount, 0)})` : ''}
-              </button>
-              <button type="button" role="tab" aria-selected={workspaceTab === 'bookmarks'} className={workspaceTab === 'bookmarks' ? 'active' : ''} onClick={() => setWorkspaceTab('bookmarks')}>
-                관심 공고 {bookmarkIds.length > 0 ? `(${bookmarkIds.length})` : ''}
-              </button>
-            </div>
-            {workspaceTab === 'alerts' && savedSearches.length === 0 ? (
-              <div style={{ marginTop: '24px', padding: '36px 18px', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6 }}>
-                저장한 조건이 없습니다.<br />검색과 상세 조건을 적용한 뒤 <strong style={{ color: 'var(--accent)' }}>조건 저장</strong>을 눌러보세요.
-              </div>
-            ) : workspaceTab === 'alerts' ? (
-              <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {savedSearches.map(savedSearch => (
-                  <article key={savedSearch.id} style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '14px', background: 'var(--bg-primary)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={{ minWidth: 0 }}>
-                        <strong style={{ color: 'var(--text-primary)', fontSize: '0.94rem' }}>{savedSearch.name}</strong>
-                        <p style={{ margin: '5px 0 0', color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.45 }}>{describeSavedSearch(savedSearch)}</p>
-                      </div>
-                      {savedSearch.newCampaignCount > 0 && <span style={{ flexShrink: 0, padding: '4px 8px', borderRadius: '999px', background: 'rgba(244, 63, 94, .12)', color: 'var(--danger)', fontWeight: 850, fontSize: '0.75rem' }}>새 공고 {savedSearch.newCampaignCount}건</span>}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginTop: '13px' }}>
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: '0.72rem' }}>마지막 확인 {formatCampaignUpdatedAt(savedSearch.lastSeenAt)}</span>
-                      <div style={{ display: 'flex', gap: '7px' }}>
-                        <button type="button" className="premium-button-secondary" onClick={() => deleteSavedSearch(savedSearch.id)} style={{ padding: '7px 10px', fontSize: '0.76rem' }}>삭제</button>
-                        <button type="button" className="premium-button-primary" onClick={() => openSavedSearch(savedSearch)} style={{ padding: '7px 10px', fontSize: '0.76rem' }}>{savedSearch.newCampaignCount > 0 ? '새 공고 보기' : '조건 보기'}</button>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : bookmarkedCampaigns.length === 0 ? (
-              <div style={{ marginTop: '24px', padding: '36px 18px', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6 }}>
-                저장한 관심 공고가 없습니다.<br />공고 카드의 하트 버튼으로 나중에 볼 공고를 모아보세요.
-              </div>
-            ) : (
-              <div className="workspace-bookmark-list" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {bookmarkedCampaigns.map(campaign => (
-                  <article key={campaign.id} className="workspace-bookmark-item" onClick={() => { setSelectedCampaign(campaign); setIsSavedSearchModalOpen(false); }} style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '14px', background: 'var(--bg-primary)', cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', gap: '12px', minWidth: 0 }}>
-                      <img src={campaign.imageUrl} alt="" onError={(event) => replaceBrokenThumbnail(event.currentTarget, campaign.title, campaign.targetSite)} style={{ width: '54px', height: '54px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, background: 'var(--bg-tertiary)' }} />
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }}>
-                          <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sanitizeCampaignText(campaign.title)}</strong>
-                          <button type="button" className="workspace-bookmark-remove" onClick={(event) => { event.stopPropagation(); toggleBookmark(campaign); }} aria-label="관심 공고에서 제거" disabled={bookmarkRequestingId === campaign.id}><Icons.Heart filled style={{ width: '.95rem', height: '.95rem' }} /></button>
-                        </div>
-                        <p style={{ margin: '5px 0 0', color: 'var(--text-secondary)', fontSize: '0.76rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{campaign.targetSite} · {campaign.location || '지역 확인 필요'} · {calculateDday(campaign.endDate)}</p>
-                        <p style={{ margin: '4px 0 0', color: 'var(--text-tertiary)', fontSize: '0.74rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sanitizeOfferDescription(campaign.description, campaign.title)}</p>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* 6. Toast Notification */}
       {toast && (
-        <div className={`toast-notification toast-${toast.type}`} role="status" style={{
+        <div style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 110,
           padding: '12px 20px', borderRadius: 'var(--radius-md)',
           color: '#ffffff', fontWeight: 600, fontSize: '0.9rem',
@@ -3775,6 +3452,9 @@ export default function Home() {
           animation: 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
           display: 'flex', alignItems: 'center', gap: '8px'
         }}>
+          {toast.type === 'success' && '✅ '}
+          {toast.type === 'error' && '🚨 '}
+          {toast.type === 'info' && '💡 '}
           {toast.message}
         </div>
       )}
@@ -3868,7 +3548,7 @@ export default function Home() {
             </div>
 
             {/* 결과 본문 */}
-            <div className="keyword-master-body" style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
               {isKeywordLoading ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
@@ -3883,15 +3563,14 @@ export default function Home() {
               ) : keywordData ? (
                 <>
                   {/* 📊 지표 카운트 4컬럼 가로 1행 카드 레이아웃 (월간 발행량 카드 포함) */}
-                  <div className="keyword-data-section">
+                  <div>
                     <div className="keyword-master-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
                       {/* 1. 월간 총 검색량 카드 */}
-                      <div className="keyword-metric-card" style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월간 총 검색량</span>
                           <button
                             type="button"
-                            className="keyword-info-button"
                             onClick={() => setActiveKeywordGuideTooltip(prev => prev === 'volume' ? null : 'volume')}
                             style={{
                               background: 'none', border: 'none', padding: '0 4px', cursor: 'pointer',
@@ -3900,7 +3579,7 @@ export default function Home() {
                             }}
                             title="클릭 시 월간 총 검색량 산출 기준 안내"
                           >
-                            i
+                            ℹ️
                           </button>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
@@ -3916,13 +3595,13 @@ export default function Home() {
                             border: '1px solid #4f46e5', fontSize: '0.74rem', color: 'var(--text-primary)', lineHeight: 1.5,
                             animation: 'fadeIn 0.15s ease-in-out', marginTop: '4px'
                           }}>
-                            <strong>월간 총 검색량 기준:</strong> 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.
+                            📌 <strong>월간 총 검색량 기준:</strong> 최근 30일간 네이버 PC 및 모바일 검색창에서 조회된 통합 실데이터입니다.
                           </div>
                         )}
                       </div>
 
                       {/* 2. 월 블로그 포스팅 수 카드 (신규 추가) */}
-                      <div className="keyword-metric-card" style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월 블로그 포스팅 수</span>
                         </div>
@@ -3942,7 +3621,7 @@ export default function Home() {
                       </div>
 
                       {/* 3. 누적 블로그 포스팅 수 카드 */}
-                      <div className="keyword-metric-card" style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>누적 블로그 포스팅 수</span>
                         </div>
@@ -3956,12 +3635,11 @@ export default function Home() {
                       </div>
 
                       {/* 4. 경쟁비율 카드 */}
-                      <div className="keyword-metric-card keyword-metric-card-ratio" style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>경쟁비율 (문서 ÷ 검색량)</span>
                           <button
                             type="button"
-                            className="keyword-info-button"
                             onClick={() => setActiveKeywordGuideTooltip(prev => prev === 'ratio' ? null : 'ratio')}
                             style={{
                               background: 'none', border: 'none', padding: '0 4px', cursor: 'pointer',
@@ -3970,7 +3648,7 @@ export default function Home() {
                             }}
                             title="클릭 시 경쟁비율 산출공식 안내"
                           >
-                            i
+                            ℹ️
                           </button>
                         </div>
                         <div style={{ fontSize: '0.74rem', fontWeight: 700, color: keywordData.grade === 'GOLD' ? '#10b981' : keywordData.grade === 'NORMAL' ? '#d97706' : '#ef4444', whiteSpace: 'nowrap' }}>
@@ -3986,7 +3664,7 @@ export default function Home() {
                             fontSize: '0.74rem', color: 'var(--text-primary)', lineHeight: 1.5,
                             animation: 'fadeIn 0.15s ease-in-out', marginTop: '4px'
                           }}>
-                            <strong>경쟁비율 산출식:</strong> 포스팅 문서 수 ÷ 월간 총 검색량. 수치가 1.0 미만이면 검색량 대비 문서 수가 적습니다.
+                            📌 <strong>경쟁비율 산출공식:</strong> 포스팅 문서 수 ÷ 월간 총 검색량 (수치가 1.0 미만인 🟢 황금키워드는 검색량 대비 글수가 적어 상위 노출에 매우 유리합니다).
                           </div>
                         )}
                       </div>
@@ -3994,11 +3672,11 @@ export default function Home() {
                   </div>
 
                   {/* 🔍 연관 검색어 정밀 랭킹 섹션 (상단 카드와 100% 동일 폭 가로 정렬) */}
-                  <div className="keyword-data-section" style={{ marginBottom: '20px' }}>
+                  <div style={{ marginBottom: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                          연관 검색어
+                          🔍 연관 검색어 랭킹 리스트
                         </h4>
                         <div>
                           <span style={{
@@ -4006,7 +3684,7 @@ export default function Home() {
                             fontWeight: 700,
                             padding: '2px 8px',
                             borderRadius: 'var(--radius-full)',
-                            backgroundColor: 'var(--accent)',
+                            backgroundColor: '#4f46e5',
                             color: '#ffffff',
                             display: 'inline-block'
                           }}>
@@ -4024,18 +3702,18 @@ export default function Home() {
                         }}
                         style={{
                           padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700,
-                          borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--accent)', color: '#fff',
+                          borderRadius: 'var(--radius-sm)', backgroundColor: '#4f46e5', color: '#fff',
                           border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
-                          boxShadow: 'none'
+                          boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)'
                         }}
                       >
-                        태그 전체 복사
+                        태그 전체 복사 📋
                       </button>
                     </div>
 
                     {/* 💻📱 상단 카드와 좌우 경계 100% 완전 일치하는 테이블 박스 (데스크톱 전용) */}
                     <div 
-                      className="desktop-keyword-table-wrap keyword-related-table"
+                      className="desktop-keyword-table-wrap"
                       style={{
                         width: '100%',
                         overflowX: 'auto',
@@ -4114,7 +3792,7 @@ export default function Home() {
                         </thead>
                         <tbody>
                           {(processedRelatedKeywords || []).slice(0, relatedVisibleCount).map((item: any) => (
-                            <tr className="keyword-related-row"
+                            <tr 
                               key={item.rank}
                               style={{
                                 borderBottom: '1px solid var(--border-color)',
@@ -4271,7 +3949,7 @@ export default function Home() {
                           marginTop: '10px'
                         }}
                       >
-                        <span>연관 검색어 더보기 (+20개)</span>
+                        <span>연관 검색어 더보기 ➕ (+20개)</span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
                           (현재 {Math.min(relatedVisibleCount, keywordData.relatedKeywords.length)} / {keywordData.relatedKeywords.length}개 표시 중)
                         </span>
@@ -4280,9 +3958,9 @@ export default function Home() {
                   </div>
 
                   {/* 🏆 네이버 블로그 상위 노출 랭킹 (Top 10) (상단 카드와 100% 동일 폭 가로 정렬) */}
-                  <div className="keyword-data-section" style={{ marginBottom: '12px' }}>
+                  <div style={{ marginBottom: '12px' }}>
                     <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', marginTop: 0 }}>
-                      네이버 블로그 상위 노출
+                      🏆 네이버 블로그 상위 노출 랭킹
                     </h4>
                     <div style={{ width: '100%', overflowX: 'auto', padding: '2px 0' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
@@ -4292,7 +3970,6 @@ export default function Home() {
                           href={post.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="keyword-top-post"
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -4364,7 +4041,7 @@ export default function Home() {
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-tertiary)' }}>
-                  <span className="keyword-empty-mark" aria-hidden="true">K</span>
+                  <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>🔑</span>
                   <p style={{ fontSize: '0.9rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--text-secondary)' }}>
                     분석하고 싶은 키워드를 입력해 주세요.
                   </p>
@@ -4523,7 +4200,7 @@ export default function Home() {
             display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '24px'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>책임의 한계 및 고지</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>⚠️ 책임의 한계 및 고지</h3>
               <button onClick={() => setIsDisclaimerModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>✕</button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-secondary)', paddingRight: '6px' }}>
@@ -4605,16 +4282,16 @@ export default function Home() {
 
         /* ─── 필터탭 호버/활성 강제 오버라이드 ─── */
         .filter-tab {
-          font-size: 0.88rem !important;
-          font-weight: 650 !important;
-          transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease !important;
+          font-size: 0.95rem !important;
+          font-weight: 500 !important;
+          transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
         }
         .filter-tab:hover {
-          background-color: var(--bg-tertiary) !important;
-          color: var(--accent) !important;
-          transform: none !important;
-          box-shadow: none !important;
-          border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color)) !important;
+          background-color: #e8eaf6 !important;
+          color: #3730a3 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 16px rgba(99,102,241,0.18) !important;
+          border: none !important;
         }
         [data-theme="dark"] .filter-tab:hover {
           background-color: rgba(99,102,241,0.18) !important;
@@ -4622,10 +4299,10 @@ export default function Home() {
           box-shadow: 0 6px 16px rgba(99,102,241,0.3) !important;
         }
         .filter-tab.active {
-          background-color: var(--accent) !important;
-          color: #ffffff !important;
-          border-color: var(--accent) !important;
-          box-shadow: none !important;
+          background-color: #e0e7ff !important;
+          color: #4f46e5 !important;
+          border: none !important;
+          box-shadow: 0 2px 8px rgba(99,102,241,0.15) !important;
         }
         [data-theme="dark"] .filter-tab.active {
           background-color: rgba(99,102,241,0.22) !important;

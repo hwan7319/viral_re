@@ -54,7 +54,6 @@ export const CATEGORY_GROUP_MAP: Record<string, string[]> = {
 };
 
 import { open, Database } from 'sqlite';
-import { randomUUID } from 'node:crypto';
 import path from 'path';
 import fs from 'fs';
 
@@ -136,62 +135,6 @@ export interface User {
   provider: string;  // 인증 제공처 (Google, Naver, Kakao, Instagram 등)
   createdAt: string; // 가입일 (ISO 8601)
   updatedAt: string; // 정보 수정일 (ISO 8601)
-}
-
-export interface SavedSearchFilters {
-  search: string;
-  platform: string;
-  category: string;
-  location: string;
-  targetSite: string;
-  type: string;
-}
-
-export interface SavedSearch extends SavedSearchFilters {
-  id: string;
-  userId: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  lastSeenAt: string;
-}
-
-export interface SavedSearchWithNewCampaigns extends SavedSearch {
-  newCampaignCount: number;
-}
-
-const SAVED_SEARCH_FILTER_KEYS = ['platform', 'category', 'location', 'targetSite', 'type'] as const;
-const EMPTY_SAVED_SEARCH_FILTERS: SavedSearchFilters = {
-  search: '', platform: 'all', category: 'all', location: 'all', targetSite: 'all', type: 'all'
-};
-
-function normalizeSavedSearchValue(value: unknown): string | null {
-  if (typeof value !== 'string' || value.length > 500) return null;
-  const values = filterValues(value);
-  if (values.length > 20 || values.some(item => item.length > 80)) return null;
-  return values.length ? values.join(',') : 'all';
-}
-
-/** Only known, bounded filter primitives are persisted for a user's saved condition. */
-export function normalizeSavedSearchFilters(value: unknown): SavedSearchFilters | null {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const source = value as Record<string, unknown>;
-  if (typeof source.search !== 'string' || source.search.length > 100) return null;
-  const filters: SavedSearchFilters = {
-    ...EMPTY_SAVED_SEARCH_FILTERS,
-    search: source.search.trim().replace(/\s+/g, ' '),
-  };
-  for (const key of SAVED_SEARCH_FILTER_KEYS) {
-    const normalized = normalizeSavedSearchValue(source[key] ?? 'all');
-    if (normalized === null) return null;
-    filters[key] = normalized;
-  }
-  if (filterValues(filters.type).some(type => !['visit', 'delivery'].includes(type))) return null;
-  return filters;
-}
-
-export function hasSavedSearchCriteria(filters: SavedSearchFilters): boolean {
-  return Boolean(filters.search || SAVED_SEARCH_FILTER_KEYS.some(key => filters[key] !== 'all'));
 }
 
 const DB_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
@@ -290,22 +233,6 @@ async function initializeDB(): Promise<Database> {
       FOREIGN KEY (campaignId) REFERENCES campaigns (id) ON DELETE CASCADE
     );
 
-    CREATE TABLE IF NOT EXISTS user_saved_searches (
-      id TEXT PRIMARY KEY,
-      userId TEXT NOT NULL,
-      name TEXT NOT NULL,
-      search TEXT NOT NULL DEFAULT '',
-      platform TEXT NOT NULL DEFAULT 'all',
-      category TEXT NOT NULL DEFAULT 'all',
-      location TEXT NOT NULL DEFAULT 'all',
-      targetSite TEXT NOT NULL DEFAULT 'all',
-      type TEXT NOT NULL DEFAULT 'all',
-      lastSeenAt TEXT NOT NULL,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL,
-      FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
-    );
-
     -- 🔑 실시간 인기 검색어 랭킹 산출을 위한 search_logs 테이블 추가
     CREATE TABLE IF NOT EXISTS search_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -333,7 +260,6 @@ async function initializeDB(): Promise<Database> {
     CREATE INDEX IF NOT EXISTS idx_campaigns_filters ON campaigns (platform, category, targetSite);
     CREATE INDEX IF NOT EXISTS idx_campaigns_end_date ON campaigns (endDate);
     CREATE INDEX IF NOT EXISTS idx_user_bookmarks_user ON user_bookmarks (userId);
-    CREATE INDEX IF NOT EXISTS idx_user_saved_searches_user ON user_saved_searches (userId, updatedAt DESC);
     CREATE INDEX IF NOT EXISTS idx_search_logs_keyword ON search_logs (keyword);
     CREATE INDEX IF NOT EXISTS idx_keyword_blog_snapshots_keyword ON keyword_blog_snapshots (keyword, observedOn);
   `);
@@ -878,76 +804,6 @@ export async function toggleUserBookmark(userId: string, campaignId: string): Pr
     );
     return { active: true };
   }
-}
-
-export async function getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
-  return (await getDB()).all<SavedSearch[]>(
-    `SELECT id, userId, name, search, platform, category, location, targetSite, type, lastSeenAt, createdAt, updatedAt
-     FROM user_saved_searches WHERE userId = ? ORDER BY updatedAt DESC, id DESC`,
-    [userId]
-  );
-}
-
-export async function getUserSavedSearchesWithNewCampaigns(userId: string): Promise<SavedSearchWithNewCampaigns[]> {
-  const searches = await getUserSavedSearches(userId);
-  return Promise.all(searches.map(async savedSearch => {
-    const lastSeenAt = Date.parse(savedSearch.lastSeenAt);
-    const matches = await queryCampaigns(savedSearch);
-    const newCampaignCount = Number.isFinite(lastSeenAt)
-      ? matches.filter(campaign => Date.parse(campaign.createdAt) > lastSeenAt).length
-      : 0;
-    return { ...savedSearch, newCampaignCount };
-  }));
-}
-
-export async function createUserSavedSearch(userId: string, name: string, filters: SavedSearchFilters): Promise<SavedSearch> {
-  const trimmedName = name.trim().replace(/\s+/g, ' ');
-  if (!trimmedName || trimmedName.length > 40 || !hasSavedSearchCriteria(filters)) {
-    throw new Error('Invalid saved search');
-  }
-
-  return serializeWrite(async () => {
-    const db = await getDB();
-    const existing = await db.get<{ count: number }>('SELECT COUNT(*) AS count FROM user_saved_searches WHERE userId = ?', [userId]);
-    if ((existing?.count || 0) >= 20) throw new Error('Saved search limit reached');
-    const duplicate = await db.get<{ id: string }>(
-      `SELECT id FROM user_saved_searches
-       WHERE userId = ? AND search = ? AND platform = ? AND category = ? AND location = ? AND targetSite = ? AND type = ?`,
-      [userId, filters.search, filters.platform, filters.category, filters.location, filters.targetSite, filters.type]
-    );
-    if (duplicate) throw new Error('Same saved search already exists');
-    const now = new Date().toISOString();
-    const savedSearch: SavedSearch = {
-      id: randomUUID(), userId, name: trimmedName, ...filters,
-      lastSeenAt: now, createdAt: now, updatedAt: now
-    };
-    await db.run(
-      `INSERT INTO user_saved_searches (id, userId, name, search, platform, category, location, targetSite, type, lastSeenAt, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [savedSearch.id, savedSearch.userId, savedSearch.name, savedSearch.search, savedSearch.platform,
-        savedSearch.category, savedSearch.location, savedSearch.targetSite, savedSearch.type,
-        savedSearch.lastSeenAt, savedSearch.createdAt, savedSearch.updatedAt]
-    );
-    return savedSearch;
-  });
-}
-
-export function deleteUserSavedSearch(userId: string, savedSearchId: string): Promise<boolean> {
-  return serializeWrite(async () => {
-    const result = await (await getDB()).run('DELETE FROM user_saved_searches WHERE id = ? AND userId = ?', [savedSearchId, userId]);
-    return (result.changes || 0) > 0;
-  });
-}
-
-export function markUserSavedSearchSeen(userId: string, savedSearchId: string): Promise<boolean> {
-  return serializeWrite(async () => {
-    const now = new Date().toISOString();
-    const result = await (await getDB()).run(
-      'UPDATE user_saved_searches SET lastSeenAt = ?, updatedAt = ? WHERE id = ? AND userId = ?',
-      [now, now, savedSearchId, userId]
-    );
-    return (result.changes || 0) > 0;
-  });
 }
 
 // 🔑 검색 로그 기록 저장

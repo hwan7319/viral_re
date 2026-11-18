@@ -352,10 +352,7 @@ export async function GET(request: Request) {
     const clientSecret = process.env.NAVER_CLIENT_SECRET || '';
 
     const customerId = process.env.NAVER_SEARCHAD_CUSTOMER_ID || '';
-    // SearchAd calls this credential an Access License. Keep the older
-    // API_KEY name as the canonical deployment variable, while accepting the
-    // official label so a configuration naming mismatch cannot blank results.
-    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || process.env.NAVER_SEARCHAD_ACCESS_LICENSE || '';
+    const searchAdApiKey = process.env.NAVER_SEARCHAD_API_KEY || '';
     const searchAdSecretKey = process.env.NAVER_SEARCHAD_SECRET_KEY || '';
 
     let pcSearchVolume = 0;
