@@ -3917,35 +3917,39 @@ export default function Home() {
                             gap: '8px'
                           }}
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0, flex: 1 }}>
                               <span style={{
                                 fontSize: '0.74rem', fontWeight: 800, padding: '3px 8px', borderRadius: '4px',
                                 backgroundColor: item.rank <= 3 ? '#4f46e5' : 'var(--bg-secondary)',
                                 color: item.rank <= 3 ? '#ffffff' : 'var(--text-primary)',
-                                border: item.rank <= 3 ? 'none' : '1px solid var(--border-color)'
+                                border: item.rank <= 3 ? 'none' : '1px solid var(--border-color)',
+                                minWidth: '38px', textAlign: 'center', whiteSpace: 'nowrap', flexShrink: 0
                               }}>
                                 {item.rank}위
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => analyzeKeyword(item.keyword)}
-                                style={{
-                                  background: 'none', border: 'none', padding: 0,
-                                  color: 'var(--accent)', fontWeight: 800, cursor: 'pointer',
-                                  fontSize: '0.94rem', textDecoration: 'underline', textAlign: 'left'
-                                }}
-                                title="클릭 시 이 연관검색어로 분석"
-                              >
-                                {item.keyword}
-                              </button>
-                              {item.sourceLabels?.length > 0 && (
-                                <span title={`추천 근거: ${item.sourceLabels.join(', ')}`} style={{ fontSize: '0.66rem', color: 'var(--text-tertiary)' }}>
-                                  {item.sourceLabels.join(' · ')}
-                                </span>
-                              )}
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => analyzeKeyword(item.keyword)}
+                                  style={{
+                                    display: 'block', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                    background: 'none', border: 'none', padding: 0,
+                                    color: 'var(--accent)', fontWeight: 800, cursor: 'pointer',
+                                    fontSize: '0.94rem', textDecoration: 'underline', textAlign: 'left'
+                                  }}
+                                  title={`${item.keyword} 키워드 분석`}
+                                >
+                                  {item.keyword}
+                                </button>
+                                {item.sourceLabels?.length > 0 && (
+                                  <div title={`추천 근거: ${item.sourceLabels.join(', ')}`} style={{ marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.66rem', color: 'var(--text-tertiary)' }}>
+                                    {item.sourceLabels.join(' · ')}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)' }}>
+                            <span style={{ flexShrink: 0, fontSize: '0.74rem', color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                               {item.recentDate || '오늘'}
                             </span>
                           </div>
