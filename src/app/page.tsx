@@ -1855,6 +1855,12 @@ export default function Home() {
   }, [keywordData, keywordSortField, keywordSortOrder]);
 
   const expandedKeywordCount = keywordData?.expandedKeywords?.length || 0;
+  const keywordSampleDays = Number.isInteger(keywordData?.monthlyPostsSampleDays) && keywordData.monthlyPostsSampleDays > 0
+    ? keywordData.monthlyPostsSampleDays : null;
+  const keywordSortLabel: Record<typeof keywordSortField, string> = {
+    rank: '추천 순위', keyword: '연관 검색어', volume: '월간 검색량', posts: '누적 포스팅', monthlyPosts: '월 발행량', ratio: '경쟁비율', date: '최근 발행일'
+  };
+  const keywordSortDirection = keywordSortOrder === 'asc' ? '낮은 순' : '높은 순';
 
   // ⚡ 키워드마스터 지표 클릭 도움말 툴팁 팝업 상태 (volume, ratio)
   const [activeKeywordGuideTooltip, setActiveKeywordGuideTooltip] = useState<'volume' | 'ratio' | null>(null);
@@ -3587,11 +3593,21 @@ export default function Home() {
                 </div>
               ) : keywordData ? (
                 <>
-                  {/* 📊 지표 카운트 4컬럼 가로 1행 카드 레이아웃 (월간 발행량 카드 포함) */}
+                  {/* 입력 키워드와 지표의 기준을 먼저 고정해 표의 연관어 데이터와 혼동되지 않게 한다. */}
                   <div>
+                    <div className="keyword-master-context" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px', margin: '0 2px 10px' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ color: 'var(--text-tertiary)', fontSize: '0.69rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Keyword overview</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '7px', marginTop: '2px', minWidth: 0 }}>
+                          <strong style={{ color: 'var(--text-primary)', fontSize: '1.18rem', fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>“{keywordData.keyword || keywordQuery}”</strong>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap' }}>핵심 지표</span>
+                        </div>
+                      </div>
+                      <span style={{ flexShrink: 0, color: 'var(--accent)', fontSize: '0.72rem', fontWeight: 800, whiteSpace: 'nowrap' }}>입력 검색어 기준</span>
+                    </div>
                     <div className="keyword-master-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
                       {/* 1. 월간 총 검색량 카드 */}
-                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div className="keyword-metric-card keyword-metric-demand" style={{ padding: '15px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월간 총 검색량</span>
                           <button
@@ -3626,15 +3642,15 @@ export default function Home() {
                       </div>
 
                       {/* 2. 월 블로그 포스팅 수 카드 (신규 추가) */}
-                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div className="keyword-metric-card keyword-metric-supply" style={{ padding: '15px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>월 블로그 포스팅 수</span>
                         </div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
                           {keywordData.monthlyPostsEstimated
-                            ? `(${monthlyPostsLabel(keywordData.monthlyPostsMethod)} · 표본 ${keywordData.monthlyPostsSampleDays}일)`
-                            : keywordData.monthlyPosts == null && keywordData.monthlyPostsSampleDays > 0
-                              ? `(최근 ${keywordData.monthlyPostsSampleDays}일 표본만 확보: 월간 환산 제외)`
+                            ? `${monthlyPostsLabel(keywordData.monthlyPostsMethod)}${keywordSampleDays ? ` · 표본 ${keywordSampleDays}일` : ''}`
+                            : keywordData.monthlyPosts == null && keywordSampleDays
+                              ? `최근 ${keywordSampleDays}일 표본만 확보 · 월간 환산 제외`
                               : '(최근 30일 확인 발행량)'}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
@@ -3646,7 +3662,7 @@ export default function Home() {
                       </div>
 
                       {/* 3. 누적 블로그 포스팅 수 카드 */}
-                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div className="keyword-metric-card keyword-metric-history" style={{ padding: '15px 18px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>누적 블로그 포스팅 수</span>
                         </div>
@@ -3660,7 +3676,7 @@ export default function Home() {
                       </div>
 
                       {/* 4. 경쟁비율 카드 */}
-                      <div style={{ padding: '14px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div className="keyword-metric-card keyword-metric-competition" style={{ padding: '15px 18px', borderRadius: 'var(--radius-md)', backgroundColor: keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.08)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: `1px solid ${keywordData.grade === 'GOLD' ? 'rgba(16, 185, 129, 0.3)' : keywordData.grade === 'NORMAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>경쟁비율 (문서 ÷ 검색량)</span>
                           <button
@@ -3716,6 +3732,9 @@ export default function Home() {
                             모든 검색어 조건 일치 · {keywordData.relatedKeywords?.length || 0}개
                           </span>
                         </div>
+                        <div style={{ color: 'var(--text-tertiary)', fontSize: '0.72rem', fontWeight: 600 }}>
+                          현재 정렬: {keywordSortLabel[keywordSortField]} {keywordSortDirection} · 순위는 추천 기준입니다
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -3757,7 +3776,7 @@ export default function Home() {
                               }}
                               style={{ padding: '12px 10px', width: '60px', textAlign: 'center', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
                             >
-                              순위 {keywordSortField === 'rank' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
+                              추천 순위 {keywordSortField === 'rank' ? (keywordSortOrder === 'asc' ? '▲' : '▼') : '↕'}
                             </th>
                             <th 
                               onClick={() => {
@@ -4461,11 +4480,12 @@ export default function Home() {
             margin-bottom: 4px !important;
           }
 
-          /* 키워드마스터 지표 3열 카드 모바일 1열 변환 */
-          .keyword-modal-cards {
+          /* 키워드마스터 지표는 모바일에서 한 줄씩 읽을 수 있게 전환 */
+          .keyword-master-summary-grid {
             grid-template-columns: 1fr !important;
             gap: 8px !important;
           }
+          .keyword-master-context { align-items: flex-start !important; }
 
           /* 모바일 모달 팝업 레이아웃 뷰포트 맞춤화 */
           div[style*="position: 'fixed'"][style*="zIndex: 1000"],
@@ -4478,6 +4498,30 @@ export default function Home() {
             border-radius: 16px !important;
           }
         }
+
+        .keyword-metric-card {
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.035);
+          transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .keyword-metric-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.075);
+        }
+        .keyword-metric-card::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 3px;
+          background: var(--accent);
+          opacity: 0.9;
+        }
+        .keyword-metric-supply::before { background: #10b981; }
+        .keyword-metric-history::before { background: #64748b; }
+        .keyword-metric-competition::before { background: #ef4444; }
 
         /* 📱 초소형 모바일 기기 반응형 보정 (480px 이하: iPhone SE, Galaxy 등) */
         @media (max-width: 480px) {
