@@ -3735,6 +3735,14 @@ export default function Home() {
                         <div style={{ color: 'var(--text-tertiary)', fontSize: '0.72rem', fontWeight: 600 }}>
                           현재 정렬: {keywordSortLabel[keywordSortField]} {keywordSortDirection} · 순위는 추천 기준입니다
                         </div>
+                        <details style={{ marginTop: '2px', maxWidth: '640px' }}>
+                          <summary style={{ cursor: 'pointer', width: 'fit-content', color: 'var(--accent)', fontSize: '0.73rem', fontWeight: 750 }}>
+                            순위 산정 기준
+                          </summary>
+                          <p style={{ margin: '5px 0 0', color: 'var(--text-secondary)', fontSize: '0.72rem', lineHeight: 1.55 }}>
+                            기본 추천 순위는 입력어 관련성, 월간 검색량, 최근 발행량, 데이터 출처 신뢰도를 함께 반영합니다. 복합 검색어는 입력한 단어를 모두 포함한 후보를 우선 노출하며, 표 헤더를 누르면 선택한 지표 기준으로 다시 정렬됩니다.
+                          </p>
+                        </details>
                       </div>
                       <button
                         type="button"
@@ -4010,7 +4018,7 @@ export default function Home() {
                           확장 탐색어 {expandedKeywordCount}개 보기
                         </summary>
                         <p style={{ margin: '9px 0 10px', color: 'var(--text-secondary)', fontSize: '0.74rem', lineHeight: 1.5 }}>
-                          입력한 복합 검색어의 일부 조건만 일치하는 후보입니다. 정밀 연관 검색어 순위에는 포함하지 않습니다.
+                          입력한 복합 검색어의 일부 조건만 일치하는 탐색용 후보입니다. 정밀 연관 검색어 순위에는 포함하지 않습니다.
                         </p>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
                           {(keywordData.expandedKeywords || []).map((item: any) => (
