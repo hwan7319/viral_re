@@ -23,6 +23,8 @@ const scrapers = [
   ['리뷰플레이스', reviewplace],
 ] as const;
 
+export const MAINTAINED_CRAWLER_SITES = scrapers.map(([targetSite]) => targetSite);
+
 export type SourceCollectionResult = {
   targetSite: string;
   status: 'SUCCESS' | 'EMPTY' | 'FAILED';
@@ -31,10 +33,18 @@ export type SourceCollectionResult = {
   errorMessage?: string;
 };
 
-export async function collectCampaignsWithReport(keyword: string, recordHealth = false, excludedSites: readonly string[] = []): Promise<{ campaigns: Campaign[]; sources: SourceCollectionResult[] }> {
+export async function collectCampaignsWithReport(
+  keyword: string,
+  recordHealth = false,
+  excludedSites: readonly string[] = [],
+  includedSites: readonly string[] = [],
+): Promise<{ campaigns: Campaign[]; sources: SourceCollectionResult[] }> {
   const outcomes: SourceCollectionResult[] = [];
   const collected = new Map<string, Campaign>();
-  const scheduledScrapers = scrapers.filter(([targetSite]) => !excludedSites.includes(targetSite));
+  const requested = new Set(includedSites);
+  const scheduledScrapers = scrapers.filter(([targetSite]) =>
+    !excludedSites.includes(targetSite) && (!requested.size || requested.has(targetSite)),
+  );
   // Limit concurrent sites, not the number of returned campaigns.
   for (let offset = 0; offset < scheduledScrapers.length; offset += 3) {
     const results = await Promise.all(scheduledScrapers.slice(offset, offset + 3).map(async ([targetSite, scrape]) => {
@@ -62,11 +72,15 @@ export async function collectCampaignsWithReport(keyword: string, recordHealth =
   return { campaigns: [...collected.values()], sources: outcomes };
 }
 
-export async function collectCampaigns(keyword: string): Promise<Campaign[]> {
-  return (await collectCampaignsWithReport(keyword)).campaigns;
+export async function collectCampaigns(keyword: string, includedSites: readonly string[] = []): Promise<Campaign[]> {
+  return (await collectCampaignsWithReport(keyword, false, [], includedSites)).campaigns;
 }
-export async function crawlKeywordOnDemandParallel(keyword: string): Promise<number> {
-  const collected = await collectCampaigns(keyword);
+export async function crawlKeywordOnDemandParallel(
+  keyword: string,
+  includedSites: readonly string[] = [],
+  recordHealth = false,
+): Promise<number> {
+  const collected = (await collectCampaignsWithReport(keyword, recordHealth, [], includedSites)).campaigns;
   if (collected.length) await insertOrUpdateCampaigns(collected);
   return collected.length;
 }

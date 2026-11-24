@@ -26,6 +26,6 @@ Every stored campaign records the strongest source used for its current values: 
 
 ## Scheduled source health
 
-Each full synchronization writes one health record per source to `crawling_logs`: `SUCCESS`, `EMPTY`, or `FAILED`, together with item count, duration in the server log, and any error message. Read the latest result for every source from `GET /api/source-health`. On-demand keyword searches do not alter this health record.
+Each full synchronization writes one health record per source to `crawling_logs`: `SUCCESS`, `EMPTY`, or `FAILED`, together with item count, duration in the server log, and any error message. Filter-only on-demand refreshes also write their selected source results so their freshness can suppress redundant collection; keyword on-demand searches do not alter this health record. Read the latest result for every source from `GET /api/source-health`.
 
 Do not turn missing values into future deadlines, fixed quotas, or estimated applicant counts. Remove old rows from a source when its current detail-backed list is authoritative and the old rows have no verifiable deadline.

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { filterValues, queryCampaigns, getTotalCampaignCount, logSearchQuery } from '@/lib/db';
-import { reserveKeywordCrawl, runKeywordCrawl } from '@/lib/crawl-jobs';
+import { cancelFilterCrawl, hasDetailedFilters, planFilterCrawl, reserveFilterCrawl, reserveKeywordCrawl, runFilterCrawl, runKeywordCrawl } from '@/lib/crawl-jobs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 export async function GET(request: NextRequest) {
@@ -15,9 +15,27 @@ export async function GET(request: NextRequest) {
     if (selectedTypes.some(type => !['visit', 'delivery'].includes(type)) || !['all', 'latest', 'endDate', 'popular'].includes(filters.sortBy as string)) return NextResponse.json({ success: false, error: 'Invalid filter' }, { status: 400 });
     const campaigns = await queryCampaigns({ ...filters, search });
     // Only the first page can schedule work. Failed/empty searches obey the same cooldown.
-    const isCrawlingTriggered = offset === 0 && params.get('crawl') !== 'false' && !!search && reserveKeywordCrawl(search);
+    const canScheduleCrawl = offset === 0 && params.get('crawl') !== 'false';
+    const isKeywordCrawl = canScheduleCrawl && !!search && reserveKeywordCrawl(search);
+    let filterCrawlSites: string[] = [];
+    const isFilterCrawl = !isKeywordCrawl && canScheduleCrawl && !search && hasDetailedFilters(filters) && reserveFilterCrawl(filters);
+    if (isFilterCrawl) {
+      try {
+        filterCrawlSites = await planFilterCrawl(filters, campaigns);
+      } catch (error) {
+        cancelFilterCrawl(filters);
+        throw error;
+      }
+      // Nothing is stale enough to collect, so do not consume a condition
+      // cooldown or leave the shared crawl lock held.
+      if (!filterCrawlSites.length) cancelFilterCrawl(filters);
+    }
+    const isCrawlingTriggered = isKeywordCrawl || (isFilterCrawl && filterCrawlSites.length > 0);
     if (isCrawlingTriggered) after(async () => {
-      try { await runKeywordCrawl(search); } catch (error) { console.error('Keyword crawl failed', error); }
+      try {
+        if (isKeywordCrawl) await runKeywordCrawl(search);
+        else await runFilterCrawl(filters, filterCrawlSites);
+      } catch (error) { console.error('On-demand crawl failed', error); }
     });
     if (search && offset === 0 && params.get('crawl') !== 'false') await logSearchQuery(search, campaigns.length > 0);
     const data = campaigns.slice(offset, offset + limit);

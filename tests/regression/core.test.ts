@@ -31,7 +31,7 @@ test('regression suite', async t => {
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
   const { extractAssaViewCategoryContext, resolveAssaViewDetailCategory } = await import('../../src/lib/scrapers/search/assaview_pages');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
-  const { reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
+  const { cancelFilterCrawl, filterCrawlKey, hasDetailedFilters, reserveFilterCrawl, reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
   rows.push(fixture('expired', { endDate: '2020-01-01' }), fixture('unknown-current', { endDate: '', updatedAt: new Date().toISOString() }), fixture('unknown-stale', { endDate: '', updatedAt: '2020-01-01T00:00:00Z' }), fixture('busan', { location: '부산 중구' }), fixture('negative', { description: '치킨 제외' }), fixture('no-limit', { limitCount: 0, applyCount: 1000 }), fixture('percent', { title: '할인 50%' }));
@@ -261,6 +261,21 @@ test('regression suite', async t => {
     assert.equal(reserveKeywordCrawl('다른검색어'), false);
     releaseCrawl();
     assert.equal(reserveKeywordCrawl('없는검색어'), false);
+  });
+  await t.test('filter-only crawl keys are canonical and never run without a detailed condition', () => {
+    assert.equal(hasDetailedFilters({}), false);
+    assert.equal(hasDetailedFilters({ category: ['food-korean', 'food-cafe'] }), true);
+    assert.equal(
+      filterCrawlKey({ category: ['food-cafe', 'food-korean'], platform: 'blog,instagram' }),
+      filterCrawlKey({ platform: ['instagram', 'blog'], category: 'food-korean,food-cafe' }),
+    );
+    assert.equal(reserveFilterCrawl({}), false);
+    const filters = { category: 'food-korean', location: '서울 강남구' };
+    assert.equal(reserveFilterCrawl(filters), true);
+    assert.equal(reserveFilterCrawl({ location: '서울 강남구', category: 'food-korean' }), false);
+    cancelFilterCrawl(filters);
+    assert.equal(reserveKeywordCrawl('조건 수집 뒤 키워드 수집'), true);
+    releaseCrawl();
   });
   await t.test('unknown deadlines and incomplete monthly samples are never fabricated', () => {
     assert.equal(koreanDate(new Date('2026-09-13T16:00:00Z')), '2026-09-14');
