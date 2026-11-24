@@ -31,6 +31,7 @@ test('regression suite', async t => {
   const { parseReviewPlaceDeadline, parseReviewPlaceApplicantCounts, cleanReviewPlaceTitle, parseReviewPlaceBenefit } = await import('../../src/lib/scrapers/06_reviewplace');
   const { extractAssaViewCategoryContext, resolveAssaViewDetailCategory } = await import('../../src/lib/scrapers/search/assaview_pages');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
+  const { selectRingbleDeadlineEnrichment } = await import('../../src/lib/scrapers/search/ringble_categories');
   const { cancelFilterCrawl, filterCrawlKey, hasDetailedFilters, planFilterCrawl, reserveFilterCrawl, reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
@@ -479,6 +480,13 @@ test('regression suite', async t => {
   await t.test('ComeToPlay detail keeps its published reviewer application end date', () => {
     const html = '<span><em>리뷰어 신청</em> 09.16 ~ 09.21</span><script>var austDay = new Date(1790002799000);</script>';
     assert.equal(parseComeToPlayDeadline(html, new Date('2026-09-16T00:00:00+09:00')), '2026-09-21');
+  });
+  await t.test('Ringble limits inline deadline enrichment while retaining known deadlines', () => {
+    const unresolved = Array.from({ length: 75 }, (_, index) => fixture(`ringble-${index}`, { endDate: '' }));
+    const known = fixture('ringble-known', { endDate: '2099-12-31' });
+    const selected = selectRingbleDeadlineEnrichment([...unresolved, known]);
+    assert.equal(selected.length, 60);
+    assert.equal(selected.some(campaign => campaign.id === known.id), false);
   });
   await t.test('upstream failures produce unavailable keyword metrics, not invented counts', async () => {
     const original = axios.get;

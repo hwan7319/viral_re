@@ -4,6 +4,11 @@ import * as cheerio from 'cheerio';
 import { HEADERS, detectCategory, detectPlatform, inferCampaignLocation } from '../../scraper-utils';
 
 const deadlineCache = new Map<string, string>();
+// Detail pages provide the authoritative recruitment deadline, but checking
+// every listing inline makes a list refresh take several minutes. Known dates
+// are restored from SQLite first; only the freshest unresolved window is
+// enriched here. Opening a campaign still refreshes that one detail on demand.
+const MAX_INLINE_DEADLINE_ENRICH = 60;
 
 function parseRecruitmentEndDate(text: string): string {
   // 링블 상세: "26년 09월 16일(수) ~ 26년 09월 22일(화)"
@@ -49,6 +54,10 @@ async function enrichDeadlines(campaigns: Campaign[]): Promise<Campaign[]> {
     }
   }));
   return campaigns;
+}
+
+export function selectRingbleDeadlineEnrichment(campaigns: Campaign[], limit = MAX_INLINE_DEADLINE_ENRICH): Campaign[] {
+  return campaigns.filter(campaign => !campaign.endDate).slice(0, limit);
 }
 
 async function restoreKnownDeadlines(campaigns: Campaign[]): Promise<void> {
@@ -166,6 +175,6 @@ await (async () => {
       }
     })();
  await restoreKnownDeadlines(collected);
- await enrichDeadlines(collected.filter(campaign => !campaign.endDate));
+ await enrichDeadlines(selectRingbleDeadlineEnrichment(collected));
  return collected;
 }

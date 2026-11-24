@@ -57,6 +57,8 @@ async function fetchCampaigns(keyword: string) {
 export async function scrape(keyword: string): Promise<Campaign[]> {
 const collected = new Map<string, Campaign>();
 const now = new Date();
+const failures: string[] = [];
+let successfulRequests = 0;
 // The public endpoint treats an empty search as no result.  Use the site's
 // active discovery categories during scheduled synchronization, while keeping
 // a caller's keyword untouched for an on-demand search.
@@ -64,6 +66,7 @@ const queries = keyword.trim() ? [keyword.trim()] : ['맛집', '뷰티', '여행
 for (const query of queries) {
       try {
         const response = await fetchCampaigns(query);
+        successfulRequests++;
         if (Array.isArray(response.data)) {
           response.data.forEach((item: any) => {
             const id = `pb-${item.CID}`;
@@ -96,7 +99,14 @@ for (const query of queries) {
         }
       } catch (err: any) {
         console.error('[Parallel-Crawl] 포블로그 failed:', err.message);
+        failures.push(err instanceof Error ? err.message : String(err));
       }
     }
+// An upstream access failure is not an empty campaign list.  Throwing here
+// lets crawler-parallel record FAILED (and retain the last known data) rather
+// than incorrectly reporting a healthy-but-empty source.
+if (successfulRequests === 0 && failures.length > 0) {
+  throw new Error(`Fourblog source unavailable: ${failures.at(-1)}`);
+}
 return [...collected.values()];
 }
