@@ -16,6 +16,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:filters": "tsx src/scripts/audit-integrated-filters.ts",
     "test:filters:matrix": "tsx src/scripts/audit-filter-matrix.ts",
+    "test:filters:api": "tsx src/scripts/audit-api-filter-contract.ts",
     "test:regions": "tsx src/scripts/audit-region-filters.ts",
     "backfill:source-quality": "tsx src/scripts/backfill-source-quality.ts",
     "reclassify:active": "tsx src/scripts/reclassify-active-categories.ts",
