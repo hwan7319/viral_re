@@ -2111,7 +2111,12 @@ export default function Home() {
             setCampaigns(refreshed.data);
             setMatchedCount(refreshed.totalCount);
             setNextOffset(refreshed.nextOffset);
-            showToast(`'${appliedFilters.search}' 최신 수집 결과가 반영되었습니다.`, 'success');
+            const failedSources = refreshed.crawlStatus?.failedSources || [];
+            if (failedSources.length) {
+              showToast(`'${appliedFilters.search}' 결과를 갱신했습니다. ${failedSources.join(', ')} 수집은 실패해 기존 데이터가 표시됩니다.`, 'info');
+            } else {
+              showToast(`'${appliedFilters.search}' 최신 수집 결과가 반영되었습니다.`, 'success');
+            }
             return;
           }
         })().catch(() => {
