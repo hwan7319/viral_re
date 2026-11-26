@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  Linking,
   Modal,
   Pressable,
   RefreshControl,
@@ -14,7 +13,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { fetchCampaigns, fetchCrawlStatus, type Campaign, type CampaignFilters } from '@/lib/campaign-api';
+import { cacheCampaigns } from '@/lib/campaign-cache';
 import { cloneFilters, EMPTY_FILTERS, FILTER_LABELS, FILTER_OPTIONS, selectedFilterCount, toggleFilterValue, type FilterGroup } from '@/lib/filter-options';
 
 const POLL_INTERVAL_MS = 2_000;
@@ -59,6 +60,7 @@ export default function HomeScreen() {
       }
       const refreshed = await fetchCampaigns(search, false, filters);
       setCampaigns(refreshed.data);
+      cacheCampaigns(refreshed.data);
       setTotalCount(refreshed.totalCount);
       setSyncNotice(status?.failedSources?.length
         ? `${status.failedSources.join(', ')} 수집은 실패해 기존 데이터를 표시합니다.`
@@ -73,6 +75,7 @@ export default function HomeScreen() {
     try {
       const result = await fetchCampaigns(search, allowCollection, filters);
       setCampaigns(result.data);
+      cacheCampaigns(result.data);
       setTotalCount(result.totalCount);
       const isCollecting = result.crawlStatus?.status === 'queued' || result.crawlStatus?.status === 'running';
       if (isCollecting) {
@@ -132,10 +135,7 @@ export default function HomeScreen() {
     });
   };
 
-  const openCampaign = async (campaign: Campaign) => {
-    if (await Linking.canOpenURL(campaign.campaignUrl)) await Linking.openURL(campaign.campaignUrl);
-    else setError('원본 공고 링크를 열 수 없습니다.');
-  };
+  const openCampaign = (campaign: Campaign) => router.push({ pathname: '/campaign/[id]', params: { id: campaign.id } });
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -179,7 +179,7 @@ export default function HomeScreen() {
         }
         ListEmptyComponent={loading ? <ActivityIndicator color="#5B4CF6" style={styles.loader} /> : <Text style={styles.empty}>조건에 맞는 공고가 없습니다.</Text>}
         renderItem={({ item }) => (
-          <Pressable style={styles.card} onPress={() => void openCampaign(item)} accessibilityRole="link" accessibilityLabel={`${item.title} 원본 공고 열기`}>
+          <Pressable style={styles.card} onPress={() => openCampaign(item)} accessibilityRole="button" accessibilityLabel={`${item.title} 상세 보기`}>
             {item.imageUrl ? <Image source={{ uri: item.imageUrl }} style={styles.thumbnail} alt={item.title} /> : <View style={[styles.thumbnail, styles.thumbnailFallback]} />}
             <View style={styles.cardContent}>
               <View style={styles.badgeRow}>

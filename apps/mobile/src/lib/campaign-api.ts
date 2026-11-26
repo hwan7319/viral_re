@@ -11,6 +11,16 @@ export type Campaign = {
   limitCount: number;
   applyCount: number;
   endDate: string;
+  mission?: string;
+  updatedAt?: string;
+  dataSource?: string;
+};
+
+export type CampaignDetail = {
+  mission: string | null;
+  realBenefit: string | null;
+  applyCount: number;
+  limitCount: number;
 };
 
 export type CrawlStatus = {
@@ -61,4 +71,11 @@ export async function fetchCampaigns(keyword: string, allowCollection: boolean, 
 export async function fetchCrawlStatus(keyword: string): Promise<CrawlStatus | null> {
   const params = new URLSearchParams({ search: keyword, status: 'crawl', crawl: 'false' });
   return (await request<{ success: boolean; crawlStatus: CrawlStatus | null }>(`/api/campaigns?${params}`)).crawlStatus;
+}
+
+export async function fetchCampaignDetail(id: string): Promise<CampaignDetail> {
+  const params = new URLSearchParams({ id });
+  const result = await request<{ success: boolean } & CampaignDetail>(`/api/campaign-detail?${params}`);
+  if (!result.success) throw new Error('Campaign detail request failed');
+  return result;
 }
