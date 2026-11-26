@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { filterValues, queryCampaigns, getTotalCampaignCount, logSearchQuery } from '@/lib/db';
-import { cancelFilterCrawl, hasDetailedFilters, planFilterCrawl, reserveFilterCrawl, reserveKeywordCrawl, runFilterCrawl, runKeywordCrawl } from '@/lib/crawl-jobs';
+import { cancelFilterCrawl, getKeywordCrawlStatus, hasDetailedFilters, planFilterCrawl, reserveFilterCrawl, reserveKeywordCrawl, runFilterCrawl, runKeywordCrawl } from '@/lib/crawl-jobs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 export async function GET(request: NextRequest) {
@@ -13,6 +13,11 @@ export async function GET(request: NextRequest) {
     const filters = Object.fromEntries(['platform', 'category', 'location', 'targetSite', 'sortBy', 'type'].map(key => [key, key === 'sortBy' ? (params.get(key) || 'all') : params.getAll(key)]));
     const selectedTypes = filterValues(filters.type);
     if (selectedTypes.some(type => !['visit', 'delivery'].includes(type)) || !['all', 'latest', 'endDate', 'popular'].includes(filters.sortBy as string)) return NextResponse.json({ success: false, error: 'Invalid filter' }, { status: 400 });
+    // Long-running browser polling only needs the small job record; avoid
+    // repeatedly running a campaign query until source collection is done.
+    if (params.get('status') === 'crawl' && search) {
+      return NextResponse.json({ success: true, crawlStatus: getKeywordCrawlStatus(search) });
+    }
     const campaigns = await queryCampaigns({ ...filters, search });
     // Only the first page can schedule work. Failed/empty searches obey the same cooldown.
     const canScheduleCrawl = offset === 0 && params.get('crawl') !== 'false';
@@ -39,7 +44,20 @@ export async function GET(request: NextRequest) {
     });
     if (search && offset === 0 && params.get('crawl') !== 'false') await logSearchQuery(search, campaigns.length > 0);
     const data = campaigns.slice(offset, offset + limit);
-    return NextResponse.json({ success: true, totalDBCount: await getTotalCampaignCount(), totalCount: campaigns.length, data, offset, limit, nextOffset: offset + data.length < campaigns.length ? offset + data.length : null, isCrawlingTriggered });
+    return NextResponse.json({
+      success: true,
+      totalDBCount: await getTotalCampaignCount(),
+      totalCount: campaigns.length,
+      data,
+      offset,
+      limit,
+      nextOffset: offset + data.length < campaigns.length ? offset + data.length : null,
+      isCrawlingTriggered,
+      // The initial response is intentionally fast and may be served before
+      // source collection finishes. Clients use this state to refresh once the
+      // exact-keyword crawl has committed its new rows.
+      crawlStatus: search ? getKeywordCrawlStatus(search) : null,
+    });
   } catch (error) {
     console.error('Campaign query failed', error);
     return NextResponse.json({ success: false, error: '캠페인 조회에 실패했습니다.' }, { status: 500 });

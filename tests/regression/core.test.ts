@@ -32,7 +32,7 @@ test('regression suite', async t => {
   const { extractAssaViewCategoryContext, resolveAssaViewDetailCategory } = await import('../../src/lib/scrapers/search/assaview_pages');
   const { parseComeToPlayDeadline } = await import('../../src/lib/scrapers/search/cometoplay');
   const { selectRingbleDeadlineEnrichment } = await import('../../src/lib/scrapers/search/ringble_categories');
-  const { cancelFilterCrawl, filterCrawlKey, hasDetailedFilters, planFilterCrawl, reserveFilterCrawl, reserveKeywordCrawl, releaseCrawl } = await import('../../src/lib/crawl-jobs');
+  const { cancelFilterCrawl, filterCrawlKey, getKeywordCrawlStatus, hasDetailedFilters, planFilterCrawl, reserveFilterCrawl, reserveKeywordCrawl } = await import('../../src/lib/crawl-jobs');
   const fixture = (id: string, changes: Partial<Campaign> = {}): Campaign => ({ id, title: `캠페인 ${id}`, description: '식사권', platform: 'blog', category: 'food', location: '서울 중구', targetSite: '레뷰', campaignUrl: `https://www.revu.net/campaign/${id}`, imageUrl: '', applyCount: 1, limitCount: 5, endDate: '2099-12-31', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z', ...changes });
   const rows = Array.from({ length: 350 }, (_, i) => fixture(`campaign-${String(i).padStart(3, '0')}`));
   rows.push(fixture('expired', { endDate: '2020-01-01' }), fixture('unknown-current', { endDate: '', updatedAt: new Date().toISOString() }), fixture('unknown-stale', { endDate: '', updatedAt: '2020-01-01T00:00:00Z' }), fixture('busan', { location: '부산 중구' }), fixture('negative', { description: '치킨 제외' }), fixture('no-limit', { limitCount: 0, applyCount: 1000 }), fixture('percent', { title: '할인 50%' }));
@@ -257,11 +257,14 @@ test('regression suite', async t => {
     assert.equal(response.status, 400);
     assert.equal((await db.getCampaignById('campaign-000'))?.description, '식사권');
   });
-  await t.test('empty-result crawl cooldown and global concurrency are enforced', () => {
+  await t.test('keyword jobs queue independently while duplicate keywords observe cooldown', async () => {
     assert.equal(reserveKeywordCrawl('없는검색어'), true);
-    assert.equal(reserveKeywordCrawl('다른검색어'), false);
-    releaseCrawl();
+    assert.equal(reserveKeywordCrawl('다른검색어'), true);
     assert.equal(reserveKeywordCrawl('없는검색어'), false);
+    assert.equal(getKeywordCrawlStatus('다른검색어')?.status, 'queued');
+    const statusResponse = await campaigns(new NextRequest('http://localhost:3000/api/campaigns?search=%EB%8B%A4%EB%A5%B8%EA%B2%80%EC%83%89%EC%96%B4&status=crawl&crawl=false'));
+    assert.equal(statusResponse.status, 200);
+    assert.equal((await statusResponse.json()).crawlStatus.status, 'queued');
   });
   await t.test('filter-only crawl keys are canonical and never run without a detailed condition', () => {
     assert.equal(hasDetailedFilters({}), false);
@@ -276,7 +279,6 @@ test('regression suite', async t => {
     assert.equal(reserveFilterCrawl({ location: '서울 강남구', category: 'food-korean' }), false);
     cancelFilterCrawl(filters);
     assert.equal(reserveKeywordCrawl('조건 수집 뒤 키워드 수집'), true);
-    releaseCrawl();
   });
   await t.test('filter-only refresh chooses the requested source and respects source freshness', async () => {
     const filters = { targetSite: '리뷰플레이스', category: 'food-korean' };

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'react';
 import type { Campaign } from '@/lib/db';
 import { koreanDate } from '@/lib/campaign-values';
-import { fetchCampaignPage } from '@/lib/campaign-client';
+import { fetchCampaignPage, fetchKeywordCrawlStatus } from '@/lib/campaign-client';
 import AdSenseSlot from '@/components/AdSenseSlot';
 import CoupangBanner from '@/components/CoupangBanner';
 import TrustContent from '@/components/TrustContent';
@@ -2085,6 +2085,39 @@ export default function Home() {
       setMatchedCount(result.totalCount);
       setNextOffset(result.nextOffset);
       setVisibleCount(12);
+      const shouldRefreshAfterCrawl = result.crawlStatus?.status === 'queued' || result.crawlStatus?.status === 'running';
+      if (shouldRefreshAfterCrawl) {
+        const refreshParams = new URLSearchParams(params);
+        refreshParams.set('crawl', 'false');
+        refreshParams.set('offset', '0');
+        showToast(`'${appliedFilters.search}' 최신 공고를 확인 중입니다. 완료되면 자동 반영됩니다.`, 'info');
+        // The server answers search requests from the local cache first, then
+        // crawls partner sites in the background. Poll only this in-flight
+        // keyword job so a newly found campaign appears without a second
+        // search, while stale responses remain blocked by the generation token.
+        void (async () => {
+          const deadline = Date.now() + 300_000;
+          while (Date.now() < deadline && generation === searchGenerationRef.current) {
+            await new Promise(resolve => window.setTimeout(resolve, 2_000));
+            const status = await fetchKeywordCrawlStatus(appliedFilters.search);
+            if (generation !== searchGenerationRef.current) return;
+            if (status.crawlStatus?.status === 'queued' || status.crawlStatus?.status === 'running') continue;
+            if (status.crawlStatus?.status === 'failed') {
+              showToast('최신 공고 확인 중 일부 출처 수집에 실패했습니다. 기존 결과를 표시합니다.', 'info');
+              return;
+            }
+            const refreshed = await fetchCampaignPage(refreshParams);
+            if (generation !== searchGenerationRef.current) return;
+            setCampaigns(refreshed.data);
+            setMatchedCount(refreshed.totalCount);
+            setNextOffset(refreshed.nextOffset);
+            showToast(`'${appliedFilters.search}' 최신 수집 결과가 반영되었습니다.`, 'success');
+            return;
+          }
+        })().catch(() => {
+          if (generation === searchGenerationRef.current) showToast('최신 공고 확인이 지연되고 있습니다. 잠시 후 자동 반영됩니다.', 'info');
+        });
+      }
     } catch (error) {
       if (!controller.signal.aborted && generation === searchGenerationRef.current) showToast('데이터를 가져오는데 실패했습니다.', 'error');
     } finally {

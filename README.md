@@ -11,7 +11,7 @@ npm run build
 npm start
 ```
 
-The search page queries `/api/campaigns` with region, platform, recruitment type, category, source and sort filters. Results use server pagination (60 per page by default, maximum 300 per page). A keyword search schedules all maintained source adapters in the background with a global concurrency limit and a three-minute keyword cooldown. A filter-only search returns the database result immediately, then refreshes at most three relevant stale sources (or the explicitly selected source); it has a per-condition 20-minute cooldown. `crawl=false` is always read-only.
+The search page queries `/api/campaigns` with region, platform, recruitment type, category, source and sort filters. Results use server pagination (60 per page by default, maximum 300 per page). A keyword search returns the cached result immediately, queues all maintained source adapters for that exact keyword, then automatically refreshes the visible result when the job completes. Different keyword jobs wait in a single-worker queue; only the same normalized keyword has a three-minute cooldown. A filter-only search returns the database result immediately, then refreshes at most three relevant stale sources (or the explicitly selected source); it has a per-condition 20-minute cooldown. `crawl=false` is always read-only.
 
 `src/lib/crawler-parallel.ts` coordinates site collectors in `src/lib/scrapers/search/` with at most three sites in flight. Common parsing utilities live in `src/lib/scraper-utils.ts`. `crawler-core.ts` retains the bulk and legacy crawler entry points. Detail enrichment is centralized in `detail-service.ts`, with deduplication, bounded concurrency and caching.
 

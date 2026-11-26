@@ -80,7 +80,15 @@ export async function crawlKeywordOnDemandParallel(
   includedSites: readonly string[] = [],
   recordHealth = false,
 ): Promise<number> {
-  const collected = (await collectCampaignsWithReport(keyword, recordHealth, [], includedSites)).campaigns;
-  if (collected.length) await insertOrUpdateCampaigns(collected);
-  return collected.length;
+  return (await crawlKeywordOnDemandWithReport(keyword, includedSites, recordHealth)).collectedCount;
+}
+
+export async function crawlKeywordOnDemandWithReport(
+  keyword: string,
+  includedSites: readonly string[] = [],
+  recordHealth = false,
+): Promise<{ collectedCount: number; sources: SourceCollectionResult[] }> {
+  const { campaigns, sources } = await collectCampaignsWithReport(keyword, recordHealth, [], includedSites);
+  if (campaigns.length) await insertOrUpdateCampaigns(campaigns);
+  return { collectedCount: campaigns.length, sources };
 }

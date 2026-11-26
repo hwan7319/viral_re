@@ -1,4 +1,4 @@
-import { reserveKeywordCrawl, releaseCrawl } from '@/lib/crawl-jobs';
+import { reserveExclusiveCrawl, releaseCrawl } from '@/lib/crawl-jobs';
 import { authorizeJob } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { runCrawlerCore } from '@/lib/crawler-core';
@@ -42,7 +42,7 @@ async function handleCrawl(req: NextRequest) {
     }
 
     // 3. 락 활성화 및 크롤러 구동
-    if (!reserveKeywordCrawl('__bulk__')) return NextResponse.json({ success: false, error: 'Crawler busy or cooling down' }, { status: 429 });
+    if (!reserveExclusiveCrawl()) return NextResponse.json({ success: false, error: 'Crawler busy or cooling down' }, { status: 429 });
     isCrawlingActive = true;
     const startTime = Date.now();
     

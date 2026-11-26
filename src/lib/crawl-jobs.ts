@@ -1,13 +1,45 @@
-import { crawlKeywordOnDemandParallel, MAINTAINED_CRAWLER_SITES } from './crawler-parallel';
+import { crawlKeywordOnDemandParallel, crawlKeywordOnDemandWithReport, MAINTAINED_CRAWLER_SITES } from './crawler-parallel';
 import { filterValues, getCrawlingHealth, queryCampaigns, type Campaign } from './db';
 import axios from 'axios';
 
 const recent = new Map<string, number>();
 let active = false;
+const waitingForSlot: Array<() => void> = [];
 const COOLDOWN = 180000;
 const FILTER_COOLDOWN = 20 * 60_000;
 const FILTER_SOURCE_LIMIT = 3;
 const FILTER_FALLBACK_SITES = ['리뷰플레이스', '링블', '클라우드리뷰'];
+const JOB_STATUS_TTL = 20 * 60_000;
+
+export type KeywordCrawlStatus = {
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  startedAt: string;
+  completedAt?: string;
+  collectedCount?: number;
+  failedSources?: string[];
+  error?: string;
+};
+
+const keywordJobs = new Map<string, KeywordCrawlStatus>();
+
+const keywordKey = (keyword: string) => keyword.trim().toLowerCase();
+
+function pruneJobState(now = Date.now()) {
+  for (const [key, job] of keywordJobs) {
+    if (job.status === 'completed' || job.status === 'failed') {
+      const timestamp = Date.parse(job.completedAt || job.startedAt);
+      if (Number.isFinite(timestamp) && now - timestamp >= JOB_STATUS_TTL) keywordJobs.delete(key);
+    }
+  }
+}
+
+async function acquireCrawlSlot() {
+  if (!active) {
+    active = true;
+    return;
+  }
+  await new Promise<void>(resolve => waitingForSlot.push(resolve));
+}
 
 export type FilterCrawlFilters = {
   platform?: string | string[];
@@ -63,28 +95,33 @@ export async function planFilterCrawl(filters: FilterCrawlFilters, currentMatche
   return planned.filter(site => !lastRun.get(site) || (lastRun.get(site) || 0) < staleAfter);
 }
 export function reserveKeywordCrawl(keyword: string): boolean {
-  const key = keyword.trim().toLowerCase();
+  const key = keywordKey(keyword);
   const now = Date.now();
   for (const [k, time] of recent) if (now - time >= COOLDOWN) recent.delete(k);
-  if (!key || key.length > 100 || active || recent.has(key)) return false;
+  pruneJobState(now);
+  if (!key || key.length > 100 || recent.has(key)) return false;
   recent.set(key, now);
-  active = true;
+  keywordJobs.set(key, { status: 'queued', startedAt: new Date(now).toISOString() });
   return true;
+}
+
+export function getKeywordCrawlStatus(keyword: string): KeywordCrawlStatus | null {
+  pruneJobState();
+  const job = keywordJobs.get(keywordKey(keyword));
+  return job ? { ...job } : null;
 }
 
 export function reserveFilterCrawl(filters: FilterCrawlFilters): boolean {
   const key = `filters:${filterCrawlKey(filters)}`;
   const now = Date.now();
   for (const [recentKey, time] of recent) if (now - time >= FILTER_COOLDOWN) recent.delete(recentKey);
-  if (!hasDetailedFilters(filters) || active || recent.has(key)) return false;
+  if (!hasDetailedFilters(filters) || recent.has(key)) return false;
   recent.set(key, now);
-  active = true;
   return true;
 }
 
 export function cancelFilterCrawl(filters: FilterCrawlFilters) {
   recent.delete(`filters:${filterCrawlKey(filters)}`);
-  releaseCrawl();
 }
 
 async function forwardCampaigns(campaigns: Awaited<ReturnType<typeof queryCampaigns>>) {
@@ -96,13 +133,39 @@ async function forwardCampaigns(campaigns: Awaited<ReturnType<typeof queryCampai
   }
 }
 export async function runKeywordCrawl(keyword: string) {
+  const key = keywordKey(keyword);
+  const job = keywordJobs.get(key);
+  await acquireCrawlSlot();
+  if (job) keywordJobs.set(key, { ...job, status: 'running' });
   try {
-    await crawlKeywordOnDemandParallel(keyword);
+    const { collectedCount, sources } = await crawlKeywordOnDemandWithReport(keyword);
     await forwardCampaigns(await queryCampaigns({ search: keyword }));
+    const current = keywordJobs.get(key);
+    if (current) keywordJobs.set(key, {
+      ...current,
+      status: 'completed',
+      collectedCount,
+      failedSources: sources.filter(source => source.status === 'FAILED').map(source => source.targetSite),
+      completedAt: new Date().toISOString(),
+    });
+    return collectedCount;
+  } catch (error) {
+    // A failed attempt must not hide a source outage behind the normal keyword
+    // cooldown. The next user search can queue a retry immediately.
+    recent.delete(key);
+    const current = keywordJobs.get(key);
+    if (current) keywordJobs.set(key, {
+      ...current,
+      status: 'failed',
+      completedAt: new Date().toISOString(),
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   } finally { releaseCrawl(); }
 }
 
 export async function runFilterCrawl(filters: FilterCrawlFilters, plannedSites?: readonly string[]) {
+  await acquireCrawlSlot();
   try {
     const sites = plannedSites ? [...plannedSites] : await planFilterCrawl(filters);
     if (!sites.length) return { sites, collected: 0 };
@@ -114,4 +177,17 @@ export async function runFilterCrawl(filters: FilterCrawlFilters, plannedSites?:
   } finally { releaseCrawl(); }
 }
 
-export function releaseCrawl() { active = false; }
+export function reserveExclusiveCrawl(): boolean {
+  if (active || waitingForSlot.length) return false;
+  active = true;
+  return true;
+}
+
+export function releaseCrawl() {
+  const next = waitingForSlot.shift();
+  if (next) {
+    next();
+    return;
+  }
+  active = false;
+}
